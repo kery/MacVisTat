@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>603</width>
+    <height>393</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="leftMargin">
+     <number>5</number>
+    </property>
+    <property name="topMargin">
+     <number>5</number>
+    </property>
+    <property name="rightMargin">
+     <number>5</number>
+    </property>
+    <property name="bottomMargin">
+     <number>5</number>
+    </property>
+    <item>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="childrenCollapsible">
+       <bool>false</bool>
+      </property>
+      <widget class="QListView" name="lvCsvFile">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
+        <item>
+         <widget class="QComboBox" name="cbRegExpFilter">
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListView" name="lvStatName">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>603</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionCloseAll"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Selection">
+    <property name="title">
+     <string>Selection</string>
+    </property>
+    <addaction name="actionSelectAll"/>
+    <addaction name="actionClearSelection"/>
+    <addaction name="actionInvertSelection"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionViewHelp"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionDrawPlot"/>
+    <addaction name="actionTimeDuration"/>
+    <addaction name="separator"/>
+    <addaction name="actionListView"/>
+    <addaction name="actionTreeView"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Selection"/>
+   <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionOpen"/>
+   <addaction name="actionCloseAll"/>
+   <addaction name="separator"/>
+   <addaction name="actionDrawPlot"/>
+   <addaction name="actionTimeDuration"/>
+   <addaction name="actionListView"/>
+   <addaction name="actionTreeView"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="visualintstat.qrc">
+     <normaloff>:/resource/image/open.png</normaloff>:/resource/image/open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open...</string>
+   </property>
+   <property name="statusTip">
+    <string>Open internal statistics file(s)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionCloseAll">
+   <property name="icon">
+    <iconset resource="visualintstat.qrc">
+     <normaloff>:/resource/image/close_all.png</normaloff>:/resource/image/close_all.png</iconset>
+   </property>
+   <property name="text">
+    <string>Close All</string>
+   </property>
+   <property name="statusTip">
+    <string>Close all of the files</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="statusTip">
+    <string>Exit this program</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionSelectAll">
+   <property name="text">
+    <string>Select All</string>
+   </property>
+   <property name="statusTip">
+    <string>Select all of the files</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionClearSelection">
+   <property name="text">
+    <string>Clear Selection</string>
+   </property>
+   <property name="statusTip">
+    <string>Unselect all of the files</string>
+   </property>
+  </action>
+  <action name="actionInvertSelection">
+   <property name="text">
+    <string>Invert Selection</string>
+   </property>
+   <property name="statusTip">
+    <string>Invert current selection</string>
+   </property>
+  </action>
+  <action name="actionViewHelp">
+   <property name="text">
+    <string>View Help</string>
+   </property>
+   <property name="statusTip">
+    <string>View help document</string>
+   </property>
+  </action>
+  <action name="actionListView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="visualintstat.qrc">
+     <normaloff>:/resource/image/list_view.png</normaloff>:/resource/image/list_view.png</iconset>
+   </property>
+   <property name="text">
+    <string>List View</string>
+   </property>
+   <property name="statusTip">
+    <string>Show statistics name in list view</string>
+   </property>
+  </action>
+  <action name="actionTreeView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="visualintstat.qrc">
+     <normaloff>:/resource/image/tree_view.png</normaloff>:/resource/image/tree_view.png</iconset>
+   </property>
+   <property name="text">
+    <string>Tree View</string>
+   </property>
+   <property name="statusTip">
+    <string>Show statistics name in tree view</string>
+   </property>
+  </action>
+  <action name="actionTimeDuration">
+   <property name="icon">
+    <iconset resource="visualintstat.qrc">
+     <normaloff>:/resource/image/time_duration.png</normaloff>:/resource/image/time_duration.png</iconset>
+   </property>
+   <property name="text">
+    <string>Time Duration</string>
+   </property>
+   <property name="statusTip">
+    <string>Show start/end time of the statistics</string>
+   </property>
+  </action>
+  <action name="actionDrawPlot">
+   <property name="icon">
+    <iconset resource="visualintstat.qrc">
+     <normaloff>:/resource/image/draw_plot.png</normaloff>:/resource/image/draw_plot.png</iconset>
+   </property>
+   <property name="text">
+    <string>Draw Plot</string>
+   </property>
+   <property name="statusTip">
+    <string>Draw the statistics in a new window</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="visualintstat.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>actionExit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>301</x>
+     <y>196</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
