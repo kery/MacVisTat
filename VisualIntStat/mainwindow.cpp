@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    disableToolbarTooltip();
+    installEventFilterForAllToolButton();
 
     ui->mainToolBar->setStyle(fusionStyle);
 
@@ -32,16 +32,24 @@ MainWindow::~MainWindow()
     delete fusionStyle;
 }
 
-void MainWindow::disableToolbarTooltip()
+void MainWindow::installEventFilterForAllToolButton()
 {
     for (QObject *btn : ui->mainToolBar->findChildren<QObject*>()) {
         btn->installEventFilter(this);
     }
 }
 
+bool MainWindow::isToolTipEventOfToolButton(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::ToolTip && obj->parent() == ui->mainToolBar) {
+        return true;
+    }
+    return false;
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::ToolTip) {
+    if (isToolTipEventOfToolButton(obj, event)) {
         return true;
     }
     return QMainWindow::eventFilter(obj, event);

@@ -19,7 +19,8 @@ public:
     QStyle *fusionStyle;
 
 private:
-    void disableToolbarTooltip();
+    void installEventFilterForAllToolButton();
+    bool isToolTipEventOfToolButton(QObject *obj, QEvent *event);
 
     bool eventFilter(QObject *obj, QEvent *event);
 
