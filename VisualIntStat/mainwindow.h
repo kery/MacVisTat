@@ -31,9 +31,15 @@ private slots:
 
     void on_actionDrawPlot_triggered();
 
-    void on_actionListView_toggled(bool arg1);
+    void on_actionListView_toggled(bool checked);
 
-    void on_actionTreeView_toggled(bool arg1);
+    void on_actionTreeView_toggled(bool checked);
+
+    void on_actionSelectAll_triggered();
+
+    void on_actionClearSelection_triggered();
+
+    void on_actionInvertSelection_triggered();
 
 private:
     Ui::MainWindow *ui;

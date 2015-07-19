@@ -8,5 +8,6 @@
         <file>resource/image/save.png</file>
         <file>resource/image/time_duration.png</file>
         <file>resource/image/full_screen.png</file>
+        <file>resource/image/archive.png</file>
     </qresource>
 </RCC>

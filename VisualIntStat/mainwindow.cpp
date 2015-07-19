@@ -3,6 +3,8 @@
 #include "plotwindow.h"
 #include <QStyleFactory>
 #include <QLineEdit>
+#include <QFileDialog>
+#include <QSortFilterProxyModel>
 // TODO: remove
 #include <QDebug>
 
@@ -20,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actionGroup->addAction(ui->actionListView);
     actionGroup->addAction(ui->actionTreeView);
 
-    ui->splitter->setSizes(QList<int>() << 200 << 400);
+    ui->splitter->setSizes(QList<int>() << 250 << 400);
     ui->splitter->setStretchFactor(0, 0);
     ui->splitter->setStretchFactor(1, 1);
     ui->cbRegExpFilter->lineEdit()->setPlaceholderText("regular expression filter");
@@ -41,10 +43,7 @@ void MainWindow::installEventFilterForAllToolButton()
 
 bool MainWindow::isToolTipEventOfToolButton(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::ToolTip && obj->parent() == ui->mainToolBar) {
-        return true;
-    }
-    return false;
+    return event->type() == QEvent::ToolTip && obj->parent() == ui->mainToolBar;
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -57,6 +56,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
 void MainWindow::on_actionOpen_triggered()
 {
+    QFileDialog fileDialog(this);
+    fileDialog.setFileMode(QFileDialog::ExistingFiles);
+    fileDialog.setNameFilter("Internal Statistics File (*.csv.gz)");
+
+    QSortFilterProxyModel proxyModel;
+    proxyModel.setFilterRegExp("test");
+
+    fileDialog.setProxyModel(&proxyModel);
+    if (fileDialog.exec() == QDialog::Accepted) {
+    }
 }
 
 void MainWindow::on_actionCloseAll_triggered()
@@ -73,12 +82,45 @@ void MainWindow::on_actionDrawPlot_triggered()
     plotWindow->showMaximized();
 }
 
-void MainWindow::on_actionListView_toggled(bool arg1)
+void MainWindow::on_actionListView_toggled(bool checked)
 {
-    qDebug() << "list view toggled: " << arg1;
 }
 
-void MainWindow::on_actionTreeView_toggled(bool arg1)
+void MainWindow::on_actionTreeView_toggled(bool checked)
 {
-    qDebug() << "tree view toggled: " << arg1;
+}
+
+void MainWindow::on_actionSelectAll_triggered()
+{
+    for (int i = 0; i < ui->lwStatFile->count(); ++i) {
+        QListWidgetItem *item = ui->lwStatFile->item(i);
+        if (item->checkState() != Qt::Checked) {
+            item->setCheckState(Qt::Checked);
+        }
+    }
+}
+
+void MainWindow::on_actionClearSelection_triggered()
+{
+    for (int i = 0; i < ui->lwStatFile->count(); ++i) {
+        QListWidgetItem *item = ui->lwStatFile->item(i);
+        if (item->checkState() != Qt::Unchecked) {
+            item->setCheckState(Qt::Unchecked);
+        }
+    }
+}
+
+void MainWindow::on_actionInvertSelection_triggered()
+{
+    for (int i = 0; i < ui->lwStatFile->count(); ++i) {
+        QListWidgetItem *item = ui->lwStatFile->item(i);
+        switch (item->checkState()) {
+        case Qt::Checked:
+            item->setCheckState(Qt::Unchecked);
+            break;
+        case Qt::Unchecked:
+            item->setCheckState(Qt::Checked);
+            break;
+        }
+    }
 }

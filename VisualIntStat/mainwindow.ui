@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>603</width>
+    <width>669</width>
     <height>393</height>
    </rect>
   </property>
@@ -35,12 +35,9 @@
       <property name="childrenCollapsible">
        <bool>false</bool>
       </property>
-      <widget class="QListView" name="lvCsvFile">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+      <widget class="QListWidget" name="lwStatFile">
+       <property name="mouseTracking">
+        <bool>true</bool>
        </property>
       </widget>
       <widget class="QWidget" name="layoutWidget">
@@ -73,7 +70,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>603</width>
+     <width>669</width>
      <height>23</height>
     </rect>
    </property>
@@ -252,7 +249,7 @@
     <string>Time Duration</string>
    </property>
    <property name="statusTip">
-    <string>Show start/end time of the statistics</string>
+    <string>Show start/end time of the checked statistics file(s)</string>
    </property>
   </action>
   <action name="actionDrawPlot">
