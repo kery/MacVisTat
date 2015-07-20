@@ -16,13 +16,19 @@ public:
     ~MainWindow();
 
 public:
-    QStyle *fusionStyle;
+    QStyle *_fusionStyle;
 
 private:
     void installEventFilterForAllToolButton();
     bool isToolTipEventOfToolButton(QObject *obj, QEvent *event);
 
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool statFileAlreadyAdded(const QString &fileName);
+    void addStatFiles(const QStringList &fileNames);
+    bool checkStatFileNode(const QString &node);
+
+    virtual bool eventFilter(QObject *obj, QEvent *event);
+    virtual void dragEnterEvent(QDragEnterEvent * event);
+    virtual void dropEvent(QDropEvent * event);
 
 private slots:
     void on_actionOpen_triggered();
@@ -42,7 +48,8 @@ private slots:
     void on_actionInvertSelection_triggered();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow *_ui;
+    QString _node;
 };
 
 #endif // MAINWINDOW_H

@@ -23,7 +23,7 @@ private slots:
     void on_actionRestoreSize_triggered();
 
 private:
-    Ui::PlotWindow *ui;
+    Ui::PlotWindow *_ui;
 };
 
 #endif // PLOTWINDOW_H
