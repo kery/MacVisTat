@@ -50,10 +50,17 @@
        </property>
       </widget>
       <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
         <item>
          <widget class="QComboBox" name="cbRegExpFilter">
           <property name="editable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTreeView" name="tvStatName">
+          <property name="headerHidden">
            <bool>true</bool>
           </property>
          </widget>
@@ -136,8 +143,6 @@
    <addaction name="separator"/>
    <addaction name="actionDrawPlot"/>
    <addaction name="actionTimeDuration"/>
-   <addaction name="actionListView"/>
-   <addaction name="actionTreeView"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">

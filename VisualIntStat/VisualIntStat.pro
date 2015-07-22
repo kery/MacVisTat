@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     qcustomplot.cpp \
-    plotwindow.cpp
+    plotwindow.cpp \
+    statisticsproxymodel.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
-    plotwindow.h
+    plotwindow.h \
+    statisticsproxymodel.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui

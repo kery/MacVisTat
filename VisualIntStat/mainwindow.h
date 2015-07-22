@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSortFilterProxyModel>
 
 namespace Ui {
 class MainWindow;
@@ -26,9 +27,9 @@ private:
     void addStatFiles(const QStringList &fileNames);
     bool checkStatFileNode(const QString &node);
 
-    virtual bool eventFilter(QObject *obj, QEvent *event);
-    virtual void dragEnterEvent(QDragEnterEvent * event);
-    virtual void dropEvent(QDropEvent * event);
+    virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
+    virtual void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
+    virtual void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
     void on_actionOpen_triggered();
@@ -47,9 +48,12 @@ private slots:
 
     void on_actionInvertSelection_triggered();
 
+    void on_actionTimeDuration_triggered();
+
 private:
     Ui::MainWindow *_ui;
     QString _node;
+    QSortFilterProxyModel *_filterModel;
 };
 
 #endif // MAINWINDOW_H
