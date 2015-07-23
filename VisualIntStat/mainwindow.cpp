@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "plotwindow.h"
-#include "statisticsproxymodel.h"
 #include <QStyleFactory>
 #include <QLineEdit>
 #include <QFileDialog>
@@ -16,8 +15,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     _fusionStyle(QStyleFactory::create("Fusion")),
-    _ui(new Ui::MainWindow),
-    _filterModel(new QSortFilterProxyModel())
+    _ui(new Ui::MainWindow)
 {
     _ui->setupUi(this);
 
@@ -27,7 +25,6 @@ MainWindow::MainWindow(QWidget *parent) :
     setAcceptDrops(true);
 
     _ui->mainToolBar->setStyle(_fusionStyle);
-    _ui->tvStatName->setVisible(false);
 
     QActionGroup *actionGroup = new QActionGroup(this);
     actionGroup->addAction(_ui->actionListView);
@@ -36,21 +33,19 @@ MainWindow::MainWindow(QWidget *parent) :
     _ui->splitter->setSizes(QList<int>() << 300 << 500);
     _ui->splitter->setStretchFactor(0, 0);
     _ui->splitter->setStretchFactor(1, 1);
-    _ui->cbRegExpFilter->lineEdit()->setPlaceholderText("regular expression filter");
+
+    _ui->cbRegExpFilter->lineEdit()->setPlaceholderText("wildcard filter");
     _ui->cbRegExpFilter->lineEdit()->setClearButtonEnabled(true);
 
-    _filterModel->sort(0);
-    _filterModel->setSourceModel(new QStringListModel(_filterModel));
-
-    connect(_ui->cbRegExpFilter, &QComboBox::editTextChanged, _filterModel,
-            static_cast<void (QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
-
-    _ui->lvStatName->setModel(_filterModel);
+    _timer.setSingleShot(true);
+    _timer.setInterval(1000);
+    connect(_ui->cbRegExpFilter, &QComboBox::editTextChanged, &_timer,
+            static_cast<void (QTimer::*)()>(&QTimer::start));
+    connect(&_timer, &QTimer::timeout, this, &MainWindow::filterTextReady);
 }
 
 MainWindow::~MainWindow()
 {
-    delete _filterModel;
     delete _ui;
     delete _fusionStyle;
 }
@@ -142,6 +137,10 @@ void MainWindow::dropEvent(QDropEvent *event)
     }
 }
 
+void MainWindow::filterTextReady()
+{
+}
+
 void MainWindow::on_actionOpen_triggered()
 {
     QFileDialog fileDialog(this);
@@ -155,16 +154,6 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionCloseAll_triggered()
 {
-    QFile file("d:\\userdata\\kerwu\\Downloads\\NA05805592\\temp.txt");
-    if (file.open(QIODevice::ReadOnly)) {
-        QTextStream in(&file);
-        QStringList strList;
-        while (!in.atEnd()) {
-            strList << in.readLine();
-        }
-        static_cast<QStringListModel*>(_filterModel->sourceModel())->setStringList(strList);
-        file.close();
-    }
 }
 
 void MainWindow::on_actionDrawPlot_triggered()
@@ -175,33 +164,6 @@ void MainWindow::on_actionDrawPlot_triggered()
     PlotWindow *plotWindow = new PlotWindow(this);
     plotWindow->setAttribute(Qt::WA_DeleteOnClose);
     plotWindow->showMaximized();
-}
-
-void MainWindow::on_actionListView_toggled(bool checked)
-{
-    if (checked) {
-        // no need to synchronize the model data if tree view is not visible
-        QAbstractItemModel *model = _ui->tvStatName->model();
-        if (model) {
-            static_cast<StatisticsProxyModel*>(model)->detachSourceModel();
-        }
-        _ui->lvStatName->setVisible(true);
-        _ui->tvStatName->setVisible(false);
-    }
-}
-
-void MainWindow::on_actionTreeView_toggled(bool checked)
-{
-    if (checked) {
-        StatisticsProxyModel *model = static_cast<StatisticsProxyModel*>(_ui->tvStatName->model());
-        if (!model) {
-            model = new StatisticsProxyModel(_ui->tvStatName);
-            _ui->tvStatName->setModel(model);
-        }
-        model->attachSourceModel(_filterModel);
-        _ui->tvStatName->setVisible(true);
-        _ui->lvStatName->setVisible(false);
-    }
 }
 
 void MainWindow::on_actionSelectAll_triggered()

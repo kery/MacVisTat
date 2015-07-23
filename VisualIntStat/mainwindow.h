@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QSortFilterProxyModel>
+#include <QTimer>
 
 namespace Ui {
 class MainWindow;
@@ -32,15 +32,13 @@ private:
     virtual void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
+    void filterTextReady();
+
     void on_actionOpen_triggered();
 
     void on_actionCloseAll_triggered();
 
     void on_actionDrawPlot_triggered();
-
-    void on_actionListView_toggled(bool checked);
-
-    void on_actionTreeView_toggled(bool checked);
 
     void on_actionSelectAll_triggered();
 
@@ -53,7 +51,7 @@ private slots:
 private:
     Ui::MainWindow *_ui;
     QString _node;
-    QSortFilterProxyModel *_filterModel;
+    QTimer _timer;
 };
 
 #endif // MAINWINDOW_H
