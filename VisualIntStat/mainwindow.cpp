@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _ui->splitter->setStretchFactor(0, 0);
     _ui->splitter->setStretchFactor(1, 1);
 
-    _ui->cbRegExpFilter->lineEdit()->setPlaceholderText("wildcard filter");
+    _ui->cbRegExpFilter->lineEdit()->setPlaceholderText("regular expression filter");
     _ui->cbRegExpFilter->lineEdit()->setClearButtonEnabled(true);
 
     _timer.setSingleShot(true);
