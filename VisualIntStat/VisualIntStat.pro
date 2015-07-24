@@ -79,7 +79,8 @@ SOURCES += main.cpp\
     third_party/pcre/sljit/sljitNativeX86_32.c \
     third_party/pcre/sljit/sljitNativeX86_64.c \
     third_party/pcre/sljit/sljitNativeX86_common.c \
-    third_party/pcre/sljit/sljitUtils.c
+    third_party/pcre/sljit/sljitUtils.c \
+    statnamelistmodel.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -91,7 +92,8 @@ HEADERS  += mainwindow.h \
     third_party/pcre/sljit/sljitConfig.h \
     third_party/pcre/sljit/sljitConfigInternal.h \
     third_party/pcre/sljit/sljitLir.h \
-    third_party/pcre/ucp.h
+    third_party/pcre/ucp.h \
+    statnamelistmodel.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui

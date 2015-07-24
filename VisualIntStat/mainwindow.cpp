@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "plotwindow.h"
+#include "statnamelistmodel.h"
 #include <QStyleFactory>
 #include <QLineEdit>
 #include <QFileDialog>
