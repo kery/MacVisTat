@@ -1,3 +1,8 @@
+#if defined(_WIN32) || defined(_WIN64)
+#include "../../platform/pcre_conf_windows.h"
+#else
+#endif
+
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 

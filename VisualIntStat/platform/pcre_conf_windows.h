@@ -1,0 +1,24 @@
+#ifndef PCRE_CONF_WINDOWS_H
+#define PCRE_CONF_WINDOWS_H
+
+#define HAVE_INTTYPES_H 1
+#define HAVE_LIMITS_H 1
+#define HAVE_LONG_LONG 1
+#define HAVE_MEMMOVE 1
+#define HAVE_MEMORY_H 1
+#define HAVE_STDINT_H 1
+#define HAVE_STDLIB_H 1
+#define HAVE_STRERROR 1
+#define HAVE_STRING 1
+#define HAVE_STRING_H 1
+#define HAVE_STRTOLL 1
+#define HAVE_UNSIGNED_LONG_LONG 1
+#define HAVE_WINDOWS_H 1
+#define HAVE__STRTOI64 1
+
+#define STDC_HEADERS 1
+#define SUPPORT_JIT 1
+#define SUPPORT_PCRE16 1
+
+#endif // PCRE_CONF_WINDOWS_H
+

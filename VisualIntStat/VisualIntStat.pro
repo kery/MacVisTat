@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 TARGET = VisualIntStat
 TEMPLATE = app
 
+DEFINES += HAVE_CONFIG_H
+
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -58,14 +60,38 @@ SOURCES += main.cpp\
     third_party/pcre/pcre16_utf16_utils.c \
     third_party/pcre/pcre16_valid_utf16.c \
     third_party/pcre/pcre16_version.c \
-    third_party/pcre/pcre16_xclass.c
+    third_party/pcre/pcre16_xclass.c \
+    third_party/pcre/sljit/sljitExecAllocator.c \
+    third_party/pcre/sljit/sljitLir.c \
+    third_party/pcre/sljit/sljitNativeARM_32.c \
+    third_party/pcre/sljit/sljitNativeARM_64.c \
+    third_party/pcre/sljit/sljitNativeARM_T2_32.c \
+    third_party/pcre/sljit/sljitNativeMIPS_32.c \
+    third_party/pcre/sljit/sljitNativeMIPS_64.c \
+    third_party/pcre/sljit/sljitNativeMIPS_common.c \
+    third_party/pcre/sljit/sljitNativePPC_32.c \
+    third_party/pcre/sljit/sljitNativePPC_64.c \
+    third_party/pcre/sljit/sljitNativePPC_common.c \
+    third_party/pcre/sljit/sljitNativeSPARC_32.c \
+    third_party/pcre/sljit/sljitNativeSPARC_common.c \
+    third_party/pcre/sljit/sljitNativeTILEGX_64.c \
+    third_party/pcre/sljit/sljitNativeTILEGX-encoder.c \
+    third_party/pcre/sljit/sljitNativeX86_32.c \
+    third_party/pcre/sljit/sljitNativeX86_64.c \
+    third_party/pcre/sljit/sljitNativeX86_common.c \
+    third_party/pcre/sljit/sljitUtils.c
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
     third_party/qcustomplot/qcustomplot.h \
     third_party/pcre/config.h \
     third_party/pcre/pcre.h \
-    third_party/pcre/pcre_internal.h
+    third_party/pcre/pcre_internal.h \
+    platform/pcre_conf_windows.h \
+    third_party/pcre/sljit/sljitConfig.h \
+    third_party/pcre/sljit/sljitConfigInternal.h \
+    third_party/pcre/sljit/sljitLir.h \
+    third_party/pcre/ucp.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui
