@@ -1,2 +1,3 @@
 VisualIntStat/VisualIntStat.pro.user
-build-*
+build/*
+!build/pcre16.dll

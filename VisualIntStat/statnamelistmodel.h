@@ -1,7 +1,7 @@
 #ifndef STATNAMELISTMODEL_H
 #define STATNAMELISTMODEL_H
 
-#include "third_party/pcre/pcre.h"
+#include <pcre.h>
 #include <QAbstractListModel>
 
 class StatNameListModel : public QAbstractListModel

@@ -97,7 +97,7 @@ void StatNameListModel::fetchMore(const QModelIndex &parent)
     }
     int newCount = _fetchedCount + _fetchIncrement;
     if (newCount > _indexes.size()) {
-        newCount = _indexes.size();
+        newCount = static_cast<int>(_indexes.size());
     }
     emit beginInsertRows(QModelIndex(), _fetchedCount, newCount - 1);
     _fetchedCount = newCount;
