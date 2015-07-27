@@ -10,7 +10,7 @@ public:
     explicit StatNameListModel(QObject *parent = NULL);
     ~StatNameListModel();
 
-    void setStatNames(const QVector<QString> &statNames);
+    void setStatNames(const QStringList &statNames);
     void clearStatNames();
 
     bool setFilterPattern(const QString &pattern);
@@ -25,7 +25,7 @@ private:
     int _fetchedCount;
     int _fetchIncrement;
     QString _pattern;
-    QVector<QString> _statNames;
+    QStringList _statNames;
     std::vector<int> _indexes;
     pcre16_jit_stack *_jitStack;
 };

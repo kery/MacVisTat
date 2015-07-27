@@ -16,14 +16,31 @@ GZipFile::~GZipFile()
 bool GZipFile::readLine(QString &text)
 {
     char buff[4096];
-    text = "";
+    if (gzgets(_gzFile, buff, sizeof(buff))) {
+        text = buff;
+        if (text.endsWith('\n')) {
+            if (text.endsWith("\r\n")) {
+                text.truncate(text.length() - 2);
+                return true;
+            }
+            text.truncate(text.length() - 1);
+            return true;
+        }
+    } else {
+        return false;
+    }
     while (gzgets(_gzFile, buff, sizeof(buff))) {
         text += buff;
         if (text.endsWith('\n')) {
-            break;
+            if (text.endsWith("\r\n")) {
+                text.truncate(text.length() - 2);
+                return true;
+            }
+            text.truncate(text.length() - 1);
+            return true;
         }
     }
-    return !text.isEmpty();
+    return true;
 }
 
 bool GZipFile::close()

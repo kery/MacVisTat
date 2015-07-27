@@ -15,7 +15,7 @@ StatNameListModel::~StatNameListModel()
     }
 }
 
-void StatNameListModel::setStatNames(const QVector<QString> &statNames)
+void StatNameListModel::setStatNames(const QStringList &statNames)
 {
     emit beginResetModel();
     _statNames = statNames;
