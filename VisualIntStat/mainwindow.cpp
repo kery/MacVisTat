@@ -65,7 +65,7 @@ bool MainWindow::statFileAlreadyAdded(const QString &fileName)
 {
     for (int i = 0; i < _ui->lwStatFile->count(); ++i) {
         QListWidgetItem *item = _ui->lwStatFile->item(i);
-        if (item->statusTip() == fileName)
+        if (item->toolTip() == fileName)
             return true;
     }
     return false;
@@ -86,7 +86,7 @@ void MainWindow::addStatFiles(const QStringList &fileNames)
             continue;
         QListWidgetItem *item = new QListWidgetItem(icon, fileInfo.fileName());
         item->setCheckState(Qt::Checked);
-        item->setStatusTip(nativeName);
+        item->setToolTip(nativeName);
         _ui->lwStatFile->addItem(item);
     }
 }
@@ -110,35 +110,35 @@ void MainWindow::parseStatFileHeader()
     Q_ASSERT(_ui->lwStatFile->count() > 0);
 
     QString header;
-    GZipFile gzFile(_ui->lwStatFile->item(0)->statusTip());
+    GZipFile gzFile(_ui->lwStatFile->item(0)->toolTip());
     if (!gzFile.readLine(header)) {
         showErrorMsgBox("Read header of statistics file failed!",
-                        _ui->lwStatFile->item(0)->statusTip());
+                        _ui->lwStatFile->item(0)->toolTip());
         return;
     }
 
     for (int i = 1; i < _ui->lwStatFile->count(); ++i) {
         QListWidgetItem *item = _ui->lwStatFile->item(i);
 
-        GZipFile gzFile(item->statusTip());
+        GZipFile gzFile(item->toolTip());
         QString line;
         if (gzFile.readLine(line)) {
             if (line != header) {
                 showErrorMsgBox("Headers of statistics file are not identical!",
-                                _ui->lwStatFile->item(0)->statusTip() + "\n" +
-                                item->statusTip());
+                                _ui->lwStatFile->item(0)->toolTip() + "\n" +
+                                item->toolTip());
                 return;
             }
         } else {
             showErrorMsgBox("Read header of statistics file failed!",
-                            item->statusTip());
+                            item->toolTip());
             return;
         }
     }
 
     if (!header.startsWith("##")) {
         showErrorMsgBox("Invalid statistics file's header format!",
-                        _ui->lwStatFile->item(0)->statusTip());
+                        _ui->lwStatFile->item(0)->toolTip());
         return;
     }
 
@@ -146,7 +146,7 @@ void MainWindow::parseStatFileHeader()
     QStringList statNames = header.split(';');
     if (statNames.size() < 2 || statNames.at(0) != "date" || statNames.at(1) != "time") {
         showErrorMsgBox("Invalid statistics file's header format!",
-                        _ui->lwStatFile->item(0)->statusTip());
+                        _ui->lwStatFile->item(0)->toolTip());
         return;
     }
     statNames.removeFirst(); // remove "date"
