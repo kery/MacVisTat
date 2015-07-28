@@ -10,6 +10,9 @@
 #include <QMimeData>
 #include <QStringListModel>
 #include <QMessageBox>
+#include <QProgressDialog>
+#include <QtConcurrent>
+#include <functional>
 // TODO: remove
 #include <QDebug>
 
@@ -160,6 +163,16 @@ void MainWindow::parseStatFileHeader()
     }
 }
 
+void MainWindow::showInfoMsgBox(const QString &text, const QString &info)
+{
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle("Information");
+    msgBox.setIcon(QMessageBox::Information);
+    msgBox.setText(text);
+    msgBox.setInformativeText(info);
+    msgBox.exec();
+}
+
 void MainWindow::showErrorMsgBox(const QString &text, const QString &info)
 {
     QMessageBox msgBox(this);
@@ -275,4 +288,104 @@ void MainWindow::on_actionInvertSelection_triggered()
 
 void MainWindow::on_actionTimeDuration_triggered()
 {
+    QVector<QString> checkedFiles;
+    for (int i = 0; i < _ui->lwStatFile->count(); ++i) {
+        QListWidgetItem *item = _ui->lwStatFile->item(i);
+        if (item->checkState() == Qt::Checked) {
+           checkedFiles << item->toolTip();
+        }
+    }
+
+    if (checkedFiles.isEmpty()) {
+        showInfoMsgBox("Please check at least one statistics file to view time duration!",
+                       "No statistics file is checked.");
+        return;
+    }
+
+    QProgressDialog dialog(this);
+    dialog.setLabelText("Calculating the time duration of statistics files...");
+
+    typedef QMap<QString, QVector<QString> > ResultType;
+    typedef QFutureWatcher<ResultType> MyFutureWatcher;
+
+    MyFutureWatcher watcher;
+    connect(&watcher, &MyFutureWatcher::finished, &dialog, &QProgressDialog::reset);
+    connect(&dialog, &QProgressDialog::canceled, &watcher, &MyFutureWatcher::cancel);
+    connect(&watcher, &MyFutureWatcher::progressRangeChanged, &dialog, &QProgressDialog::setRange);
+    connect(&watcher, &MyFutureWatcher::progressValueChanged, &dialog, &QProgressDialog::setValue);
+
+    std::function<ResultType (const QString &)> getTimeDuration = [] (const QString &path) -> ResultType {
+        ResultType ret;
+        const int TIME_STR_LEN = 19;
+        QVector<QString> duration;
+
+        GZipFile gzFile(path);
+        QRegExp regExp("^\\d{2}\\.\\d{2}\\.\\d{4};\\d{2}:\\d{2}:\\d{2};");
+        QString startLine, endLine;
+        if (!gzFile.readLine(startLine)) {
+            goto end;
+        }
+
+        // Ignore the first line because it is header
+        // Read the second line
+        if (!gzFile.readLine(startLine)) {
+            goto end;
+        }
+
+        // Check format
+        if (regExp.indexIn(startLine) != 0) {
+            goto end;
+        }
+
+        // Get the last line
+        while (gzFile.readLine(endLine));
+
+        // Check format
+        if (regExp.indexIn(endLine) != 0) {
+            goto end;
+        }
+
+        duration << startLine.left(TIME_STR_LEN).replace(';', ' ');
+        duration << endLine.left(TIME_STR_LEN).replace(';', ' ');
+        ret.insert(path, duration);
+end:
+        return ret;
+    };
+
+    std::function<void (ResultType &, const ResultType &)> mergeTimeDuration = [] (ResultType &reduced, const ResultType &partial) {
+        for (auto iter = partial.begin(); iter != partial.end(); ++iter ) {
+            reduced.insert(iter.key(), iter.value());
+        }
+    };
+
+    QFuture<ResultType> future = QtConcurrent::mappedReduced<ResultType>(checkedFiles, getTimeDuration, mergeTimeDuration);
+    watcher.setFuture(future);
+
+    dialog.exec();
+    watcher.waitForFinished();
+    if (watcher.isCanceled()) {
+        return;
+    }
+
+    QString formattedResult;
+    ResultType ret = watcher.result();
+    for (auto iter = ret.begin(); iter != ret.end(); ++iter) {
+        QFileInfo fileInfo(iter.key());
+        QString fileName = fileInfo.fileName();
+        QString duration;
+        if (iter.value().isEmpty()) {
+            duration = "not found";
+        } else {
+            duration = iter.value().at(0) + " - " + iter.value().at(1);
+        }
+
+        formattedResult += QString("%1: <font color='#CC0000'>%2</font>\n").arg(fileName).arg(duration);
+
+        QList<QListWidgetItem*> items = _ui->lwStatFile->findItems(fileName, Qt::MatchFixedString | Qt::MatchCaseSensitive);
+        if (!items.isEmpty()) {
+            items.at(0)->setStatusTip("Duration: " + duration);
+        }
+    }
+
+    showInfoMsgBox("Tip: time duration can also be shown in status bar by hover the mouse on corresponding item", formattedResult);
 }

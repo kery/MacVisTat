@@ -26,6 +26,8 @@ private:
     void addStatFiles(const QStringList &fileNames);
     bool checkStatFileNode(const QString &node);
     void parseStatFileHeader();
+
+    void showInfoMsgBox(const QString &text, const QString &info);
     void showErrorMsgBox(const QString &text, const QString &info);
 
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
