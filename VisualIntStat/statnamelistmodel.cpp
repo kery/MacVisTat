@@ -18,6 +18,7 @@ StatNameListModel::~StatNameListModel()
 void StatNameListModel::setStatNames(const QStringList &statNames)
 {
     emit beginResetModel();
+    _pattern = "";
     _statNames = statNames;
     _indexes.reserve(_statNames.size());
     for (int i = 0; i < _statNames.size(); ++i) {
@@ -41,8 +42,8 @@ void StatNameListModel::clearStatNames()
 
 bool StatNameListModel::setFilterPattern(const QString &pattern)
 {
-    if (pattern == _pattern) {
-        return false;
+    if (pattern == _pattern || _statNames.isEmpty()) {
+        return true;
     }
 
     const char *err;

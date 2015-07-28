@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QTimer>
 
 namespace Ui {
 class MainWindow;
@@ -26,13 +25,15 @@ private:
     bool statFileAlreadyAdded(const QString &fileName);
     void addStatFiles(const QStringList &fileNames);
     bool checkStatFileNode(const QString &node);
+    void parseStatFileHeader();
+    void showErrorMsgBox(const QString &text, const QString &info);
 
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
     virtual void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
     virtual void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
-    void filterTextReady();
+    void updateFilterPattern();
 
     void on_actionOpen_triggered();
 
@@ -51,7 +52,6 @@ private slots:
 private:
     Ui::MainWindow *_ui;
     QString _node;
-    QTimer _timer;
 };
 
 #endif // MAINWINDOW_H

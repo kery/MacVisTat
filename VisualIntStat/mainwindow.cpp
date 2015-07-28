@@ -2,12 +2,14 @@
 #include "ui_mainwindow.h"
 #include "plotwindow.h"
 #include "statnamelistmodel.h"
+#include "gzipfile.h"
 #include <QStyleFactory>
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QDragEnterEvent>
 #include <QMimeData>
 #include <QStringListModel>
+#include <QMessageBox>
 // TODO: remove
 #include <QDebug>
 
@@ -35,14 +37,10 @@ MainWindow::MainWindow(QWidget *parent) :
     _ui->splitter->setStretchFactor(0, 0);
     _ui->splitter->setStretchFactor(1, 1);
 
-    _ui->cbRegExpFilter->lineEdit()->setPlaceholderText("regular expression filter");
-    _ui->cbRegExpFilter->lineEdit()->setClearButtonEnabled(true);
+    _ui->lvStatName->setModel(new StatNameListModel(this));
 
-    _timer.setSingleShot(true);
-    _timer.setInterval(1000);
-    connect(_ui->cbRegExpFilter, &QComboBox::editTextChanged, &_timer,
-            static_cast<void (QTimer::*)()>(&QTimer::start));
-    connect(&_timer, &QTimer::timeout, this, &MainWindow::filterTextReady);
+    _ui->cbRegExpFilter->lineEdit()->setPlaceholderText("regular expression filter");
+    connect(_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::updateFilterPattern);
 }
 
 MainWindow::~MainWindow()
@@ -107,6 +105,71 @@ bool MainWindow::checkStatFileNode(const QString &node)
     }
 }
 
+void MainWindow::parseStatFileHeader()
+{
+    Q_ASSERT(_ui->lwStatFile->count() > 0);
+
+    QString header;
+    GZipFile gzFile(_ui->lwStatFile->item(0)->statusTip());
+    if (!gzFile.readLine(header)) {
+        showErrorMsgBox("Read header of statistics file failed!",
+                        _ui->lwStatFile->item(0)->statusTip());
+        return;
+    }
+
+    for (int i = 1; i < _ui->lwStatFile->count(); ++i) {
+        QListWidgetItem *item = _ui->lwStatFile->item(i);
+
+        GZipFile gzFile(item->statusTip());
+        QString line;
+        if (gzFile.readLine(line)) {
+            if (line != header) {
+                showErrorMsgBox("Headers of statistics file are not identical!",
+                                _ui->lwStatFile->item(0)->statusTip() + "\n" +
+                                item->statusTip());
+                return;
+            }
+        } else {
+            showErrorMsgBox("Read header of statistics file failed!",
+                            item->statusTip());
+            return;
+        }
+    }
+
+    if (!header.startsWith("##")) {
+        showErrorMsgBox("Invalid statistics file's header format!",
+                        _ui->lwStatFile->item(0)->statusTip());
+        return;
+    }
+
+    header.remove('#');
+    QStringList statNames = header.split(';');
+    if (statNames.size() < 2 || statNames.at(0) != "date" || statNames.at(1) != "time") {
+        showErrorMsgBox("Invalid statistics file's header format!",
+                        _ui->lwStatFile->item(0)->statusTip());
+        return;
+    }
+    statNames.removeFirst(); // remove "date"
+    statNames.removeFirst(); // remove "time"
+
+    StatNameListModel *model = static_cast<StatNameListModel*>(_ui->lvStatName->model());
+    model->setStatNames(statNames);
+    QString filterText = _ui->cbRegExpFilter->lineEdit()->text();
+    if (!filterText.isEmpty()) {
+        model->setFilterPattern(filterText);
+    }
+}
+
+void MainWindow::showErrorMsgBox(const QString &text, const QString &info)
+{
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle("Error");
+    msgBox.setIcon(QMessageBox::Critical);
+    msgBox.setText(text);
+    msgBox.setInformativeText(info);
+    msgBox.exec();
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (isToolTipEventOfToolButton(obj, event)) {
@@ -135,11 +198,14 @@ void MainWindow::dropEvent(QDropEvent *event)
     }
     if (fileNames.size() > 0) {
         addStatFiles(fileNames);
+        parseStatFileHeader();
     }
 }
 
-void MainWindow::filterTextReady()
+void MainWindow::updateFilterPattern()
 {
+    static_cast<StatNameListModel*>(_ui->lvStatName->model())->setFilterPattern(
+                _ui->cbRegExpFilter->lineEdit()->text());
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -150,11 +216,16 @@ void MainWindow::on_actionOpen_triggered()
 
     if (fileDialog.exec() == QDialog::Accepted) {
         addStatFiles(fileDialog.selectedFiles());
+        parseStatFileHeader();
     }
 }
 
 void MainWindow::on_actionCloseAll_triggered()
 {
+    static_cast<StatNameListModel*>(_ui->lvStatName->model())->clearStatNames();
+    for (int i = _ui->lwStatFile->count() - 1; i >= 0; --i) {
+        delete _ui->lwStatFile->item(i);
+    }
 }
 
 void MainWindow::on_actionDrawPlot_triggered()
