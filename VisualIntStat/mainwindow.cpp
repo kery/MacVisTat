@@ -88,7 +88,7 @@ void MainWindow::addStatFiles(const QStringList &fileNames)
         if (!checkStatFileNode(regExp.cap(1)))
             continue;
         QListWidgetItem *item = new QListWidgetItem(icon, fileInfo.fileName());
-        item->setCheckState(Qt::Checked);
+        item->setCheckState(Qt::Unchecked);
         item->setToolTip(nativeName);
         _ui->lwStatFile->addItem(item);
     }
@@ -163,6 +163,64 @@ void MainWindow::parseStatFileHeader()
     }
 }
 
+void MainWindow::parseStatFileData(bool multipleWindows)
+{
+    QVector<QListWidgetItem*> checkedItems;
+    for (int i = 0; i < _ui->lwStatFile->count(); ++i) {
+        QListWidgetItem *item = _ui->lwStatFile->item(i);
+        if (item->checkState() == Qt::Checked) {
+            checkedItems << item;
+        }
+    }
+
+    if (checkedItems.isEmpty()) {
+        showInfoMsgBox("Please check the statistics file(s) with which you want to draw plot!",
+                       "No statistics file checked.");
+        return;
+    }
+
+    StatNameListModel *model = static_cast<StatNameListModel*>(_ui->lvStatName->model());
+    Q_ASSERT(model != NULL);
+    if (model->rowCount() == 0) {
+        showInfoMsgBox("Please specify at lease one statistics name which you want to draw!",
+                       "No statistics name found.");
+        return;
+    }
+
+    // TODO: limit the statistics count?
+
+    QProgressDialog dialog(this);
+    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    QThread workerThread;
+    ParseDataWorker worker;
+    worker.moveToThread(&workerThread);
+    connect(&worker, &ParseDataWorker::progressRangeWorkedOut, &dialog, &QProgressDialog::setRange);
+    connect(&worker, &ParseDataWorker::progressValueUpdated, &dialog, &QProgressDialog::setValue);
+    connect(&worker, &ParseDataWorker::progressLabelUpdated, &dialog, &QProgressDialog::setLabelText);
+    connect(&worker, &ParseDataWorker::dataReady, this, &MainWindow::handleParsedResult);
+    connect(&dialog, &QProgressDialog::canceled, [&worker] {worker._canceled = true;});
+    connect(this, &MainWindow::parseDataParamReady, &worker, &ParseDataWorker::parseData);
+
+    workerThread.start();
+
+    ParseDataParam param;
+    param.multipleWindows = multipleWindows;
+    for (QListWidgetItem *item : checkedItems) {
+        // If the line count (stored in UserRole) is unknown 0 will be returned
+        param.fileInfo.insert(item->toolTip(), item->data(Qt::UserRole).toInt());
+    }
+
+    for (int i = 0; i < model->rowCount(); ++i) {
+        param.statNames << model->data(model->index(i)).toString();
+    }
+
+    emit parseDataParamReady(param);
+    dialog.exec();
+
+    workerThread.quit();
+    workerThread.wait();
+}
+
 void MainWindow::showInfoMsgBox(const QString &text, const QString &info)
 {
     QMessageBox msgBox(this);
@@ -221,6 +279,10 @@ void MainWindow::updateFilterPattern()
                 _ui->cbRegExpFilter->lineEdit()->text());
 }
 
+void MainWindow::handleParsedResult(const ParsedResult &result, bool multipleWindows)
+{
+}
+
 void MainWindow::on_actionOpen_triggered()
 {
     QFileDialog fileDialog(this);
@@ -243,12 +305,12 @@ void MainWindow::on_actionCloseAll_triggered()
 
 void MainWindow::on_actionDrawPlot_triggered()
 {
-    // TODO: check if there is data to draw
+    parseStatFileData(false);
+}
 
-    // TEST
-    PlotWindow *plotWindow = new PlotWindow(this);
-    plotWindow->setAttribute(Qt::WA_DeleteOnClose);
-    plotWindow->showMaximized();
+void MainWindow::on_actionDrawPlotInMultipleWindows_triggered()
+{
+    parseStatFileData(true);
 }
 
 void MainWindow::on_actionSelectAll_triggered()
@@ -303,6 +365,7 @@ void MainWindow::on_actionTimeDuration_triggered()
     }
 
     QProgressDialog dialog(this);
+    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
     dialog.setLabelText("Calculating the time duration of statistics files...");
 
     typedef QMap<QString, QVector<QString> > ResultType;
@@ -319,6 +382,7 @@ void MainWindow::on_actionTimeDuration_triggered()
         const int TIME_STR_LEN = 19;
         QVector<QString> duration;
 
+        int lineCount = 0; // Used to calculate progress range in other place
         GZipFile gzFile(path);
         QRegExp regExp("^\\d{2}\\.\\d{2}\\.\\d{4};\\d{2}:\\d{2}:\\d{2};");
         QString startLine, endLine;
@@ -332,13 +396,17 @@ void MainWindow::on_actionTimeDuration_triggered()
             goto end;
         }
 
+        lineCount += 2;
+
         // Check format
         if (regExp.indexIn(startLine) != 0) {
             goto end;
         }
 
         // Get the last line
-        while (gzFile.readLine(endLine));
+        while (gzFile.readLine(endLine)) {
+            ++lineCount;
+        }
 
         // Check format
         if (regExp.indexIn(endLine) != 0) {
@@ -347,6 +415,7 @@ void MainWindow::on_actionTimeDuration_triggered()
 
         duration << startLine.left(TIME_STR_LEN).replace(';', ' ');
         duration << endLine.left(TIME_STR_LEN).replace(';', ' ');
+        duration << QString::number(lineCount); // To simplity code store line count here
         ret.insert(path, duration);
 end:
         return ret;
@@ -379,13 +448,20 @@ end:
             duration = iter.value().at(0) + " - " + iter.value().at(1);
         }
 
-        formattedResult += QString("%1: <font color='#CC0000'>%2</font>\n").arg(fileName).arg(duration);
+        formattedResult += QString("%1: <font color='#248F24'>%2</font>\n").arg(fileName).arg(duration);
 
         QList<QListWidgetItem*> items = _ui->lwStatFile->findItems(fileName, Qt::MatchFixedString | Qt::MatchCaseSensitive);
         if (!items.isEmpty()) {
             items.at(0)->setStatusTip("Duration: " + duration);
+            if (!iter.value().isEmpty()) { // Store the line count
+                int lineCount = iter.value().at(2).toInt();
+                if (lineCount > 0) {
+                    items.at(0)->setData(Qt::UserRole, lineCount);
+                }
+            }
         }
     }
 
-    showInfoMsgBox("Tip: time duration can also be shown in status bar by hover the mouse on corresponding item", formattedResult);
+    showInfoMsgBox("Tip: time duration can also be shown in status bar by hover the mouse on corresponding item.",
+                   formattedResult);
 }

@@ -111,6 +111,8 @@
      <string>View</string>
     </property>
     <addaction name="actionDrawPlot"/>
+    <addaction name="actionDrawPlotInMultipleWindows"/>
+    <addaction name="separator"/>
     <addaction name="actionTimeDuration"/>
    </widget>
    <addaction name="menu_File"/>
@@ -132,6 +134,8 @@
    <addaction name="actionCloseAll"/>
    <addaction name="separator"/>
    <addaction name="actionDrawPlot"/>
+   <addaction name="actionDrawPlotInMultipleWindows"/>
+   <addaction name="separator"/>
    <addaction name="actionTimeDuration"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -266,6 +270,21 @@
    </property>
    <property name="statusTip">
     <string>Draw the statistics in a new window</string>
+   </property>
+  </action>
+  <action name="actionDrawPlotInMultipleWindows">
+   <property name="icon">
+    <iconset resource="visualintstat.qrc">
+     <normaloff>:/resource/image/draw_plot.png</normaloff>:/resource/image/draw_plot.png</iconset>
+   </property>
+   <property name="text">
+    <string>Draw Plot in Multiple Windows</string>
+   </property>
+   <property name="toolTip">
+    <string>Draw Plot in Multiple Windows</string>
+   </property>
+   <property name="statusTip">
+    <string>Draw plot in multiple windows</string>
    </property>
   </action>
  </widget>

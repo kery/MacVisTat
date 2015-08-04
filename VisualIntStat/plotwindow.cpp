@@ -13,6 +13,7 @@ PlotWindow::PlotWindow(QWidget *parent) :
         _ui->toolBar->setStyle(mainWindow->_fusionStyle);
     }
 
+    _ui->customPlot->axisRect()->setupFullAxesBox();
     _ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables | QCP::iSelectLegend);
 }
 

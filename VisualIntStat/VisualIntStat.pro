@@ -29,14 +29,16 @@ SOURCES += main.cpp\
     plotwindow.cpp \
     third_party/qcustomplot/qcustomplot.cpp \
     statnamelistmodel.cpp \
-    gzipfile.cpp
+    gzipfile.cpp \
+    parsedataworker.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
     third_party/qcustomplot/qcustomplot.h \
     statnamelistmodel.h \
     third_party/pcre/pcre.h \
-    gzipfile.h
+    gzipfile.h \
+    parsedataworker.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui
