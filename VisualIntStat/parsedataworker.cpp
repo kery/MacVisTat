@@ -38,10 +38,11 @@ void ParseDataWorker::parseData(const ParseDataParam &param)
 
     bool interrupted = false;
     int progress = 0;
+    int keyVal = 0;
     for (auto iter = param.fileInfo.begin(); iter != param.fileInfo.end(); ++iter) {
         QFileInfo fileInfo(iter.key());
         emit progressLabelUpdated("Parsing " + fileInfo.fileName());
-        int ret = parseFile(iter.key(), iter.value() > 0, progress, result);
+        int ret = parseFile(iter.key(), iter.value() > 0, progress, keyVal, result);
         if (ret != PARSE_OK) {
             interrupted = true;
             if (ret != PARSE_CANCELED) {
@@ -61,7 +62,7 @@ void ParseDataWorker::parseData(const ParseDataParam &param)
     }
 }
 
-int ParseDataWorker::parseFile(const QString &file, bool lineCountKnown, int &progress, ParsedResult &result)
+int ParseDataWorker::parseFile(const QString &file, bool lineCountKnown, int &progress, int &keyVal, ParsedResult &result)
 {
     GZipFile gzFile(file);
     QMap<QString, int> indexes; // Key is statistics name, value is the index in line
@@ -87,9 +88,6 @@ int ParseDataWorker::parseFile(const QString &file, bool lineCountKnown, int &pr
 
     QString line;
     QCPData data;
-    // Don't use time_t as key because some statistics may have large time gap
-    // So use increased integer as key and set the time as the axis label
-    data.key = -1;
     while (!_canceled && gzFile.readLine(line)) {
         if (line.isEmpty()) {
             if (lineCountKnown) {
@@ -103,8 +101,9 @@ int ParseDataWorker::parseFile(const QString &file, bool lineCountKnown, int &pr
             return PARSE_FAILED;
         }
         result.dateTimes << dt.toTime_t();
-
-        ++data.key;
+        // Don't use time_t as key because some statistics may have large time gap
+        // So use increased integer as key and set the time as the axis label
+        data.key = keyVal++;
         for (auto iter = indexes.begin(); iter != indexes.end(); ++iter) {
             if (iter.value() >= refs.size()) {
                 return PARSE_FAILED;

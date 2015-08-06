@@ -29,7 +29,7 @@ public slots:
     void parseData(const ParseDataParam &param);
 
 private:
-    int parseFile(const QString &file, bool lineCountKnown, int &progress, ParsedResult &result);
+    int parseFile(const QString &file, bool lineCountKnown, int &progress, int &keyVal, ParsedResult &result);
     bool calcStatNamesIndex(GZipFile &gzFile, QMap<QString, int> &indexes);
 
 signals:

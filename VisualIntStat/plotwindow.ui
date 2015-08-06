@@ -45,17 +45,22 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionSaveToFile"/>
-   <addaction name="actionRestoreSize"/>
+   <addaction name="actionSaveAsImage"/>
+   <addaction name="actionShowDelta"/>
+   <addaction name="actionRestoreScale"/>
+   <addaction name="actionFillPlot"/>
    <addaction name="actionFullScreen"/>
   </widget>
-  <action name="actionSaveToFile">
+  <action name="actionSaveAsImage">
    <property name="icon">
     <iconset resource="visualintstat.qrc">
      <normaloff>:/resource/image/save.png</normaloff>:/resource/image/save.png</iconset>
    </property>
    <property name="text">
-    <string>Save to File</string>
+    <string>Save As Image</string>
+   </property>
+   <property name="toolTip">
+    <string>Save As Image</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -76,16 +81,43 @@
     <string>F11</string>
    </property>
   </action>
-  <action name="actionRestoreSize">
+  <action name="actionRestoreScale">
    <property name="icon">
     <iconset resource="visualintstat.qrc">
      <normaloff>:/resource/image/list_view.png</normaloff>:/resource/image/list_view.png</iconset>
    </property>
    <property name="text">
-    <string>Restore Size</string>
+    <string>Restore Scale</string>
    </property>
    <property name="toolTip">
-    <string>Restore Size</string>
+    <string>Restore Scale</string>
+   </property>
+  </action>
+  <action name="actionShowDelta">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="visualintstat.qrc">
+     <normaloff>:/resource/image/list_view.png</normaloff>:/resource/image/list_view.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Delta</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Delta</string>
+   </property>
+  </action>
+  <action name="actionFillPlot">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="visualintstat.qrc">
+     <normaloff>:/resource/image/draw_plot.png</normaloff>:/resource/image/draw_plot.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fill Plot</string>
    </property>
   </action>
  </widget>

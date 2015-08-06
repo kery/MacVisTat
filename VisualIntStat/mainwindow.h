@@ -20,6 +20,7 @@ public:
     QStyle *_fusionStyle;
 
 private:
+    QString getStatFileNode() const;
     void installEventFilterForAllToolButton();
     bool isToolTipEventOfToolButton(QObject *obj, QEvent *event);
 

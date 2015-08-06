@@ -52,6 +52,18 @@ MainWindow::~MainWindow()
     delete _fusionStyle;
 }
 
+QString MainWindow::getStatFileNode() const
+{
+    QString node;
+    if (_ui->lwStatFile->count() > 0) {
+        QRegExp regExp(STAT_FILE_PATTERN);
+        if (regExp.exactMatch(_ui->lwStatFile->item(0)->text())) {
+            node = regExp.cap(1);
+        }
+    }
+    return node;
+}
+
 void MainWindow::installEventFilterForAllToolButton()
 {
     for (QObject *btn : _ui->mainToolBar->findChildren<QObject*>()) {
@@ -80,13 +92,16 @@ void MainWindow::addStatFiles(const QStringList &fileNames)
     QIcon icon(":/resource/image/archive.png");
     for (const QString &fileName : fileNames) {
         QFileInfo fileInfo(fileName);
-        if (!regExp.exactMatch(fileInfo.fileName()))
+        if (!regExp.exactMatch(fileInfo.fileName())) {
             continue;
+        }
         QString nativeName = QDir::toNativeSeparators(fileName);
-        if (statFileAlreadyAdded(nativeName))
+        if (statFileAlreadyAdded(nativeName)) {
             continue;
-        if (!checkStatFileNode(regExp.cap(1)))
+        }
+        if (!checkStatFileNode(regExp.cap(1))) {
             continue;
+        }
         QListWidgetItem *item = new QListWidgetItem(icon, fileInfo.fileName());
         item->setCheckState(Qt::Unchecked);
         item->setToolTip(nativeName);
@@ -101,7 +116,6 @@ bool MainWindow::checkStatFileNode(const QString &node)
         return true;
     } else {
         if (_node != node) {
-            // TODO: show error message box
             return false;
         }
         return true;
@@ -281,6 +295,23 @@ void MainWindow::updateFilterPattern()
 
 void MainWindow::handleParsedResult(const ParsedResult &result, bool multipleWindows)
 {
+    if (multipleWindows) {
+        for (auto iter = result.data.begin(); iter != result.data.end(); ++iter) {
+            ParsedResult tmpResult;
+            tmpResult.dateTimes = result.dateTimes;
+
+            QMap<QString, QCPDataMap*> data;
+            data.insert(iter.key(), iter.value());
+            tmpResult.data = data;
+            PlotWindow *w = new PlotWindow(getStatFileNode(), tmpResult, this);
+            w->setAttribute(Qt::WA_DeleteOnClose);
+            w->showMaximized();
+        }
+    } else {
+        PlotWindow *w = new PlotWindow(getStatFileNode(), result, this);
+        w->setAttribute(Qt::WA_DeleteOnClose);
+        w->showMaximized();
+    }
 }
 
 void MainWindow::on_actionOpen_triggered()
