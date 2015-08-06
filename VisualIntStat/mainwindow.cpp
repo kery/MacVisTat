@@ -36,14 +36,20 @@ MainWindow::MainWindow(QWidget *parent) :
     actionGroup->addAction(_ui->actionListView);
     actionGroup->addAction(_ui->actionTreeView);
 
-    _ui->splitter->setSizes(QList<int>() << 300 << 500);
-    _ui->splitter->setStretchFactor(0, 0);
-    _ui->splitter->setStretchFactor(1, 1);
+    _ui->splitterHor->setSizes(QList<int>() << 280 << width() - 280);
+    _ui->splitterHor->setStretchFactor(0, 0);
+    _ui->splitterHor->setStretchFactor(1, 1);
+    _ui->splitteVer->setSizes(QList<int>() << height() - 80 << 80);
+    _ui->splitteVer->setStretchFactor(0, 1);
+    _ui->splitteVer->setStretchFactor(1, 0);
 
     _ui->lvStatName->setModel(new StatNameListModel(this));
 
     _ui->cbRegExpFilter->lineEdit()->setPlaceholderText("regular expression filter");
     connect(_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::updateFilterPattern);
+
+    _ui->logTextEdit->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::contextMenuRequest);
 }
 
 MainWindow::~MainWindow()
@@ -93,6 +99,7 @@ void MainWindow::addStatFiles(const QStringList &fileNames)
     for (const QString &fileName : fileNames) {
         QFileInfo fileInfo(fileName);
         if (!regExp.exactMatch(fileInfo.fileName())) {
+            appendLogWarn(fileInfo.fileName() + " ignored. Invalid file name.");
             continue;
         }
         QString nativeName = QDir::toNativeSeparators(fileName);
@@ -100,10 +107,12 @@ void MainWindow::addStatFiles(const QStringList &fileNames)
             continue;
         }
         if (!checkStatFileNode(regExp.cap(1))) {
+            appendLogWarn(QString("%1 ignored. %2 is different from %3.").
+                          arg(fileInfo.fileName()).arg(regExp.cap(1)).arg(_node));
             continue;
         }
         QListWidgetItem *item = new QListWidgetItem(icon, fileInfo.fileName());
-        item->setCheckState(Qt::Unchecked);
+        item->setCheckState(Qt::Checked);
         item->setToolTip(nativeName);
         _ui->lwStatFile->addItem(item);
     }
@@ -255,6 +264,21 @@ void MainWindow::showErrorMsgBox(const QString &text, const QString &info)
     msgBox.exec();
 }
 
+void MainWindow::appendLogInfo(const QString &text)
+{
+    _ui->logTextEdit->appendPlainText("INFO: " + text);
+}
+
+void MainWindow::appendLogWarn(const QString &text)
+{
+    _ui->logTextEdit->appendHtml(QString("WARN: <font color='#CC9900'>%1</font>").arg(text));
+}
+
+void MainWindow::appendLogError(const QString &text)
+{
+    _ui->logTextEdit->appendHtml(QString("ERR: <font color='red'>%1</font>").arg(text));
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (isToolTipEventOfToolButton(obj, event)) {
@@ -312,6 +336,21 @@ void MainWindow::handleParsedResult(const ParsedResult &result, bool multipleWin
         w->setAttribute(Qt::WA_DeleteOnClose);
         w->showMaximized();
     }
+}
+
+void MainWindow::contextMenuRequest(const QPoint &pos)
+{
+    QMenu *menu = _ui->logTextEdit->createStandardContextMenu();
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    menu->addSeparator();
+    menu->addAction("Clear", this, SLOT(clearLogEdit()));
+
+    menu->popup(_ui->logTextEdit->mapToGlobal(pos));
+}
+
+void MainWindow::clearLogEdit()
+{
+    _ui->logTextEdit->clear();
 }
 
 void MainWindow::on_actionOpen_triggered()

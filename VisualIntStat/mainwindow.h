@@ -36,6 +36,10 @@ private:
     void showInfoMsgBox(const QString &text, const QString &info);
     void showErrorMsgBox(const QString &text, const QString &info);
 
+    void appendLogInfo(const QString &text);
+    void appendLogWarn(const QString &text);
+    void appendLogError(const QString &text);
+
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
     virtual void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
     virtual void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
@@ -43,6 +47,8 @@ private:
 private slots:
     void updateFilterPattern();
     void handleParsedResult(const ParsedResult &result, bool multipleWindows);
+    void contextMenuRequest(const QPoint &pos);
+    void clearLogEdit();
 
     void on_actionOpen_triggered();
 

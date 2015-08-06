@@ -46,8 +46,9 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionSaveAsImage"/>
-   <addaction name="actionShowDelta"/>
    <addaction name="actionRestoreScale"/>
+   <addaction name="actionShowDelta"/>
+   <addaction name="actionMarkAbnormalTime"/>
    <addaction name="actionFillPlot"/>
    <addaction name="actionFullScreen"/>
   </widget>
@@ -118,6 +119,18 @@
    </property>
    <property name="text">
     <string>Fill Plot</string>
+   </property>
+  </action>
+  <action name="actionMarkAbnormalTime">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="visualintstat.qrc">
+     <normaloff>:/resource/image/time_duration.png</normaloff>:/resource/image/time_duration.png</iconset>
+   </property>
+   <property name="text">
+    <string>Mark Abnormal Time</string>
    </property>
   </action>
  </widget>

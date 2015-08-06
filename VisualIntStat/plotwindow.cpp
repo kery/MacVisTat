@@ -1,6 +1,5 @@
 #include "plotwindow.h"
 #include "ui_plotwindow.h"
-#include "mainwindow.h"
 
 #include <QDebug>
 
@@ -79,7 +78,8 @@ void PlotWindow::initializePlot()
     Q_ASSERT(_result.data.size() <= sizeof(dataColors)/sizeof(dataColors[0]));
 
     int i = 0;
-    bool fillPlot = QSettings().value("PlotWindow/FillPlot", true).toBool();
+    QSettings settings;
+    bool fillPlot = settings.value("PlotWindow/FillPlot", true).toBool();
     _ui->actionFillPlot->setChecked(fillPlot);
     for (auto iter = _result.data.begin(); iter != _result.data.end(); ++iter, ++i) {
         plot->addGraph();
@@ -93,8 +93,20 @@ void PlotWindow::initializePlot()
         plot->graph()->setData(iter.value(), true);
     }
 
+    bool markAbnormal = settings.value("PlotWindow/MarkAbnormal", false).toBool();
+    if (markAbnormal) {
+        markAbnormalTime();
+    }
+
     plot->rescaleAxes(true);
     plot->replot();
+}
+
+MainWindow* PlotWindow::mainWindow() const
+{
+    MainWindow *mainWindow = qobject_cast<MainWindow*>(parent());
+    Q_ASSERT(mainWindow != NULL);
+    return mainWindow;
 }
 
 QVector<double> PlotWindow::calcTickVector(int plotWidth, int fontHeight, const QCPRange &range)
@@ -137,6 +149,39 @@ void PlotWindow::calcDelta(QCPGraph *graph)
         }
         // The first element is always 0 in delta mode
         (*data->begin()).value = 0;
+    }
+}
+
+QVector<int> PlotWindow::findAbnormalTimeIndex() const
+{
+    QVector<int> result;
+    for (int i = 1; i < _result.dateTimes.size(); ++i) {
+        if (_result.dateTimes.at(i) - _result.dateTimes.at(i - 1) > 60 * 2) {
+            result << i;
+        }
+    }
+    return result;
+}
+
+void PlotWindow::markAbnormalTime()
+{
+    QVector<int> abnormalIndex = findAbnormalTimeIndex();
+    if (abnormalIndex.size() > 0) {
+        QCustomPlot *plot = _ui->customPlot;
+        for (int i = 0; i < plot->graphCount(); ++i) {
+            QCPGraph *graph = plot->graph(i);
+            for (int index : abnormalIndex) {
+                QCPItemTracer *tracer = new QCPItemTracer(plot);
+                tracer->setGraphKey(index);
+                tracer->setInterpolating(true);
+                tracer->setStyle(QCPItemTracer::tsCircle);
+                tracer->setPen(QPen(Qt::red));
+                tracer->setBrush(QBrush(Qt::red));
+                tracer->setSize(5);
+                plot->addItem(tracer);
+                tracer->setGraph(graph);
+            }
+        }
     }
 }
 
@@ -308,4 +353,15 @@ void PlotWindow::on_actionFillPlot_toggled(bool checked)
     }
     plot->replot();
     QSettings().setValue("PlotWindow/FillPlot", checked);
+}
+
+void PlotWindow::on_actionMarkAbnormalTime_toggled(bool checked)
+{
+    if (checked) {
+        markAbnormalTime();
+    } else {
+        _ui->customPlot->clearItems();
+    }
+    _ui->customPlot->replot();
+    QSettings().setValue("PlotWindow/MarkAbnormal", checked);
 }

@@ -2,7 +2,7 @@
 #define PLOTWINDOW_H
 
 #include "parsedataworker.h"
-#include <QMainWindow>
+#include "mainwindow.h"
 
 namespace Ui {
 class PlotWindow;
@@ -19,10 +19,15 @@ public:
 private:
     void initializePlot();
 
+    MainWindow* mainWindow() const;
+
     QVector<double> calcTickVector(int plotWidth, int fontHeight, const QCPRange &range);
     QVector<QString> calcTickLabelVector(const QVector<double> &ticks);
 
     void calcDelta(QCPGraph *graph);
+
+    QVector<int> findAbnormalTimeIndex() const;
+    void markAbnormalTime();
 
 private slots:
     void adjustTicks();
@@ -41,6 +46,8 @@ private slots:
     void on_actionShowDelta_toggled(bool checked);
 
     void on_actionFillPlot_toggled(bool checked);
+
+    void on_actionMarkAbnormalTime_toggled(bool checked);
 
 private:
     Ui::PlotWindow *_ui;
