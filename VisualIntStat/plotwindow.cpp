@@ -94,6 +94,7 @@ void PlotWindow::initializePlot()
     }
 
     bool markAbnormal = settings.value("PlotWindow/MarkAbnormal", false).toBool();
+    _ui->actionMarkAbnormalTime->setChecked(markAbnormal);
     if (markAbnormal) {
         markAbnormalTime();
     }
@@ -168,19 +169,14 @@ void PlotWindow::markAbnormalTime()
     QVector<int> abnormalIndex = findAbnormalTimeIndex();
     if (abnormalIndex.size() > 0) {
         QCustomPlot *plot = _ui->customPlot;
-        for (int i = 0; i < plot->graphCount(); ++i) {
-            QCPGraph *graph = plot->graph(i);
-            for (int index : abnormalIndex) {
-                QCPItemTracer *tracer = new QCPItemTracer(plot);
-                tracer->setGraphKey(index);
-                tracer->setInterpolating(true);
-                tracer->setStyle(QCPItemTracer::tsCircle);
-                tracer->setPen(QPen(Qt::red));
-                tracer->setBrush(QBrush(Qt::red));
-                tracer->setSize(5);
-                plot->addItem(tracer);
-                tracer->setGraph(graph);
-            }
+        QPen pen(Qt::red);
+        pen.setStyle(Qt::DotLine);
+        for (int index : abnormalIndex) {
+            QCPItemStraightLine *line = new QCPItemStraightLine(plot);
+            line->point1->setCoords(index, 0);
+            line->point2->setCoords(index, 100);
+            line->setPen(pen);
+            plot->addItem(line);
         }
     }
 }
