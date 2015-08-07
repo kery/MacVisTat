@@ -12,9 +12,6 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QtConcurrent>
-#include <functional>
-// TODO: remove
-#include <QDebug>
 
 #define STAT_FILE_PATTERN "^([A-Z]+\\d+\\-\\d+)__intstat_(\\d{8}\\-\\d{6}|archive)\\.csv\\.gz$"
 
@@ -269,7 +266,11 @@ void MainWindow::parseStatFileData(bool multipleWindows)
         return;
     }
 
-    // TODO: limit the statistics count?
+    if (model->rowCount() > PlotWindow::predefinedColorCount()) {
+        showInfoMsgBox("Too many statistics names specified, please change your filter text!",
+                       QString("At most %1 statistics names allowed at one time.").arg(PlotWindow::predefinedColorCount()));
+        return;
+    }
 
     QProgressDialog dialog(this);
     dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);

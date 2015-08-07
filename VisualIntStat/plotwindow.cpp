@@ -24,6 +24,11 @@ static DataColor dataColors[] = {
     DataColor(QColor(0, 255, 255), QColor(0, 255, 255, 50)),
 };
 
+int PlotWindow::predefinedColorCount()
+{
+    return sizeof(dataColors)/sizeof(dataColors[0]);
+}
+
 PlotWindow::PlotWindow(const QString &node, const ParsedResult &result, QWidget *parent) :
     QMainWindow(parent),
     _ui(new Ui::PlotWindow),

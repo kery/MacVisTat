@@ -13,6 +13,9 @@ class PlotWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    static int predefinedColorCount();
+
+public:
     explicit PlotWindow(const QString &node, const ParsedResult &result, QWidget *parent = 0);
     ~PlotWindow();
 
