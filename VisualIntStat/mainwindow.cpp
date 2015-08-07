@@ -95,7 +95,7 @@ bool MainWindow::statFileAlreadyAdded(const QString &fileName)
     return false;
 }
 
-void MainWindow::addStatFiles(const QStringList &fileNames)
+int MainWindow::addStatFiles(const QStringList &fileNames)
 {
     QRegExp regExp(STAT_FILE_PATTERN);
     QIcon icon(":/resource/image/archive.png");
@@ -173,6 +173,8 @@ end:
         connect(watcher, SIGNAL(finished()), this, SLOT(handleFileInfoResult()));
         watcher->setFuture(future);
     }
+
+    return addedFileNames.size();
 }
 
 bool MainWindow::checkStatFileNode(const QString &node)
@@ -364,8 +366,11 @@ void MainWindow::dropEvent(QDropEvent *event)
         fileNames.append(url.toLocalFile());
     }
     if (fileNames.size() > 0) {
-        addStatFiles(fileNames);
-        parseStatFileHeader();
+        int preCount = _ui->lwStatFile->count();
+        int added = addStatFiles(fileNames);
+        if (preCount == 0 && added > 0) {
+            parseStatFileHeader();
+        }
     }
 }
 
@@ -428,15 +433,12 @@ void MainWindow::handleFileInfoResult()
     if (result.size() > 1) {
         QList<QListWidgetItem*> items = _ui->lwStatFile->findItems(fileInfo.fileName(),
             Qt::MatchFixedString | Qt::MatchCaseSensitive);
-        Q_ASSERT(items.size() == 1);
         if (items.size() > 0) {
             items.at(0)->setStatusTip(QString("Time duration: %1 - %2").arg(result.value(KEY_START_TIME)).arg(result.value(KEY_END_TIME)));
             int lineCount = result.value(KEY_LINE_COUNT).toInt();
             if (lineCount) {
                 items.at(0)->setData(Qt::UserRole, lineCount);
             }
-        } else {
-            appendLogError(QString("Can't find list widget item '%1'.").arg(fileInfo.fileName()));
         }
     } else {
         appendLogError(QString("Parse file %1 failed.").arg(fileInfo.fileName()));
@@ -452,13 +454,17 @@ void MainWindow::on_actionOpen_triggered()
     fileDialog.setNameFilter("Internal Statistics File (*.csv.gz)");
 
     if (fileDialog.exec() == QDialog::Accepted) {
-        addStatFiles(fileDialog.selectedFiles());
-        parseStatFileHeader();
+        int preCount = _ui->lwStatFile->count();
+        int added = addStatFiles(fileDialog.selectedFiles());
+        if (preCount == 0 && added > 0) {
+            parseStatFileHeader();
+        }
     }
 }
 
 void MainWindow::on_actionCloseAll_triggered()
 {
+    _node.clear();
     static_cast<StatNameListModel*>(_ui->lvStatName->model())->clearStatNames();
     for (int i = _ui->lwStatFile->count() - 1; i >= 0; --i) {
         delete _ui->lwStatFile->item(i);

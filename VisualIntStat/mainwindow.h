@@ -25,7 +25,7 @@ private:
     bool isToolTipEventOfToolButton(QObject *obj, QEvent *event);
 
     bool statFileAlreadyAdded(const QString &fileName);
-    void addStatFiles(const QStringList &fileNames);
+    int addStatFiles(const QStringList &fileNames);
     bool checkStatFileNode(const QString &node);
     void parseStatFileHeader();
     // multipleWindows indicates that if the parsed data will be shown in
