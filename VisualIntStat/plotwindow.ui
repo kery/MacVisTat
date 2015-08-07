@@ -47,6 +47,7 @@
    </attribute>
    <addaction name="actionSaveAsImage"/>
    <addaction name="actionRestoreScale"/>
+   <addaction name="separator"/>
    <addaction name="actionShowDelta"/>
    <addaction name="actionMarkAbnormalTime"/>
    <addaction name="actionFillPlot"/>

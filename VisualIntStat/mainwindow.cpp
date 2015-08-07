@@ -273,6 +273,7 @@ void MainWindow::parseStatFileData(bool multipleWindows)
     }
 
     QProgressDialog dialog(this);
+    dialog.setWindowTitle("Please Wait");
     dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
     QThread workerThread;
     ParseDataWorker worker;

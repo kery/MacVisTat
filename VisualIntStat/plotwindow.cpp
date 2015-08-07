@@ -330,17 +330,23 @@ void PlotWindow::on_actionRestoreScale_triggered()
 
 void PlotWindow::on_actionShowDelta_toggled(bool checked)
 {
+    const char *SUFFIX = "(DELTA)";
+    const int SUFFIX_LEN = 7;
     QCustomPlot *plot = _ui->customPlot;
     if (checked) {
         for (int i = 0; i < plot->graphCount(); ++i) {
             QCPGraph *graph = plot->graph(i);
+            graph->setName(graph->name() + SUFFIX);
             calcDelta(graph);
         }
     } else {
-        for (int i = 0; i < plot->graphCount(); ++i) {
+        int i = 0;
+        for (auto iter = _result.data.begin(); iter != _result.data.end(); ++iter, ++i) {
             QCPGraph *graph = plot->graph(i);
+            QString name = graph->name();
+            graph->setName(name.left(name.length() - SUFFIX_LEN));
             // Set copy to true to avoid the data being deleted if show delta function is used
-            graph->setData(_result.data.value(graph->name()), true);
+            graph->setData(iter.value(), true);
         }
     }
     plot->rescaleAxes(true);
