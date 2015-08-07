@@ -50,3 +50,5 @@ win32: LIBS += -L$$PWD/third_party/pcre/ -lpcre16
 
 INCLUDEPATH += $$PWD/third_party/pcre
 DEPENDPATH += $$PWD/third_party/pcre
+
+RC_FILE = visualintstat.rc

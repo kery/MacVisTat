@@ -39,10 +39,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     _ui->mainToolBar->setStyle(_fusionStyle);
 
-    QActionGroup *actionGroup = new QActionGroup(this);
-    actionGroup->addAction(_ui->actionListView);
-    actionGroup->addAction(_ui->actionTreeView);
-
     _ui->splitterHor->setSizes(QList<int>() << 280 << width() - 280);
     _ui->splitterHor->setStretchFactor(0, 0);
     _ui->splitterHor->setStretchFactor(1, 1);

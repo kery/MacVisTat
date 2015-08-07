@@ -1,13 +1,16 @@
 <RCC>
     <qresource prefix="/">
-        <file>resource/image/open.png</file>
-        <file>resource/image/close_all.png</file>
         <file>resource/image/draw_plot.png</file>
-        <file>resource/image/list_view.png</file>
-        <file>resource/image/tree_view.png</file>
         <file>resource/image/save.png</file>
-        <file>resource/image/time_duration.png</file>
         <file>resource/image/full_screen.png</file>
         <file>resource/image/archive.png</file>
+        <file>resource/image/draw_plot_multiple.png</file>
+        <file>resource/image/plus.png</file>
+        <file>resource/image/delete.png</file>
+        <file>resource/image/help.png</file>
+        <file>resource/image/chart_graph.png</file>
+        <file>resource/image/pencil.png</file>
+        <file>resource/image/minus.png</file>
+        <file>resource/image/restore.png</file>
     </qresource>
 </RCC>

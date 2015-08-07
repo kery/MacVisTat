@@ -85,7 +85,7 @@
   <action name="actionRestoreScale">
    <property name="icon">
     <iconset resource="visualintstat.qrc">
-     <normaloff>:/resource/image/list_view.png</normaloff>:/resource/image/list_view.png</iconset>
+     <normaloff>:/resource/image/restore.png</normaloff>:/resource/image/restore.png</iconset>
    </property>
    <property name="text">
     <string>Restore Scale</string>
@@ -100,7 +100,7 @@
    </property>
    <property name="icon">
     <iconset resource="visualintstat.qrc">
-     <normaloff>:/resource/image/list_view.png</normaloff>:/resource/image/list_view.png</iconset>
+     <normaloff>:/resource/image/minus.png</normaloff>:/resource/image/minus.png</iconset>
    </property>
    <property name="text">
     <string>Show Delta</string>
@@ -115,7 +115,7 @@
    </property>
    <property name="icon">
     <iconset resource="visualintstat.qrc">
-     <normaloff>:/resource/image/draw_plot.png</normaloff>:/resource/image/draw_plot.png</iconset>
+     <normaloff>:/resource/image/chart_graph.png</normaloff>:/resource/image/chart_graph.png</iconset>
    </property>
    <property name="text">
     <string>Fill Plot</string>
@@ -127,7 +127,7 @@
    </property>
    <property name="icon">
     <iconset resource="visualintstat.qrc">
-     <normaloff>:/resource/image/time_duration.png</normaloff>:/resource/image/time_duration.png</iconset>
+     <normaloff>:/resource/image/pencil.png</normaloff>:/resource/image/pencil.png</iconset>
    </property>
    <property name="text">
     <string>Mark Abnormal Time</string>

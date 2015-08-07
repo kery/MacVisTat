@@ -145,18 +145,19 @@
    <addaction name="actionDrawPlot"/>
    <addaction name="actionDrawPlotInMultipleWindows"/>
    <addaction name="separator"/>
+   <addaction name="actionViewHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
    <property name="icon">
     <iconset resource="visualintstat.qrc">
-     <normaloff>:/resource/image/open.png</normaloff>:/resource/image/open.png</iconset>
+     <normaloff>:/resource/image/plus.png</normaloff>:/resource/image/plus.png</iconset>
    </property>
    <property name="text">
     <string>Open...</string>
    </property>
    <property name="statusTip">
-    <string>Open internal statistics file(s)</string>
+    <string>Add internal statistics file(s)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -165,7 +166,7 @@
   <action name="actionCloseAll">
    <property name="icon">
     <iconset resource="visualintstat.qrc">
-     <normaloff>:/resource/image/close_all.png</normaloff>:/resource/image/close_all.png</iconset>
+     <normaloff>:/resource/image/delete.png</normaloff>:/resource/image/delete.png</iconset>
    </property>
    <property name="text">
     <string>Close All</string>
@@ -206,6 +207,9 @@
    <property name="statusTip">
     <string>Unselect all of the files</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
   </action>
   <action name="actionInvertSelection">
    <property name="text">
@@ -214,46 +218,20 @@
    <property name="statusTip">
     <string>Invert current selection</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
   </action>
   <action name="actionViewHelp">
+   <property name="icon">
+    <iconset resource="visualintstat.qrc">
+     <normaloff>:/resource/image/help.png</normaloff>:/resource/image/help.png</iconset>
+   </property>
    <property name="text">
     <string>View Help</string>
    </property>
    <property name="statusTip">
     <string>View help document</string>
-   </property>
-  </action>
-  <action name="actionListView">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="visualintstat.qrc">
-     <normaloff>:/resource/image/list_view.png</normaloff>:/resource/image/list_view.png</iconset>
-   </property>
-   <property name="text">
-    <string>List View</string>
-   </property>
-   <property name="statusTip">
-    <string>Show statistics name in list view</string>
-   </property>
-  </action>
-  <action name="actionTreeView">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="visualintstat.qrc">
-     <normaloff>:/resource/image/tree_view.png</normaloff>:/resource/image/tree_view.png</iconset>
-   </property>
-   <property name="text">
-    <string>Tree View</string>
-   </property>
-   <property name="statusTip">
-    <string>Show statistics name in tree view</string>
    </property>
   </action>
   <action name="actionDrawPlot">
@@ -271,7 +249,7 @@
   <action name="actionDrawPlotInMultipleWindows">
    <property name="icon">
     <iconset resource="visualintstat.qrc">
-     <normaloff>:/resource/image/draw_plot.png</normaloff>:/resource/image/draw_plot.png</iconset>
+     <normaloff>:/resource/image/draw_plot_multiple.png</normaloff>:/resource/image/draw_plot_multiple.png</iconset>
    </property>
    <property name="text">
     <string>Draw Plot in Multiple Windows</string>
