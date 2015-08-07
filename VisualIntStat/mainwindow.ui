@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Visual Internal Statistics</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -245,6 +245,9 @@
    <property name="statusTip">
     <string>Draw the statistics in a new window</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
   </action>
   <action name="actionDrawPlotInMultipleWindows">
    <property name="icon">
@@ -259,6 +262,9 @@
    </property>
    <property name="statusTip">
     <string>Draw plot in multiple windows</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
    </property>
   </action>
  </widget>

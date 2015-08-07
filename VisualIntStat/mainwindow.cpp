@@ -278,6 +278,7 @@ void MainWindow::parseStatFileData(bool multipleWindows)
     connect(&worker, &ParseDataWorker::progressValueUpdated, &dialog, &QProgressDialog::setValue);
     connect(&worker, &ParseDataWorker::progressLabelUpdated, &dialog, &QProgressDialog::setLabelText);
     connect(&worker, &ParseDataWorker::dataReady, this, &MainWindow::handleParsedResult);
+    connect(&worker, &ParseDataWorker::dataReady, &dialog, &QProgressDialog::reset);
     connect(&dialog, &QProgressDialog::canceled, [&worker] {worker._canceled = true;});
     connect(this, &MainWindow::parseDataParamReady, &worker, &ParseDataWorker::parseData);
 

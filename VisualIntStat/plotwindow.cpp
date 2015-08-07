@@ -145,9 +145,16 @@ void PlotWindow::calcDelta(QCPGraph *graph)
 {
     QCPDataMap *data = graph->data();
     if (data->size() > 0) {
-        for (auto iter = data->end() - 1; iter != data->begin(); --iter) {
-            (*iter).value = iter.value().value - (iter - 1).value().value;
+        int i = data->size() - 1;
+        for (auto iter = data->end() - 1; iter != data->begin(); --iter, --i) {
+            if (_result.dateTimes.at(i) - _result.dateTimes.at(i - 1) > 60 * 2) {
+                // If timestamp difference is larger than 2 minutes then set delta to 0
+                (*iter).value = 0;
+            } else {
+                (*iter).value = iter.value().value - (iter - 1).value().value;
+            }
         }
+
         // The first element is always 0 in delta mode
         (*data->begin()).value = 0;
     }
