@@ -43,6 +43,7 @@ private:
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
     virtual void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
     virtual void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
+    virtual void closeEvent(QCloseEvent *) Q_DECL_OVERRIDE;
 
 private slots:
     void updateFilterPattern();
@@ -66,6 +67,7 @@ private slots:
 
 signals:
     void parseDataParamReady(const ParseDataParam &param);
+    void aboutToBeClosed();
 
 private:
     Ui::MainWindow *_ui;

@@ -369,6 +369,11 @@ void MainWindow::dropEvent(QDropEvent *event)
     }
 }
 
+void MainWindow::closeEvent(QCloseEvent *)
+{
+    emit aboutToBeClosed();
+}
+
 void MainWindow::updateFilterPattern()
 {
     static_cast<StatNameListModel*>(_ui->lvStatName->model())->setFilterPattern(
@@ -385,13 +390,15 @@ void MainWindow::handleParsedResult(const ParsedResult &result, bool multipleWin
             QMap<QString, QCPDataMap*> data;
             data.insert(iter.key(), iter.value());
             tmpResult.data = data;
-            PlotWindow *w = new PlotWindow(getStatFileNode(), tmpResult, this);
+            PlotWindow *w = new PlotWindow(getStatFileNode(), tmpResult);
             w->setAttribute(Qt::WA_DeleteOnClose);
+            connect(this, SIGNAL(aboutToBeClosed()), w, SLOT(close()));
             w->showMaximized();
         }
     } else {
-        PlotWindow *w = new PlotWindow(getStatFileNode(), result, this);
+        PlotWindow *w = new PlotWindow(getStatFileNode(), result);
         w->setAttribute(Qt::WA_DeleteOnClose);
+        connect(this, SIGNAL(aboutToBeClosed()), w, SLOT(close()));
         w->showMaximized();
     }
 }
