@@ -18,6 +18,13 @@
 
 #define STAT_FILE_PATTERN "^([A-Z]+\\d+\\-\\d+)__intstat_(\\d{8}\\-\\d{6}|archive)\\.csv\\.gz$"
 
+enum {
+    KEY_FILE_NAME,
+    KEY_START_TIME,
+    KEY_END_TIME,
+    KEY_LINE_COUNT
+};
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     _fusionStyle(QStyleFactory::create("Fusion")),
@@ -96,6 +103,7 @@ void MainWindow::addStatFiles(const QStringList &fileNames)
 {
     QRegExp regExp(STAT_FILE_PATTERN);
     QIcon icon(":/resource/image/archive.png");
+    QVector<QString> addedFileNames;
     for (const QString &fileName : fileNames) {
         QFileInfo fileInfo(fileName);
         if (!regExp.exactMatch(fileInfo.fileName())) {
@@ -115,6 +123,59 @@ void MainWindow::addStatFiles(const QStringList &fileNames)
         item->setCheckState(Qt::Checked);
         item->setToolTip(nativeName);
         _ui->lwStatFile->addItem(item);
+        addedFileNames << nativeName;
+    }
+
+    typedef QMap<int, QString> ResultType;
+
+    for (const QString &fileName : addedFileNames) {
+        QFuture<ResultType> future = QtConcurrent::run([fileName] () {
+            ResultType ret;
+            const int TIME_STR_LEN = 19;
+            int lineCount = 0; // Used to calculate progress range in other place
+
+            ret.insert(KEY_FILE_NAME, fileName);
+
+            GZipFile gzFile(fileName);
+            QRegExp regExp("^\\d{2}\\.\\d{2}\\.\\d{4};\\d{2}:\\d{2}:\\d{2};");
+            QString startLine, endLine;
+            if (!gzFile.readLine(startLine)) {
+                goto end;
+            }
+
+            // Ignore the first line because it is header
+            // Read the second line
+            if (!gzFile.readLine(startLine)) {
+                goto end;
+            }
+
+            lineCount += 2;
+
+            // Check format
+            if (regExp.indexIn(startLine) != 0) {
+                goto end;
+            }
+
+            // Get the last line
+            while (gzFile.readLine(endLine)) {
+                ++lineCount;
+            }
+
+            // Check format
+            if (regExp.indexIn(endLine) != 0) {
+                goto end;
+            }
+
+            ret.insert(KEY_START_TIME, startLine.left(TIME_STR_LEN).replace(';', ' '));
+            ret.insert(KEY_END_TIME, endLine.left(TIME_STR_LEN).replace(';', ' '));
+            ret.insert(KEY_LINE_COUNT, QString::number(lineCount)); // To simplity code store line count here
+end:
+            return ret;
+        });
+
+        QFutureWatcher<ResultType> *watcher = new QFutureWatcher<ResultType>(this);
+        connect(watcher, SIGNAL(finished()), this, SLOT(handleFileInfoResult()));
+        watcher->setFuture(future);
     }
 }
 
@@ -353,6 +414,33 @@ void MainWindow::clearLogEdit()
     _ui->logTextEdit->clear();
 }
 
+void MainWindow::handleFileInfoResult()
+{
+    typedef QMap<int, QString> ResultType;
+
+    QFutureWatcher<ResultType> *watcher = static_cast<QFutureWatcher<ResultType>*>(sender());
+    ResultType result = watcher->result();
+    QFileInfo fileInfo(result.value(KEY_FILE_NAME));
+    if (result.size() > 1) {
+        QList<QListWidgetItem*> items = _ui->lwStatFile->findItems(fileInfo.fileName(),
+            Qt::MatchFixedString | Qt::MatchCaseSensitive);
+        Q_ASSERT(items.size() == 1);
+        if (items.size() > 0) {
+            items.at(0)->setStatusTip(QString("Time duration: %1 - %2").arg(result.value(KEY_START_TIME)).arg(result.value(KEY_END_TIME)));
+            int lineCount = result.value(KEY_LINE_COUNT).toInt();
+            if (lineCount) {
+                items.at(0)->setData(Qt::UserRole, lineCount);
+            }
+        } else {
+            appendLogError(QString("Can't find list widget item '%1'.").arg(fileInfo.fileName()));
+        }
+    } else {
+        appendLogError(QString("Parse file %1 failed.").arg(fileInfo.fileName()));
+    }
+
+    watcher->deleteLater();
+}
+
 void MainWindow::on_actionOpen_triggered()
 {
     QFileDialog fileDialog(this);
@@ -416,122 +504,4 @@ void MainWindow::on_actionInvertSelection_triggered()
             break;
         }
     }
-}
-
-void MainWindow::on_actionTimeDuration_triggered()
-{
-    QVector<QString> checkedFiles;
-    for (int i = 0; i < _ui->lwStatFile->count(); ++i) {
-        QListWidgetItem *item = _ui->lwStatFile->item(i);
-        if (item->checkState() == Qt::Checked) {
-           checkedFiles << item->toolTip();
-        }
-    }
-
-    if (checkedFiles.isEmpty()) {
-        showInfoMsgBox("Please check at least one statistics file to view time duration!",
-                       "No statistics file is checked.");
-        return;
-    }
-
-    QProgressDialog dialog(this);
-    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    dialog.setLabelText("Calculating the time duration of statistics files...");
-
-    typedef QMap<QString, QVector<QString> > ResultType;
-    typedef QFutureWatcher<ResultType> MyFutureWatcher;
-
-    MyFutureWatcher watcher;
-    connect(&watcher, &MyFutureWatcher::finished, &dialog, &QProgressDialog::reset);
-    connect(&dialog, &QProgressDialog::canceled, &watcher, &MyFutureWatcher::cancel);
-    connect(&watcher, &MyFutureWatcher::progressRangeChanged, &dialog, &QProgressDialog::setRange);
-    connect(&watcher, &MyFutureWatcher::progressValueChanged, &dialog, &QProgressDialog::setValue);
-
-    std::function<ResultType (const QString &)> getTimeDuration = [] (const QString &path) -> ResultType {
-        ResultType ret;
-        const int TIME_STR_LEN = 19;
-        QVector<QString> duration;
-
-        int lineCount = 0; // Used to calculate progress range in other place
-        GZipFile gzFile(path);
-        QRegExp regExp("^\\d{2}\\.\\d{2}\\.\\d{4};\\d{2}:\\d{2}:\\d{2};");
-        QString startLine, endLine;
-        if (!gzFile.readLine(startLine)) {
-            goto end;
-        }
-
-        // Ignore the first line because it is header
-        // Read the second line
-        if (!gzFile.readLine(startLine)) {
-            goto end;
-        }
-
-        lineCount += 2;
-
-        // Check format
-        if (regExp.indexIn(startLine) != 0) {
-            goto end;
-        }
-
-        // Get the last line
-        while (gzFile.readLine(endLine)) {
-            ++lineCount;
-        }
-
-        // Check format
-        if (regExp.indexIn(endLine) != 0) {
-            goto end;
-        }
-
-        duration << startLine.left(TIME_STR_LEN).replace(';', ' ');
-        duration << endLine.left(TIME_STR_LEN).replace(';', ' ');
-        duration << QString::number(lineCount); // To simplity code store line count here
-        ret.insert(path, duration);
-end:
-        return ret;
-    };
-
-    std::function<void (ResultType &, const ResultType &)> mergeTimeDuration = [] (ResultType &reduced, const ResultType &partial) {
-        for (auto iter = partial.begin(); iter != partial.end(); ++iter ) {
-            reduced.insert(iter.key(), iter.value());
-        }
-    };
-
-    QFuture<ResultType> future = QtConcurrent::mappedReduced<ResultType>(checkedFiles, getTimeDuration, mergeTimeDuration);
-    watcher.setFuture(future);
-
-    dialog.exec();
-    watcher.waitForFinished();
-    if (watcher.isCanceled()) {
-        return;
-    }
-
-    QString formattedResult;
-    ResultType ret = watcher.result();
-    for (auto iter = ret.begin(); iter != ret.end(); ++iter) {
-        QFileInfo fileInfo(iter.key());
-        QString fileName = fileInfo.fileName();
-        QString duration;
-        if (iter.value().isEmpty()) {
-            duration = "not found";
-        } else {
-            duration = iter.value().at(0) + " - " + iter.value().at(1);
-        }
-
-        formattedResult += QString("%1: <font color='#248F24'>%2</font>\n").arg(fileName).arg(duration);
-
-        QList<QListWidgetItem*> items = _ui->lwStatFile->findItems(fileName, Qt::MatchFixedString | Qt::MatchCaseSensitive);
-        if (!items.isEmpty()) {
-            items.at(0)->setStatusTip("Duration: " + duration);
-            if (!iter.value().isEmpty()) { // Store the line count
-                int lineCount = iter.value().at(2).toInt();
-                if (lineCount > 0) {
-                    items.at(0)->setData(Qt::UserRole, lineCount);
-                }
-            }
-        }
-    }
-
-    showInfoMsgBox("Tip: time duration can also be shown in status bar by hover the mouse on corresponding item.",
-                   formattedResult);
 }

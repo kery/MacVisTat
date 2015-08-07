@@ -123,7 +123,6 @@
     <addaction name="actionDrawPlot"/>
     <addaction name="actionDrawPlotInMultipleWindows"/>
     <addaction name="separator"/>
-    <addaction name="actionTimeDuration"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Selection"/>
@@ -146,7 +145,6 @@
    <addaction name="actionDrawPlot"/>
    <addaction name="actionDrawPlotInMultipleWindows"/>
    <addaction name="separator"/>
-   <addaction name="actionTimeDuration"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
@@ -256,18 +254,6 @@
    </property>
    <property name="statusTip">
     <string>Show statistics name in tree view</string>
-   </property>
-  </action>
-  <action name="actionTimeDuration">
-   <property name="icon">
-    <iconset resource="visualintstat.qrc">
-     <normaloff>:/resource/image/time_duration.png</normaloff>:/resource/image/time_duration.png</iconset>
-   </property>
-   <property name="text">
-    <string>Time Duration</string>
-   </property>
-   <property name="statusTip">
-    <string>Show start/end time of the checked statistics file(s)</string>
    </property>
   </action>
   <action name="actionDrawPlot">

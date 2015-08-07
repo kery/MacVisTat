@@ -49,6 +49,7 @@ private slots:
     void handleParsedResult(const ParsedResult &result, bool multipleWindows);
     void contextMenuRequest(const QPoint &pos);
     void clearLogEdit();
+    void handleFileInfoResult();
 
     void on_actionOpen_triggered();
 
@@ -62,8 +63,6 @@ private slots:
     void on_actionClearSelection_triggered();
 
     void on_actionInvertSelection_triggered();
-
-    void on_actionTimeDuration_triggered();
 
 signals:
     void parseDataParamReady(const ParseDataParam &param);
