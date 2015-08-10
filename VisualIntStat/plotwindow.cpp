@@ -70,6 +70,8 @@ void PlotWindow::initializePlot()
     plot->legend->setSelectableParts(QCPLegend::spItems);
     plot->legend->setVisible(true);
 
+    plot->setNoAntialiasingOnDrag(true);
+
     plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
                           QCP::iSelectPlottables | QCP::iSelectLegend);
 
