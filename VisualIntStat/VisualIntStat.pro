@@ -8,6 +8,8 @@ QT       += core gui concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
+CONFIG += c++11
+
 Debug:TARGET = ../VisualIntStat_d
 Release:TARGET = ../VisualIntStat
 TEMPLATE = app
@@ -46,9 +48,19 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     visualintstat.qrc
 
-win32: LIBS += -L$$PWD/third_party/pcre/ -lpcre16
-
-INCLUDEPATH += $$PWD/third_party/pcre
-DEPENDPATH += $$PWD/third_party/pcre
-
 RC_FILE = visualintstat.rc
+
+win32 {
+    LIBS += -L$$PWD/third_party/pcre/win/ -lpcre16
+
+    INCLUDEPATH += $$PWD/third_party/pcre/win
+    DEPENDPATH += $$PWD/third_party/pcre/win
+}
+
+unix:!macx {
+    LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre16
+    INCLUDEPATH += $$PWD/third_party/pcre/linux
+    DEPENDPATH += $$PWD/third_party/pcre/linux
+
+    PRE_TARGETDEPS += $$PWD/third_party/pcre/linux/libpcre16.a
+}
