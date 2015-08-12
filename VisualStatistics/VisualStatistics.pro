@@ -10,8 +10,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 CONFIG += c++11
 
-Debug:TARGET = ../VisualIntStat_d
-Release:TARGET = ../VisualIntStat
+Debug:TARGET = ../VisualStatistics_d
+Release:TARGET = ../VisualStatistics
+
 TEMPLATE = app
 
 Debug:DESTDIR = debug
@@ -38,7 +39,6 @@ HEADERS  += mainwindow.h \
     plotwindow.h \
     third_party/qcustomplot/qcustomplot.h \
     statnamelistmodel.h \
-    third_party/pcre/pcre.h \
     gzipfile.h \
     parsedataworker.h
 
@@ -46,11 +46,13 @@ FORMS    += mainwindow.ui \
     plotwindow.ui
 
 RESOURCES += \
-    visualintstat.qrc
-
-RC_FILE = visualintstat.rc
+    VisualStatistics.qrc
 
 win32 {
+    SOURCES += third_party/pcre/win/pcre.h
+
+    RC_FILE = VisualStatistics.rc
+
     LIBS += -L$$PWD/third_party/pcre/win/ -lpcre16
 
     INCLUDEPATH += $$PWD/third_party/pcre/win
@@ -58,6 +60,8 @@ win32 {
 }
 
 unix:!macx {
+    SOURCES += third_party/pcre/linux/pcre.h
+
     LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre16
     INCLUDEPATH += $$PWD/third_party/pcre/linux
     DEPENDPATH += $$PWD/third_party/pcre/linux
