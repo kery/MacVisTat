@@ -55,7 +55,7 @@
   </widget>
   <action name="actionSaveAsImage">
    <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
+    <iconset>
      <normaloff>:/resource/image/save.png</normaloff>:/resource/image/save.png</iconset>
    </property>
    <property name="text">
@@ -73,7 +73,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
+    <iconset>
      <normaloff>:/resource/image/full_screen.png</normaloff>:/resource/image/full_screen.png</iconset>
    </property>
    <property name="text">
@@ -85,7 +85,7 @@
   </action>
   <action name="actionRestoreScale">
    <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
+    <iconset>
      <normaloff>:/resource/image/restore.png</normaloff>:/resource/image/restore.png</iconset>
    </property>
    <property name="text">
@@ -100,7 +100,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
+    <iconset>
      <normaloff>:/resource/image/minus.png</normaloff>:/resource/image/minus.png</iconset>
    </property>
    <property name="text">
@@ -115,7 +115,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
+    <iconset>
      <normaloff>:/resource/image/chart_graph.png</normaloff>:/resource/image/chart_graph.png</iconset>
    </property>
    <property name="text">
@@ -127,7 +127,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
+    <iconset>
      <normaloff>:/resource/image/pencil.png</normaloff>:/resource/image/pencil.png</iconset>
    </property>
    <property name="text">
@@ -143,8 +143,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="VisualStatistics.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
