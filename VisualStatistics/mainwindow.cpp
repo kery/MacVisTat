@@ -543,6 +543,8 @@ void MainWindow::on_actionInvertSelection_triggered()
         case Qt::Unchecked:
             item->setCheckState(Qt::Checked);
             break;
+        default:
+            break;
         }
     }
 }

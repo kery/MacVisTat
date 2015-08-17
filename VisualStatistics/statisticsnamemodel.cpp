@@ -29,7 +29,7 @@ std::vector<std::string>& StatisticsNameModel::getDataContainer()
 void StatisticsNameModel::endDataContainerUpdate()
 {
     _indexes.reserve(_statisticsNames.size());
-    for (int i = 0; i < _statisticsNames.size(); ++i) {
+    for (int i = 0; i < (int)_statisticsNames.size(); ++i) {
         _indexes.push_back(i);
     }
     _fetchedCount = 0;
@@ -72,7 +72,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern)
     emit beginResetModel();
     _pattern = pattern;
     _indexes.resize(0);
-    for (int i = 0; i < _statisticsNames.size(); ++i) {
+    for (int i = 0; i < (int)_statisticsNames.size(); ++i) {
         const std::string &statisticsName = _statisticsNames[i];
         if (pcre_jit_exec(re, extra, statisticsName.c_str(), (int)statisticsName.length(),
                             0, 0, ovector, OVECCOUNT, _jitStack) > -1) {
@@ -96,7 +96,7 @@ int StatisticsNameModel::actualCount() const
 
 bool StatisticsNameModel::canFetchMore(const QModelIndex &parent) const
 {
-    return _fetchedCount < _indexes.size() && !parent.isValid();
+    return _fetchedCount < (int)_indexes.size() && !parent.isValid();
 }
 
 void StatisticsNameModel::fetchMore(const QModelIndex &parent)
@@ -105,7 +105,7 @@ void StatisticsNameModel::fetchMore(const QModelIndex &parent)
         return;
     }
     int newCount = _fetchedCount + _fetchIncrement;
-    if (newCount > _indexes.size()) {
+    if (newCount > (int)_indexes.size()) {
         newCount = static_cast<int>(_indexes.size());
     }
     emit beginInsertRows(QModelIndex(), _fetchedCount, newCount - 1);

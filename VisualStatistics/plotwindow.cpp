@@ -104,7 +104,7 @@ void PlotWindow::initializePlot()
     plot->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
 
-    Q_ASSERT(_result.size() <= sizeof(dataColors)/sizeof(dataColors[0]));
+    Q_ASSERT(_result.size() <= static_cast<int>(sizeof(dataColors)/sizeof(dataColors[0])));
 
     int i = 0;
     QSettings settings;
