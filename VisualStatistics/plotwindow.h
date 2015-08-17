@@ -16,13 +16,13 @@ public:
     static int predefinedColorCount();
 
 public:
-    explicit PlotWindow(const QString &node, const ParsedResult &result, QWidget *parent = 0);
+    explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, QWidget *parent = 0);
     ~PlotWindow();
 
 private:
+    void convertResultFirstData(const QMap<QString, QCPDataMap> &result);
+    void convertResultRestData(const QMap<QString, QCPDataMap> &result);
     void initializePlot();
-
-    MainWindow* mainWindow() const;
 
     QVector<double> calcTickVector(int plotWidth, int fontHeight, const QCPRange &range);
     QVector<QString> calcTickLabelVector(const QVector<double> &ticks);
@@ -55,7 +55,8 @@ private slots:
 private:
     Ui::PlotWindow *_ui;
     const QString _node;
-    const ParsedResult _result;
+    QVector<int> _dateTimes;
+    QMap<QString, QCPDataMap> _result;
 };
 
 #endif // PLOTWINDOW_H

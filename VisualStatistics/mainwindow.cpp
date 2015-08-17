@@ -1,8 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "plotwindow.h"
-#include "statnamelistmodel.h"
+#include "statisticsnamemodel.h"
 #include "gzipfile.h"
+#include "utils.h"
 #include <QStyleFactory>
 #include <QLineEdit>
 #include <QFileDialog>
@@ -12,6 +13,7 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QtConcurrent>
+#include <functional>
 
 #define STAT_FILE_PATTERN "^([A-Z]+\\d+\\-\\d+)__intstat_(\\d{8}\\-\\d{6}|archive)\\.csv\\.gz$"
 
@@ -19,12 +21,10 @@ enum {
     KEY_FILE_NAME,
     KEY_START_TIME,
     KEY_END_TIME,
-    KEY_LINE_COUNT
 };
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    _fusionStyle(QStyleFactory::create("Fusion")),
     _ui(new Ui::MainWindow)
 {
     _ui->setupUi(this);
@@ -34,8 +34,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setAcceptDrops(true);
 
-    _ui->mainToolBar->setStyle(_fusionStyle);
-
     _ui->splitterHor->setSizes(QList<int>() << 280 << width() - 280);
     _ui->splitterHor->setStretchFactor(0, 0);
     _ui->splitterHor->setStretchFactor(1, 1);
@@ -43,9 +41,9 @@ MainWindow::MainWindow(QWidget *parent) :
     _ui->splitteVer->setStretchFactor(0, 1);
     _ui->splitteVer->setStretchFactor(1, 0);
 
-    _ui->lvStatName->setModel(new StatNameListModel(this));
+    _ui->lvStatisticsName->setModel(new StatisticsNameModel(this));
 
-    _ui->cbRegExpFilter->lineEdit()->setPlaceholderText("regular expression filter");
+    _ui->cbRegExpFilter->lineEdit()->setPlaceholderText(QStringLiteral("regular expression filter"));
     connect(_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::updateFilterPattern);
 
     _ui->logTextEdit->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -55,15 +53,14 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete _ui;
-    delete _fusionStyle;
 }
 
-QString MainWindow::getStatFileNode() const
+QString MainWindow::getStatisticsFileNode() const
 {
     QString node;
-    if (_ui->lwStatFile->count() > 0) {
+    if (_ui->lwStatisticsFiles->count() > 0) {
         QRegExp regExp(STAT_FILE_PATTERN);
-        if (regExp.exactMatch(_ui->lwStatFile->item(0)->text())) {
+        if (regExp.exactMatch(_ui->lwStatisticsFiles->item(0)->text())) {
             node = regExp.cap(1);
         }
     }
@@ -82,20 +79,20 @@ bool MainWindow::isToolTipEventOfToolButton(QObject *obj, QEvent *event)
     return event->type() == QEvent::ToolTip && obj->parent() == _ui->mainToolBar;
 }
 
-bool MainWindow::statFileAlreadyAdded(const QString &fileName)
+bool MainWindow::statisticsFileAlreadyAdded(const QString &fileName)
 {
-    for (int i = 0; i < _ui->lwStatFile->count(); ++i) {
-        QListWidgetItem *item = _ui->lwStatFile->item(i);
+    for (int i = 0; i < _ui->lwStatisticsFiles->count(); ++i) {
+        QListWidgetItem *item = _ui->lwStatisticsFiles->item(i);
         if (item->toolTip() == fileName)
             return true;
     }
     return false;
 }
 
-int MainWindow::addStatFiles(const QStringList &fileNames)
+int MainWindow::addStatisticsFiles(const QStringList &fileNames)
 {
     QRegExp regExp(STAT_FILE_PATTERN);
-    QIcon icon(":/resource/image/archive.png");
+    QIcon icon(QStringLiteral(":/resource/image/archive.png"));
     QVector<QString> addedFileNames;
     for (const QString &fileName : fileNames) {
         QFileInfo fileInfo(fileName);
@@ -104,212 +101,249 @@ int MainWindow::addStatFiles(const QStringList &fileNames)
             continue;
         }
         QString nativeName = QDir::toNativeSeparators(fileName);
-        if (statFileAlreadyAdded(nativeName)) {
+        if (statisticsFileAlreadyAdded(nativeName)) {
             continue;
         }
-        if (!checkStatFileNode(regExp.cap(1))) {
-            appendLogWarn(QString("%1 ignored. %2 is different from %3.").
-                          arg(fileInfo.fileName()).arg(regExp.cap(1)).arg(_node));
+        if (!checkStatisticsFileNode(regExp.cap(1))) {
+            appendLogWarn(QString("%1 ignored. Please add only one node's statistics files!").arg(fileInfo.fileName()));
             continue;
         }
         QListWidgetItem *item = new QListWidgetItem(icon, fileInfo.fileName());
         item->setCheckState(Qt::Checked);
         item->setToolTip(nativeName);
-        _ui->lwStatFile->addItem(item);
+        _ui->lwStatisticsFiles->addItem(item);
         addedFileNames << nativeName;
     }
 
-    typedef QMap<int, QString> ResultType;
+    std::function<TimeDurationResult (const QString &)> mappedFunction = [] (const QString &fileName) {
+        TimeDurationResult result;
+        const int TIME_STR_LEN = 19;
 
-    for (const QString &fileName : addedFileNames) {
-        QFuture<ResultType> future = QtConcurrent::run([fileName] () {
-            ResultType ret;
-            const int TIME_STR_LEN = 19;
-            int lineCount = 0; // Used to calculate progress range in other place
+        result.insert(KEY_FILE_NAME, fileName);
 
-            ret.insert(KEY_FILE_NAME, fileName);
+        GZipFile gzFile(fileName);
+        QRegExp regExp(QStringLiteral("^\\d{2}\\.\\d{2}\\.\\d{4};\\d{2}:\\d{2}:\\d{2};"));
+        std::string startLine, endLine;
+        if (!gzFile.readLine(startLine)) {
+            goto end;
+        }
 
-            GZipFile gzFile(fileName);
-            QRegExp regExp("^\\d{2}\\.\\d{2}\\.\\d{4};\\d{2}:\\d{2}:\\d{2};");
-            QString startLine, endLine;
-            if (!gzFile.readLine(startLine)) {
-                goto end;
-            }
+        // Ignore the first line because it is header
+        // Read the second line
+        if (!gzFile.readLine(startLine)) {
+            goto end;
+        }
 
-            // Ignore the first line because it is header
-            // Read the second line
-            if (!gzFile.readLine(startLine)) {
-                goto end;
-            }
+        // Check format
+        if (regExp.indexIn(QString::fromStdString(startLine)) != 0) {
+            goto end;
+        }
 
-            lineCount += 2;
+        // Get the last line
+        while (gzFile.readLine(endLine));
 
-            // Check format
-            if (regExp.indexIn(startLine) != 0) {
-                goto end;
-            }
+        // Check format
+        if (regExp.indexIn(QString::fromStdString(endLine)) != 0) {
+            goto end;
+        }
 
-            // Get the last line
-            while (gzFile.readLine(endLine)) {
-                ++lineCount;
-            }
-
-            // Check format
-            if (regExp.indexIn(endLine) != 0) {
-                goto end;
-            }
-
-            ret.insert(KEY_START_TIME, startLine.left(TIME_STR_LEN).replace(';', ' '));
-            ret.insert(KEY_END_TIME, endLine.left(TIME_STR_LEN).replace(';', ' '));
-            ret.insert(KEY_LINE_COUNT, QString::number(lineCount)); // To simplity code store line count here
+        result.insert(KEY_START_TIME, QString::fromStdString(startLine).left(TIME_STR_LEN).replace(';', ' '));
+        result.insert(KEY_END_TIME, QString::fromStdString(endLine).left(TIME_STR_LEN).replace(';', ' '));
 end:
-            return ret;
-        });
+        return result;
+    };
 
-        QFutureWatcher<ResultType> *watcher = new QFutureWatcher<ResultType>(this);
-        connect(watcher, SIGNAL(finished()), this, SLOT(handleFileInfoResult()));
-        watcher->setFuture(future);
-    }
+    QFutureWatcher<TimeDurationResult> *watcher = new QFutureWatcher<TimeDurationResult>(this);
+    connect(watcher, SIGNAL(resultReadyAt(int)), SLOT(handleTimeDurationResult(int)));
+    connect(watcher, SIGNAL(finished()), watcher, SLOT(deleteLater()));
+
+    watcher->setFuture(QtConcurrent::mapped(addedFileNames, mappedFunction));
 
     return addedFileNames.size();
 }
 
-bool MainWindow::checkStatFileNode(const QString &node)
+bool MainWindow::checkStatisticsFileNode(const QString &node)
 {
-    if (_node.isEmpty()) {
-        _node = node;
-        return true;
-    } else {
-        if (_node != node) {
-            return false;
-        }
+    if (_ui->lwStatisticsFiles->count() == 0) {
         return true;
     }
+
+    QListWidgetItem *item = _ui->lwStatisticsFiles->item(0);
+    QRegExp regExp(STAT_FILE_PATTERN);
+    regExp.exactMatch(item->text());
+    return regExp.cap(1) == node;
 }
 
-void MainWindow::parseStatFileHeader()
+void MainWindow::parseStatisticsFileHeader()
 {
-    Q_ASSERT(_ui->lwStatFile->count() > 0);
+    Q_ASSERT(_ui->lwStatisticsFiles->count() > 0);
 
-    QString header;
-    GZipFile gzFile(_ui->lwStatFile->item(0)->toolTip());
+    std::string header;
+    GZipFile gzFile(_ui->lwStatisticsFiles->item(0)->toolTip());
     if (!gzFile.readLine(header)) {
-        showErrorMsgBox("Read header of statistics file failed!",
-                        _ui->lwStatFile->item(0)->toolTip());
+        showErrorMsgBox(QStringLiteral("Read header of statistics file failed!"),
+                        _ui->lwStatisticsFiles->item(0)->toolTip());
         return;
     }
 
-    for (int i = 1; i < _ui->lwStatFile->count(); ++i) {
-        QListWidgetItem *item = _ui->lwStatFile->item(i);
+    for (int i = 1; i < _ui->lwStatisticsFiles->count(); ++i) {
+        QListWidgetItem *item = _ui->lwStatisticsFiles->item(i);
 
         GZipFile gzFile(item->toolTip());
-        QString line;
+        std::string line;
         if (gzFile.readLine(line)) {
             if (line != header) {
-                showErrorMsgBox("Headers of statistics file are not identical!",
-                                _ui->lwStatFile->item(0)->toolTip() + "\n" +
-                                item->toolTip());
+                showErrorMsgBox(QStringLiteral("Headers of statistics file are not identical!"),
+                                _ui->lwStatisticsFiles->item(0)->toolTip() + "\n" + item->toolTip());
                 return;
             }
         } else {
-            showErrorMsgBox("Read header of statistics file failed!",
+            showErrorMsgBox(QStringLiteral("Read header of statistics file failed!"),
                             item->toolTip());
             return;
         }
     }
 
-    if (!header.startsWith("##")) {
-        showErrorMsgBox("Invalid statistics file's header format!",
-                        _ui->lwStatFile->item(0)->toolTip());
+    if (header.find("##date;time;") != 0 || header.rfind("##") != header.length() - 2) {
+        showErrorMsgBox(QStringLiteral("Invalid statistics file's header format!"),
+                        _ui->lwStatisticsFiles->item(0)->toolTip());
         return;
     }
 
-    header.remove('#');
-    QStringList statNames = header.split(';');
-    if (statNames.size() < 2 || statNames.at(0) != "date" || statNames.at(1) != "time") {
-        showErrorMsgBox("Invalid statistics file's header format!",
-                        _ui->lwStatFile->item(0)->toolTip());
-        return;
-    }
-    statNames.removeFirst(); // remove "date"
-    statNames.removeFirst(); // remove "time"
+    StatisticsNameModel *model = static_cast<StatisticsNameModel*>(_ui->lvStatisticsName->model());
+    model->beforeDataContainerUpdate();
+    std::vector<std::string> &container = model->getDataContainer();
+    container.resize(0);
+    splitString(header.c_str() + sizeof("##date;time;") - 1, ';', container);
+    container.back().erase(container.back().length() - 2);
+    model->endDataContainerUpdate();
 
-    StatNameListModel *model = static_cast<StatNameListModel*>(_ui->lvStatName->model());
-    model->setStatNames(statNames);
     QString filterText = _ui->cbRegExpFilter->lineEdit()->text();
     if (!filterText.isEmpty()) {
         model->setFilterPattern(filterText);
     }
 }
 
-void MainWindow::parseStatFileData(bool multipleWindows)
+void MainWindow::parseStatisticsFileData(bool multipleWindows)
 {
     QVector<QListWidgetItem*> checkedItems;
-    for (int i = 0; i < _ui->lwStatFile->count(); ++i) {
-        QListWidgetItem *item = _ui->lwStatFile->item(i);
+    for (int i = 0; i < _ui->lwStatisticsFiles->count(); ++i) {
+        QListWidgetItem *item = _ui->lwStatisticsFiles->item(i);
         if (item->checkState() == Qt::Checked) {
             checkedItems << item;
         }
     }
 
     if (checkedItems.isEmpty()) {
-        showInfoMsgBox("Please check the statistics file(s) with which you want to draw plot!",
-                       "No statistics file checked.");
+        showInfoMsgBox(QStringLiteral("Please check the statistics file(s) with which you want to draw plot!"),
+                       QStringLiteral("No statistics file checked."));
         return;
     }
 
-    StatNameListModel *model = static_cast<StatNameListModel*>(_ui->lvStatName->model());
+    StatisticsNameModel *model = static_cast<StatisticsNameModel*>(_ui->lvStatisticsName->model());
     Q_ASSERT(model != NULL);
     if (model->rowCount() == 0) {
-        showInfoMsgBox("Please specify at lease one statistics name which you want to draw!",
-                       "No statistics name found.");
+        showInfoMsgBox(QStringLiteral("Please specify at lease one statistics name which you want to draw!"),
+                       QStringLiteral("No statistics name found."));
         return;
     }
 
     if (model->rowCount() > PlotWindow::predefinedColorCount()) {
-        showInfoMsgBox("Too many statistics names specified, please change your filter text!",
+        showInfoMsgBox(QStringLiteral("Too many statistics names specified, please change your filter text!"),
                        QString("At most %1 statistics names allowed at one time.").arg(PlotWindow::predefinedColorCount()));
         return;
     }
 
-    QProgressDialog dialog(this);
-    dialog.setWindowTitle("Please Wait");
-    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    QThread workerThread;
-    ParseDataWorker worker;
-    worker.moveToThread(&workerThread);
-    connect(&worker, &ParseDataWorker::progressRangeWorkedOut, &dialog, &QProgressDialog::setRange);
-    connect(&worker, &ParseDataWorker::progressValueUpdated, &dialog, &QProgressDialog::setValue);
-    connect(&worker, &ParseDataWorker::progressLabelUpdated, &dialog, &QProgressDialog::setLabelText);
-    connect(&worker, &ParseDataWorker::dataReady, this, &MainWindow::handleParsedResult);
-    connect(&worker, &ParseDataWorker::dataReady, &dialog, &QProgressDialog::reset);
-    connect(&dialog, &QProgressDialog::canceled, [&worker] {worker._canceled = true;});
-    connect(this, &MainWindow::parseDataParamReady, &worker, &ParseDataWorker::parseData);
-
-    workerThread.start();
-
-    ParseDataParam param;
-    param.multipleWindows = multipleWindows;
-    for (QListWidgetItem *item : checkedItems) {
-        // If the line count (stored in UserRole) is unknown 0 will be returned
-        param.fileInfo.insert(item->toolTip(), item->data(Qt::UserRole).toInt());
-    }
-
+    QMap<QString, int> statisticsNames;
     for (int i = 0; i < model->rowCount(); ++i) {
-        param.statNames << model->data(model->index(i)).toString();
+        QModelIndex modelIndex = model->index(i);
+        statisticsNames.insert(model->data(modelIndex).toString(), model->data(modelIndex, Qt::UserRole).toInt());
     }
 
-    emit parseDataParamReady(param);
-    dialog.exec();
+    volatile bool working = true;
+    std::function<StatisticsResult (const QString &)> mappedFunction = [statisticsNames, &working] (const QString &fileName) {
+        StatisticsResult result;
+        QString line;
+        QCPData data;
+        GZipFile gzFile(fileName);
+        // Read the header
+        if (!gzFile.readLine(line)) {
+            result.failedFile << fileName;
+            goto end;
+        }
+        while (working && gzFile.readLine(line)) {
+            QDateTime dt = QDateTime::fromString(line.left(19), "dd.MM.yyyy;HH:mm:ss");
+            if (dt.isValid()) {
+                data.key = dt.toTime_t();
+                QVector<QStringRef> refs = line.splitRef(';');
+                for (auto iter = statisticsNames.begin(); iter != statisticsNames.end(); ++iter) {
+                    if (iter.value() < refs.size()) {
+                        data.value = refs.at(iter.value()).toInt();
+                        result.statistics[iter.key()].insert(data.key, data);
+                    } else {
+                        result.failedFile << fileName;
+                        goto end;
+                    }
+                }
+            } else {
+                result.failedFile << fileName;
+                goto end;
+            }
+        }
+end:
+        return result;
+    };
 
-    workerThread.quit();
-    workerThread.wait();
+    std::function<void (StatisticsResult &, const StatisticsResult &)> reducedFunction =
+        [] (StatisticsResult &result, const StatisticsResult &partial)
+    {
+        if (result.failedFile.isEmpty() && partial.failedFile.isEmpty()) {
+            for (auto iter = partial.statistics.begin(); iter != partial.statistics.end(); ++iter) {
+                const QCPDataMap &srcData = iter.value();
+                QCPDataMap &destData = result.statistics[iter.key()];
+                for (auto dataIter = srcData.begin(); dataIter != srcData.end(); ++dataIter) {
+                    destData.insert(dataIter.key(), dataIter.value());
+                }
+            }
+        } else {
+            if (result.failedFile.isEmpty()) {
+                for (const QString &file : partial.failedFile) {
+                    result.failedFile << file;
+                }
+            }
+        }
+    };
+
+    QProgressDialog dialog(this);
+    dialog.setWindowTitle(QStringLiteral("Please Wait"));
+    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    QFutureWatcher<StatisticsResult> watcher;
+    connect(&watcher, SIGNAL(finished()), &dialog, SLOT(reset()));
+    connect(&watcher, SIGNAL(progressRangeChanged(int,int)), &dialog, SLOT(setRange(int,int)));
+    connect(&watcher, SIGNAL(progressValueChanged(int)), &dialog, SLOT(setValue(int)));
+    connect(&dialog, &QProgressDialog::canceled, [&working, &watcher] () {watcher.cancel();working = false;});
+
+    QVector<QString> checkedFiles;
+    for (QListWidgetItem *item : checkedItems) {
+        checkedFiles << item->toolTip();
+    }
+
+    watcher.setFuture(QtConcurrent::mappedReduced<StatisticsResult>(checkedFiles, mappedFunction, reducedFunction));
+    dialog.exec();
+    watcher.waitForFinished();
+
+    if (watcher.isCanceled()) {
+        return;
+    }
+
+    handleStatisticsResult(watcher.result(), multipleWindows);
 }
 
 void MainWindow::showInfoMsgBox(const QString &text, const QString &info)
 {
     QMessageBox msgBox(this);
-    msgBox.setWindowTitle("Information");
+    msgBox.setWindowTitle(QStringLiteral("Information"));
     msgBox.setIcon(QMessageBox::Information);
     msgBox.setText(text);
     msgBox.setInformativeText(info);
@@ -319,7 +353,7 @@ void MainWindow::showInfoMsgBox(const QString &text, const QString &info)
 void MainWindow::showErrorMsgBox(const QString &text, const QString &info)
 {
     QMessageBox msgBox(this);
-    msgBox.setWindowTitle("Error");
+    msgBox.setWindowTitle(QStringLiteral("Error"));
     msgBox.setIcon(QMessageBox::Critical);
     msgBox.setText(text);
     msgBox.setInformativeText(info);
@@ -328,17 +362,17 @@ void MainWindow::showErrorMsgBox(const QString &text, const QString &info)
 
 void MainWindow::appendLogInfo(const QString &text)
 {
-    _ui->logTextEdit->appendPlainText("INFO: " + text);
+    _ui->logTextEdit->appendHtml(QString("<font color='green'>INFO: %1</font>").arg(text));
 }
 
 void MainWindow::appendLogWarn(const QString &text)
 {
-    _ui->logTextEdit->appendHtml(QString("WARN: <font color='#CC9900'>%1</font>").arg(text));
+    _ui->logTextEdit->appendHtml(QString("<font color='#CC9900'>WARN: %1</font>").arg(text));
 }
 
 void MainWindow::appendLogError(const QString &text)
 {
-    _ui->logTextEdit->appendHtml(QString("ERR: <font color='red'>%1</font>").arg(text));
+    _ui->logTextEdit->appendHtml(QString("<font color='red'>ERR: %1</font>").arg(text));
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -368,10 +402,10 @@ void MainWindow::dropEvent(QDropEvent *event)
         fileNames.append(url.toLocalFile());
     }
     if (fileNames.size() > 0) {
-        int preCount = _ui->lwStatFile->count();
-        int added = addStatFiles(fileNames);
+        int preCount = _ui->lwStatisticsFiles->count();
+        int added = addStatisticsFiles(fileNames);
         if (preCount == 0 && added > 0) {
-            parseStatFileHeader();
+            parseStatisticsFileHeader();
         }
     }
 }
@@ -383,30 +417,33 @@ void MainWindow::closeEvent(QCloseEvent *)
 
 void MainWindow::updateFilterPattern()
 {
-    static_cast<StatNameListModel*>(_ui->lvStatName->model())->setFilterPattern(
+    static_cast<StatisticsNameModel*>(_ui->lvStatisticsName->model())->setFilterPattern(
                 _ui->cbRegExpFilter->lineEdit()->text());
 }
 
-void MainWindow::handleParsedResult(const ParsedResult &result, bool multipleWindows)
+void MainWindow::handleStatisticsResult(const StatisticsResult &result, bool multipleWindows)
 {
-    if (multipleWindows) {
-        for (auto iter = result.data.begin(); iter != result.data.end(); ++iter) {
-            ParsedResult tmpResult;
-            tmpResult.dateTimes = result.dateTimes;
+    if (result.failedFile.isEmpty()) {
+        if (multipleWindows) {
+            for (auto iter = result.statistics.begin(); iter != result.statistics.end(); ++iter) {
+                QMap<QString, QCPDataMap> tmpResult;
+                tmpResult.insert(iter.key(), iter.value());
 
-            QMap<QString, QCPDataMap*> data;
-            data.insert(iter.key(), iter.value());
-            tmpResult.data = data;
-            PlotWindow *w = new PlotWindow(getStatFileNode(), tmpResult);
+                PlotWindow *w = new PlotWindow(getStatisticsFileNode(), tmpResult);
+                w->setAttribute(Qt::WA_DeleteOnClose);
+                connect(this, SIGNAL(aboutToBeClosed()), w, SLOT(close()));
+                w->showMaximized();
+            }
+        } else {
+            PlotWindow *w = new PlotWindow(getStatisticsFileNode(), result.statistics);
             w->setAttribute(Qt::WA_DeleteOnClose);
             connect(this, SIGNAL(aboutToBeClosed()), w, SLOT(close()));
             w->showMaximized();
         }
     } else {
-        PlotWindow *w = new PlotWindow(getStatFileNode(), result);
-        w->setAttribute(Qt::WA_DeleteOnClose);
-        connect(this, SIGNAL(aboutToBeClosed()), w, SLOT(close()));
-        w->showMaximized();
+        for (const QString &failedFile : result.failedFile) {
+            appendLogError(QString("Parse %1 failed.").arg(failedFile));
+        }
     }
 }
 
@@ -415,7 +452,7 @@ void MainWindow::contextMenuRequest(const QPoint &pos)
     QMenu *menu = _ui->logTextEdit->createStandardContextMenu();
     menu->setAttribute(Qt::WA_DeleteOnClose);
     menu->addSeparator();
-    menu->addAction("Clear", this, SLOT(clearLogEdit()));
+    menu->addAction(QStringLiteral("Clear"), this, SLOT(clearLogEdit()));
 
     menu->popup(_ui->logTextEdit->mapToGlobal(pos));
 }
@@ -425,68 +462,59 @@ void MainWindow::clearLogEdit()
     _ui->logTextEdit->clear();
 }
 
-void MainWindow::handleFileInfoResult()
+void MainWindow::handleTimeDurationResult(int index)
 {
-    typedef QMap<int, QString> ResultType;
-
-    QFutureWatcher<ResultType> *watcher = static_cast<QFutureWatcher<ResultType>*>(sender());
-    ResultType result = watcher->result();
+    QFutureWatcher<TimeDurationResult> *watcher = static_cast<QFutureWatcher<TimeDurationResult>*>(sender());
+    TimeDurationResult result = watcher->resultAt(index);
     QFileInfo fileInfo(result.value(KEY_FILE_NAME));
     if (result.size() > 1) {
-        QList<QListWidgetItem*> items = _ui->lwStatFile->findItems(fileInfo.fileName(),
+        QList<QListWidgetItem*> items = _ui->lwStatisticsFiles->findItems(fileInfo.fileName(),
             Qt::MatchFixedString | Qt::MatchCaseSensitive);
         if (items.size() > 0) {
             items.at(0)->setStatusTip(QString("Time duration: %1 - %2").arg(result.value(KEY_START_TIME)).arg(result.value(KEY_END_TIME)));
-            int lineCount = result.value(KEY_LINE_COUNT).toInt();
-            if (lineCount) {
-                items.at(0)->setData(Qt::UserRole, lineCount);
-            }
         }
     } else {
         appendLogError(QString("Parse file %1 failed.").arg(fileInfo.fileName()));
     }
-
-    watcher->deleteLater();
 }
 
 void MainWindow::on_actionOpen_triggered()
 {
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
-    fileDialog.setNameFilter("Internal Statistics File (*.csv.gz)");
+    fileDialog.setNameFilter(QStringLiteral("Internal Statistics File (*.csv.gz)"));
 
     if (fileDialog.exec() == QDialog::Accepted) {
-        int preCount = _ui->lwStatFile->count();
-        int added = addStatFiles(fileDialog.selectedFiles());
+        int preCount = _ui->lwStatisticsFiles->count();
+        int added = addStatisticsFiles(fileDialog.selectedFiles());
         if (preCount == 0 && added > 0) {
-            parseStatFileHeader();
+            parseStatisticsFileHeader();
         }
     }
 }
 
 void MainWindow::on_actionCloseAll_triggered()
 {
-    _node.clear();
-    static_cast<StatNameListModel*>(_ui->lvStatName->model())->clearStatNames();
-    for (int i = _ui->lwStatFile->count() - 1; i >= 0; --i) {
-        delete _ui->lwStatFile->item(i);
+    static_cast<StatisticsNameModel*>(_ui->lvStatisticsName->model())->clearStatisticsNames();
+    for (int i = _ui->lwStatisticsFiles->count() - 1; i >= 0; --i) {
+        delete _ui->lwStatisticsFiles->item(i);
     }
 }
 
 void MainWindow::on_actionDrawPlot_triggered()
 {
-    parseStatFileData(false);
+    parseStatisticsFileData(false);
 }
 
 void MainWindow::on_actionDrawPlotInMultipleWindows_triggered()
 {
-    parseStatFileData(true);
+    parseStatisticsFileData(true);
 }
 
 void MainWindow::on_actionSelectAll_triggered()
 {
-    for (int i = 0; i < _ui->lwStatFile->count(); ++i) {
-        QListWidgetItem *item = _ui->lwStatFile->item(i);
+    for (int i = 0; i < _ui->lwStatisticsFiles->count(); ++i) {
+        QListWidgetItem *item = _ui->lwStatisticsFiles->item(i);
         if (item->checkState() != Qt::Checked) {
             item->setCheckState(Qt::Checked);
         }
@@ -495,8 +523,8 @@ void MainWindow::on_actionSelectAll_triggered()
 
 void MainWindow::on_actionClearSelection_triggered()
 {
-    for (int i = 0; i < _ui->lwStatFile->count(); ++i) {
-        QListWidgetItem *item = _ui->lwStatFile->item(i);
+    for (int i = 0; i < _ui->lwStatisticsFiles->count(); ++i) {
+        QListWidgetItem *item = _ui->lwStatisticsFiles->item(i);
         if (item->checkState() != Qt::Unchecked) {
             item->setCheckState(Qt::Unchecked);
         }
@@ -505,8 +533,8 @@ void MainWindow::on_actionClearSelection_triggered()
 
 void MainWindow::on_actionInvertSelection_triggered()
 {
-    for (int i = 0; i < _ui->lwStatFile->count(); ++i) {
-        QListWidgetItem *item = _ui->lwStatFile->item(i);
+    for (int i = 0; i < _ui->lwStatisticsFiles->count(); ++i) {
+        QListWidgetItem *item = _ui->lwStatisticsFiles->item(i);
         switch (item->checkState()) {
         case Qt::Checked:
             item->setCheckState(Qt::Unchecked);

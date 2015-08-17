@@ -1,17 +1,20 @@
-#ifndef STATNAMELISTMODEL_H
-#define STATNAMELISTMODEL_H
+#ifndef STATISTICSNAMEMODEL_H
+#define STATISTICSNAMEMODEL_H
 
 #include <pcre.h>
 #include <QAbstractListModel>
 
-class StatNameListModel : public QAbstractListModel
+class StatisticsNameModel : public QAbstractListModel
 {
 public:
-    explicit StatNameListModel(QObject *parent = NULL);
-    ~StatNameListModel();
+    explicit StatisticsNameModel(QObject *parent = NULL);
+    ~StatisticsNameModel();
 
-    void setStatNames(const QStringList &statNames);
-    void clearStatNames();
+    void beforeDataContainerUpdate();
+    std::vector<std::string>& getDataContainer();
+    void endDataContainerUpdate();
+
+    void clearStatisticsNames();
 
     bool setFilterPattern(const QString &pattern);
     int actualCount() const;
@@ -25,9 +28,9 @@ private:
     int _fetchedCount;
     int _fetchIncrement;
     QString _pattern;
-    QStringList _statNames;
+    std::vector<std::string> _statisticsNames;
     std::vector<int> _indexes;
-    pcre16_jit_stack *_jitStack;
+    pcre_jit_stack *_jitStack;
 };
 
-#endif // STATNAMELISTMODEL_H
+#endif // STATISTICSNAMEMODEL_H

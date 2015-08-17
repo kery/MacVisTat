@@ -12,6 +12,8 @@ public:
 
     bool readLine(QString &text);
 
+    bool readLine(std::string &text);
+
     bool close();
 
 private:

@@ -31,16 +31,18 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     plotwindow.cpp \
     third_party/qcustomplot/qcustomplot.cpp \
-    statnamelistmodel.cpp \
     gzipfile.cpp \
-    parsedataworker.cpp
+    parsedataworker.cpp \
+    utils.cpp \
+    statisticsnamemodel.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
     third_party/qcustomplot/qcustomplot.h \
-    statnamelistmodel.h \
     gzipfile.h \
-    parsedataworker.h
+    parsedataworker.h \
+    utils.h \
+    statisticsnamemodel.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui
@@ -49,18 +51,18 @@ RESOURCES += \
     VisualStatistics.qrc
 
 win32 {
-    SOURCES += third_party/pcre/win/pcre.h
+    HEADERS += third_party/pcre/win/pcre.h
 
     RC_FILE = VisualStatistics.rc
 
-    LIBS += -L$$PWD/third_party/pcre/win/ -lpcre16
+    LIBS += -L$$PWD/third_party/pcre/win/ -lpcre
 
     INCLUDEPATH += $$PWD/third_party/pcre/win
     DEPENDPATH += $$PWD/third_party/pcre/win
 }
 
 unix:!macx {
-    SOURCES += third_party/pcre/linux/pcre.h
+    HEADERS += third_party/pcre/linux/pcre.h
 
     LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre16
     INCLUDEPATH += $$PWD/third_party/pcre/linux

@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "parsedataworker.h"
+#include "third_party/qcustomplot/qcustomplot.h"
 
 namespace Ui {
 class MainWindow;
@@ -13,25 +13,28 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    struct StatisticsResult {
+        QVector<QString> failedFile;
+        QMap<QString, QCPDataMap> statistics;
+    };
+
+public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-public:
-    QStyle *_fusionStyle;
-
 private:
-    QString getStatFileNode() const;
+    QString getStatisticsFileNode() const;
     void installEventFilterForAllToolButton();
     bool isToolTipEventOfToolButton(QObject *obj, QEvent *event);
 
-    bool statFileAlreadyAdded(const QString &fileName);
-    int addStatFiles(const QStringList &fileNames);
-    bool checkStatFileNode(const QString &node);
-    void parseStatFileHeader();
+    bool statisticsFileAlreadyAdded(const QString &fileName);
+    int addStatisticsFiles(const QStringList &fileNames);
+    bool checkStatisticsFileNode(const QString &node);
+    void parseStatisticsFileHeader();
     // multipleWindows indicates that if the parsed data will be shown in
     // multiple windows when it is ready
     // When parsed result is ready the slot handleParsedResult will be called
-    void parseStatFileData(bool multipleWindows);
+    void parseStatisticsFileData(bool multipleWindows);
 
     void showInfoMsgBox(const QString &text, const QString &info);
     void showErrorMsgBox(const QString &text, const QString &info);
@@ -45,12 +48,17 @@ private:
     virtual void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
     virtual void closeEvent(QCloseEvent *) Q_DECL_OVERRIDE;
 
+private:
+    // Can't place this line in the slots section, otherwise no compile
+    // error occurred but failed to generate executable file (due to MOC?)
+    typedef QMap<int, QString> TimeDurationResult;
+
 private slots:
     void updateFilterPattern();
-    void handleParsedResult(const ParsedResult &result, bool multipleWindows);
+    void handleStatisticsResult(const StatisticsResult &result, bool multipleWindows);
     void contextMenuRequest(const QPoint &pos);
     void clearLogEdit();
-    void handleFileInfoResult();
+    void handleTimeDurationResult(int index);
 
     void on_actionOpen_triggered();
 
@@ -66,12 +74,10 @@ private slots:
     void on_actionInvertSelection_triggered();
 
 signals:
-    void parseDataParamReady(const ParseDataParam &param);
     void aboutToBeClosed();
 
 private:
     Ui::MainWindow *_ui;
-    QString _node;
 };
 
 #endif // MAINWINDOW_H
