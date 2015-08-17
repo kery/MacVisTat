@@ -124,7 +124,7 @@ QVariant StatisticsNameModel::data(const QModelIndex &index, int role) const
         if (role == Qt::DisplayRole) {
             return _statisticsNames[_indexes[index.row()]].c_str();
         } else if (role == Qt::UserRole) {
-            // Consider the ##date;time;shm_xxx
+            // Consider the first 2 column: ##date;time;shm_xxx
             return _indexes[index.row()] + 2;
         }
     }

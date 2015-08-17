@@ -1,7 +1,6 @@
 #ifndef PLOTWINDOW_H
 #define PLOTWINDOW_H
 
-#include "parsedataworker.h"
 #include "mainwindow.h"
 
 namespace Ui {

@@ -32,7 +32,6 @@ SOURCES += main.cpp\
     plotwindow.cpp \
     third_party/qcustomplot/qcustomplot.cpp \
     gzipfile.cpp \
-    parsedataworker.cpp \
     utils.cpp \
     statisticsnamemodel.cpp
 
@@ -40,7 +39,6 @@ HEADERS  += mainwindow.h \
     plotwindow.h \
     third_party/qcustomplot/qcustomplot.h \
     gzipfile.h \
-    parsedataworker.h \
     utils.h \
     statisticsnamemodel.h
 

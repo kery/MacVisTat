@@ -243,7 +243,7 @@
     <string>Draw Plot</string>
    </property>
    <property name="statusTip">
-    <string>Draw the statistics in a new window</string>
+    <string>Draw plot in a new window</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>

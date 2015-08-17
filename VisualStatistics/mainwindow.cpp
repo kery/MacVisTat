@@ -316,6 +316,7 @@ end:
 
     QProgressDialog dialog(this);
     dialog.setWindowTitle(QStringLiteral("Please Wait"));
+    dialog.setLabelText(QStringLiteral("Parsing statistics files..."));
     dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     QFutureWatcher<StatisticsResult> watcher;
