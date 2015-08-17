@@ -62,9 +62,9 @@ win32 {
 unix:!macx {
     HEADERS += third_party/pcre/linux/pcre.h
 
-    LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre16
+    LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre
     INCLUDEPATH += $$PWD/third_party/pcre/linux
     DEPENDPATH += $$PWD/third_party/pcre/linux
 
-    PRE_TARGETDEPS += $$PWD/third_party/pcre/linux/libpcre16.a
+    PRE_TARGETDEPS += $$PWD/third_party/pcre/linux/libpcre.a
 }

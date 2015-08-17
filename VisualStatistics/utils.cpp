@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <cstring>
 
 void splitString(const char *str, char ch, vector<string> &out)
 {
