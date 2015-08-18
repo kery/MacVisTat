@@ -259,38 +259,59 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
         return;
     }
 
-    QMap<QString, int> statisticsNames;
+    QMap<int, QString> indexNameMap;
     for (int i = 0; i < model->rowCount(); ++i) {
         QModelIndex modelIndex = model->index(i);
-        statisticsNames.insert(model->data(modelIndex).toString(), model->data(modelIndex, Qt::UserRole).toInt());
+        indexNameMap.insert(model->data(modelIndex, Qt::UserRole).toInt(),
+                            model->data(modelIndex).toString());
     }
 
     volatile bool working = true;
     ProgressBar *customBar = new ProgressBar();
-    std::function<StatisticsResult (const QString &)> mappedFunction = [statisticsNames, customBar, &working] (const QString &fileName) {
+    std::function<StatisticsResult (const QString &)> mappedFunction = [indexNameMap, customBar, &working] (const QString &fileName) {
         StatisticsResult result;
-        QString line;
+        std::string line;
         QCPData data;
         int preCompletionRate = 0;
         GZipFile gzFile(fileName);
+        QList<int> indexes = indexNameMap.keys();
         // Read the header
         if (!gzFile.readLine(line)) {
             result.failedFile << QFileInfo(fileName).fileName();
             goto end;
         }
         while (working && gzFile.readLine(line)) {
-            QDateTime dt = QDateTime::fromString(line.left(19), "dd.MM.yyyy;HH:mm:ss");
+            QDateTime dt = QDateTime::fromString(QString::fromLatin1(line.c_str(), 19), "dd.MM.yyyy;HH:mm:ss");
             if (dt.isValid()) {
                 data.key = dt.toTime_t();
-                QVector<QStringRef> refs = line.splitRef(';');
-                for (auto iter = statisticsNames.begin(); iter != statisticsNames.end(); ++iter) {
-                    if (iter.value() < refs.size()) {
-                        data.value = refs.at(iter.value()).toInt();
-                        result.statistics[iter.key()].insert(data.key, data);
-                    } else {
-                        result.failedFile << QFileInfo(fileName).fileName();
-                        goto end;
+                int index = 0;
+                int parsedStatCount = 0;
+                const char *cstr = line.c_str();
+                const char *ptr;
+                while ((ptr = strchr(cstr, ';')) != NULL) {
+                    int tmpIndex = indexes.at(parsedStatCount);
+                    if (index == tmpIndex) {
+                        data.value = atoi(cstr);
+                        result.statistics[indexNameMap.value(tmpIndex)].insert(data.key, data);
+                        if (++parsedStatCount == indexes.size()) {
+                            break;
+                        }
                     }
+                    cstr = ptr + 1;
+                    ++index;
+                }
+                // Last occurence
+                if (parsedStatCount < indexes.size() && *cstr) {
+                    int tmpIndex = indexes.at(parsedStatCount);
+                    if (index == tmpIndex) {
+                        data.value = atoi(cstr);
+                        result.statistics[indexNameMap.value(tmpIndex)].insert(data.key, data);
+                        ++parsedStatCount;
+                    }
+                }
+                if (parsedStatCount != indexes.size()) {
+                    result.failedFile << QFileInfo(fileName).fileName();
+                    goto end;
                 }
                 int completionRate = gzFile.completionRate();
                 if (completionRate > preCompletionRate) {
