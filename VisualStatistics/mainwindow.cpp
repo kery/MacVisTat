@@ -275,7 +275,7 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
         GZipFile gzFile(fileName);
         // Read the header
         if (!gzFile.readLine(line)) {
-            result.failedFile << fileName;
+            result.failedFile << QFileInfo(fileName).fileName();
             goto end;
         }
         while (working && gzFile.readLine(line)) {
@@ -288,7 +288,7 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
                         data.value = refs.at(iter.value()).toInt();
                         result.statistics[iter.key()].insert(data.key, data);
                     } else {
-                        result.failedFile << fileName;
+                        result.failedFile << QFileInfo(fileName).fileName();
                         goto end;
                     }
                 }
@@ -299,7 +299,7 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
                     preCompletionRate = completionRate;
                 }
             } else {
-                result.failedFile << fileName;
+                result.failedFile << QFileInfo(fileName).fileName();
                 goto end;
             }
         }
@@ -319,10 +319,8 @@ end:
                 }
             }
         } else {
-            if (result.failedFile.isEmpty()) {
-                for (const QString &file : partial.failedFile) {
-                    result.failedFile << file;
-                }
+            for (const QString &file : partial.failedFile) {
+                result.failedFile << file;
             }
         }
     };
@@ -458,7 +456,7 @@ void MainWindow::handleStatisticsResult(const StatisticsResult &result, bool mul
         }
     } else {
         for (const QString &failedFile : result.failedFile) {
-            appendLogError(QString("Parse %1 failed.").arg(failedFile));
+            appendLogError(QString("Parse fle %1 failed.").arg(failedFile));
         }
     }
 }
