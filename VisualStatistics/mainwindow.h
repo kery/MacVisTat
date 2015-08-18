@@ -70,7 +70,7 @@ private slots:
     void clearLogEdit();
     void handleTimeDurationResult(int index);
 
-    void on_actionOpen_triggered();
+    void on_actionAdd_triggered();
 
     void on_actionCloseAll_triggered();
 
@@ -82,6 +82,8 @@ private slots:
     void on_actionClearSelection_triggered();
 
     void on_actionInvertSelection_triggered();
+
+    void on_actionViewHelp_triggered();
 
 signals:
     void aboutToBeClosed();

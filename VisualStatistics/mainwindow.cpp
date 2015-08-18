@@ -513,7 +513,7 @@ void MainWindow::handleTimeDurationResult(int index)
     }
 }
 
-void MainWindow::on_actionOpen_triggered()
+void MainWindow::on_actionAdd_triggered()
 {
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
@@ -581,4 +581,8 @@ void MainWindow::on_actionInvertSelection_triggered()
             break;
         }
     }
+}
+
+void MainWindow::on_actionViewHelp_triggered()
+{
 }
