@@ -14,10 +14,13 @@ public:
 
     bool readLine(std::string &text);
 
+    int completionRate() const;
+
     bool close();
 
 private:
     gzFile _gzFile;
+    qint64 _compressedSize;
 };
 
 #endif // GZIPFILE_H

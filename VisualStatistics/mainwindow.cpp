@@ -23,6 +23,11 @@ enum {
     KEY_END_TIME,
 };
 
+void ProgressBar::increaseValue(int value)
+{
+    setValue(this->value() + value);
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     _ui(new Ui::MainWindow)
@@ -261,10 +266,12 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
     }
 
     volatile bool working = true;
-    std::function<StatisticsResult (const QString &)> mappedFunction = [statisticsNames, &working] (const QString &fileName) {
+    ProgressBar *customBar = new ProgressBar();
+    std::function<StatisticsResult (const QString &)> mappedFunction = [statisticsNames, customBar, &working] (const QString &fileName) {
         StatisticsResult result;
         QString line;
         QCPData data;
+        int preCompletionRate = 0;
         GZipFile gzFile(fileName);
         // Read the header
         if (!gzFile.readLine(line)) {
@@ -284,6 +291,12 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
                         result.failedFile << fileName;
                         goto end;
                     }
+                }
+                int completionRate = gzFile.completionRate();
+                if (completionRate > preCompletionRate) {
+                    QMetaObject::invokeMethod(customBar, "increaseValue", Qt::QueuedConnection,
+                                              Q_ARG(int, completionRate - preCompletionRate));
+                    preCompletionRate = completionRate;
                 }
             } else {
                 result.failedFile << fileName;
@@ -317,12 +330,13 @@ end:
     QProgressDialog dialog(this);
     dialog.setWindowTitle(QStringLiteral("Please Wait"));
     dialog.setLabelText(QStringLiteral("Parsing statistics files..."));
+    dialog.setBar(customBar); // dialog takes ownership of customBar
     dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
+    // We don't use wathcer to monitor progress because it base on item count in the container, this
+    // is not accurate. Instead, we calculate the progress ourselves
     QFutureWatcher<StatisticsResult> watcher;
     connect(&watcher, SIGNAL(finished()), &dialog, SLOT(reset()));
-    connect(&watcher, SIGNAL(progressRangeChanged(int,int)), &dialog, SLOT(setRange(int,int)));
-    connect(&watcher, SIGNAL(progressValueChanged(int)), &dialog, SLOT(setValue(int)));
     connect(&dialog, &QProgressDialog::canceled, [&working, &watcher] () {watcher.cancel();working = false;});
 
     QVector<QString> checkedFiles;
@@ -330,6 +344,7 @@ end:
         checkedFiles << item->toolTip();
     }
 
+    dialog.setRange(0, checkedFiles.size() * 100);
     watcher.setFuture(QtConcurrent::mappedReduced<StatisticsResult>(checkedFiles, mappedFunction, reducedFunction));
     dialog.exec();
     watcher.waitForFinished();

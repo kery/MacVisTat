@@ -1,10 +1,17 @@
 #include "gzipfile.h"
+#include <QFile>
 
 GZipFile::GZipFile(const QString &path) :
-    _gzFile(gzopen(path.toStdString().c_str(), "rb"))
+    _gzFile(gzopen(path.toStdString().c_str(), "rb")),
+    _compressedSize(0)
 {
     if (_gzFile) {
         gzbuffer(_gzFile, 64 * 1024);
+        QFile tmpFile(path);
+        if (tmpFile.open(QFile::ReadOnly)) {
+            _compressedSize = tmpFile.size();
+            tmpFile.close();
+        }
     }
 }
 
@@ -63,6 +70,15 @@ bool GZipFile::readLine(std::string &text)
         IF_LINE_RETURN(text)
     }
     return true;
+}
+
+int GZipFile::completionRate() const
+{
+    if (_compressedSize > 0) {
+        return ((double)gzoffset(_gzFile) / _compressedSize) * 100;
+    } else {
+        return -1;
+    }
 }
 
 bool GZipFile::close()
