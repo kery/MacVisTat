@@ -517,7 +517,7 @@ void MainWindow::on_actionAdd_triggered()
 {
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
-    fileDialog.setNameFilter(QStringLiteral("Internal Statistics File (*.csv.gz)"));
+    fileDialog.setNameFilter(QStringLiteral("Statistics File (*.csv.gz)"));
 
     if (fileDialog.exec() == QDialog::Accepted) {
         int preCount = _ui->lwStatisticsFiles->count();
