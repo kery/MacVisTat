@@ -34,6 +34,23 @@ PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &res
 {
     _ui->setupUi(this);
 
+    QWidget *spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    _ui->toolBar->addWidget(spacer);
+    _dtEditFrom = new QDateTimeEdit();
+    _dtEditFrom->setDisplayFormat(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
+    _ui->toolBar->addWidget(_dtEditFrom);
+    spacer = new QWidget();
+    spacer->setMinimumWidth(5);
+    spacer->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+    _ui->toolBar->addWidget(spacer);
+    _dtEditTo = new QDateTimeEdit();
+    _dtEditTo->setDisplayFormat(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
+    _ui->toolBar->addWidget(_dtEditTo);
+    connect(_ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), SLOT(xAxisRangeChanged(QCPRange)));
+    connect(_dtEditFrom, SIGNAL(dateTimeChanged(QDateTime)), SLOT(fromDateTimeChanged(QDateTime)));
+    connect(_dtEditTo, SIGNAL(dateTimeChanged(QDateTime)), SLOT(toDateTimeChanged(QDateTime)));
+
     convertResultFirstData(result);
     convertResultRestData(result);
 
@@ -314,6 +331,51 @@ void PlotWindow::moveLegend()
             plot->axisRect()->insetLayout()->setInsetAlignment(0, (Qt::Alignment)align);
             plot->replot();
         }
+    }
+}
+
+void PlotWindow::xAxisRangeChanged(const QCPRange &newRange)
+{
+    int indexFrom = (int)newRange.lower;
+    int indexTo = (int)newRange.upper;
+    if (indexFrom < 0) {
+        indexFrom = 0;
+    }
+    if (indexTo >= _dateTimes.size()) {
+        indexTo = _dateTimes.size() - 1;
+    }
+    _dtEditFrom->setDateTime(QDateTime::fromTime_t(_dateTimes.at(indexFrom)));
+    _dtEditTo->setDateTime(QDateTime::fromTime_t(_dateTimes.at(indexTo)));
+}
+
+void PlotWindow::fromDateTimeChanged(const QDateTime &dateTime)
+{
+    int time = (int)dateTime.toTime_t();
+    int i;
+    for (i = 0; i < _dateTimes.size(); ++i) {
+        if (_dateTimes.at(i) >= time) {
+            break;
+        }
+    }
+    if (i < _dateTimes.size()) {
+        _ui->customPlot->xAxis->setRangeLower(i);
+        _ui->customPlot->replot();
+    }
+}
+
+void PlotWindow::toDateTimeChanged(const QDateTime &dateTime)
+{
+    int time = (int)dateTime.toTime_t();
+    int i;
+    for (i = _dateTimes.size() - 1; i >= 0; --i) {
+        if (_dateTimes.at(i) <= time) {
+            break;
+        }
+    }
+
+    if (i >= 0) {
+        _ui->customPlot->xAxis->setRangeUpper(i);
+        _ui->customPlot->replot();
     }
 }
 

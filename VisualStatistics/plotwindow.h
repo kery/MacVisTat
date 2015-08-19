@@ -38,6 +38,9 @@ private slots:
     void mouseWheel(QWheelEvent *event);
     void contextMenuRequest(const QPoint &pos);
     void moveLegend();
+    void xAxisRangeChanged(const QCPRange &newRange);
+    void fromDateTimeChanged(const QDateTime &dateTime);
+    void toDateTimeChanged(const QDateTime &dateTime);
 
     void on_actionFullScreen_toggled(bool checked);
 
@@ -56,6 +59,8 @@ private:
     const QString _node;
     QVector<int> _dateTimes;
     QMap<QString, QCPDataMap> _result;
+    QDateTimeEdit *_dtEditFrom;
+    QDateTimeEdit *_dtEditTo;
 };
 
 #endif // PLOTWINDOW_H
