@@ -10,6 +10,9 @@
     <height>458</height>
    </rect>
   </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::NoContextMenu</enum>
+  </property>
   <property name="windowTitle">
    <string>Visual Statistics</string>
   </property>
@@ -58,8 +61,14 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
            <property name="selectionMode">
             <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+           <property name="selectionRectVisible">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -72,6 +81,9 @@
          <width>0</width>
          <height>30</height>
         </size>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
        </property>
        <property name="lineWrapMode">
         <enum>QPlainTextEdit::NoWrap</enum>

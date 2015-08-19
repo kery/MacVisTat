@@ -16,6 +16,9 @@
     <height>380</height>
    </size>
   </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::NoContextMenu</enum>
+  </property>
   <property name="windowTitle">
    <string>Plot Window</string>
   </property>
@@ -34,7 +37,11 @@
      <number>5</number>
     </property>
     <item>
-     <widget class="QCustomPlot" name="customPlot" native="true"/>
+     <widget class="QCustomPlot" name="customPlot" native="true">
+      <property name="contextMenuPolicy">
+       <enum>Qt::CustomContextMenu</enum>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

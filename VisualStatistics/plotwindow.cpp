@@ -122,7 +122,6 @@ void PlotWindow::initializePlot()
     connect(plot, &QCustomPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
     connect(plot, &QCustomPlot::mousePress, this, &PlotWindow::mousePress);
     connect(plot, &QCustomPlot::mouseWheel, this, &PlotWindow::mouseWheel);
-    plot->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
 
     Q_ASSERT(_result.size() <= static_cast<int>(sizeof(dataColors)/sizeof(dataColors[0])));
@@ -318,11 +317,11 @@ void PlotWindow::mouseWheel(QWheelEvent *event)
 
 void PlotWindow::contextMenuRequest(const QPoint &pos)
 {
-    QMenu *menu = new QMenu(this);
-    menu->setAttribute(Qt::WA_DeleteOnClose);
-
     QCustomPlot *plot = _ui->customPlot;
     if (plot->legend->selectTest(pos, false) >= 0) {
+        QMenu *menu = new QMenu(this);
+        menu->setAttribute(Qt::WA_DeleteOnClose);
+
         menu->addAction(QStringLiteral("Move to top left"), this, SLOT(moveLegend()))->setData(
             static_cast<int>(Qt::AlignTop | Qt::AlignLeft));
         menu->addAction(QStringLiteral("Move to top center"), this, SLOT(moveLegend()))->setData(
@@ -335,9 +334,9 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
             static_cast<int>(Qt::AlignBottom | Qt::AlignCenter));
         menu->addAction(QStringLiteral("Move to bottom right"), this, SLOT(moveLegend()))->setData(
             static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
-    }
 
-    menu->popup(plot->mapToGlobal(pos));
+        menu->popup(plot->mapToGlobal(pos));
+    }
 }
 
 void PlotWindow::moveLegend()

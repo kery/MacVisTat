@@ -52,8 +52,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::updateFilterPattern);
     connect(_ui->lvStatisticsName, &QListView::doubleClicked, this, &MainWindow::listViewDoubleClicked);
 
-    _ui->logTextEdit->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::contextMenuRequest);
+    connect(_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logEditContextMenuRequest);
+    connect(_ui->lvStatisticsName, &QListView::customContextMenuRequested, this, &MainWindow::listViewContextMenuRequest);
 }
 
 MainWindow::~MainWindow()
@@ -270,17 +270,27 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
         return;
     }
 
-    if (model->rowCount() > PlotWindow::predefinedColorCount()) {
+    if (_ui->lvStatisticsName->selectionModel()->selectedIndexes().size() > PlotWindow::predefinedColorCount() ||
+        (model->rowCount() > PlotWindow::predefinedColorCount() && !_ui->lvStatisticsName->selectionModel()->hasSelection()))
+    {
         showInfoMsgBox(QStringLiteral("Too many statistics names specified, please change your filter text!"),
                        QString("At most %1 statistics names allowed at one time.").arg(PlotWindow::predefinedColorCount()));
         return;
     }
 
     QMap<int, QString> indexNameMap;
-    for (int i = 0; i < model->rowCount(); ++i) {
-        QModelIndex modelIndex = model->index(i);
-        indexNameMap.insert(model->data(modelIndex, Qt::UserRole).toInt(),
-                            model->data(modelIndex).toString());
+    if (_ui->lvStatisticsName->selectionModel()->hasSelection()) {
+        QModelIndexList list = _ui->lvStatisticsName->selectionModel()->selectedIndexes();
+        for (const QModelIndex &index : list) {
+            indexNameMap.insert(model->data(index, Qt::UserRole).toInt(),
+                                model->data(index).toString());
+        }
+    } else {
+        for (int i = 0; i < model->rowCount(); ++i) {
+            QModelIndex modelIndex = model->index(i);
+            indexNameMap.insert(model->data(modelIndex, Qt::UserRole).toInt(),
+                                model->data(modelIndex).toString());
+        }
     }
 
     volatile bool working = true;
@@ -506,7 +516,7 @@ void MainWindow::handleStatisticsResult(const StatisticsResult &result, bool mul
     }
 }
 
-void MainWindow::contextMenuRequest(const QPoint &pos)
+void MainWindow::logEditContextMenuRequest(const QPoint &pos)
 {
     QMenu *menu = _ui->logTextEdit->createStandardContextMenu();
     menu->setAttribute(Qt::WA_DeleteOnClose);
@@ -514,6 +524,16 @@ void MainWindow::contextMenuRequest(const QPoint &pos)
     menu->addAction(QStringLiteral("Clear"), this, SLOT(clearLogEdit()));
 
     menu->popup(_ui->logTextEdit->mapToGlobal(pos));
+}
+
+void MainWindow::listViewContextMenuRequest(const QPoint &pos)
+{
+    QMenu *menu = new QMenu();
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    menu->addAction(QStringLiteral("Copy"), this, SLOT(copyStatisticsNames()));
+    menu->addAction(QStringLiteral("Clear selection"), _ui->lvStatisticsName->selectionModel(), SLOT(clearSelection()));
+
+    menu->popup(_ui->lvStatisticsName->mapToGlobal(pos));
 }
 
 void MainWindow::clearLogEdit()
@@ -534,6 +554,18 @@ void MainWindow::handleTimeDurationResult(int index)
         }
     } else {
         appendLogError(QString("Parse file %1 failed.").arg(fileInfo.fileName()));
+    }
+}
+
+void MainWindow::copyStatisticsNames()
+{
+    QModelIndexList indexList = _ui->lvStatisticsName->selectionModel()->selectedIndexes();
+    if (indexList.size() > 0) {
+        QStringList stringList;
+        for (const QModelIndex &index : indexList) {
+            stringList << _ui->lvStatisticsName->model()->data(index).toString();
+        }
+        QApplication::clipboard()->setText(stringList.join(QStringLiteral("\n")));
     }
 }
 
