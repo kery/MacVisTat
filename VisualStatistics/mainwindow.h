@@ -40,6 +40,7 @@ private:
     bool statisticsFileAlreadyAdded(const QString &fileName);
     int addStatisticsFiles(const QStringList &fileNames);
     bool checkStatisticsFileNode(const QString &node);
+    bool checkStatisticsFileType(const QString &type);
     void parseStatisticsFileHeader();
     // multipleWindows indicates that if the parsed data will be shown in
     // multiple windows when it is ready
