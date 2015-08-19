@@ -148,7 +148,7 @@ void PlotWindow::initializePlot()
         markAbnormalTime();
     }
 
-    plot->rescaleAxes(true);
+    rescaleAxes();
     plot->replot();
 }
 
@@ -228,6 +228,21 @@ void PlotWindow::markAbnormalTime()
             plot->addItem(line);
         }
     }
+}
+
+void PlotWindow::adjustYAxisRange()
+{
+    QCPRange range = _ui->customPlot->yAxis->range();
+    double delta = range.size() * 0.02;
+    range.lower -= delta;
+    range.upper += delta;
+    _ui->customPlot->yAxis->setRange(range);
+}
+
+void PlotWindow::rescaleAxes()
+{
+    _ui->customPlot->rescaleAxes(true);
+    adjustYAxisRange();
 }
 
 void PlotWindow::adjustTicks()
@@ -340,7 +355,6 @@ void PlotWindow::moveLegend()
 
 void PlotWindow::xAxisRangeChanged(const QCPRange &newRange)
 {
-    qDebug() << newRange.lower << ", " << newRange.upper;
     if (_userDragFlag) {
         int dtFrom, dtTo;
         int lower = (int)newRange.lower;
@@ -429,7 +443,7 @@ void PlotWindow::on_actionSaveAsImage_triggered()
 
 void PlotWindow::on_actionRestoreScale_triggered()
 {
-    _ui->customPlot->rescaleAxes(true);
+    rescaleAxes();
     _ui->customPlot->replot();
 }
 
@@ -454,7 +468,7 @@ void PlotWindow::on_actionShowDelta_toggled(bool checked)
             graph->setData(const_cast<QCPDataMap*>(&iter.value()), true);
         }
     }
-    plot->rescaleAxes(true);
+    rescaleAxes();
     plot->replot();
 }
 

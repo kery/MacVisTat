@@ -31,6 +31,9 @@ private:
     QVector<int> findAbnormalTimeIndex() const;
     void markAbnormalTime();
 
+    void adjustYAxisRange();
+    void rescaleAxes();
+
 private slots:
     void adjustTicks();
     void selectionChanged();
