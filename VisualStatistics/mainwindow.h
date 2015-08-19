@@ -65,6 +65,7 @@ private:
 
 private slots:
     void updateFilterPattern();
+    void listViewDoubleClicked(const QModelIndex &index);
     void handleStatisticsResult(const StatisticsResult &result, bool multipleWindows);
     void contextMenuRequest(const QPoint &pos);
     void clearLogEdit();

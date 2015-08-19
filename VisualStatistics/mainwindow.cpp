@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     _ui->cbRegExpFilter->lineEdit()->setPlaceholderText(QStringLiteral("regular expression filter"));
     connect(_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::updateFilterPattern);
+    connect(_ui->lvStatisticsName, &QListView::doubleClicked, this, &MainWindow::listViewDoubleClicked);
 
     _ui->logTextEdit->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::contextMenuRequest);
@@ -454,6 +455,13 @@ void MainWindow::updateFilterPattern()
 {
     static_cast<StatisticsNameModel*>(_ui->lvStatisticsName->model())->setFilterPattern(
                 _ui->cbRegExpFilter->lineEdit()->text());
+}
+
+void MainWindow::listViewDoubleClicked(const QModelIndex &index)
+{
+    QString text = _ui->lvStatisticsName->model()->data(index).toString();
+    _ui->cbRegExpFilter->lineEdit()->setText(QRegExp::escape(text));
+    updateFilterPattern();
 }
 
 void MainWindow::handleStatisticsResult(const StatisticsResult &result, bool multipleWindows)
