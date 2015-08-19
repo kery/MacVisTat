@@ -61,6 +61,8 @@ private:
     QMap<QString, QCPDataMap> _result;
     QDateTimeEdit *_dtEditFrom;
     QDateTimeEdit *_dtEditTo;
+    bool _userEditFlag;
+    bool _userDragFlag;
 };
 
 #endif // PLOTWINDOW_H

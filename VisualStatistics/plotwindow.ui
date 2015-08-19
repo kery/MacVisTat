@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>629</width>
-    <height>381</height>
+    <width>630</width>
+    <height>380</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>630</width>
+    <height>380</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Plot Window</string>
@@ -55,7 +61,7 @@
   </widget>
   <action name="actionSaveAsImage">
    <property name="icon">
-    <iconset>
+    <iconset resource="VisualStatistics.qrc">
      <normaloff>:/resource/image/save.png</normaloff>:/resource/image/save.png</iconset>
    </property>
    <property name="text">
@@ -73,7 +79,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="VisualStatistics.qrc">
      <normaloff>:/resource/image/full_screen.png</normaloff>:/resource/image/full_screen.png</iconset>
    </property>
    <property name="text">
@@ -85,7 +91,7 @@
   </action>
   <action name="actionRestoreScale">
    <property name="icon">
-    <iconset>
+    <iconset resource="VisualStatistics.qrc">
      <normaloff>:/resource/image/restore.png</normaloff>:/resource/image/restore.png</iconset>
    </property>
    <property name="text">
@@ -100,7 +106,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="VisualStatistics.qrc">
      <normaloff>:/resource/image/minus.png</normaloff>:/resource/image/minus.png</iconset>
    </property>
    <property name="text">
@@ -115,7 +121,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="VisualStatistics.qrc">
      <normaloff>:/resource/image/chart_graph.png</normaloff>:/resource/image/chart_graph.png</iconset>
    </property>
    <property name="text">
@@ -127,7 +133,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="VisualStatistics.qrc">
      <normaloff>:/resource/image/pencil.png</normaloff>:/resource/image/pencil.png</iconset>
    </property>
    <property name="text">
@@ -143,6 +149,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="VisualStatistics.qrc"/>
+ </resources>
  <connections/>
 </ui>

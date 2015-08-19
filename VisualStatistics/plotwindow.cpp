@@ -30,14 +30,20 @@ int PlotWindow::predefinedColorCount()
 PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, QWidget *parent) :
     QMainWindow(parent),
     _ui(new Ui::PlotWindow),
-    _node(node)
+    _node(node),
+    _userEditFlag(true),
+    _userDragFlag(true)
 {
     _ui->setupUi(this);
+
+    convertResultFirstData(result);
+    convertResultRestData(result);
 
     QWidget *spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     _ui->toolBar->addWidget(spacer);
     _dtEditFrom = new QDateTimeEdit();
+    _dtEditFrom->setDateTimeRange(QDateTime::fromTime_t(_dateTimes.first()), QDateTime::fromTime_t(_dateTimes.last()));
     _dtEditFrom->setDisplayFormat(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
     _ui->toolBar->addWidget(_dtEditFrom);
     spacer = new QWidget();
@@ -45,14 +51,12 @@ PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &res
     spacer->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     _ui->toolBar->addWidget(spacer);
     _dtEditTo = new QDateTimeEdit();
+    _dtEditTo->setDateTimeRange(QDateTime::fromTime_t(_dateTimes.first()), QDateTime::fromTime_t(_dateTimes.last()));
     _dtEditTo->setDisplayFormat(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
     _ui->toolBar->addWidget(_dtEditTo);
     connect(_ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), SLOT(xAxisRangeChanged(QCPRange)));
     connect(_dtEditFrom, SIGNAL(dateTimeChanged(QDateTime)), SLOT(fromDateTimeChanged(QDateTime)));
     connect(_dtEditTo, SIGNAL(dateTimeChanged(QDateTime)), SLOT(toDateTimeChanged(QDateTime)));
-
-    convertResultFirstData(result);
-    convertResultRestData(result);
 
     initializePlot();
 }
@@ -336,46 +340,67 @@ void PlotWindow::moveLegend()
 
 void PlotWindow::xAxisRangeChanged(const QCPRange &newRange)
 {
-    int indexFrom = (int)newRange.lower;
-    int indexTo = (int)newRange.upper;
-    if (indexFrom < 0) {
-        indexFrom = 0;
+    qDebug() << newRange.lower << ", " << newRange.upper;
+    if (_userDragFlag) {
+        int dtFrom, dtTo;
+        int lower = (int)newRange.lower;
+        int upper = (int)newRange.upper;
+        if (lower >= _dateTimes.size()) {
+            dtFrom = _dateTimes.last();
+            dtTo = _dateTimes.last();
+        } else if (upper < 0) {
+            dtFrom = _dateTimes.first();
+            dtTo = _dateTimes.first();
+        } else {
+            if (lower < 0) {
+                dtFrom = _dateTimes.first();
+            } else {
+                dtFrom = _dateTimes.at(lower);
+            }
+            if (upper >= _dateTimes.size()) {
+                dtTo = _dateTimes.last();
+            } else {
+                dtTo = _dateTimes.at(upper);
+            }
+        }
+
+        _userEditFlag = false;
+        _dtEditFrom->setDateTime(QDateTime::fromTime_t(dtFrom));
+        _dtEditTo->setDateTime(QDateTime::fromTime_t(dtTo));
+        _userEditFlag = true;
     }
-    if (indexTo >= _dateTimes.size()) {
-        indexTo = _dateTimes.size() - 1;
-    }
-    _dtEditFrom->setDateTime(QDateTime::fromTime_t(_dateTimes.at(indexFrom)));
-    _dtEditTo->setDateTime(QDateTime::fromTime_t(_dateTimes.at(indexTo)));
+
 }
 
 void PlotWindow::fromDateTimeChanged(const QDateTime &dateTime)
 {
-    int time = (int)dateTime.toTime_t();
-    int i;
-    for (i = 0; i < _dateTimes.size(); ++i) {
-        if (_dateTimes.at(i) >= time) {
-            break;
+    if (_userEditFlag) {
+        int time = (int)dateTime.toTime_t();
+        auto iter = std::upper_bound(_dateTimes.begin(), _dateTimes.end(), time);
+        if (iter != _dateTimes.end()) {
+            _userDragFlag = false;
+            if (iter != _dateTimes.begin()) {
+                _ui->customPlot->xAxis->setRangeLower(iter - _dateTimes.begin() - 1);
+            } else {
+                _ui->customPlot->xAxis->setRangeLower(0);
+            }
+            _userDragFlag = true;
+            _ui->customPlot->replot();
         }
-    }
-    if (i < _dateTimes.size()) {
-        _ui->customPlot->xAxis->setRangeLower(i);
-        _ui->customPlot->replot();
     }
 }
 
 void PlotWindow::toDateTimeChanged(const QDateTime &dateTime)
 {
-    int time = (int)dateTime.toTime_t();
-    int i;
-    for (i = _dateTimes.size() - 1; i >= 0; --i) {
-        if (_dateTimes.at(i) <= time) {
-            break;
+    if (_userEditFlag) {
+        int time = (int)dateTime.toTime_t();
+        auto iter = std::upper_bound(_dateTimes.begin(), _dateTimes.end(), time);
+        if (iter != _dateTimes.end()) {
+            _userDragFlag = false;
+            _ui->customPlot->xAxis->setRangeUpper(iter - _dateTimes.begin());
+            _userDragFlag = true;
+            _ui->customPlot->replot();
         }
-    }
-
-    if (i >= 0) {
-        _ui->customPlot->xAxis->setRangeUpper(i);
-        _ui->customPlot->replot();
     }
 }
 
