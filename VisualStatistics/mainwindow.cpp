@@ -95,7 +95,7 @@ bool MainWindow::statisticsFileAlreadyAdded(const QString &fileName)
     return false;
 }
 
-int MainWindow::addStatisticsFiles(const QStringList &fileNames)
+QVector<QString> MainWindow::addStatisticsFiles(const QStringList &fileNames)
 {
     QRegExp regExp(STAT_FILE_PATTERN);
     QIcon icon(QStringLiteral(":/resource/image/archive.png"));
@@ -169,7 +169,7 @@ end:
 
     watcher->setFuture(QtConcurrent::mapped(addedFileNames, mappedFunction));
 
-    return addedFileNames.size();
+    return addedFileNames;
 }
 
 bool MainWindow::checkStatisticsFileNode(const QString &node)
@@ -196,53 +196,75 @@ bool MainWindow::checkStatisticsFileType(const QString &type)
     return regExp.cap(2) == type;
 }
 
-void MainWindow::parseStatisticsFileHeader()
+void MainWindow::parseStatisticsFileHeader(const QVector<QString> &fileNames, bool updateModel)
 {
-    Q_ASSERT(_ui->lwStatisticsFiles->count() > 0);
+    QProgressDialog dialog(this);
+    dialog.setWindowTitle(QStringLiteral("Please Wait"));
+    dialog.setLabelText(QStringLiteral("Parsing statistics files' header..."));
+    dialog.setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    dialog.setCancelButton(NULL);
+    dialog.setRange(0, fileNames.size());
 
-    std::string header;
-    GZipFile gzFile(_ui->lwStatisticsFiles->item(0)->toolTip());
-    if (!gzFile.readLine(header)) {
-        showErrorMsgBox(QStringLiteral("Read header of statistics file failed!"),
-                        _ui->lwStatisticsFiles->item(0)->toolTip());
-        return;
-    }
-
-    for (int i = 1; i < _ui->lwStatisticsFiles->count(); ++i) {
-        QListWidgetItem *item = _ui->lwStatisticsFiles->item(i);
-
-        GZipFile gzFile(item->toolTip());
-        std::string line;
-        if (gzFile.readLine(line)) {
-            if (line != header) {
-                showErrorMsgBox(QStringLiteral("Headers of statistics file are not identical!"),
-                                _ui->lwStatisticsFiles->item(0)->toolTip() + "\n" + item->toolTip());
-                return;
+    QFuture<std::string> future = QtConcurrent::run([&fileNames, &dialog] () {
+        std::string result;
+        GZipFile gzFile(fileNames.at(0));
+        int progress = 0;
+        if (gzFile.readLine(result)) {
+            QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
+            if (strncmp(result.c_str(), "##date;time;", 12) == 0 &&
+                strcmp(result.c_str() + result.length() - 2, "##") == 0)
+            {
+                for (int i = 1; i < fileNames.size(); ++i) {
+                    std::string header;
+                    GZipFile tmpGzFile(fileNames.at(i));
+                    if (tmpGzFile.readLine(header)) {
+                        QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
+                        if (header != result) {
+                            result = (QFileInfo(fileNames.at(0)).fileName() + '\n' +
+                                      QFileInfo(fileNames.at(i)).fileName() + QDir::separator()).toStdString();
+                            break;
+                        }
+                    } else {
+                        result = QFileInfo(fileNames.at(i)).fileName().toStdString();
+                    }
+                }
+            } else {
+                // Append a flag to indicate that the header in file is invalid
+                result = (QFileInfo(fileNames.at(0)).fileName() + QDir::separator()).toStdString();
             }
         } else {
-            showErrorMsgBox(QStringLiteral("Read header of statistics file failed!"),
-                            item->toolTip());
-            return;
+            result = QFileInfo(fileNames.at(0)).fileName().toStdString();
         }
-    }
+        QMetaObject::invokeMethod(&dialog, "reset", Qt::QueuedConnection);
+        return result;
+    });
 
-    if (header.find("##date;time;") != 0 || header.rfind("##") != header.length() - 2) {
-        showErrorMsgBox(QStringLiteral("Invalid statistics file's header format!"),
-                        _ui->lwStatisticsFiles->item(0)->toolTip());
-        return;
-    }
+    dialog.exec();
+    future.waitForFinished();
 
-    StatisticsNameModel *model = static_cast<StatisticsNameModel*>(_ui->lvStatisticsName->model());
-    model->beforeDataContainerUpdate();
-    std::vector<std::string> &container = model->getDataContainer();
-    container.resize(0);
-    splitString(header.c_str() + sizeof("##date;time;") - 1, ';', container);
-    container.back().erase(container.back().length() - 2);
-    model->endDataContainerUpdate();
+    std::string result = future.result();
+    if (result.front() == '#') {
+        if (updateModel) {
+            StatisticsNameModel *model = static_cast<StatisticsNameModel*>(_ui->lvStatisticsName->model());
+            model->beforeDataContainerUpdate();
+            std::vector<std::string> &container = model->getDataContainer();
+            container.resize(0);
+            splitString(result.c_str() + sizeof("##date;time;") - 1, ';', container);
+            container.back().erase(container.back().length() - 2);
+            model->endDataContainerUpdate();
 
-    QString filterText = _ui->cbRegExpFilter->lineEdit()->text();
-    if (!filterText.isEmpty()) {
-        model->setFilterPattern(filterText);
+            QString filterText = _ui->cbRegExpFilter->lineEdit()->text();
+            if (!filterText.isEmpty()) {
+                model->setFilterPattern(filterText);
+            }
+        }
+    } else if (result.back() == QDir::separator().toLatin1()) {
+        result.erase(result.end() - 1);
+        showErrorMsgBox(QStringLiteral("Invalid statistics file header format. The reason may be the header itself is invalid or two files' header aren't the same."),
+                        QString::fromStdString(result));
+    } else {
+        showErrorMsgBox(QStringLiteral("Read statistics file header failed."),
+                        QString::fromStdString(result));
     }
 }
 
@@ -273,7 +295,7 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
     if (_ui->lvStatisticsName->selectionModel()->selectedIndexes().size() > PlotWindow::predefinedColorCount() ||
         (model->rowCount() > PlotWindow::predefinedColorCount() && !_ui->lvStatisticsName->selectionModel()->hasSelection()))
     {
-        showInfoMsgBox(QStringLiteral("Too many statistics names specified, please change your filter text!"),
+        showInfoMsgBox(QStringLiteral("Too many statistics names specified, please change your filter text."),
                        QString("At most %1 statistics names allowed at one time.").arg(PlotWindow::predefinedColorCount()));
         return;
     }
@@ -464,10 +486,10 @@ void MainWindow::dropEvent(QDropEvent *event)
         fileNames.append(url.toLocalFile());
     }
     if (fileNames.size() > 0) {
-        int preCount = _ui->lwStatisticsFiles->count();
-        int added = addStatisticsFiles(fileNames);
-        if (preCount == 0 && added > 0) {
-            parseStatisticsFileHeader();
+        int beforeAdd = _ui->lwStatisticsFiles->count();
+        QVector<QString> addedFiles = addStatisticsFiles(fileNames);
+        if (addedFiles.size() > 0) {
+            parseStatisticsFileHeader(addedFiles, beforeAdd == 0);
         }
     }
 }
@@ -576,10 +598,10 @@ void MainWindow::on_actionAdd_triggered()
     fileDialog.setNameFilter(QStringLiteral("Statistics File (*.csv.gz)"));
 
     if (fileDialog.exec() == QDialog::Accepted) {
-        int preCount = _ui->lwStatisticsFiles->count();
-        int added = addStatisticsFiles(fileDialog.selectedFiles());
-        if (preCount == 0 && added > 0) {
-            parseStatisticsFileHeader();
+        int beforeAdd = _ui->lwStatisticsFiles->count();
+        QVector<QString> addedFiles = addStatisticsFiles(fileDialog.selectedFiles());
+        if (addedFiles.size() > 0) {
+            parseStatisticsFileHeader(addedFiles, beforeAdd == 0);
         }
     }
 }

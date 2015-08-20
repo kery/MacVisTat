@@ -38,10 +38,10 @@ private:
     bool isToolTipEventOfToolButton(QObject *obj, QEvent *event);
 
     bool statisticsFileAlreadyAdded(const QString &fileName);
-    int addStatisticsFiles(const QStringList &fileNames);
+    QVector<QString> addStatisticsFiles(const QStringList &fileNames);
     bool checkStatisticsFileNode(const QString &node);
     bool checkStatisticsFileType(const QString &type);
-    void parseStatisticsFileHeader();
+    void parseStatisticsFileHeader(const QVector<QString> &fileNames, bool updateModel);
     // multipleWindows indicates that if the parsed data will be shown in
     // multiple windows when it is ready
     // When parsed result is ready the slot handleParsedResult will be called
