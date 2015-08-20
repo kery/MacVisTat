@@ -59,11 +59,6 @@ private:
     virtual void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
     virtual void closeEvent(QCloseEvent *) Q_DECL_OVERRIDE;
 
-private:
-    // Can't place this line in the slots section, otherwise no compile
-    // error occurred but failed to generate executable file (due to MOC?)
-    typedef QMap<int, QString> TimeDurationResult;
-
 private slots:
     void updateFilterPattern();
     void listViewDoubleClicked(const QModelIndex &index);
@@ -88,6 +83,8 @@ private slots:
     void on_actionInvertSelection_triggered();
 
     void on_actionViewHelp_triggered();
+
+    void on_actionCalculateTimeDuration_triggered();
 
 signals:
     void aboutToBeClosed();

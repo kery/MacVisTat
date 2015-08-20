@@ -137,7 +137,7 @@
     </property>
     <addaction name="actionDrawPlot"/>
     <addaction name="actionDrawPlotInMultipleWindows"/>
-    <addaction name="separator"/>
+    <addaction name="actionCalculateTimeDuration"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Selection"/>
@@ -159,6 +159,7 @@
    <addaction name="separator"/>
    <addaction name="actionDrawPlot"/>
    <addaction name="actionDrawPlotInMultipleWindows"/>
+   <addaction name="actionCalculateTimeDuration"/>
    <addaction name="separator"/>
    <addaction name="actionViewHelp"/>
   </widget>
@@ -286,6 +287,21 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="actionCalculateTimeDuration">
+   <property name="icon">
+    <iconset resource="VisualStatistics.qrc">
+     <normaloff>:/resource/image/time.png</normaloff>:/resource/image/time.png</iconset>
+   </property>
+   <property name="text">
+    <string>Calculate Time Duration</string>
+   </property>
+   <property name="statusTip">
+    <string>Calculate statistics files' time duration</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
   </action>
  </widget>

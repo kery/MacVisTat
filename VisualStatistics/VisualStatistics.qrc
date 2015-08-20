@@ -12,5 +12,6 @@
         <file>resource/image/pencil.png</file>
         <file>resource/image/minus.png</file>
         <file>resource/image/restore.png</file>
+        <file>resource/image/time.png</file>
     </qresource>
 </RCC>

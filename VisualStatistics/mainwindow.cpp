@@ -125,50 +125,6 @@ QVector<QString> MainWindow::addStatisticsFiles(const QStringList &fileNames)
         addedFileNames << nativeName;
     }
 
-    std::function<TimeDurationResult (const QString &)> mappedFunction = [] (const QString &fileName) {
-        TimeDurationResult result;
-        const int TIME_STR_LEN = 19;
-
-        result.insert(KEY_FILE_NAME, fileName);
-
-        GZipFile gzFile(fileName);
-        QRegExp regExp(QStringLiteral("^\\d{2}\\.\\d{2}\\.\\d{4};\\d{2}:\\d{2}:\\d{2};"));
-        std::string startLine, endLine;
-        if (!gzFile.readLine(startLine)) {
-            goto end;
-        }
-
-        // Ignore the first line because it is header
-        // Read the second line
-        if (!gzFile.readLine(startLine)) {
-            goto end;
-        }
-
-        // Check format
-        if (regExp.indexIn(QString::fromStdString(startLine)) != 0) {
-            goto end;
-        }
-
-        // Get the last line
-        while (gzFile.readLine(endLine));
-
-        // Check format
-        if (regExp.indexIn(QString::fromStdString(endLine)) != 0) {
-            goto end;
-        }
-
-        result.insert(KEY_START_TIME, QString::fromStdString(startLine).left(TIME_STR_LEN).replace(';', ' '));
-        result.insert(KEY_END_TIME, QString::fromStdString(endLine).left(TIME_STR_LEN).replace(';', ' '));
-end:
-        return result;
-    };
-
-    QFutureWatcher<TimeDurationResult> *watcher = new QFutureWatcher<TimeDurationResult>(this);
-    connect(watcher, SIGNAL(resultReadyAt(int)), SLOT(handleTimeDurationResult(int)));
-    connect(watcher, SIGNAL(finished()), watcher, SLOT(deleteLater()));
-
-    watcher->setFuture(QtConcurrent::mapped(addedFileNames, mappedFunction));
-
     return addedFileNames;
 }
 
@@ -565,17 +521,19 @@ void MainWindow::clearLogEdit()
 
 void MainWindow::handleTimeDurationResult(int index)
 {
-    QFutureWatcher<TimeDurationResult> *watcher = static_cast<QFutureWatcher<TimeDurationResult>*>(sender());
-    TimeDurationResult result = watcher->resultAt(index);
-    QFileInfo fileInfo(result.value(KEY_FILE_NAME));
-    if (result.size() > 1) {
-        QList<QListWidgetItem*> items = _ui->lwStatisticsFiles->findItems(fileInfo.fileName(),
+    QFutureWatcher<QString> *watcher = static_cast<QFutureWatcher<QString>*>(sender());
+    if (!watcher->isCanceled()) {
+        QString result = watcher->resultAt(index);
+        QStringList stringList = result.split(QDir::separator());
+        Q_ASSERT(stringList.size() == 2);
+        QList<QListWidgetItem*> items = _ui->lwStatisticsFiles->findItems(stringList.at(1),
             Qt::MatchFixedString | Qt::MatchCaseSensitive);
         if (items.size() > 0) {
-            items.at(0)->setStatusTip(QString("Time duration: %1 - %2").arg(result.value(KEY_START_TIME)).arg(result.value(KEY_END_TIME)));
+            items.at(0)->setStatusTip(stringList.at(0));
         }
-    } else {
-        appendLogError(QString("Parse file %1 failed.").arg(fileInfo.fileName()));
+        if (stringList.at(0).contains(QStringLiteral("parse failed!"))) {
+            appendLogError(QString("Parse file %1's time duration failed.").arg(stringList.at(1)));
+        }
     }
 }
 
@@ -663,4 +621,88 @@ void MainWindow::on_actionInvertSelection_triggered()
 
 void MainWindow::on_actionViewHelp_triggered()
 {
+}
+
+void MainWindow::on_actionCalculateTimeDuration_triggered()
+{
+    QVector<QString> filesToCalculate;
+    for (int i = 0; i < _ui->lwStatisticsFiles->count(); ++i) {
+        QListWidgetItem *item = _ui->lwStatisticsFiles->item(i);
+        if (item->statusTip().isEmpty()) {
+            filesToCalculate << item->toolTip();
+        }
+    }
+
+    if (filesToCalculate.size() > 0) {
+        volatile bool working = true;
+        ProgressBar *customBar = new ProgressBar();
+
+        std::function<QString (const QString &)> mappedFunction = [&working, customBar] (const QString &fileName) -> QString {
+            const int TIME_STR_LEN = 19;
+
+            GZipFile gzFile(fileName);
+            QRegExp regExp(QStringLiteral("^\\d{2}\\.\\d{2}\\.\\d{4};\\d{2}:\\d{2}:\\d{2};"));
+            std::string startLine, endLine;
+            if (!gzFile.readLine(startLine)) {
+                return QString(QStringLiteral("Time duration: parse failed!%1%2")).
+                        arg(QDir::separator()).arg(QFileInfo(fileName).fileName());
+            }
+
+            // Ignore the first line because it is header
+            // Read the second line
+            if (!gzFile.readLine(startLine)) {
+                return QString(QStringLiteral("Time duration: parse failed!%1%2")).
+                        arg(QDir::separator()).arg(QFileInfo(fileName).fileName());
+            }
+
+            // Check format
+            if (regExp.indexIn(QString::fromStdString(startLine)) != 0) {
+                return QString(QStringLiteral("Time duration: parse failed!%1%2")).
+                        arg(QDir::separator()).arg(QFileInfo(fileName).fileName());
+            }
+
+            // Get the last line
+            int preCompletionRate = 0;
+            while (working && gzFile.readLine(endLine)) {
+                int completionRate = gzFile.completionRate();
+                if (completionRate > preCompletionRate) {
+                    QMetaObject::invokeMethod(customBar, "increaseValue", Qt::QueuedConnection,
+                                              Q_ARG(int, completionRate - preCompletionRate));
+                    preCompletionRate = completionRate;
+                }
+            }
+
+            // Check format
+            if (regExp.indexIn(QString::fromStdString(endLine)) != 0) {
+                return QString(QStringLiteral("Time duration: parse failed!%1%2")).
+                        arg(QDir::separator()).arg(QFileInfo(fileName).fileName());
+            }
+
+            return QString(QStringLiteral("Time duration: %1 - %2%3%4")).
+                    arg(QString::fromStdString(startLine).left(TIME_STR_LEN).replace(';', ' ')).
+                    arg(QString::fromStdString(endLine).left(TIME_STR_LEN).replace(';', ' ')).
+                    arg(QDir::separator()).
+                    arg(QFileInfo(fileName).fileName());
+        };
+
+        QProgressDialog dialog(this);
+        dialog.setWindowTitle(QStringLiteral("Please Wait"));
+        dialog.setLabelText(QStringLiteral("Parsing statistics files' time duration..."));
+        dialog.setBar(customBar); // dialog takes ownership of customBar
+        dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+        dialog.setRange(0, filesToCalculate.size() * 100);
+
+        // We don't use wathcer to monitor progress because it base on item count in the container, this
+        // is not accurate. Instead, we calculate the progress ourselves
+        QFutureWatcher<QString> *watcher = new QFutureWatcher<QString>(this);
+        connect(watcher, SIGNAL(resultReadyAt(int)), SLOT(handleTimeDurationResult(int)));
+        connect(watcher, SIGNAL(finished()), &dialog, SLOT(reset()));
+        connect(watcher, SIGNAL(finished()), watcher, SLOT(deleteLater()));
+        connect(&dialog, &QProgressDialog::canceled, [&working, watcher] () {watcher->cancel();working = false;});
+
+        watcher->setFuture(QtConcurrent::mapped(filesToCalculate, mappedFunction));
+
+        dialog.exec();
+        watcher->waitForFinished();
+    }
 }
