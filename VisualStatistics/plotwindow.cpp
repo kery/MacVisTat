@@ -35,6 +35,7 @@ PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &res
     _userDragFlag(true)
 {
     _ui->setupUi(this);
+    setWindowTitle(_node);
 
     convertResultFirstData(result);
     convertResultRestData(result);
