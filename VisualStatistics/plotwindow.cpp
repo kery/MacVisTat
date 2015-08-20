@@ -431,7 +431,7 @@ void PlotWindow::on_actionSaveAsImage_triggered()
     QString dir = QDir::cleanPath(qApp->applicationDirPath() + QDir::separator() + _node);
 
     if (_result.size() == 1) {
-        dir += QString("-%1").arg(_result.firstKey());
+        dir += QStringLiteral("-%1").arg(_result.firstKey());
     }
 
     QString fileName = QFileDialog::getSaveFileName(this, QStringLiteral("Save As Image"),

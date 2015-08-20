@@ -111,11 +111,11 @@ QVector<QString> MainWindow::addStatisticsFiles(const QStringList &fileNames)
             continue;
         }
         if (!checkStatisticsFileNode(regExp.cap(1))) {
-            appendLogWarn(QString("%1 ignored. Please add only one node's statistics files!").arg(fileInfo.fileName()));
+            appendLogWarn(QStringLiteral("%1 ignored. Please add only one node's statistics files!").arg(fileInfo.fileName()));
             continue;
         }
         if (!checkStatisticsFileType(regExp.cap(2))) {
-            appendLogWarn(QString("%1 ignored. Please add only one type of statistics files!").arg(fileInfo.fileName()));
+            appendLogWarn(QStringLiteral("%1 ignored. Please add only one type of statistics files!").arg(fileInfo.fileName()));
             continue;
         }
         QListWidgetItem *item = new QListWidgetItem(icon, fileInfo.fileName());
@@ -252,7 +252,7 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
         (model->rowCount() > PlotWindow::predefinedColorCount() && !_ui->lvStatisticsName->selectionModel()->hasSelection()))
     {
         showInfoMsgBox(QStringLiteral("Too many statistics names specified, please change your filter text."),
-                       QString("At most %1 statistics names allowed at one time.").arg(PlotWindow::predefinedColorCount()));
+                       QStringLiteral("At most %1 statistics names allowed at one time.").arg(PlotWindow::predefinedColorCount()));
         return;
     }
 
@@ -402,17 +402,17 @@ void MainWindow::showErrorMsgBox(const QString &text, const QString &info)
 
 void MainWindow::appendLogInfo(const QString &text)
 {
-    _ui->logTextEdit->appendHtml(QString("<font color='green'>INFO: %1</font>").arg(text));
+    _ui->logTextEdit->appendHtml(QStringLiteral("<font color='green'>INFO: %1</font>").arg(text));
 }
 
 void MainWindow::appendLogWarn(const QString &text)
 {
-    _ui->logTextEdit->appendHtml(QString("<font color='#CC9900'>WARN: %1</font>").arg(text));
+    _ui->logTextEdit->appendHtml(QStringLiteral("<font color='#CC9900'>WARN: %1</font>").arg(text));
 }
 
 void MainWindow::appendLogError(const QString &text)
 {
-    _ui->logTextEdit->appendHtml(QString("<font color='red'>ERR: %1</font>").arg(text));
+    _ui->logTextEdit->appendHtml(QStringLiteral("<font color='red'>ERR: %1</font>").arg(text));
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -489,7 +489,7 @@ void MainWindow::handleStatisticsResult(const StatisticsResult &result, bool mul
         }
     } else {
         for (const QString &failedFile : result.failedFile) {
-            appendLogError(QString("Parse fle %1 failed.").arg(failedFile));
+            appendLogError(QStringLiteral("Parse fle %1 failed.").arg(failedFile));
         }
     }
 }
@@ -532,7 +532,7 @@ void MainWindow::handleTimeDurationResult(int index)
             items.at(0)->setStatusTip(stringList.at(0));
         }
         if (stringList.at(0).contains(QStringLiteral("parse failed!"))) {
-            appendLogError(QString("Parse file %1's time duration failed.").arg(stringList.at(1)));
+            appendLogError(QStringLiteral("Parse file %1's time duration failed.").arg(stringList.at(1)));
         }
     }
 }
@@ -644,20 +644,20 @@ void MainWindow::on_actionCalculateTimeDuration_triggered()
             QRegExp regExp(QStringLiteral("^\\d{2}\\.\\d{2}\\.\\d{4};\\d{2}:\\d{2}:\\d{2};"));
             std::string startLine, endLine;
             if (!gzFile.readLine(startLine)) {
-                return QString(QStringLiteral("Time duration: parse failed!%1%2")).
+                return QStringLiteral("Time duration: parse failed!%1%2").
                         arg(QDir::separator()).arg(QFileInfo(fileName).fileName());
             }
 
             // Ignore the first line because it is header
             // Read the second line
             if (!gzFile.readLine(startLine)) {
-                return QString(QStringLiteral("Time duration: parse failed!%1%2")).
+                return QStringLiteral("Time duration: parse failed!%1%2").
                         arg(QDir::separator()).arg(QFileInfo(fileName).fileName());
             }
 
             // Check format
             if (regExp.indexIn(QString::fromStdString(startLine)) != 0) {
-                return QString(QStringLiteral("Time duration: parse failed!%1%2")).
+                return QStringLiteral("Time duration: parse failed!%1%2").
                         arg(QDir::separator()).arg(QFileInfo(fileName).fileName());
             }
 
@@ -674,11 +674,11 @@ void MainWindow::on_actionCalculateTimeDuration_triggered()
 
             // Check format
             if (regExp.indexIn(QString::fromStdString(endLine)) != 0) {
-                return QString(QStringLiteral("Time duration: parse failed!%1%2")).
+                return QStringLiteral("Time duration: parse failed!%1%2").
                         arg(QDir::separator()).arg(QFileInfo(fileName).fileName());
             }
 
-            return QString(QStringLiteral("Time duration: %1 - %2%3%4")).
+            return QStringLiteral("Time duration: %1 - %2%3%4").
                     arg(QString::fromStdString(startLine).left(TIME_STR_LEN).replace(';', ' ')).
                     arg(QString::fromStdString(endLine).left(TIME_STR_LEN).replace(';', ' ')).
                     arg(QDir::separator()).
@@ -704,5 +704,9 @@ void MainWindow::on_actionCalculateTimeDuration_triggered()
 
         dialog.exec();
         watcher->waitForFinished();
+        if (!watcher->isCanceled()) {
+            showInfoMsgBox(QStringLiteral("Calculate statistics files' time duration finished."),
+                           QStringLiteral("The time duration will be shown in status bar when you hover mouse on file name."));
+        }
     }
 }
