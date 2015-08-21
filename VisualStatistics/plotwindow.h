@@ -15,10 +15,13 @@ public:
     static int predefinedColorCount();
 
 public:
-    explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, QWidget *parent = 0);
+    explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, QWidget *parent = NULL);
+    explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, const QVector<int> &dateTimes, QWidget *parent = NULL);
     ~PlotWindow();
 
 private:
+    PlotWindow(const QString &node, QWidget *parent = NULL);
+
     void convertResultFirstData(const QMap<QString, QCPDataMap> &result);
     void convertResultRestData(const QMap<QString, QCPDataMap> &result);
     void initializePlot();
@@ -55,6 +58,8 @@ private slots:
     void on_actionFillPlot_toggled(bool checked);
 
     void on_actionMarkAbnormalTime_toggled(bool checked);
+
+    void on_actionSaveRawData_triggered();
 
 private:
     Ui::PlotWindow *_ui;

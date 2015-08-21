@@ -147,6 +147,14 @@
     <string>Mark Abnormal Time</string>
    </property>
   </action>
+  <action name="actionSaveRawData">
+   <property name="text">
+    <string>Save Raw Data</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

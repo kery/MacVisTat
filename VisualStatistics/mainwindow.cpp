@@ -619,6 +619,12 @@ void MainWindow::on_actionInvertSelection_triggered()
     }
 }
 
+QDataStream& operator>> (QDataStream &in, QCPData &data)
+{
+    in >> data.key >> data.value;
+    return in;
+}
+
 void MainWindow::on_actionViewHelp_triggered()
 {
 }
