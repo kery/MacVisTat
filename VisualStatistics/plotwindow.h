@@ -32,7 +32,6 @@ private:
     void markAbnormalTime();
 
     void adjustYAxisRange();
-    void rescaleAxes();
 
 private slots:
     void adjustTicks();

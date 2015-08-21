@@ -148,7 +148,8 @@ void PlotWindow::initializePlot()
         markAbnormalTime();
     }
 
-    rescaleAxes();
+    plot->rescaleAxes(true);
+    adjustYAxisRange();
     plot->replot();
 }
 
@@ -237,12 +238,6 @@ void PlotWindow::adjustYAxisRange()
     range.lower -= delta;
     range.upper += delta;
     _ui->customPlot->yAxis->setRange(range);
-}
-
-void PlotWindow::rescaleAxes()
-{
-    _ui->customPlot->rescaleAxes(true);
-    adjustYAxisRange();
 }
 
 void PlotWindow::adjustTicks()
@@ -443,7 +438,8 @@ void PlotWindow::on_actionSaveAsImage_triggered()
 
 void PlotWindow::on_actionRestoreScale_triggered()
 {
-    rescaleAxes();
+    _ui->customPlot->rescaleAxes(true);
+    adjustYAxisRange();
     _ui->customPlot->replot();
 }
 
@@ -468,7 +464,9 @@ void PlotWindow::on_actionShowDelta_toggled(bool checked)
             graph->setData(const_cast<QCPDataMap*>(&iter.value()), true);
         }
     }
-    rescaleAxes();
+    // Only rescale Y axis
+    plot->yAxis->rescale(true);
+    adjustYAxisRange();
     plot->replot();
 }
 
