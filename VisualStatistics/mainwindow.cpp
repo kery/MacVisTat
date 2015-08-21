@@ -619,12 +619,6 @@ void MainWindow::on_actionInvertSelection_triggered()
     }
 }
 
-QDataStream& operator>> (QDataStream &in, QCPData &data)
-{
-    in >> data.key >> data.value;
-    return in;
-}
-
 void MainWindow::on_actionViewHelp_triggered()
 {
 }
@@ -634,7 +628,7 @@ void MainWindow::on_actionCalculateTimeDuration_triggered()
     QVector<QString> filesToCalculate;
     for (int i = 0; i < _ui->lwStatisticsFiles->count(); ++i) {
         QListWidgetItem *item = _ui->lwStatisticsFiles->item(i);
-        if (item->statusTip().isEmpty()) {
+        if (item->checkState() == Qt::Checked && item->statusTip().isEmpty()) {
             filesToCalculate << item->toolTip();
         }
     }
@@ -713,6 +707,46 @@ void MainWindow::on_actionCalculateTimeDuration_triggered()
         if (!watcher->isCanceled()) {
             showInfoMsgBox(QStringLiteral("Calculate statistics files' time duration finished."),
                            QStringLiteral("The time duration will be shown in status bar when you hover mouse on file name."));
+        }
+    }
+}
+
+void MainWindow::on_actionOpenPlotFile_triggered()
+{
+    QFileDialog fileDialog(this);
+    fileDialog.setFileMode(QFileDialog::ExistingFiles);
+    fileDialog.setNameFilter(QStringLiteral("Plot File (*.plot)"));
+
+    if (fileDialog.exec() == QDialog::Accepted) {
+        for (const QString &fileName : fileDialog.selectedFiles()) {
+            QFile file(fileName);
+            if (file.open(QFile::ReadOnly)) {
+                QDataStream in(&file);
+                quint32 magicNum;
+                in >> magicNum;
+                if (plotFileMagicNum == magicNum) {
+                    qint32 ver;
+                    in >> ver;
+                    // TODO check version
+
+                    QString node;
+                    QVector<qint32> dateTimes;
+                    QMap<QString, QCPDataMap> statResult;
+                    in >> node >> dateTimes >> statResult;
+
+                    PlotWindow *w = new PlotWindow(node, statResult, dateTimes);
+                    w->setAttribute(Qt::WA_DeleteOnClose);
+                    connect(this, SIGNAL(aboutToBeClosed()), w, SLOT(close()));
+                    w->showMaximized();
+                } else {
+                    appendLogError(QStringLiteral("Invalid plot file %1.").arg(
+                                       QDir::toNativeSeparators(fileName)));
+                }
+                file.close();
+            } else {
+                appendLogError(QStringLiteral("Open plot file %1 failed.").arg(
+                                   QDir::toNativeSeparators(fileName)));
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 #include "plotwindow.h"
 #include "ui_plotwindow.h"
+#include "utils.h"
 
 struct DataColor
 {
@@ -22,12 +23,6 @@ static DataColor dataColors[] = {
     DataColor(QColor(0, 255, 255), QColor(0, 255, 255, 50)),
 };
 
-QDataStream& operator<< (QDataStream &out, const QCPData &data)
-{
-    out << data.key << data.value;
-    return out;
-}
-
 int PlotWindow::predefinedColorCount()
 {
     return sizeof(dataColors)/sizeof(dataColors[0]);
@@ -45,9 +40,9 @@ PlotWindow::PlotWindow(const QString &node, QWidget *parent) :
 
     QToolButton *saveButton = static_cast<QToolButton*>(_ui->toolBar->widgetForAction(_ui->actionSaveAsImage));
     saveButton->setPopupMode(QToolButton::MenuButtonPopup);
-    QMenu *saveRawDataMenu = new QMenu(this);
-    saveRawDataMenu->addAction(_ui->actionSaveRawData);
-    saveButton->setMenu(saveRawDataMenu);
+    QMenu *saveToFileMenu = new QMenu(this);
+    saveToFileMenu->addAction(_ui->actionSaveToFile);
+    saveButton->setMenu(saveToFileMenu);
 
     QWidget *spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -76,7 +71,7 @@ PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &res
     initializePlot();
 }
 
-PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, const QVector<int> &dateTimes, QWidget *parent) :
+PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, const QVector<qint32> &dateTimes, QWidget *parent) :
     PlotWindow(node, parent) // C++ 11 only
 {
     _result = result;
@@ -521,24 +516,25 @@ void PlotWindow::on_actionMarkAbnormalTime_toggled(bool checked)
     QSettings().setValue(QStringLiteral("PlotWindow/MarkAbnormal"), checked);
 }
 
-void PlotWindow::on_actionSaveRawData_triggered()
+void PlotWindow::on_actionSaveToFile_triggered()
 {
     QString dir = QDir::cleanPath(qApp->applicationDirPath() + QDir::separator() + _node);
 
-    QString fileName = QFileDialog::getSaveFileName(this, QStringLiteral("Save Raw Data"),
+    QString fileName = QFileDialog::getSaveFileName(this, QStringLiteral("Save To File"),
                                                     dir,
-                                                    QStringLiteral("Raw Data (*.dat)"));
+                                                    QStringLiteral("Plot File (*.plot)"));
     if (!fileName.isEmpty()) {
         QFile file(fileName);
         if (file.open(QFile::WriteOnly)) {
             QDataStream out(&file);
+            out << plotFileMagicNum << version;
             out << _node << _dateTimes << _result;
             file.close();
         } else {
             QMessageBox msgBox(this);
             msgBox.setWindowTitle(QStringLiteral("Error"));
             msgBox.setIcon(QMessageBox::Critical);
-            msgBox.setText(QStringLiteral("Failed to open file!"));
+            msgBox.setText(QStringLiteral("Failed to open file %1!").arg(fileName));
             msgBox.exec();
         }
     }

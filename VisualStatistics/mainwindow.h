@@ -86,6 +86,8 @@ private slots:
 
     void on_actionCalculateTimeDuration_triggered();
 
+    void on_actionOpenPlotFile_triggered();
+
 signals:
     void aboutToBeClosed();
 

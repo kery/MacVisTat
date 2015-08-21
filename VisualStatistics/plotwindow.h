@@ -16,7 +16,7 @@ public:
 
 public:
     explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, QWidget *parent = NULL);
-    explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, const QVector<int> &dateTimes, QWidget *parent = NULL);
+    explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, const QVector<qint32> &dateTimes, QWidget *parent = NULL);
     ~PlotWindow();
 
 private:
@@ -59,12 +59,12 @@ private slots:
 
     void on_actionMarkAbnormalTime_toggled(bool checked);
 
-    void on_actionSaveRawData_triggered();
+    void on_actionSaveToFile_triggered();
 
 private:
     Ui::PlotWindow *_ui;
     const QString _node;
-    QVector<int> _dateTimes;
+    QVector<qint32> _dateTimes;
     QMap<QString, QCPDataMap> _result;
     QDateTimeEdit *_dtEditFrom;
     QDateTimeEdit *_dtEditTo;
