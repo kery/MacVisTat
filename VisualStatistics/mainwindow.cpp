@@ -18,12 +18,6 @@
 
 #define STAT_FILE_PATTERN "^([A-Z]+\\d+\\-\\d+)__(int|ext)stat_(\\d{8}\\-\\d{6}|archive)\\.csv\\.gz$"
 
-enum {
-    KEY_FILE_NAME,
-    KEY_START_TIME,
-    KEY_END_TIME,
-};
-
 void ProgressBar::increaseValue(int value)
 {
     setValue(this->value() + value);
@@ -214,6 +208,8 @@ void MainWindow::parseStatisticsFileHeader(const QVector<QString> &fileNames, bo
             if (!filterText.isEmpty()) {
                 model->setFilterPattern(filterText);
             }
+
+            _ui->cbRegExpFilter->lineEdit()->setFocus();
         }
     } else if (result.back() == QDir::separator().toLatin1()) {
         result.erase(result.end() - 1);
