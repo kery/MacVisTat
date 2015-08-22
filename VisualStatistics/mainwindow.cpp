@@ -4,6 +4,7 @@
 #include "statisticsnamemodel.h"
 #include "gzipfile.h"
 #include "utils.h"
+#include "aboutdialog.h"
 #include <QStyleFactory>
 #include <QLineEdit>
 #include <QFileDialog>
@@ -749,4 +750,12 @@ void MainWindow::on_actionOpenPlotFile_triggered()
             }
         }
     }
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    AboutDialog dialog(this);
+    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    dialog.setLabelText(QStringLiteral("Visual Statistics v%1").arg(getVersionStr()));
+    dialog.exec();
 }

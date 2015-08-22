@@ -88,6 +88,8 @@ private slots:
 
     void on_actionOpenPlotFile_triggered();
 
+    void on_actionAbout_triggered();
+
 signals:
     void aboutToBeClosed();
 

@@ -131,10 +131,11 @@
      <string>Help</string>
     </property>
     <addaction name="actionViewHelp"/>
+    <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>Analyze</string>
     </property>
     <addaction name="actionDrawPlot"/>
     <addaction name="actionDrawPlotInMultipleWindows"/>
@@ -317,6 +318,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About..</string>
+   </property>
+   <property name="statusTip">
+    <string>Show about dialog</string>
    </property>
   </action>
  </widget>

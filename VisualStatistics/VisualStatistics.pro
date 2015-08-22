@@ -36,17 +36,20 @@ SOURCES += main.cpp\
     third_party/qcustomplot/qcustomplot.cpp \
     gzipfile.cpp \
     utils.cpp \
-    statisticsnamemodel.cpp
+    statisticsnamemodel.cpp \
+    aboutdialog.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
     third_party/qcustomplot/qcustomplot.h \
     gzipfile.h \
     utils.h \
-    statisticsnamemodel.h
+    statisticsnamemodel.h \
+    aboutdialog.h
 
 FORMS    += mainwindow.ui \
-    plotwindow.ui
+    plotwindow.ui \
+    aboutdialog.ui
 
 RESOURCES += \
     VisualStatistics.qrc
