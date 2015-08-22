@@ -30,6 +30,15 @@ CONFIG(release, debug|release) {
     UI_DIR = release/.ui
 }
 
+win32:CONFIG(gen_pdb) {
+    QMAKE_CXXFLAGS_RELEASE += /Zi
+    QMAKE_LFLAGS_RELEASE += /Debug
+}
+
+win32:CONFIG(profiling) {
+    QMAKE_LFLAGS_RELEASE += /Profile
+}
+
 SOURCES += main.cpp\
         mainwindow.cpp \
     plotwindow.cpp \
