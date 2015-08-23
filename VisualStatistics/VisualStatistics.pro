@@ -11,9 +11,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 CONFIG += c++11
 
 TEMPLATE = app
+TARGET = ../VisualStatistics
 
 CONFIG(debug, debug|release) {
-    TARGET = ../VisualStatistics_d
     DESTDIR = debug
     OBJECTS_DIR = debug/.obj
     MOC_DIR = debug/.moc
@@ -22,7 +22,6 @@ CONFIG(debug, debug|release) {
 }
 
 CONFIG(release, debug|release) {
-    TARGET = ../VisualStatistics
     DESTDIR = release
     OBJECTS_DIR = release/.obj
     MOC_DIR = release/.moc
@@ -30,13 +29,21 @@ CONFIG(release, debug|release) {
     UI_DIR = release/.ui
 }
 
-win32:CONFIG(gen_pdb) {
+CONFIG(profiling) {
+    DESTDIR = profiling
+    OBJECTS_DIR = profiling/.obj
+    MOC_DIR = profiling/.moc
+    RCC_DIR = profiling/.rcc
+    UI_DIR = profiling/.ui
+}
+
+win32:CONFIG(release, debug|release) {
     QMAKE_CXXFLAGS_RELEASE += /Zi
-    QMAKE_LFLAGS_RELEASE += /Debug
+    QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
 }
 
 win32:CONFIG(profiling) {
-    QMAKE_LFLAGS_RELEASE += /Profile
+    QMAKE_LFLAGS_RELEASE += /PROFILE
 }
 
 SOURCES += main.cpp\
