@@ -129,7 +129,7 @@
    </property>
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/chart_graph.png</normaloff>:/resource/image/chart_graph.png</iconset>
+     <normaloff>:/resource/image/fill.png</normaloff>:/resource/image/fill.png</iconset>
    </property>
    <property name="text">
     <string>Fill Plot</string>
