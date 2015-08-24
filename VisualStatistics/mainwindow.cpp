@@ -729,9 +729,10 @@ void MainWindow::on_actionOpenPlotFile_triggered()
                     QString node;
                     QVector<qint32> dateTimes;
                     QMap<QString, QCPDataMap> statResult;
-                    in >> node >> dateTimes >> statResult;
+                    qint32 legendAlignment;
+                    in >> node >> dateTimes >> statResult >> legendAlignment;
 
-                    PlotWindow *w = new PlotWindow(node, statResult, dateTimes);
+                    PlotWindow *w = new PlotWindow(node, statResult, dateTimes, legendAlignment);
                     w->setAttribute(Qt::WA_DeleteOnClose);
                     connect(this, SIGNAL(aboutToBeClosed()), w, SLOT(close()));
                     w->showMaximized();

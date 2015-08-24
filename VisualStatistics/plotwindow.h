@@ -16,7 +16,7 @@ public:
 
 public:
     explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, QWidget *parent = NULL);
-    explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, const QVector<qint32> &dateTimes, QWidget *parent = NULL);
+    explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, const QVector<qint32> &dateTimes, qint32 legendAlignment, QWidget *parent = NULL);
     ~PlotWindow();
 
 private:

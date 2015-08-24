@@ -71,11 +71,14 @@ PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &res
     initializePlot();
 }
 
-PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, const QVector<qint32> &dateTimes, QWidget *parent) :
+PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, const QVector<qint32> &dateTimes,
+                       qint32 legendAlignment, QWidget *parent) :
     PlotWindow(node, parent) // C++ 11 only
 {
     _result = result;
     _dateTimes = dateTimes;
+
+    _ui->customPlot->axisRect()->insetLayout()->setInsetAlignment(0, static_cast<Qt::Alignment>(legendAlignment));
     initializePlot();
 }
 
@@ -519,6 +522,9 @@ void PlotWindow::on_actionMarkAbnormalTime_toggled(bool checked)
 void PlotWindow::on_actionSaveToFile_triggered()
 {
     QString dir = QDir::cleanPath(qApp->applicationDirPath() + QDir::separator() + _node);
+    if (_result.size() == 1) {
+        dir += QStringLiteral("-%1").arg(_result.firstKey());
+    }
 
     QString fileName = QFileDialog::getSaveFileName(this, QStringLiteral("Save To File"),
                                                     dir,
@@ -529,6 +535,7 @@ void PlotWindow::on_actionSaveToFile_triggered()
             QDataStream out(&file);
             out << plotFileMagicNum << version;
             out << _node << _dateTimes << _result;
+            out << static_cast<qint32>(_ui->customPlot->axisRect()->insetLayout()->insetAlignment(0));
             file.close();
         } else {
             QMessageBox msgBox(this);
