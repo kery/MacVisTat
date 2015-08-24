@@ -57,9 +57,10 @@ win32 {
     RC_FILE = VisualStatistics.rc
 
     LIBS += -L$$PWD/third_party/pcre/win/ -lpcre
-
     INCLUDEPATH += $$PWD/third_party/pcre/win
-    DEPENDPATH += $$PWD/third_party/pcre/win
+
+    LIBS += -L$$PWD/third_party/breakpad/ -lexception_handler -lcrash_generation_client -lcommon
+    INCLUDEPATH += $$PWD/third_party/breakpad
 }
 
 unix:!macx {
@@ -67,7 +68,4 @@ unix:!macx {
 
     LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre
     INCLUDEPATH += $$PWD/third_party/pcre/linux
-    DEPENDPATH += $$PWD/third_party/pcre/linux
-
-    PRE_TARGETDEPS += $$PWD/third_party/pcre/linux/libpcre.a
 }

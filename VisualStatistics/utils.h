@@ -18,4 +18,6 @@ const quint32 plotFileMagicNum = 0x40992872;
 QDataStream& operator<< (QDataStream &out, const QCPData &data);
 QDataStream& operator>> (QDataStream &in, QCPData &data);
 
+QString getAppDataDir();
+
 #endif // UTILS_H

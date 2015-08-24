@@ -37,3 +37,9 @@ QDataStream& operator>> (QDataStream &in, QCPData &data)
     in >> data.key >> data.value;
     return in;
 }
+
+QString getAppDataDir()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+}
+

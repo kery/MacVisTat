@@ -444,17 +444,17 @@ void PlotWindow::on_actionFullScreen_toggled(bool checked)
 
 void PlotWindow::on_actionSaveAsImage_triggered()
 {
-    QString dir = QDir::cleanPath(qApp->applicationDirPath() + QDir::separator() + _node);
+    QString fileName = QDir(getAppDataDir()).filePath(_node);
 
     if (_result.size() == 1) {
-        dir += QStringLiteral("-%1").arg(_result.firstKey());
+        fileName += QStringLiteral("-%1").arg(_result.firstKey());
     }
 
-    QString fileName = QFileDialog::getSaveFileName(this, QStringLiteral("Save As Image"),
-                                                    dir,
+    QString path = QFileDialog::getSaveFileName(this, QStringLiteral("Save As Image"),
+                                                    fileName,
                                                     QStringLiteral("PNG File (*.png)"));
-    if (!fileName.isEmpty()) {
-        _ui->customPlot->savePng(fileName);
+    if (!path.isEmpty()) {
+        _ui->customPlot->savePng(path);
     }
 }
 
@@ -521,15 +521,16 @@ void PlotWindow::on_actionMarkAbnormalTime_toggled(bool checked)
 
 void PlotWindow::on_actionSaveToFile_triggered()
 {
-    QString dir = QDir::cleanPath(qApp->applicationDirPath() + QDir::separator() + _node);
+    QString fileName = QDir(getAppDataDir()).filePath(_node);
+
     if (_result.size() == 1) {
-        dir += QStringLiteral("-%1").arg(_result.firstKey());
+        fileName += QStringLiteral("-%1").arg(_result.firstKey());
     }
 
-    QString fileName = QFileDialog::getSaveFileName(this, QStringLiteral("Save To File"),
-                                                    dir,
+    QString path = QFileDialog::getSaveFileName(this, QStringLiteral("Save To File"),
+                                                    fileName,
                                                     QStringLiteral("Plot File (*.plot)"));
-    if (!fileName.isEmpty()) {
+    if (!path.isEmpty()) {
         QFile file(fileName);
         if (file.open(QFile::WriteOnly)) {
             QDataStream out(&file);
