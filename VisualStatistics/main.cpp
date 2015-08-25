@@ -3,6 +3,35 @@
 #include <QApplication>
 #include <exception_handler.h>
 
+#ifdef Q_OS_WIN
+static bool minidumpCallback(const wchar_t* dump_path,
+                             const wchar_t* minidump_id,
+                             void* context,
+                             EXCEPTION_POINTERS* exinfo,
+                             MDRawAssertionInfo* assertion,
+                             bool succeeded)
+{
+    (void)context;
+    (void)exinfo;
+    (void)assertion;
+
+    // Note: DO NOT USE heap since the heap may be corrupt
+    if (succeeded) {
+        wchar_t param[MAX_PATH];
+        wcscpy_s(param, L"--file ");
+        wcscat_s(param, dump_path);
+        if (dump_path[wcslen(dump_path) - 1] != L'\\') {
+            wcscat_s(param, L"\\");
+        }
+        wcscat_s(param, minidump_id);
+        wcscat_s(param, L".dmp");
+        ShellExecuteW(NULL, NULL, L"CrashReporter.exe", param, NULL, SW_SHOW);
+    }
+
+    return succeeded;
+}
+#endif
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -17,8 +46,8 @@ int main(int argc, char *argv[])
     if (QDir().mkpath(getAppDataDir())) {
 #ifdef Q_OS_WIN
         exceptionHandler = new google_breakpad::ExceptionHandler(
-                    getAppDataDir().toStdWString(),
-                    NULL, NULL, NULL,
+                    QDir::toNativeSeparators(getAppDataDir()).toStdWString(),
+                    NULL, minidumpCallback, NULL,
                     google_breakpad::ExceptionHandler::HANDLER_ALL,
                     MiniDumpNormal, (wchar_t*)NULL, NULL);
 #endif

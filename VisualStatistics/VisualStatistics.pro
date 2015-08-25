@@ -11,21 +11,12 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 CONFIG += c++11
 
 TEMPLATE = app
-TARGET = ../../VisualStatistics
+TARGET = ../../../VisualStatistics
 
 OBJECTS_DIR = obj
 MOC_DIR = moc
 RCC_DIR = rcc
 UI_DIR = ui
-
-win32:CONFIG(release, debug|release) {
-    QMAKE_CXXFLAGS_RELEASE += /Zi
-    QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
-}
-
-win32:CONFIG(profiling) {
-    QMAKE_LFLAGS_RELEASE += /PROFILE
-}
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -59,8 +50,22 @@ win32 {
     LIBS += -L$$PWD/third_party/pcre/win/ -lpcre
     INCLUDEPATH += $$PWD/third_party/pcre/win
 
-    LIBS += -L$$PWD/third_party/breakpad/ -lexception_handler -lcrash_generation_client -lcommon
-    INCLUDEPATH += $$PWD/third_party/breakpad
+    INCLUDEPATH += $$PWD/../Common/third_party/breakpad/include
+}
+
+win32:CONFIG(debug, debug|release) {
+    LIBS += -L$$PWD/../Common/third_party/breakpad/lib/debug -lexception_handler -lcrash_generation_client -lcommon
+}
+
+win32:CONFIG(release, debug|release) {
+    QMAKE_CXXFLAGS_RELEASE += /Zi
+    QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
+
+    LIBS += -L$$PWD/../Common/third_party/breakpad/lib/release -lexception_handler -lcrash_generation_client -lcommon
+}
+
+win32:CONFIG(profiling) {
+    QMAKE_LFLAGS_RELEASE += /PROFILE
 }
 
 unix:!macx {

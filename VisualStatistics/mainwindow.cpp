@@ -618,6 +618,9 @@ void MainWindow::on_actionInvertSelection_triggered()
 
 void MainWindow::on_actionViewHelp_triggered()
 {
+    // TEST testing for crash report
+    int *p = 0;
+    *p = 0;
 }
 
 void MainWindow::on_actionCalculateTimeDuration_triggered()
