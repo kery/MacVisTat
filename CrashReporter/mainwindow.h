@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QNetworkReply>
 
 namespace Ui {
 class MainWindow;
@@ -16,6 +17,10 @@ public:
     ~MainWindow();
 
 private slots:
+    void uploadFinished(QNetworkReply *reply);
+    void uploadError(QNetworkReply::NetworkError err);
+    void uploadProgress(qint64 bytesSent, qint64 bytesTotal);
+
     void on_buttonBox_accepted();
 
 private:

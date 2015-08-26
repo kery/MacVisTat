@@ -21,6 +21,13 @@
        <widget class="QTextBrowser" name="textBrowser"/>
       </item>
       <item>
+       <widget class="QProgressBar" name="progressBar">
+        <property name="value">
+         <number>24</number>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QDialogButtonBox" name="buttonBox">
         <property name="standardButtons">
          <set>QDialogButtonBox::No|QDialogButtonBox::Yes</set>
