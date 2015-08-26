@@ -2,30 +2,18 @@
 #include "ui_plotwindow.h"
 #include "utils.h"
 
-struct DataColor
-{
-    DataColor(const QColor &p, const QColor &b) :
-        pen(p),
-        brush(b)
-    {
-    }
-
-    const QColor pen;
-    const QColor brush;
-};
-
-static DataColor dataColors[] = {
-    DataColor(QColor(Qt::red), QColor(255, 0, 0, 50)),
-    DataColor(QColor(Qt::green), QColor(0, 255, 0, 50)),
-    DataColor(QColor(Qt::blue), QColor(0, 0, 255, 50)),
-    DataColor(QColor(255, 255, 0), QColor(255, 255, 0, 50)),
-    DataColor(QColor(255, 0, 255), QColor(255, 0, 255, 50)),
-    DataColor(QColor(0, 255, 255), QColor(0, 255, 255, 50)),
+static QColor lineColors[] = {
+    QColor(Qt::red),
+    QColor(Qt::green),
+    QColor(Qt::blue),
+    QColor(255, 255, 0),
+    QColor(255, 0, 255),
+    QColor(0, 255, 255),
 };
 
 int PlotWindow::predefinedColorCount()
 {
-    return sizeof(dataColors)/sizeof(dataColors[0]);
+    return sizeof(lineColors)/sizeof(lineColors[0]);
 }
 
 PlotWindow::PlotWindow(const QString &node, QWidget *parent) :
@@ -68,7 +56,7 @@ PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &res
     convertResultFirstData(result);
     convertResultRestData(result);
 
-    initializePlot();
+    initializePlot(Qt::AlignTop | Qt::AlignRight);
 }
 
 PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, const QVector<qint32> &dateTimes,
@@ -78,8 +66,7 @@ PlotWindow::PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &res
     _result = result;
     _dateTimes = dateTimes;
 
-    _ui->customPlot->axisRect()->insetLayout()->setInsetAlignment(0, static_cast<Qt::Alignment>(legendAlignment));
-    initializePlot();
+    initializePlot(static_cast<Qt::Alignment>(legendAlignment));
 }
 
 PlotWindow::~PlotWindow()
@@ -118,7 +105,7 @@ void PlotWindow::convertResultRestData(const QMap<QString, QCPDataMap> &result)
     }
 }
 
-void PlotWindow::initializePlot()
+void PlotWindow::initializePlot(Qt::Alignment legendAlignment)
 {
     QCustomPlot *plot = _ui->customPlot;
 
@@ -131,13 +118,13 @@ void PlotWindow::initializePlot()
     plot->xAxis2->setTicks(false);
     plot->yAxis2->setTicks(false);
 
+    plot->axisRect()->insetLayout()->setInsetAlignment(0, legendAlignment);
     plot->legend->setSelectableParts(QCPLegend::spItems);
     plot->legend->setVisible(true);
 
     plot->setNoAntialiasingOnDrag(true);
 
-    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
-                          QCP::iSelectPlottables | QCP::iSelectLegend);
+    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes | QCP::iSelectLegend);
 
     connect(plot->xAxis, &QCPAxis::ticksRequest, this, &PlotWindow::adjustTicks);
     connect(plot, &QCustomPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
@@ -145,30 +132,25 @@ void PlotWindow::initializePlot()
     connect(plot, &QCustomPlot::mouseWheel, this, &PlotWindow::mouseWheel);
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
 
-    Q_ASSERT(_result.size() <= static_cast<int>(sizeof(dataColors)/sizeof(dataColors[0])));
+    Q_ASSERT(_result.size() <= predefinedColorCount());
 
     int i = 0;
-    QSettings settings;
-    bool fillPlot = settings.value(QStringLiteral("PlotWindow/FillPlot"), true).toBool();
-    _ui->actionFillPlot->setChecked(fillPlot);
     for (auto iter = _result.begin(); iter != _result.end(); ++iter, ++i) {
         plot->addGraph();
         plot->graph()->setName(iter.key());
-        plot->graph()->setPen(QPen(dataColors[i].pen));
-        if (fillPlot) {
-            plot->graph()->setBrush(QBrush(dataColors[i].brush));
-        }
+        plot->graph()->setPen(QPen(lineColors[i]));
         // Set copy to true to avoid the data being deleted if show delta function is used
         plot->graph()->setData(const_cast<QCPDataMap*>(&iter.value()), true);
     }
 
+    QSettings settings;
     bool markAbnormal = settings.value(QStringLiteral("PlotWindow/MarkAbnormal"), false).toBool();
     _ui->actionMarkAbnormalTime->setChecked(markAbnormal);
     if (markAbnormal) {
         markAbnormalTime();
     }
 
-    plot->rescaleAxes(true);
+    plot->rescaleAxes();
     adjustYAxisRange();
     plot->replot();
 }
@@ -289,12 +271,16 @@ void PlotWindow::selectionChanged()
         plot->yAxis2->setSelectedParts(QCPAxis::spAxis);
     }
 
-    for (int i = 0; i < plot->graphCount(); ++i) {
-        QCPGraph *graph = plot->graph(i);
-        QCPPlottableLegendItem *item = plot->legend->itemWithPlottable(graph);
-        if (item->selected() || graph->selected()) {
-            item->setSelected(true);
-            graph->setSelected(true);
+    if (plot->legend->selectedItems().isEmpty()) {
+        for (int i = 0; i < plot->graphCount(); ++i) {
+            QCPGraph *graph = plot->graph(i);
+            graph->setVisible(true);
+        }
+    } else {
+        for (int i = 0; i < plot->graphCount(); ++i) {
+            QCPGraph *graph = plot->graph(i);
+            QCPPlottableLegendItem *item = plot->legend->itemWithPlottable(graph);
+            graph->setVisible(item->selected());
         }
     }
 }
@@ -460,7 +446,7 @@ void PlotWindow::on_actionSaveAsImage_triggered()
 
 void PlotWindow::on_actionRestoreScale_triggered()
 {
-    _ui->customPlot->rescaleAxes(true);
+    _ui->customPlot->rescaleAxes();
     adjustYAxisRange();
     _ui->customPlot->replot();
 }
@@ -487,25 +473,9 @@ void PlotWindow::on_actionShowDelta_toggled(bool checked)
         }
     }
     // Only rescale Y axis
-    plot->yAxis->rescale(true);
+    plot->yAxis->rescale();
     adjustYAxisRange();
     plot->replot();
-}
-
-void PlotWindow::on_actionFillPlot_toggled(bool checked)
-{
-    QCustomPlot *plot = _ui->customPlot;
-    if (checked) {
-        for (int i = 0; i < plot->graphCount(); ++i) {
-            plot->graph(i)->setBrush(dataColors[i].brush);
-        }
-    } else {
-        for (int i = 0; i < plot->graphCount(); ++i) {
-            plot->graph(i)->setBrush(Qt::NoBrush);
-        }
-    }
-    plot->replot();
-    QSettings().setValue(QStringLiteral("PlotWindow/FillPlot"), checked);
 }
 
 void PlotWindow::on_actionMarkAbnormalTime_toggled(bool checked)
@@ -531,7 +501,7 @@ void PlotWindow::on_actionSaveToFile_triggered()
                                                     fileName,
                                                     QStringLiteral("Plot File (*.plot)"));
     if (!path.isEmpty()) {
-        QFile file(fileName);
+        QFile file(path);
         if (file.open(QFile::WriteOnly)) {
             QDataStream out(&file);
             out << plotFileMagicNum << version;

@@ -63,7 +63,6 @@
    <addaction name="separator"/>
    <addaction name="actionShowDelta"/>
    <addaction name="actionMarkAbnormalTime"/>
-   <addaction name="actionFillPlot"/>
    <addaction name="actionFullScreen"/>
   </widget>
   <action name="actionSaveAsImage">
@@ -121,18 +120,6 @@
    </property>
    <property name="toolTip">
     <string>Show Delta</string>
-   </property>
-  </action>
-  <action name="actionFillPlot">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/fill.png</normaloff>:/resource/image/fill.png</iconset>
-   </property>
-   <property name="text">
-    <string>Fill Plot</string>
    </property>
   </action>
   <action name="actionMarkAbnormalTime">

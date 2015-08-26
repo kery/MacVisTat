@@ -24,7 +24,7 @@ private:
 
     void convertResultFirstData(const QMap<QString, QCPDataMap> &result);
     void convertResultRestData(const QMap<QString, QCPDataMap> &result);
-    void initializePlot();
+    void initializePlot(Qt::Alignment legendAlignment);
 
     QVector<double> calcTickVector(int plotWidth, int fontHeight, const QCPRange &range);
     QVector<QString> calcTickLabelVector(const QVector<double> &ticks);
@@ -54,8 +54,6 @@ private slots:
     void on_actionRestoreScale_triggered();
 
     void on_actionShowDelta_toggled(bool checked);
-
-    void on_actionFillPlot_toggled(bool checked);
 
     void on_actionMarkAbnormalTime_toggled(bool checked);
 
