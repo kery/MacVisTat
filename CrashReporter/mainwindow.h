@@ -12,13 +12,14 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(const QString &path, QWidget *parent = 0);
     ~MainWindow();
 
-    void setDumpFilePath(const QString &path);
+private slots:
+    void on_buttonBox_accepted();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow *_ui;
     QString _dumpFilePath;
 };
 

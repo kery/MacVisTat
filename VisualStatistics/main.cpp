@@ -18,14 +18,19 @@ static bool minidumpCallback(const wchar_t* dump_path,
     // Note: DO NOT USE heap since the heap may be corrupt
     if (succeeded) {
         wchar_t param[MAX_PATH];
-        wcscpy_s(param, L"--file ");
+        wcscpy_s(param, L"--file \"");
         wcscat_s(param, dump_path);
         if (dump_path[wcslen(dump_path) - 1] != L'\\') {
             wcscat_s(param, L"\\");
         }
         wcscat_s(param, minidump_id);
-        wcscat_s(param, L".dmp");
-        ShellExecuteW(NULL, NULL, L"CrashReporter.exe", param, NULL, SW_SHOW);
+        wcscat_s(param, L".dmp\"");
+
+        wchar_t reporterPath[MAX_PATH];
+        GetModuleFileNameW(NULL, reporterPath, MAX_PATH);
+        wchar_t *lastBackSlash = wcsrchr(reporterPath, L'\\');
+        wcscpy_s(lastBackSlash + 1, MAX_PATH - (lastBackSlash - reporterPath) - 1, L"CrashReporter.exe");
+        ShellExecuteW(NULL, NULL, reporterPath, param, NULL, SW_SHOW);
     }
 
     return succeeded;
