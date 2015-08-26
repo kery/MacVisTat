@@ -20,8 +20,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    MainWindow w;
-    w.setDumpFilePath(dumpFile);
+    MainWindow w(dumpFile);
     w.show();
 
     return a.exec();

@@ -1,20 +1,23 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(const QString &path, QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    _ui(new Ui::MainWindow),
+    _dumpFilePath(path)
 {
-    ui->setupUi(this);
+    _ui->setupUi(this);
     setFixedSize(size());
+
+    _ui->textBrowser->setText("An unhandled exception occurred, which cause the program exit unexpectedly.\n\n"
+                              "Do you want to upload the core dump file so that this bug can be fixed in future version?");
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+    delete _ui;
 }
 
-void MainWindow::setDumpFilePath(const QString &path)
+void MainWindow::on_buttonBox_accepted()
 {
-    _dumpFilePath = path;
 }
