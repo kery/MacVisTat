@@ -551,6 +551,7 @@ void MainWindow::on_actionAdd_triggered()
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
     fileDialog.setNameFilter(QStringLiteral("Statistics File (*.csv.gz)"));
+    fileDialog.setDirectory(getDocumentDir());
 
     if (fileDialog.exec() == QDialog::Accepted) {
         int beforeAdd = _ui->lwStatisticsFiles->count();
@@ -618,9 +619,6 @@ void MainWindow::on_actionInvertSelection_triggered()
 
 void MainWindow::on_actionViewHelp_triggered()
 {
-    // TEST testing for crash report
-    int *p = 0;
-    *p = 0;
 }
 
 void MainWindow::on_actionCalculateTimeDuration_triggered()
@@ -716,6 +714,7 @@ void MainWindow::on_actionOpenPlotFile_triggered()
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
     fileDialog.setNameFilter(QStringLiteral("Plot File (*.plot)"));
+    fileDialog.setDirectory(getDocumentDir());
 
     if (fileDialog.exec() == QDialog::Accepted) {
         for (const QString &fileName : fileDialog.selectedFiles()) {

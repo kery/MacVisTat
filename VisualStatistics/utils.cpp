@@ -43,3 +43,7 @@ QString getAppDataDir()
     return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 }
 
+QString getDocumentDir()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+}

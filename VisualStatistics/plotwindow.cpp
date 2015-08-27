@@ -430,7 +430,7 @@ void PlotWindow::on_actionFullScreen_toggled(bool checked)
 
 void PlotWindow::on_actionSaveAsImage_triggered()
 {
-    QString fileName = QDir(getAppDataDir()).filePath(_node);
+    QString fileName = QDir(getDocumentDir()).filePath(_node);
 
     if (_result.size() == 1) {
         fileName += QStringLiteral("-%1").arg(_result.firstKey());
@@ -491,7 +491,7 @@ void PlotWindow::on_actionMarkAbnormalTime_toggled(bool checked)
 
 void PlotWindow::on_actionSaveToFile_triggered()
 {
-    QString fileName = QDir(getAppDataDir()).filePath(_node);
+    QString fileName = QDir(getDocumentDir()).filePath(_node);
 
     if (_result.size() == 1) {
         fileName += QStringLiteral("-%1").arg(_result.firstKey());

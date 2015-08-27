@@ -20,5 +20,6 @@ QDataStream& operator<< (QDataStream &out, const QCPData &data);
 QDataStream& operator>> (QDataStream &in, QCPData &data);
 
 QString getAppDataDir();
+QString getDocumentDir();
 
 #endif // UTILS_H
