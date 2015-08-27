@@ -4,11 +4,12 @@
 #include <vector>
 #include <string>
 #include <QDataStream>
+#include "version.h"
 #include "third_party/qcustomplot/qcustomplot.h"
 
 using namespace std;
 
-const qint32 version = 100; // 1.0.0
+const qint32 version = VER_FILEVERSION_NUM;
 
 QString getVersionStr();
 

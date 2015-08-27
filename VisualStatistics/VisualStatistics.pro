@@ -33,7 +33,8 @@ HEADERS  += mainwindow.h \
     gzipfile.h \
     utils.h \
     statisticsnamemodel.h \
-    aboutdialog.h
+    aboutdialog.h \
+    version.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \
