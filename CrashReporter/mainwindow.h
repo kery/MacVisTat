@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QNetworkReply>
+#include <QFile>
+#include <QTimer>
 
 namespace Ui {
 class MainWindow;
@@ -18,14 +20,14 @@ public:
 
 private slots:
     void uploadFinished(QNetworkReply *reply);
-    void uploadError(QNetworkReply::NetworkError err);
     void uploadProgress(qint64 bytesSent, qint64 bytesTotal);
 
     void on_buttonBox_accepted();
 
 private:
     Ui::MainWindow *_ui;
-    QString _dumpFilePath;
+    QFile _dumpFile;
+    QTimer _timer;
 };
 
 #endif // MAINWINDOW_H
