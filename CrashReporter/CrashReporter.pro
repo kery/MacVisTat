@@ -10,7 +10,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
 
-TARGET = ../../../CrashReporter
 TEMPLATE = app
 
 OBJECTS_DIR = obj
@@ -26,5 +25,11 @@ HEADERS  += mainwindow.h
 FORMS    += mainwindow.ui
 
 win32 {
+    TARGET = ../../../CrashReporter
+
     RC_FILE = CrashReporter.rc
+}
+
+unix:!macx {
+    TARGET = ../../CrashReporter
 }

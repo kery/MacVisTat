@@ -11,7 +11,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 CONFIG += c++11
 
 TEMPLATE = app
-TARGET = ../../../VisualStatistics
 
 OBJECTS_DIR = obj
 MOC_DIR = moc
@@ -46,6 +45,8 @@ RESOURCES += \
 INCLUDEPATH += $$PWD/third_party/breakpad/
 
 win32 {
+    TARGET = ../../../VisualStatistics
+
     RC_FILE = VisualStatistics.rc
 
     INCLUDEPATH += $$PWD/third_party/pcre/win
@@ -70,7 +71,11 @@ win32:CONFIG(profiling) {
 }
 
 unix:!macx {
+    TARGET = ../../VisualStatistics
+
     INCLUDEPATH += $$PWD/third_party/pcre/linux
+    INCLUDEPATH += $$PWD/third_party/breakpad/client/linux/handler
 
     LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre
+    LIBS += -L$$PWD/third_party/breakpad/lib/linux/ -lbreakpad_client
 }
