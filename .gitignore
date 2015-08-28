@@ -1,3 +1,5 @@
 *.pro.user
 build/*
 !build/pcre.dll
+# pdb file is needed to debug program with dump file on Windows
+!build/*.pdb

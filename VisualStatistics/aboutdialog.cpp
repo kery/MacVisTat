@@ -6,6 +6,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     _ui(new Ui::AboutDialog)
 {
     _ui->setupUi(this);
+    _ui->labelMailTo->setOpenExternalLinks(true);
 }
 
 AboutDialog::~AboutDialog()

@@ -105,7 +105,7 @@
      <x>0</x>
      <y>0</y>
      <width>752</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -279,7 +279,7 @@
      <normaloff>:/resource/image/draw_plot_multiple.png</normaloff>:/resource/image/draw_plot_multiple.png</iconset>
    </property>
    <property name="text">
-    <string>Draw Plot in Multiple Windows</string>
+    <string>Draw Plot In Multiple Windows</string>
    </property>
    <property name="toolTip">
     <string>Draw Plot in Multiple Windows</string>

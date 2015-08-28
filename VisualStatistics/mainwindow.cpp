@@ -619,6 +619,9 @@ void MainWindow::on_actionInvertSelection_triggered()
 
 void MainWindow::on_actionViewHelp_triggered()
 {
+    QString userGuideFilePath = QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("UserGuide.pdf"));
+    QUrl url(QStringLiteral("file:///%1").arg(userGuideFilePath));
+    QDesktopServices::openUrl(url);
 }
 
 void MainWindow::on_actionCalculateTimeDuration_triggered()

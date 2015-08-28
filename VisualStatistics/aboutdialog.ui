@@ -35,7 +35,7 @@
      <x>20</x>
      <y>30</y>
      <width>271</width>
-     <height>61</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="alignment">
@@ -43,6 +43,22 @@
    </property>
    <property name="wordWrap">
     <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="labelMailTo">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>80</y>
+     <width>281</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&lt;a href=&quot;mailto:kery.wu@nokia.com?Subject=Visual%20Statistics%20Sugguestion&quot;&gt;Send Sugguestion&lt;/a&gt;</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
    </property>
   </widget>
  </widget>
