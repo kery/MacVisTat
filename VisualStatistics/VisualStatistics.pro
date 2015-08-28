@@ -43,26 +43,26 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     VisualStatistics.qrc
 
-win32 {
-    HEADERS += third_party/pcre/win/pcre.h
+INCLUDEPATH += $$PWD/third_party/breakpad/
 
+win32 {
     RC_FILE = VisualStatistics.rc
 
-    LIBS += -L$$PWD/third_party/pcre/win/ -lpcre
     INCLUDEPATH += $$PWD/third_party/pcre/win
+    INCLUDEPATH += $$PWD/third_party/breakpad/client/windows/handler
 
-    INCLUDEPATH += $$PWD/../Common/third_party/breakpad/include
+    LIBS += -L$$PWD/third_party/pcre/win/ -lpcre
 }
 
 win32:CONFIG(debug, debug|release) {
-    LIBS += -L$$PWD/../Common/third_party/breakpad/lib/debug -lexception_handler -lcrash_generation_client -lcommon
+    LIBS += -L$$PWD/third_party/breakpad/lib/win/debug -lexception_handler -lcrash_generation_client -lcommon
 }
 
 win32:CONFIG(release, debug|release) {
     QMAKE_CXXFLAGS_RELEASE += /Zi
     QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
 
-    LIBS += -L$$PWD/../Common/third_party/breakpad/lib/release -lexception_handler -lcrash_generation_client -lcommon
+    LIBS += -L$$PWD/third_party/breakpad/lib/win/release -lexception_handler -lcrash_generation_client -lcommon
 }
 
 win32:CONFIG(profiling) {
@@ -70,8 +70,7 @@ win32:CONFIG(profiling) {
 }
 
 unix:!macx {
-    HEADERS += third_party/pcre/linux/pcre.h
+    INCLUDEPATH += $$PWD/third_party/pcre/linux
 
     LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre
-    INCLUDEPATH += $$PWD/third_party/pcre/linux
 }
