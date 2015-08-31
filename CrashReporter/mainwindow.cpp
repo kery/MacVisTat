@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFileInfo>
+#include <QPushButton>
 #include <QNetworkAccessManager>
 
 MainWindow::MainWindow(const QString &path, QWidget *parent) :
@@ -10,6 +11,14 @@ MainWindow::MainWindow(const QString &path, QWidget *parent) :
 {
     _ui->setupUi(this);
     setFixedSize(size());
+
+    QPushButton *yesButton = _ui->buttonBox->button(QDialogButtonBox::Yes);
+    yesButton->setAutoDefault(true);
+    yesButton->setDefault(true);
+    yesButton->setFocus();
+
+    QPushButton *noButton = _ui->buttonBox->button(QDialogButtonBox::No);
+    noButton->setAutoDefault(true);
 
     _timer.setSingleShot(true);
     _timer.setInterval(10 * 1000);
