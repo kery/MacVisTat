@@ -115,6 +115,7 @@ void PlotWindow::initializePlot(Qt::Alignment legendAlignment)
     plot->xAxis->setAutoSubTicks(false);
     plot->xAxis->setSubTickCount(0);
     plot->xAxis->setTickLabelRotation(90);
+    plot->yAxis->setIntegralAutoTickStep(true);
     plot->xAxis2->setTicks(false);
     plot->yAxis2->setTicks(false);
 

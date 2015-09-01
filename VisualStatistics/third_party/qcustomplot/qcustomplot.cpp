@@ -4030,6 +4030,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mAutoTicks(true),
   mAutoTickStep(true),
   mAutoSubTicks(true),
+  mIntegralAutoTickStep(false),
   mTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
   mSelectedTickPen(QPen(Qt::blue, 2)),
   mSubTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
@@ -4494,6 +4495,14 @@ void QCPAxis::setAutoSubTicks(bool on)
     mAutoSubTicks = on;
     mCachedMarginValid = false;
   }
+}
+
+void QCPAxis::setIntegralAutoTickStep(bool on)
+{
+    if (mIntegralAutoTickStep != on) {
+        mIntegralAutoTickStep = on;
+        mCachedMarginValid = false;
+    }
 }
 
 /*!
@@ -5628,6 +5637,12 @@ void QCPAxis::generateAutoTicks()
         // round to first digit in multiples of 2
         mTickStep = (int)(tickStepMantissa/2.0)*2.0*magnitudeFactor;
       }
+    }
+    if (mIntegralAutoTickStep) {
+        mTickStep = (int)mTickStep;
+        if (mTickStep == 0) {
+            mTickStep = 1;
+        }
     }
     if (mAutoSubTicks)
       mSubTickCount = calculateAutoSubTickCount(mTickStep);

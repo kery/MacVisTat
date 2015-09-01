@@ -992,6 +992,7 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(bool autoTickLabels READ autoTickLabels WRITE setAutoTickLabels)
   Q_PROPERTY(bool autoTickStep READ autoTickStep WRITE setAutoTickStep)
   Q_PROPERTY(bool autoSubTicks READ autoSubTicks WRITE setAutoSubTicks)
+  Q_PROPERTY(bool integralAutoTickStep READ integralAutoTickStep WRITE setIntegralAutoTickStep)
   Q_PROPERTY(bool ticks READ ticks WRITE setTicks)
   Q_PROPERTY(bool tickLabels READ tickLabels WRITE setTickLabels)
   Q_PROPERTY(int tickLabelPadding READ tickLabelPadding WRITE setTickLabelPadding)
@@ -1100,6 +1101,7 @@ public:
   bool autoTickLabels() const { return mAutoTickLabels; }
   bool autoTickStep() const { return mAutoTickStep; }
   bool autoSubTicks() const { return mAutoSubTicks; }
+  bool integralAutoTickStep() const { return mIntegralAutoTickStep; }
   bool ticks() const { return mTicks; }
   bool tickLabels() const { return mTickLabels; }
   int tickLabelPadding() const;
@@ -1156,6 +1158,7 @@ public:
   void setAutoTickLabels(bool on);
   void setAutoTickStep(bool on);
   void setAutoSubTicks(bool on);
+  void setIntegralAutoTickStep(bool on);
   void setTicks(bool show);
   void setTickLabels(bool show);
   void setTickLabelPadding(int padding);
@@ -1261,6 +1264,7 @@ protected:
   double mTickStep;
   int mSubTickCount, mAutoTickCount;
   bool mAutoTicks, mAutoTickStep, mAutoSubTicks;
+  bool mIntegralAutoTickStep;
   //int mTickLengthIn, mTickLengthOut, mSubTickLengthIn, mSubTickLengthOut; // QCPAxisPainter
   QPen mTickPen, mSelectedTickPen;
   QPen mSubTickPen, mSelectedSubTickPen;
