@@ -57,9 +57,8 @@ static bool minidumpCallback(const google_breakpad::MinidumpDescriptor &descript
     if (succeeded) {
         pid_t pid = sys_fork();
         if (pid == 0) { // Child process
-            const char * const arg[] = {"CrashReporter", "--file", descriptor.path(), NULL};
-            const char * const env[] = {NULL};
-            sys_execve(crashReporterPath, arg, env);
+            const char * const argv[] = {"CrashReporter", "--file", descriptor.path(), NULL};
+            sys_execv(crashReporterPath, argv);
         }
     }
     return succeeded;

@@ -1,7 +1,18 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFileInfo>
+#include <QPushButton>
 #include <QNetworkAccessManager>
+
+// It is necessary to know VisualStatistics executable's version that
+// corresponding to the dump file.
+// On Windows platform this version is included in dump file which use
+// the "File version" of executable's resource
+// On linux platform it seems that there is no such kind of mechanism
+// so here append the version to the dump file name
+#if defined(Q_OS_LINUX)
+#include "../VisualStatistics/version.h"
+#endif
 
 MainWindow::MainWindow(const QString &path, QWidget *parent) :
     QMainWindow(parent),
@@ -10,6 +21,14 @@ MainWindow::MainWindow(const QString &path, QWidget *parent) :
 {
     _ui->setupUi(this);
     setFixedSize(size());
+
+    QPushButton *yesButton = _ui->buttonBox->button(QDialogButtonBox::Yes);
+    yesButton->setAutoDefault(true);
+    yesButton->setDefault(true);
+    yesButton->setFocus();
+
+    QPushButton *noButton = _ui->buttonBox->button(QDialogButtonBox::No);
+    noButton->setAutoDefault(true);
 
     _timer.setSingleShot(true);
     _timer.setInterval(10 * 1000);
@@ -43,8 +62,13 @@ void MainWindow::uploadProgress(qint64 /*bytesSent*/, qint64 /*bytesTotal*/)
 void MainWindow::on_buttonBox_accepted()
 {
     if (_dumpFile.open(QFile::ReadOnly)) {
+#if defined(Q_OS_LINUX)
+        QUrl url(QStringLiteral("ftp://careman4.emea.nsn-net.net/d/ftpserv/VisualStatistics/%1.%2").arg(
+                     QFileInfo(_dumpFile).fileName()).arg(VER_FILEVERSION_NUM));
+#elif defined(Q_OS_WIN)
         QUrl url(QStringLiteral("ftp://careman4.emea.nsn-net.net/d/ftpserv/VisualStatistics/%1").arg(
                      QFileInfo(_dumpFile).fileName()));
+#endif
         url.setUserName(QStringLiteral("micts"));
         url.setPassword(QStringLiteral("micts123"));
 
