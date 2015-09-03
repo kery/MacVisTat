@@ -16,7 +16,7 @@
 #include <QtConcurrent>
 #include <functional>
 
-#define STAT_FILE_PATTERN "^([A-Z]+\\d+\\-\\d+)__(int|ext)stat_(\\d{8}\\-\\d{6}|archive)\\.csv\\.gz$"
+#define STAT_FILE_PATTERN "^([A-Z]+\\d*\\-\\d+)__(int|ext)stat_(\\d{8}\\-\\d{6}|archive)\\.csv\\.gz$"
 
 void ProgressBar::increaseValue(int value)
 {

@@ -109,6 +109,8 @@ void PlotWindow::initializePlot(Qt::Alignment legendAlignment)
 {
     QCustomPlot *plot = _ui->customPlot;
 
+    plot->xAxis2->setLabel(_node);
+
     plot->axisRect()->setupFullAxesBox();
     plot->xAxis->setAutoTicks(false);
     plot->xAxis->setAutoTickLabels(false);
@@ -455,20 +457,17 @@ void PlotWindow::on_actionRestoreScale_triggered()
 void PlotWindow::on_actionShowDelta_toggled(bool checked)
 {
     const char *SUFFIX = "(DELTA)";
-    const int SUFFIX_LEN = 7;
     QCustomPlot *plot = _ui->customPlot;
     if (checked) {
+        plot->xAxis2->setLabel(_node + SUFFIX);
         for (int i = 0; i < plot->graphCount(); ++i) {
-            QCPGraph *graph = plot->graph(i);
-            graph->setName(graph->name() + SUFFIX);
-            calcDelta(graph);
+            calcDelta(plot->graph(i));
         }
     } else {
+        plot->xAxis2->setLabel(_node);
         int i = 0;
         for (auto iter = _result.begin(); iter != _result.end(); ++iter, ++i) {
             QCPGraph *graph = plot->graph(i);
-            QString name = graph->name();
-            graph->setName(name.left(name.length() - SUFFIX_LEN));
             // Set copy to true to avoid the data being deleted if show delta function is used
             graph->setData(const_cast<QCPDataMap*>(&iter.value()), true);
         }
