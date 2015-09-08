@@ -245,11 +245,11 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
         return;
     }
 
-    if (_ui->lvStatisticsName->selectionModel()->selectedIndexes().size() > PlotWindow::predefinedColorCount() ||
-        (model->rowCount() > PlotWindow::predefinedColorCount() && !_ui->lvStatisticsName->selectionModel()->hasSelection()))
+    if (_ui->lvStatisticsName->selectionModel()->selectedIndexes().size() > ColorGenerator::colorCount() ||
+        (model->rowCount() > ColorGenerator::colorCount() && !_ui->lvStatisticsName->selectionModel()->hasSelection()))
     {
         showInfoMsgBox(QStringLiteral("Too many statistics names specified, please change your filter text."),
-                       QStringLiteral("At most %1 statistics names allowed at one time.").arg(PlotWindow::predefinedColorCount()));
+                       QStringLiteral("At most %1 statistics names allowed at one time.").arg(ColorGenerator::colorCount()));
         return;
     }
 

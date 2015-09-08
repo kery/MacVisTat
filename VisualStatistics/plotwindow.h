@@ -7,12 +7,28 @@ namespace Ui {
 class PlotWindow;
 }
 
+class ColorGenerator
+{
+public:
+    ColorGenerator(int s, int l);
+    QColor genColor();
+
+    static int colorCount();
+
+private:
+    int calculateH();
+
+private:
+    int _count;
+    int _s, _l;
+    QList<QPair<int, int> > _hList1, _hList2, *_ptr;
+
+    static const QColor _predefined[8];
+};
+
 class PlotWindow : public QMainWindow
 {
     Q_OBJECT
-
-public:
-    static int predefinedColorCount();
 
 public:
     explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, QWidget *parent = NULL);
@@ -68,6 +84,7 @@ private:
     QDateTimeEdit *_dtEditTo;
     bool _userEditFlag;
     bool _userDragFlag;
+    ColorGenerator _colorGenerator;
 };
 
 #endif // PLOTWINDOW_H
