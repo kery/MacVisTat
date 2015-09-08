@@ -5,23 +5,15 @@
 #include "gzipfile.h"
 #include "utils.h"
 #include "aboutdialog.h"
-#include <QStyleFactory>
+#include "progressdialog.h"
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QDragEnterEvent>
 #include <QMimeData>
-#include <QStringListModel>
-#include <QMessageBox>
-#include <QProgressDialog>
 #include <QtConcurrent>
 #include <functional>
 
 #define STAT_FILE_PATTERN "^([A-Z]+\\d*\\-\\d+)__(int|ext)stat_(\\d{8}\\-\\d{6}|archive)\\.csv\\.gz$"
-
-void ProgressBar::increaseValue(int value)
-{
-    setValue(this->value() + value);
-}
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -149,7 +141,7 @@ bool MainWindow::checkStatisticsFileType(const QString &type)
 
 void MainWindow::parseStatisticsFileHeader(const QVector<QString> &fileNames, bool updateModel)
 {
-    QProgressDialog dialog(this);
+    ProgressDialog dialog(this);
     dialog.setWindowTitle(QStringLiteral("Please Wait"));
     dialog.setLabelText(QStringLiteral("Parsing statistics files' header..."));
     dialog.setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
@@ -269,8 +261,13 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
     }
 
     volatile bool working = true;
-    ProgressBar *customBar = new ProgressBar();
-    std::function<StatisticsResult (const QString &)> mappedFunction = [indexNameMap, customBar, &working] (const QString &fileName) {
+
+    ProgressDialog dialog(this);
+    dialog.setWindowTitle(QStringLiteral("Please Wait"));
+    dialog.setLabelText(QStringLiteral("Parsing statistics files..."));
+    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    std::function<StatisticsResult (const QString &)> mappedFunction = [indexNameMap, &dialog, &working] (const QString &fileName) {
         StatisticsResult result;
         std::string line;
         QCPData data;
@@ -317,7 +314,7 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
                 }
                 int completionRate = gzFile.completionRate();
                 if (completionRate > preCompletionRate) {
-                    QMetaObject::invokeMethod(customBar, "increaseValue", Qt::QueuedConnection,
+                    QMetaObject::invokeMethod(&dialog, "increaseValue", Qt::QueuedConnection,
                                               Q_ARG(int, completionRate - preCompletionRate));
                     preCompletionRate = completionRate;
                 }
@@ -348,17 +345,11 @@ end:
         }
     };
 
-    QProgressDialog dialog(this);
-    dialog.setWindowTitle(QStringLiteral("Please Wait"));
-    dialog.setLabelText(QStringLiteral("Parsing statistics files..."));
-    dialog.setBar(customBar); // dialog takes ownership of customBar
-    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-
     // We don't use wathcer to monitor progress because it base on item count in the container, this
     // is not accurate. Instead, we calculate the progress ourselves
     QFutureWatcher<StatisticsResult> watcher;
     connect(&watcher, SIGNAL(finished()), &dialog, SLOT(reset()));
-    connect(&dialog, &QProgressDialog::canceled, [&working, &watcher] () {watcher.cancel();working = false;});
+    connect(&dialog, &ProgressDialog::canceled, [&working, &watcher] () {watcher.cancel();working = false;});
 
     QVector<QString> checkedFiles;
     for (QListWidgetItem *item : checkedItems) {
@@ -636,9 +627,14 @@ void MainWindow::on_actionCalculateTimeDuration_triggered()
 
     if (filesToCalculate.size() > 0) {
         volatile bool working = true;
-        ProgressBar *customBar = new ProgressBar();
 
-        std::function<QString (const QString &)> mappedFunction = [&working, customBar] (const QString &fileName) -> QString {
+        ProgressDialog dialog(this);
+        dialog.setWindowTitle(QStringLiteral("Please Wait"));
+        dialog.setLabelText(QStringLiteral("Parsing statistics files' time duration..."));
+        dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+        dialog.setRange(0, filesToCalculate.size() * 100);
+
+        std::function<QString (const QString &)> mappedFunction = [&working, &dialog] (const QString &fileName) -> QString {
             const int TIME_STR_LEN = 19;
 
             GZipFile gzFile(fileName);
@@ -667,7 +663,7 @@ void MainWindow::on_actionCalculateTimeDuration_triggered()
             while (working && gzFile.readLine(endLine)) {
                 int completionRate = gzFile.completionRate();
                 if (completionRate > preCompletionRate) {
-                    QMetaObject::invokeMethod(customBar, "increaseValue", Qt::QueuedConnection,
+                    QMetaObject::invokeMethod(&dialog, "increaseValue", Qt::QueuedConnection,
                                               Q_ARG(int, completionRate - preCompletionRate));
                     preCompletionRate = completionRate;
                 }
@@ -686,20 +682,13 @@ void MainWindow::on_actionCalculateTimeDuration_triggered()
                     arg(QFileInfo(fileName).fileName());
         };
 
-        QProgressDialog dialog(this);
-        dialog.setWindowTitle(QStringLiteral("Please Wait"));
-        dialog.setLabelText(QStringLiteral("Parsing statistics files' time duration..."));
-        dialog.setBar(customBar); // dialog takes ownership of customBar
-        dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-        dialog.setRange(0, filesToCalculate.size() * 100);
-
         // We don't use wathcer to monitor progress because it base on item count in the container, this
         // is not accurate. Instead, we calculate the progress ourselves
         QFutureWatcher<QString> *watcher = new QFutureWatcher<QString>(this);
         connect(watcher, SIGNAL(resultReadyAt(int)), SLOT(handleTimeDurationResult(int)));
         connect(watcher, SIGNAL(finished()), &dialog, SLOT(reset()));
         connect(watcher, SIGNAL(finished()), watcher, SLOT(deleteLater()));
-        connect(&dialog, &QProgressDialog::canceled, [&working, watcher] () {watcher->cancel();working = false;});
+        connect(&dialog, &ProgressDialog::canceled, [&working, watcher] () {watcher->cancel();working = false;});
 
         watcher->setFuture(QtConcurrent::mapped(filesToCalculate, mappedFunction));
 

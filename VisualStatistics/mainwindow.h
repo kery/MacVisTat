@@ -8,16 +8,6 @@ namespace Ui {
 class MainWindow;
 }
 
-class ProgressBar : public QProgressBar
-{
-    Q_OBJECT
-
-public slots:
-    // In order to called by QMetaObject::invokeMethod, method must
-    // be slots or decorate by Q_INVOKABLE
-    void increaseValue(int value);
-};
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

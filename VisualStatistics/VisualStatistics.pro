@@ -24,7 +24,8 @@ SOURCES += main.cpp\
     gzipfile.cpp \
     utils.cpp \
     statisticsnamemodel.cpp \
-    aboutdialog.cpp
+    aboutdialog.cpp \
+    progressdialog.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -33,7 +34,8 @@ HEADERS  += mainwindow.h \
     utils.h \
     statisticsnamemodel.h \
     aboutdialog.h \
-    version.h
+    version.h \
+    progressdialog.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \
@@ -45,6 +47,7 @@ RESOURCES += \
 INCLUDEPATH += $$PWD/third_party/breakpad/
 
 win32 {
+    QT += winextras
     TARGET = ../../../VisualStatistics
 
     RC_FILE = VisualStatistics.rc
