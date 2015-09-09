@@ -89,7 +89,12 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern)
     return true;
 }
 
-int StatisticsNameModel::actualCount() const
+int StatisticsNameModel::filteredCount() const
+{
+    return (int)_indexes.size();
+}
+
+int StatisticsNameModel::totalCount() const
 {
     return (int)_statisticsNames.size();
 }

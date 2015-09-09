@@ -35,6 +35,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     _ui->lvStatisticsName->setModel(new StatisticsNameModel(this));
 
+    _lbStatNameStatus = new QLabel(this);
+    _lbStatNameStatus->setStyleSheet(QStringLiteral("QLabel{color:#888888}"));
+    _ui->statusBar->addPermanentWidget(_lbStatNameStatus);
+    updateStatNameStatus();
+    connect(_ui->lvStatisticsName->model(), SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(updateStatNameStatus()));
+    connect(_ui->lvStatisticsName->model(), SIGNAL(modelReset()), this, SLOT(updateStatNameStatus()));
+
     _ui->cbRegExpFilter->lineEdit()->setPlaceholderText(QStringLiteral("regular expression filter"));
     connect(_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::updateFilterPattern);
     connect(_ui->lvStatisticsName, &QListView::doubleClicked, this, &MainWindow::listViewDoubleClicked);
@@ -535,6 +542,16 @@ void MainWindow::copyStatisticsNames()
         }
         QApplication::clipboard()->setText(stringList.join(QStringLiteral("\n")));
     }
+}
+
+void MainWindow::updateStatNameStatus()
+{
+    StatisticsNameModel *model = static_cast<StatisticsNameModel*>(_ui->lvStatisticsName->model());
+    int displayed = model->rowCount();
+    int filtered = model->filteredCount();
+    int total = model->totalCount();
+
+    _lbStatNameStatus->setText(QStringLiteral("%1, %2, %3").arg(displayed).arg(filtered).arg(total));
 }
 
 void MainWindow::on_actionAdd_triggered()

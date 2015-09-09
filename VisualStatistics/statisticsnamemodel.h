@@ -17,7 +17,8 @@ public:
     void clearStatisticsNames();
 
     bool setFilterPattern(const QString &pattern);
-    int actualCount() const;
+    int filteredCount() const;
+    int totalCount() const;
 
     virtual bool canFetchMore(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     virtual void fetchMore(const QModelIndex &parent) Q_DECL_OVERRIDE;

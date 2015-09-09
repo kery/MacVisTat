@@ -58,6 +58,7 @@ private slots:
     void clearLogEdit();
     void handleTimeDurationResult(int index);
     void copyStatisticsNames();
+    void updateStatNameStatus();
 
     void on_actionAdd_triggered();
 
@@ -85,6 +86,7 @@ signals:
 
 private:
     Ui::MainWindow *_ui;
+    QLabel *_lbStatNameStatus;
 };
 
 #endif // MAINWINDOW_H
