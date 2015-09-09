@@ -244,18 +244,32 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
         return;
     }
 
-    if (_ui->lvStatisticsName->selectionModel()->selectedIndexes().size() > ColorGenerator::colorCount() ||
-        (model->rowCount() > ColorGenerator::colorCount() && !_ui->lvStatisticsName->selectionModel()->hasSelection()))
+    int countToBeDrawn;
+    QModelIndexList selectedIndexes = _ui->lvStatisticsName->selectionModel()->selectedIndexes();
+    if (selectedIndexes.isEmpty()) {
+        countToBeDrawn = model->rowCount();
+    } else {
+        countToBeDrawn = selectedIndexes.size();
+    }
+
+    if (countToBeDrawn > ColorGenerator::colorCount())
     {
         showInfoMsgBox(QStringLiteral("Too many statistics names specified, please change your filter text."),
                        QStringLiteral("At most %1 statistics names allowed at one time.").arg(ColorGenerator::colorCount()));
         return;
     }
 
+    if (multipleWindows && countToBeDrawn > 8) {
+        int answer = showQuestionMsgBox(QStringLiteral("You clicked [%1]. There are %2 windows will be created. Do you want to continue?").
+                                        arg(_ui->actionDrawPlotInMultipleWindows->text()).arg(countToBeDrawn));
+        if (answer != QMessageBox::Yes) {
+            return;
+        }
+    }
+
     QMap<int, QString> indexNameMap;
     if (_ui->lvStatisticsName->selectionModel()->hasSelection()) {
-        QModelIndexList list = _ui->lvStatisticsName->selectionModel()->selectedIndexes();
-        for (const QModelIndex &index : list) {
+        for (const QModelIndex &index : selectedIndexes) {
             indexNameMap.insert(model->data(index, Qt::UserRole).toInt(),
                                 model->data(index).toString());
         }
@@ -393,6 +407,16 @@ void MainWindow::showErrorMsgBox(const QString &text, const QString &info)
     msgBox.setText(text);
     msgBox.setInformativeText(info);
     msgBox.exec();
+}
+
+int MainWindow::showQuestionMsgBox(const QString &text)
+{
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle(QStringLiteral("Question"));
+    msgBox.setIcon(QMessageBox::Question);
+    msgBox.setText(text);
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    return msgBox.exec();
 }
 
 void MainWindow::appendLogInfo(const QString &text)

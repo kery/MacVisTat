@@ -39,6 +39,7 @@ private:
 
     void showInfoMsgBox(const QString &text, const QString &info);
     void showErrorMsgBox(const QString &text, const QString &info);
+    int showQuestionMsgBox(const QString &text);
 
     void appendLogInfo(const QString &text);
     void appendLogWarn(const QString &text);

@@ -37,7 +37,4 @@ void ProgressDialog::increaseValue(int value)
 {
     value += this->value();
     setValue(value);
-#if defined(Q_OS_WIN)
-    _taskbarProgress->setValue(value);
-#endif
 }
