@@ -651,8 +651,7 @@ void MainWindow::on_actionInvertSelection_triggered()
 
 void MainWindow::on_actionViewHelp_triggered()
 {
-    QString userGuideFilePath = QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("UserGuide.pdf"));
-    QUrl url(QStringLiteral("file:///%1").arg(userGuideFilePath));
+    QUrl url(QStringLiteral("http://viini.dev.cic.nsn-rdnet.net/twiki/bin/view/SA/VisualStatistics"));
     QDesktopServices::openUrl(url);
 }
 
