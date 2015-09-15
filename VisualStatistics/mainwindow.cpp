@@ -4,6 +4,7 @@
 #include "statisticsnamemodel.h"
 #include "gzipfile.h"
 #include "utils.h"
+#include "version.h"
 #include "aboutdialog.h"
 #include "progressdialog.h"
 #include <QLineEdit>
@@ -48,12 +49,43 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logEditContextMenuRequest);
     connect(_ui->lvStatisticsName, &QListView::customContextMenuRequested, this, &MainWindow::listViewContextMenuRequest);
+
+    startCheckNewVersionTask();
 }
 
 MainWindow::~MainWindow()
 {
     delete _ui;
 }
+
+#if defined(Q_OS_WIN)
+void MainWindow::startCheckNewVersionTask()
+{
+    QFutureWatcher<QString> *watcher = new QFutureWatcher<QString>();
+    connect(watcher, SIGNAL(finished()), SLOT(checkNewVersionTaskFinished()));
+    watcher->setFuture(QtConcurrent::run([] {
+        QDir dir(QStringLiteral("\\\\cdvasfile.china.nsn-net.net\\data\\sdu\\Tools"));
+        QStringList nameFilter(QStringLiteral("*.exe"));
+        QFileInfoList infoList = dir.entryInfoList(nameFilter, QDir::Files);
+#if defined(Q_OS_WIN64)
+        QRegExp regExp(QStringLiteral("VisualStatisticsSetup_win64_v(\\d+\\.\\d+\\.\\d+\\.\\d+)\\.exe"));
+#else
+        QRegExp regExp(QStringLiteral("VisualStatisticsSetup_win32_v(\\d+\\.\\d+\\.\\d+\\.\\d+)\\.exe"));
+#endif
+        for (const QFileInfo &fileInfo : infoList) {
+            QString file = fileInfo.fileName();
+            if (regExp.exactMatch(file)) {
+                int verNum = versionStringToNumber(regExp.cap(1));
+                if (verNum > VER_FILEVERSION_NUM) {
+                    return file;
+                }
+            }
+        }
+        return QString();
+    }));
+
+}
+#endif
 
 QString MainWindow::getStatisticsFileNode() const
 {
@@ -409,13 +441,16 @@ void MainWindow::showErrorMsgBox(const QString &text, const QString &info)
     msgBox.exec();
 }
 
-int MainWindow::showQuestionMsgBox(const QString &text)
+int MainWindow::showQuestionMsgBox(const QString &text, const QString &info)
 {
     QMessageBox msgBox(this);
     msgBox.setWindowTitle(QStringLiteral("Question"));
     msgBox.setIcon(QMessageBox::Question);
     msgBox.setText(text);
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    if (!info.isEmpty()) {
+        msgBox.setInformativeText(info);
+    }
     return msgBox.exec();
 }
 
@@ -473,6 +508,23 @@ void MainWindow::closeEvent(QCloseEvent *)
 {
     emit aboutToBeClosed();
 }
+
+#if defined(Q_OS_WIN)
+void MainWindow::checkNewVersionTaskFinished()
+{
+    QFutureWatcher<QString> *watcher = static_cast<QFutureWatcher<QString>*>(sender());
+    QString newVersion = watcher->result();
+    delete watcher;
+    if (!newVersion.isEmpty()) {
+        int answer = showQuestionMsgBox(QStringLiteral("A new version of this program has been found. Do you want to get it?"),
+                                        newVersion);
+        if (answer == QMessageBox::Yes) {
+            QDesktopServices::openUrl(QUrl::fromLocalFile(QStringLiteral("\\\\cdvasfile.china.nsn-net.net\\data\\sdu\\Tools")));
+            QApplication::exit();
+        }
+    }
+}
+#endif
 
 void MainWindow::updateFilterPattern()
 {
@@ -787,6 +839,6 @@ void MainWindow::on_actionAbout_triggered()
 {
     AboutDialog dialog(this);
     dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    dialog.setLabelText(QStringLiteral("Visual Statistics v%1").arg(getVersionStr()));
+    dialog.setLabelText(QStringLiteral("Visual Statistics v%1").arg(VER_FILEVERSION_STR));
     dialog.exec();
 }

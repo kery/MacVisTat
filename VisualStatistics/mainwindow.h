@@ -23,6 +23,9 @@ public:
     ~MainWindow();
 
 private:
+#if defined(Q_OS_WIN)
+    void startCheckNewVersionTask();
+#endif
     QString getStatisticsFileNode() const;
     void installEventFilterForAllToolButton();
     bool isToolTipEventOfToolButton(QObject *obj, QEvent *event);
@@ -39,7 +42,7 @@ private:
 
     void showInfoMsgBox(const QString &text, const QString &info);
     void showErrorMsgBox(const QString &text, const QString &info);
-    int showQuestionMsgBox(const QString &text);
+    int showQuestionMsgBox(const QString &text, const QString &info = "");
 
     void appendLogInfo(const QString &text);
     void appendLogWarn(const QString &text);
@@ -51,6 +54,9 @@ private:
     virtual void closeEvent(QCloseEvent *) Q_DECL_OVERRIDE;
 
 private slots:
+#if defined(Q_OS_WIN)
+    void checkNewVersionTaskFinished();
+#endif
     void updateFilterPattern();
     void listViewDoubleClicked(const QModelIndex &index);
     void handleStatisticsResult(const StatisticsResult &result, bool multipleWindows);

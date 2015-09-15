@@ -1,6 +1,7 @@
 #include "plotwindow.h"
 #include "ui_plotwindow.h"
 #include "utils.h"
+#include "version.h"
 
 const QColor ColorGenerator::_predefined[8] = {
     QColor(255, 0, 0),
@@ -553,7 +554,7 @@ void PlotWindow::on_actionSaveToFile_triggered()
         QFile file(path);
         if (file.open(QFile::WriteOnly)) {
             QDataStream out(&file);
-            out << plotFileMagicNum << version;
+            out << plotFileMagicNum << VER_FILEVERSION_NUM;
             out << _node << _dateTimes << _result;
             out << static_cast<qint32>(_ui->customPlot->axisRect()->insetLayout()->insetAlignment(0));
             file.close();

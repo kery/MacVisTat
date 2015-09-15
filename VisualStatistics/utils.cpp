@@ -1,17 +1,11 @@
 #include "utils.h"
 #include <cstring>
 
-QString getVersionStr()
+int versionStringToNumber(const QString &version)
 {
-    QStringList list;
-    int ver = version;
-    while (ver >= 10) {
-        int remainder = ver % 10;
-        ver = ver / 10;
-        list.prepend(QString::number(remainder));
-    }
-    list.prepend(QString::number(ver));
-    return list.join('.');
+    QString temp(version);
+    temp.remove('.');
+    return temp.toInt();
 }
 
 void splitString(const char *str, char ch, vector<string> &out)
