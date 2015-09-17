@@ -177,7 +177,7 @@ void PlotWindow::initializePlot(Qt::Alignment legendAlignment)
 
     plot->setNoAntialiasingOnDrag(true);
 
-    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes | QCP::iSelectLegend);
+    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectLegend);
 
     connect(plot->xAxis, &QCPAxis::ticksRequest, this, &PlotWindow::adjustTicks);
     connect(plot, &QCustomPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
@@ -310,20 +310,6 @@ void PlotWindow::selectionChanged()
 {
     QCustomPlot *plot = _ui->customPlot;
 
-    if (plot->xAxis->selectedParts().testFlag(QCPAxis::spAxis) ||
-        plot->xAxis2->selectedParts().testFlag(QCPAxis::spAxis))
-    {
-        plot->xAxis->setSelectedParts(QCPAxis::spAxis);
-        plot->xAxis2->setSelectedParts(QCPAxis::spAxis);
-    }
-
-    if (plot->yAxis->selectedParts().testFlag(QCPAxis::spAxis) ||
-        plot->yAxis2->selectedParts().testFlag(QCPAxis::spAxis))
-    {
-        plot->yAxis->setSelectedParts(QCPAxis::spAxis);
-        plot->yAxis2->setSelectedParts(QCPAxis::spAxis);
-    }
-
     if (plot->legend->selectedItems().isEmpty()) {
         for (int i = 0; i < plot->graphCount(); ++i) {
             QCPGraph *graph = plot->graph(i);
@@ -345,9 +331,9 @@ void PlotWindow::mousePress(QMouseEvent *event)
     // also support key modifiers
     QCustomPlot *plot = _ui->customPlot;
 
-    if (plot->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || event->modifiers() & Qt::ControlModifier) {
+    if (event->modifiers() & Qt::ControlModifier) {
         plot->axisRect()->setRangeDrag(plot->xAxis->orientation());
-    } else if (plot->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || event->modifiers() & Qt::ShiftModifier) {
+    } else if (event->modifiers() & Qt::ShiftModifier) {
         plot->axisRect()->setRangeDrag(plot->yAxis->orientation());
     } else {
         plot->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
@@ -356,14 +342,11 @@ void PlotWindow::mousePress(QMouseEvent *event)
 
 void PlotWindow::mouseWheel(QWheelEvent *event)
 {
-    // if an axis is selected, only allow the direction of that axis to be zoomed
-    // if no axis is selected, both directions may be zoomed
-    // also support key modifiers
     QCustomPlot *plot = _ui->customPlot;
 
-    if (plot->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || event->modifiers() & Qt::ControlModifier) {
+    if (event->modifiers() & Qt::ControlModifier) {
         plot->axisRect()->setRangeZoom(plot->xAxis->orientation());
-    } else if (plot->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || event->modifiers() & Qt::ShiftModifier) {
+    } else if (event->modifiers() & Qt::ShiftModifier) {
         plot->axisRect()->setRangeZoom(plot->yAxis->orientation());
     } else {
         plot->axisRect()->setRangeZoom(Qt::Horizontal | Qt::Vertical);
