@@ -25,7 +25,39 @@ SOURCES += main.cpp\
     utils.cpp \
     statisticsnamemodel.cpp \
     aboutdialog.cpp \
-    progressdialog.cpp
+    progressdialog.cpp \
+    third_party/lua/lapi.c \
+    third_party/lua/lauxlib.c \
+    third_party/lua/lbaselib.c \
+    third_party/lua/lbitlib.c \
+    third_party/lua/lcode.c \
+    third_party/lua/lcorolib.c \
+    third_party/lua/lctype.c \
+    third_party/lua/ldblib.c \
+    third_party/lua/ldebug.c \
+    third_party/lua/ldo.c \
+    third_party/lua/ldump.c \
+    third_party/lua/lfunc.c \
+    third_party/lua/lgc.c \
+    third_party/lua/linit.c \
+    third_party/lua/liolib.c \
+    third_party/lua/llex.c \
+    third_party/lua/lmathlib.c \
+    third_party/lua/lmem.c \
+    third_party/lua/loadlib.c \
+    third_party/lua/lobject.c \
+    third_party/lua/lopcodes.c \
+    third_party/lua/loslib.c \
+    third_party/lua/lparser.c \
+    third_party/lua/lstate.c \
+    third_party/lua/lstring.c \
+    third_party/lua/lstrlib.c \
+    third_party/lua/ltable.c \
+    third_party/lua/ltablib.c \
+    third_party/lua/ltm.c \
+    third_party/lua/lundump.c \
+    third_party/lua/lvm.c \
+    third_party/lua/lzio.c
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -35,7 +67,32 @@ HEADERS  += mainwindow.h \
     statisticsnamemodel.h \
     aboutdialog.h \
     version.h \
-    progressdialog.h
+    progressdialog.h \
+    third_party/lua/lapi.h \
+    third_party/lua/lauxlib.h \
+    third_party/lua/lcode.h \
+    third_party/lua/lctype.h \
+    third_party/lua/ldebug.h \
+    third_party/lua/ldo.h \
+    third_party/lua/lfunc.h \
+    third_party/lua/lgc.h \
+    third_party/lua/llex.h \
+    third_party/lua/llimits.h \
+    third_party/lua/lmem.h \
+    third_party/lua/lobject.h \
+    third_party/lua/lopcodes.h \
+    third_party/lua/lparser.h \
+    third_party/lua/lstate.h \
+    third_party/lua/lstring.h \
+    third_party/lua/ltable.h \
+    third_party/lua/ltm.h \
+    third_party/lua/lua.h \
+    third_party/lua/lua.hpp \
+    third_party/lua/luaconf.h \
+    third_party/lua/lualib.h \
+    third_party/lua/lundump.h \
+    third_party/lua/lvm.h \
+    third_party/lua/lzio.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \
@@ -49,6 +106,8 @@ INCLUDEPATH += $$PWD/third_party/breakpad/
 win32 {
     QT += winextras
     TARGET = ../../../VisualStatistics
+
+    DEFINES += _CRT_SECURE_NO_WARNINGS
 
     RC_FILE = VisualStatistics.rc
 
@@ -87,3 +146,6 @@ unix:!macx {
     LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre
     LIBS += -L$$PWD/third_party/breakpad/lib/linux/ -lbreakpad_client
 }
+
+DISTFILES += \
+    third_party/lua/Makefile
