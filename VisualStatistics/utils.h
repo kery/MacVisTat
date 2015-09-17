@@ -19,4 +19,8 @@ QDataStream& operator>> (QDataStream &in, QCPData &data);
 QString getAppDataDir();
 QString getDocumentDir();
 
+void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info = QString());
+void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info = QString());
+int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info = QString());
+
 #endif // UTILS_H

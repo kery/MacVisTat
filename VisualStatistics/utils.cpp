@@ -41,3 +41,40 @@ QString getDocumentDir()
 {
     return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 }
+
+void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info)
+{
+    QMessageBox msgBox(parent);
+    msgBox.setWindowTitle(QStringLiteral("Information"));
+    msgBox.setIcon(QMessageBox::Information);
+    msgBox.setText(text);
+    if (!info.isEmpty()) {
+        msgBox.setInformativeText(info);
+    }
+    msgBox.exec();
+}
+
+void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info)
+{
+    QMessageBox msgBox(parent);
+    msgBox.setWindowTitle(QStringLiteral("Error"));
+    msgBox.setIcon(QMessageBox::Critical);
+    msgBox.setText(text);
+    if (!info.isEmpty()) {
+        msgBox.setInformativeText(info);
+    }
+    msgBox.exec();
+}
+
+int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info)
+{
+    QMessageBox msgBox(parent);
+    msgBox.setWindowTitle(QStringLiteral("Question"));
+    msgBox.setIcon(QMessageBox::Question);
+    msgBox.setText(text);
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    if (!info.isEmpty()) {
+        msgBox.setInformativeText(info);
+    }
+    return msgBox.exec();
+}

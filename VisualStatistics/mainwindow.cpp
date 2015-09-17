@@ -244,10 +244,12 @@ void MainWindow::parseStatisticsFileHeader(const QVector<QString> &fileNames, bo
         }
     } else if (result.back() == QDir::separator().toLatin1()) {
         result.erase(result.end() - 1);
-        showErrorMsgBox(QStringLiteral("Invalid statistics file header format. The reason may be the header itself is invalid or two files' header aren't the same."),
+        showErrorMsgBox(this,
+                        QStringLiteral("Invalid statistics file header format. The reason may be the header itself is invalid or two files' header aren't the same."),
                         QString::fromStdString(result));
     } else {
-        showErrorMsgBox(QStringLiteral("Read statistics file header failed."),
+        showErrorMsgBox(this,
+                        QStringLiteral("Read statistics file header failed."),
                         QString::fromStdString(result));
     }
 }
@@ -263,7 +265,8 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
     }
 
     if (checkedItems.isEmpty()) {
-        showInfoMsgBox(QStringLiteral("Please check the statistics file(s) with which you want to draw plot!"),
+        showInfoMsgBox(this,
+                       QStringLiteral("Please check the statistics file(s) with which you want to draw plot!"),
                        QStringLiteral("No statistics file checked."));
         return;
     }
@@ -271,7 +274,8 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
     StatisticsNameModel *model = static_cast<StatisticsNameModel*>(_ui->lvStatisticsName->model());
     Q_ASSERT(model != NULL);
     if (model->rowCount() == 0) {
-        showInfoMsgBox(QStringLiteral("Please specify at lease one statistics name which you want to draw!"),
+        showInfoMsgBox(this,
+                       QStringLiteral("Please specify at lease one statistics name which you want to draw!"),
                        QStringLiteral("No statistics name found."));
         return;
     }
@@ -286,13 +290,15 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
 
     if (countToBeDrawn > ColorGenerator::colorCount())
     {
-        showInfoMsgBox(QStringLiteral("Too many statistics names specified, please change your filter text."),
+        showInfoMsgBox(this,
+                       QStringLiteral("Too many statistics names specified, please change your filter text."),
                        QStringLiteral("At most %1 statistics names allowed at one time.").arg(ColorGenerator::colorCount()));
         return;
     }
 
     if (multipleWindows && countToBeDrawn > 8) {
-        int answer = showQuestionMsgBox(QStringLiteral("You clicked [%1]. There are %2 windows will be created. Do you want to continue?").
+        int answer = showQuestionMsgBox(this,
+                                        QStringLiteral("You clicked [%1]. There are %2 windows will be created. Do you want to continue?").
                                         arg(_ui->actionDrawPlotInMultipleWindows->text()).arg(countToBeDrawn));
         if (answer != QMessageBox::Yes) {
             return;
@@ -421,39 +427,6 @@ end:
     handleStatisticsResult(watcher.result(), multipleWindows);
 }
 
-void MainWindow::showInfoMsgBox(const QString &text, const QString &info)
-{
-    QMessageBox msgBox(this);
-    msgBox.setWindowTitle(QStringLiteral("Information"));
-    msgBox.setIcon(QMessageBox::Information);
-    msgBox.setText(text);
-    msgBox.setInformativeText(info);
-    msgBox.exec();
-}
-
-void MainWindow::showErrorMsgBox(const QString &text, const QString &info)
-{
-    QMessageBox msgBox(this);
-    msgBox.setWindowTitle(QStringLiteral("Error"));
-    msgBox.setIcon(QMessageBox::Critical);
-    msgBox.setText(text);
-    msgBox.setInformativeText(info);
-    msgBox.exec();
-}
-
-int MainWindow::showQuestionMsgBox(const QString &text, const QString &info)
-{
-    QMessageBox msgBox(this);
-    msgBox.setWindowTitle(QStringLiteral("Question"));
-    msgBox.setIcon(QMessageBox::Question);
-    msgBox.setText(text);
-    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    if (!info.isEmpty()) {
-        msgBox.setInformativeText(info);
-    }
-    return msgBox.exec();
-}
-
 void MainWindow::appendLogInfo(const QString &text)
 {
     _ui->logTextEdit->appendHtml(QStringLiteral("<font color='green'>INFO: %1</font>").arg(text));
@@ -516,7 +489,8 @@ void MainWindow::checkNewVersionTaskFinished()
     QString newVersion = watcher->result();
     delete watcher;
     if (!newVersion.isEmpty()) {
-        int answer = showQuestionMsgBox(QStringLiteral("A new version of this program has been found. Do you want to get it?"),
+        int answer = showQuestionMsgBox(this,
+                                        QStringLiteral("A new version of this program has been found. Do you want to get it?"),
                                         newVersion);
         if (answer == QMessageBox::Yes) {
             QDesktopServices::openUrl(QUrl::fromLocalFile(QStringLiteral("\\\\cdvasfile.china.nsn-net.net\\data\\sdu\\Tools")));
@@ -787,7 +761,8 @@ void MainWindow::on_actionCalculateTimeDuration_triggered()
         dialog.exec();
         watcher->waitForFinished();
         if (!watcher->isCanceled()) {
-            showInfoMsgBox(QStringLiteral("Calculate statistics files' time duration finished."),
+            showInfoMsgBox(this,
+                           QStringLiteral("Calculate statistics files' time duration finished."),
                            QStringLiteral("The time duration will be shown in status bar when you hover mouse on file name."));
         }
     }

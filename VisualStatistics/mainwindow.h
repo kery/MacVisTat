@@ -40,10 +40,6 @@ private:
     // When parsed result is ready the slot handleParsedResult will be called
     void parseStatisticsFileData(bool multipleWindows);
 
-    void showInfoMsgBox(const QString &text, const QString &info);
-    void showErrorMsgBox(const QString &text, const QString &info);
-    int showQuestionMsgBox(const QString &text, const QString &info = "");
-
     void appendLogInfo(const QString &text);
     void appendLogWarn(const QString &text);
     void appendLogError(const QString &text);

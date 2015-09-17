@@ -91,11 +91,7 @@ int main(int argc, char *argv[])
                     NULL, minidumpCallback, NULL, true, -1);
 #endif
     } else {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle(QStringLiteral("Information"));
-        msgBox.setIcon(QMessageBox::Information);
-        msgBox.setText(QStringLiteral("Create application data directory failed!"));
-        msgBox.exec();
+        showInfoMsgBox(NULL, QStringLiteral("Create application data directory failed!"));
     }
 
     MainWindow w;

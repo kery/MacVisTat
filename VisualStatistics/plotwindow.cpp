@@ -554,16 +554,12 @@ void PlotWindow::on_actionSaveToFile_triggered()
         QFile file(path);
         if (file.open(QFile::WriteOnly)) {
             QDataStream out(&file);
-            out << plotFileMagicNum << VER_FILEVERSION_NUM;
+            out << plotFileMagicNum << (qint32)VER_FILEVERSION_NUM;
             out << _node << _dateTimes << _result;
             out << static_cast<qint32>(_ui->customPlot->axisRect()->insetLayout()->insetAlignment(0));
             file.close();
         } else {
-            QMessageBox msgBox(this);
-            msgBox.setWindowTitle(QStringLiteral("Error"));
-            msgBox.setIcon(QMessageBox::Critical);
-            msgBox.setText(QStringLiteral("Failed to open file %1!").arg(fileName));
-            msgBox.exec();
+            showErrorMsgBox(this, QStringLiteral("Failed to open file %1!").arg(fileName));
         }
     }
 }
