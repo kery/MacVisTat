@@ -26,38 +26,38 @@ SOURCES += main.cpp\
     statisticsnamemodel.cpp \
     aboutdialog.cpp \
     progressdialog.cpp \
-    third_party/lua/lapi.c \
-    third_party/lua/lauxlib.c \
-    third_party/lua/lbaselib.c \
-    third_party/lua/lbitlib.c \
-    third_party/lua/lcode.c \
-    third_party/lua/lcorolib.c \
-    third_party/lua/lctype.c \
-    third_party/lua/ldblib.c \
-    third_party/lua/ldebug.c \
-    third_party/lua/ldo.c \
-    third_party/lua/ldump.c \
-    third_party/lua/lfunc.c \
-    third_party/lua/lgc.c \
-    third_party/lua/linit.c \
-    third_party/lua/liolib.c \
-    third_party/lua/llex.c \
-    third_party/lua/lmathlib.c \
-    third_party/lua/lmem.c \
-    third_party/lua/loadlib.c \
-    third_party/lua/lobject.c \
-    third_party/lua/lopcodes.c \
-    third_party/lua/loslib.c \
-    third_party/lua/lparser.c \
-    third_party/lua/lstate.c \
-    third_party/lua/lstring.c \
-    third_party/lua/lstrlib.c \
-    third_party/lua/ltable.c \
-    third_party/lua/ltablib.c \
-    third_party/lua/ltm.c \
-    third_party/lua/lundump.c \
-    third_party/lua/lvm.c \
-    third_party/lua/lzio.c
+    third_party/lua/lapi.cpp \
+    third_party/lua/lauxlib.cpp \
+    third_party/lua/lbaselib.cpp \
+    third_party/lua/lbitlib.cpp \
+    third_party/lua/lcode.cpp \
+    third_party/lua/lcorolib.cpp \
+    third_party/lua/lctype.cpp \
+    third_party/lua/ldblib.cpp \
+    third_party/lua/ldebug.cpp \
+    third_party/lua/ldo.cpp \
+    third_party/lua/ldump.cpp \
+    third_party/lua/lfunc.cpp \
+    third_party/lua/lgc.cpp \
+    third_party/lua/linit.cpp \
+    third_party/lua/liolib.cpp \
+    third_party/lua/llex.cpp \
+    third_party/lua/lmathlib.cpp \
+    third_party/lua/lmem.cpp \
+    third_party/lua/loadlib.cpp \
+    third_party/lua/lobject.cpp \
+    third_party/lua/lopcodes.cpp \
+    third_party/lua/loslib.cpp \
+    third_party/lua/lparser.cpp \
+    third_party/lua/lstate.cpp \
+    third_party/lua/lstring.cpp \
+    third_party/lua/lstrlib.cpp \
+    third_party/lua/ltable.cpp \
+    third_party/lua/ltablib.cpp \
+    third_party/lua/ltm.cpp \
+    third_party/lua/lundump.cpp \
+    third_party/lua/lvm.cpp \
+    third_party/lua/lzio.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -87,7 +87,6 @@ HEADERS  += mainwindow.h \
     third_party/lua/ltable.h \
     third_party/lua/ltm.h \
     third_party/lua/lua.h \
-    third_party/lua/lua.hpp \
     third_party/lua/luaconf.h \
     third_party/lua/lualib.h \
     third_party/lua/lundump.h \
