@@ -57,7 +57,8 @@ SOURCES += main.cpp\
     third_party/lua/ltm.cpp \
     third_party/lua/lundump.cpp \
     third_party/lua/lvm.cpp \
-    third_party/lua/lzio.cpp
+    third_party/lua/lzio.cpp \
+    colorgenerator.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -91,7 +92,8 @@ HEADERS  += mainwindow.h \
     third_party/lua/lualib.h \
     third_party/lua/lundump.h \
     third_party/lua/lvm.h \
-    third_party/lua/lzio.h
+    third_party/lua/lzio.h \
+    colorgenerator.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \
