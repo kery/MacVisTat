@@ -12,5 +12,9 @@
         <file>resource/image/minus.png</file>
         <file>resource/image/restore.png</file>
         <file>resource/image/time.png</file>
+        <file>resource/image/document.png</file>
+        <file>resource/image/eraser.png</file>
+        <file>resource/image/play.png</file>
+        <file>resource/image/script.png</file>
     </qresource>
 </RCC>

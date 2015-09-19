@@ -339,7 +339,7 @@ void MainWindow::parseStatisticsFileData(bool multipleWindows)
             goto end;
         }
         while (working && gzFile.readLine(line)) {
-            QDateTime dt = QDateTime::fromString(QString::fromLatin1(line.c_str(), 19), "dd.MM.yyyy;HH:mm:ss");
+            QDateTime dt = QDateTime::fromString(QString::fromLatin1(line.c_str(), 19), DT_FORMAT_IN_FILE);
             if (dt.isValid()) {
                 data.key = dt.toTime_t();
                 int index = 0;

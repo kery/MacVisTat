@@ -22,6 +22,10 @@
   <property name="windowTitle">
    <string>Plot Window</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="VisualStatistics.qrc">
+    <normaloff>:/resource/image/script.png</normaloff>:/resource/image/script.png</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <property name="leftMargin">
@@ -59,11 +63,13 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionSaveAsImage"/>
-   <addaction name="actionRestoreScale"/>
    <addaction name="separator"/>
+   <addaction name="actionRestoreScale"/>
    <addaction name="actionShowDelta"/>
    <addaction name="actionMarkAbnormalTime"/>
    <addaction name="actionFullScreen"/>
+   <addaction name="separator"/>
+   <addaction name="actionScript"/>
   </widget>
   <action name="actionSaveAsImage">
    <property name="icon">
@@ -143,6 +149,15 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionScript">
+   <property name="icon">
+    <iconset resource="VisualStatistics.qrc">
+     <normaloff>:/resource/image/script.png</normaloff>:/resource/image/script.png</iconset>
+   </property>
+   <property name="text">
+    <string>Script</string>
    </property>
   </action>
  </widget>

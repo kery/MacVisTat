@@ -32,6 +32,15 @@ QDataStream& operator>> (QDataStream &in, QCPData &data)
     return in;
 }
 
+void adjustYAxisRange(QCPAxis *yAxis)
+{
+    QCPRange range = yAxis->range();
+    double delta = range.size() * 0.02;
+    range.lower -= delta;
+    range.upper += delta;
+    yAxis->setRange(range);
+}
+
 QString getAppDataDir()
 {
     return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);

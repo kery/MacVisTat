@@ -1,5 +1,6 @@
 #include "plotwindow.h"
 #include "ui_plotwindow.h"
+#include "scriptwindow.h"
 #include "utils.h"
 #include "version.h"
 
@@ -24,14 +25,14 @@ PlotWindow::PlotWindow(const QString &node, QWidget *parent) :
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     _ui->toolBar->addWidget(spacer);
     _dtEditFrom = new QDateTimeEdit();
-    _dtEditFrom->setDisplayFormat(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
+    _dtEditFrom->setDisplayFormat(DT_FORMAT);
     _ui->toolBar->addWidget(_dtEditFrom);
     spacer = new QWidget();
     spacer->setMinimumWidth(5);
     spacer->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     _ui->toolBar->addWidget(spacer);
     _dtEditTo = new QDateTimeEdit();
-    _dtEditTo->setDisplayFormat(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
+    _dtEditTo->setDisplayFormat(DT_FORMAT);
     _ui->toolBar->addWidget(_dtEditTo);
     connect(_ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), SLOT(xAxisRangeChanged(QCPRange)));
     connect(_dtEditFrom, SIGNAL(dateTimeChanged(QDateTime)), SLOT(fromDateTimeChanged(QDateTime)));
@@ -123,8 +124,6 @@ void PlotWindow::initializePlot(Qt::Alignment legendAlignment)
     connect(plot, &QCustomPlot::mouseWheel, this, &PlotWindow::mouseWheel);
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
 
-    Q_ASSERT(_result.size() <= predefinedColorCount());
-
     int i = 0;
     for (auto iter = _result.begin(); iter != _result.end(); ++iter, ++i) {
         plot->addGraph();
@@ -142,7 +141,7 @@ void PlotWindow::initializePlot(Qt::Alignment legendAlignment)
     }
 
     plot->rescaleAxes();
-    adjustYAxisRange();
+    adjustYAxisRange(plot->yAxis);
     plot->replot();
 }
 
@@ -172,7 +171,7 @@ QVector<QString> PlotWindow::calcTickLabelVector(const QVector<double> &ticks)
     QVector<QString> result;
     for (double d : ticks) {
         result << QDateTime::fromTime_t(
-            _dateTimes.at(static_cast<int>(d))).toString(QStringLiteral("dd.MM.yyyy HH:mm:ss"));
+            _dateTimes.at(static_cast<int>(d))).toString(DT_FORMAT);
     }
     return result;
 }
@@ -222,15 +221,6 @@ void PlotWindow::markAbnormalTime()
             plot->addItem(line);
         }
     }
-}
-
-void PlotWindow::adjustYAxisRange()
-{
-    QCPRange range = _ui->customPlot->yAxis->range();
-    double delta = range.size() * 0.02;
-    range.lower -= delta;
-    range.upper += delta;
-    _ui->customPlot->yAxis->setRange(range);
 }
 
 void PlotWindow::adjustTicks()
@@ -421,7 +411,7 @@ void PlotWindow::on_actionSaveAsImage_triggered()
 void PlotWindow::on_actionRestoreScale_triggered()
 {
     _ui->customPlot->rescaleAxes();
-    adjustYAxisRange();
+    adjustYAxisRange(_ui->customPlot->yAxis);
     _ui->customPlot->replot();
 }
 
@@ -445,7 +435,7 @@ void PlotWindow::on_actionShowDelta_toggled(bool checked)
     }
     // Only rescale Y axis
     plot->yAxis->rescale();
-    adjustYAxisRange();
+    adjustYAxisRange(plot->yAxis);
     plot->replot();
 }
 
@@ -482,5 +472,20 @@ void PlotWindow::on_actionSaveToFile_triggered()
         } else {
             showErrorMsgBox(this, QStringLiteral("Failed to open file %1!").arg(fileName));
         }
+    }
+}
+
+void PlotWindow::on_actionScript_triggered()
+{
+    if (!findChild<ScriptWindow*>(QStringLiteral("ScriptWindow"), Qt::FindDirectChildrenOnly)) {
+        ScriptWindow *scriptWindow = new ScriptWindow(this);
+        QString err;
+        if (!scriptWindow->initialize(_ui->customPlot, err)) {
+            showInfoMsgBox(this, QStringLiteral("Initialize script window failed."), err);
+            delete scriptWindow;
+        }
+        scriptWindow->setDateTimeVec(&_dateTimes);
+        scriptWindow->setAttribute(Qt::WA_DeleteOnClose);
+        scriptWindow->showNormal();
     }
 }

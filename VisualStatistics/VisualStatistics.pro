@@ -58,7 +58,9 @@ SOURCES += main.cpp\
     third_party/lua/lundump.cpp \
     third_party/lua/lvm.cpp \
     third_party/lua/lzio.cpp \
-    colorgenerator.cpp
+    colorgenerator.cpp \
+    luaenvironment.cpp \
+    scriptwindow.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -93,11 +95,14 @@ HEADERS  += mainwindow.h \
     third_party/lua/lundump.h \
     third_party/lua/lvm.h \
     third_party/lua/lzio.h \
-    colorgenerator.h
+    colorgenerator.h \
+    luaenvironment.h \
+    scriptwindow.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \
-    aboutdialog.ui
+    aboutdialog.ui \
+    scriptwindow.ui
 
 RESOURCES += \
     VisualStatistics.qrc

@@ -32,7 +32,9 @@ private:
     QVector<int> findAbnormalTimeIndex() const;
     void markAbnormalTime();
 
-    void adjustYAxisRange();
+    int getDateTime(int index) const {
+        return _dateTimes.at(index);
+    }
 
 private slots:
     void adjustTicks();
@@ -56,6 +58,8 @@ private slots:
     void on_actionMarkAbnormalTime_toggled(bool checked);
 
     void on_actionSaveToFile_triggered();
+
+    void on_actionScript_triggered();
 
 private:
     Ui::PlotWindow *_ui;
