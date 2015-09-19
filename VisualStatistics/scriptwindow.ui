@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Script Window (Lua)</string>
+   <string>Script Window</string>
   </property>
   <property name="windowIcon">
    <iconset resource="VisualStatistics.qrc">
@@ -24,7 +24,11 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QPlainTextEdit" name="scriptTextEdit"/>
+      <widget class="QPlainTextEdit" name="scriptTextEdit">
+       <property name="placeholderText">
+        <string>keep here empty to run the opened file, or the code in this editor will be run</string>
+       </property>
+      </widget>
       <widget class="QPlainTextEdit" name="logTextEdit">
        <property name="readOnly">
         <bool>true</bool>
@@ -50,35 +54,38 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionLoadScript"/>
+   <addaction name="actionOpen"/>
    <addaction name="actionClearLog"/>
-   <addaction name="actionExecute"/>
+   <addaction name="actionRun"/>
   </widget>
-  <action name="actionLoadScript">
+  <action name="actionOpen">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
      <normaloff>:/resource/image/document.png</normaloff>:/resource/image/document.png</iconset>
    </property>
    <property name="text">
-    <string>Load Script</string>
+    <string>Open</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Script File</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="actionExecute">
+  <action name="actionRun">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
      <normaloff>:/resource/image/play.png</normaloff>:/resource/image/play.png</iconset>
    </property>
    <property name="text">
-    <string>Execute</string>
+    <string>Run</string>
    </property>
    <property name="toolTip">
-    <string>Execute (Ctrl+E)</string>
+    <string>Run (Ctrl+R)</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+E</string>
+    <string>Ctrl+R</string>
    </property>
   </action>
   <action name="actionClearLog">

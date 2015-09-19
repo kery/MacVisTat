@@ -20,15 +20,16 @@ public:
     void setDateTimeVec(void *vec);
 
 private slots:
-    void on_actionExecute_triggered();
+    void on_actionRun_triggered();
 
     void on_actionClearLog_triggered();
 
-    void on_actionLoadScript_triggered();
+    void on_actionOpen_triggered();
 
 private:
     Ui::ScriptWindow *_ui;
     LuaEnvironment _luaEnv;
+    QString _scriptFile;
 };
 
 #endif // SCRIPTWINDOW_H

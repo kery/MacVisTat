@@ -18,6 +18,7 @@ public:
     void setDateTimeVector(void *vec);
 
     bool doString(const QString &str, QString &err);
+    bool doFile(const QString &file, QString &err);
 
 private:
     bool protectedInit(QCustomPlot *plot, QString &err);

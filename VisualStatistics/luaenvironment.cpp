@@ -264,6 +264,20 @@ bool LuaEnvironment::doString(const QString &str, QString &err)
     return true;
 }
 
+bool LuaEnvironment::doFile(const QString &file, QString &err)
+{
+    Q_ASSERT(L != NULL);
+
+    if ((luaL_loadfile(L, file.toStdString().c_str()) ||
+         lua_pcall(L, 0, 0, 0)) != LUA_OK)
+    {
+        getLuaError(err);
+        return false;
+    }
+
+    return true;
+}
+
 bool LuaEnvironment::protectedInit(QCustomPlot *plot, QString &err)
 {
     Q_ASSERT(L != NULL);

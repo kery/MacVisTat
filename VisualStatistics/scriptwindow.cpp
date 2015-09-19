@@ -31,11 +31,20 @@ void ScriptWindow::setDateTimeVec(void *vec)
     _luaEnv.setDateTimeVector(vec);
 }
 
-void ScriptWindow::on_actionExecute_triggered()
+void ScriptWindow::on_actionRun_triggered()
 {
     QString err;
-    if (!_luaEnv.doString(_ui->scriptTextEdit->toPlainText(), err)) {
-        _ui->logTextEdit->appendPlainText(err);
+    QString scriptStr = _ui->scriptTextEdit->toPlainText();
+    if (scriptStr.isEmpty()) {
+        if (!_scriptFile.isEmpty()) {
+            if (!_luaEnv.doFile(_scriptFile, err)) {
+                _ui->logTextEdit->appendPlainText(err);
+            }
+        }
+    } else {
+        if (!_luaEnv.doString(scriptStr, err)) {
+            _ui->logTextEdit->appendPlainText(err);
+        }
     }
 }
 
@@ -44,7 +53,7 @@ void ScriptWindow::on_actionClearLog_triggered()
     _ui->logTextEdit->clear();
 }
 
-void ScriptWindow::on_actionLoadScript_triggered()
+void ScriptWindow::on_actionOpen_triggered()
 {
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::ExistingFile);
@@ -53,17 +62,8 @@ void ScriptWindow::on_actionLoadScript_triggered()
 
     if (fileDialog.exec() == QDialog::Accepted) {
         if (fileDialog.selectedFiles().size() > 0) {
-            QFile file(fileDialog.selectedFiles().at(0));
-            if (file.open(QFile::ReadOnly)) {
-                QTextStream in(&file);
-                _ui->scriptTextEdit->clear();
-                while (!in.atEnd()) {
-                    _ui->scriptTextEdit->appendPlainText(in.readLine());
-                }
-                file.close();
-            } else {
-                showErrorMsgBox(this, QStringLiteral("Open file failed."));
-            }
+            _scriptFile = QDir::toNativeSeparators(fileDialog.selectedFiles().at(0));
+            setWindowTitle(QStringLiteral("Script Window - ") + _scriptFile);
         }
     }
 }
