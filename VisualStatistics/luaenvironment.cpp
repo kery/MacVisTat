@@ -117,6 +117,7 @@ static int add_graph_cfunc(lua_State *L)
         QCPData data;
         QCPDataMap *dataMap = graph->data();
         graph->setName(name);
+        graph->setPen(QPen(QColor(51, 102, 0)));
 
         lua_pushnil(L);
         while (lua_next(L, 2) != 0) {

@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Script Window (Lua)</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="VisualStatistics.qrc">
+    <normaloff>:/resource/image/script.png</normaloff>:/resource/image/script.png</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
@@ -24,6 +28,9 @@
       <widget class="QPlainTextEdit" name="logTextEdit">
        <property name="readOnly">
         <bool>true</bool>
+       </property>
+       <property name="maximumBlockCount">
+        <number>1024</number>
        </property>
       </widget>
      </widget>

@@ -32,9 +32,7 @@ private:
     QVector<int> findAbnormalTimeIndex() const;
     void markAbnormalTime();
 
-    int getDateTime(int index) const {
-        return _dateTimes.at(index);
-    }
+    int getDateTime(int index) const;
 
 private slots:
     void adjustTicks();
@@ -43,6 +41,7 @@ private slots:
     void mouseWheel(QWheelEvent *event);
     void contextMenuRequest(const QPoint &pos);
     void moveLegend();
+    void removeSelectedGraph();
     void xAxisRangeChanged(const QCPRange &newRange);
     void fromDateTimeChanged(const QDateTime &dateTime);
     void toDateTimeChanged(const QDateTime &dateTime);

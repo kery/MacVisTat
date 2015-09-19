@@ -223,6 +223,12 @@ void PlotWindow::markAbnormalTime()
     }
 }
 
+int PlotWindow::getDateTime(int index) const
+{
+    // index has been checked in lua
+    return _dateTimes.at(index);
+}
+
 void PlotWindow::adjustTicks()
 {
     QCustomPlot *plot = _ui->customPlot;
@@ -288,18 +294,26 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         QMenu *menu = new QMenu(this);
         menu->setAttribute(Qt::WA_DeleteOnClose);
 
-        menu->addAction(QStringLiteral("Move to top left"), this, SLOT(moveLegend()))->setData(
+        menu->addAction(QStringLiteral("Move to Top Left"), this, SLOT(moveLegend()))->setData(
             static_cast<int>(Qt::AlignTop | Qt::AlignLeft));
-        menu->addAction(QStringLiteral("Move to top center"), this, SLOT(moveLegend()))->setData(
+        menu->addAction(QStringLiteral("Move to Top Center"), this, SLOT(moveLegend()))->setData(
             static_cast<int>(Qt::AlignTop | Qt::AlignCenter));
-        menu->addAction(QStringLiteral("Move to top right"), this, SLOT(moveLegend()))->setData(
+        menu->addAction(QStringLiteral("Move to Top Right"), this, SLOT(moveLegend()))->setData(
             static_cast<int>(Qt::AlignTop | Qt::AlignRight));
-        menu->addAction(QStringLiteral("Move to bottom left"), this, SLOT(moveLegend()))->setData(
+        menu->addSeparator();
+        menu->addAction(QStringLiteral("Move to Bottom Left"), this, SLOT(moveLegend()))->setData(
             static_cast<int>(Qt::AlignBottom | Qt::AlignLeft));
-        menu->addAction(QStringLiteral("Move to bottom center"), this, SLOT(moveLegend()))->setData(
+        menu->addAction(QStringLiteral("Move to Bottom Center"), this, SLOT(moveLegend()))->setData(
             static_cast<int>(Qt::AlignBottom | Qt::AlignCenter));
-        menu->addAction(QStringLiteral("Move to bottom right"), this, SLOT(moveLegend()))->setData(
+        menu->addAction(QStringLiteral("Move to Bottom Right"), this, SLOT(moveLegend()))->setData(
             static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
+
+        menu->addSeparator();
+
+        QAction *action = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
+        if (!plot->legend->selectedItems().size()) {
+            action->setEnabled(false);
+        }
 
         menu->popup(plot->mapToGlobal(pos));
     }
@@ -315,6 +329,32 @@ void PlotWindow::moveLegend()
             plot->axisRect()->insetLayout()->setInsetAlignment(0, (Qt::Alignment)align);
             plot->replot();
         }
+    }
+}
+
+void PlotWindow::removeSelectedGraph()
+{
+    QVector<QCPGraph*> graphsToBeRemoved;
+    QCustomPlot *plot = _ui->customPlot;
+    auto selectedItems = plot->legend->selectedItems();
+    for (int i = 0; i < plot->legend->itemCount(); ++i) {
+        auto item = plot->legend->item(i);
+        if (selectedItems.contains(item)) {
+            if (i >= _result.size()) {
+                graphsToBeRemoved << static_cast<QCPGraph*>(static_cast<QCPPlottableLegendItem*>(item)->plottable());
+            } else {
+                showInfoMsgBox(this, QStringLiteral("Only custom graph could be removed."));
+                return;
+            }
+        }
+    }
+
+    if (graphsToBeRemoved.size() > 0) {
+        for (QCPGraph *graph : graphsToBeRemoved) {
+            plot->removeGraph(graph);
+        }
+        selectionChanged();
+        plot->replot();
     }
 }
 
@@ -421,7 +461,8 @@ void PlotWindow::on_actionShowDelta_toggled(bool checked)
     QCustomPlot *plot = _ui->customPlot;
     if (checked) {
         plot->xAxis2->setLabel(_node + SUFFIX);
-        for (int i = 0; i < plot->graphCount(); ++i) {
+        // The script added graphs are not show in delta mode
+        for (int i = 0; i < _result.size(); ++i) {
             calcDelta(plot->graph(i));
         }
     } else {
@@ -477,8 +518,13 @@ void PlotWindow::on_actionSaveToFile_triggered()
 
 void PlotWindow::on_actionScript_triggered()
 {
-    if (!findChild<ScriptWindow*>(QStringLiteral("ScriptWindow"), Qt::FindDirectChildrenOnly)) {
-        ScriptWindow *scriptWindow = new ScriptWindow(this);
+    ScriptWindow *scriptWindow = findChild<ScriptWindow*>(QStringLiteral("ScriptWindow"), Qt::FindDirectChildrenOnly);
+    if (scriptWindow) {
+        if (scriptWindow->isMinimized()) {
+            scriptWindow->showNormal();
+        }
+    } else {
+        scriptWindow = new ScriptWindow(this);
         QString err;
         if (!scriptWindow->initialize(_ui->customPlot, err)) {
             showInfoMsgBox(this, QStringLiteral("Initialize script window failed."), err);

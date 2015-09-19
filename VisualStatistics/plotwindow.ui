@@ -22,10 +22,6 @@
   <property name="windowTitle">
    <string>Plot Window</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="VisualStatistics.qrc">
-    <normaloff>:/resource/image/script.png</normaloff>:/resource/image/script.png</iconset>
-  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <property name="leftMargin">
