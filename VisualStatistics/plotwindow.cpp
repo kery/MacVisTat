@@ -255,6 +255,12 @@ void PlotWindow::selectionChanged()
             QCPPlottableLegendItem *item = plot->legend->itemWithPlottable(graph);
             graph->setVisible(item->selected());
         }
+
+        if (QApplication::keyboardModifiers() & Qt::AltModifier) {
+            plot->yAxis->rescale(true);
+            adjustYAxisRange(plot->yAxis);
+            plot->replot();
+        }
     }
 }
 
