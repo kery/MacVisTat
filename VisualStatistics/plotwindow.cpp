@@ -259,7 +259,6 @@ void PlotWindow::selectionChanged()
         if (QApplication::keyboardModifiers() & Qt::AltModifier) {
             plot->yAxis->rescale(true);
             adjustYAxisRange(plot->yAxis);
-            plot->replot();
         }
     }
 }
