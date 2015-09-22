@@ -2634,6 +2634,16 @@ protected:
   friend class QCPLegend;
 };
 
+class QCP_LIB_DECL MyGraph : public QCPGraph
+{
+    Q_OBJECT
+
+public:
+    explicit MyGraph(QCPAxis *keyAxis, QCPAxis *valueAxis);
+
+    virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
+};
+
 
 /*! \file */
 

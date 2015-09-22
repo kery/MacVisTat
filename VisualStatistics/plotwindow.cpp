@@ -112,6 +112,7 @@ void PlotWindow::initializePlot(Qt::Alignment legendAlignment)
 
     plot->axisRect()->insetLayout()->setInsetAlignment(0, legendAlignment);
     plot->legend->setSelectableParts(QCPLegend::spItems);
+    plot->legend->setIconSize(15, 6);
     plot->legend->setVisible(true);
 
     plot->setNoAntialiasingOnDrag(true);

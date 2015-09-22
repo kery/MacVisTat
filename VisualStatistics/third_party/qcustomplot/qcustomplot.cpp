@@ -9722,7 +9722,7 @@ QCPGraph *QCustomPlot::addGraph(QCPAxis *keyAxis, QCPAxis *valueAxis)
     return 0;
   }
   
-  QCPGraph *newGraph = new QCPGraph(keyAxis, valueAxis);
+  QCPGraph *newGraph = new MyGraph(keyAxis, valueAxis);
   if (addPlottable(newGraph))
   {
     newGraph->setName(QLatin1String("Graph ")+QString::number(mGraphs.size()));
@@ -12879,6 +12879,7 @@ void QCPPlottableLegendItem::draw(QCPPainter *painter)
   QSizeF iconSize = mParentLegend->iconSize();
   QRectF textRect = painter->fontMetrics().boundingRect(0, 0, 0, iconSize.height(), Qt::TextDontClip, mPlottable->name());
   QRectF iconRect(mRect.topLeft(), iconSize);
+  iconRect.translate(0, mRect.height() - iconSize.height() - 1);
   int textHeight = qMax(textRect.height(), iconSize.height());  // if text has smaller height than icon, center text vertically in icon height, else align tops
   painter->drawText(mRect.x()+iconSize.width()+mParentLegend->iconTextPadding(), mRect.y(), textRect.width(), textHeight, Qt::TextDontClip, mPlottable->name());
   // draw icon:
@@ -16728,6 +16729,16 @@ QCPRange QCPGraph::getValueRange(bool &foundRange, SignDomain inSignDomain, bool
   
   foundRange = haveLower && haveUpper;
   return range;
+}
+
+MyGraph::MyGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
+    QCPGraph(keyAxis, valueAxis)
+{
+}
+
+void MyGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
+{
+    painter->fillRect(rect, mPen.color());
 }
 
 
