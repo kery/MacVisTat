@@ -93,7 +93,7 @@ static int dt_str_cfunc(lua_State *L)
     return 1;
 }
 
-static int count_cfunc(lua_State *L)
+static int value_count_cfunc(lua_State *L)
 {
     int graph_index = luaL_checkint(L, 1);
 
@@ -156,6 +156,25 @@ static int remove_graph_cfunc(lua_State *L)
     return 1;
 }
 
+static int graph_count_cfunc(lua_State *L)
+{
+    QCustomPlot *plot = checkCustomPlot(L);
+    lua_pushinteger(L, plot->graphCount());
+
+    return 1;
+}
+
+static int graph_name_cfunc(lua_State *L)
+{
+    int graph_index = luaL_checkint(L, 1);
+
+    QCustomPlot *plot = checkCustomPlotAndGraphIndex(L, graph_index, 1);
+
+    lua_pushstring(L, plot->graph(graph_index)->name().toStdString().c_str());
+
+    return 1;
+}
+
 static int update_cfunc(lua_State *L)
 {
     QCustomPlot *plot = checkCustomPlot(L);
@@ -190,9 +209,11 @@ static int init_cfunc(lua_State *L)
         {"value", value_cfunc},
         {"dt", dt_cfunc},
         {"dt_str", dt_str_cfunc},
-        {"count", count_cfunc},
+        {"value_count", value_count_cfunc},
         {"add_graph", add_graph_cfunc},
         {"remove_graph", remove_graph_cfunc},
+        {"graph_count", graph_count_cfunc},
+        {"graph_name", graph_name_cfunc},
         {"update", update_cfunc},
         {NULL, NULL}
     };
