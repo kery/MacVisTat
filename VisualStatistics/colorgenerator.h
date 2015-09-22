@@ -2,6 +2,7 @@
 #define COLORGENERATOR_H
 
 #include <QColor>
+#include <QPair>
 
 class ColorGenerator
 {

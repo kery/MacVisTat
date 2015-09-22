@@ -113,6 +113,7 @@ win32 {
     QT += winextras
     TARGET = ../../../VisualStatistics
 
+    # Remove the warnings for calling function like strcmp
     DEFINES += _CRT_SECURE_NO_WARNINGS
 
     RC_FILE = VisualStatistics.rc
