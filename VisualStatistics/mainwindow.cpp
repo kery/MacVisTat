@@ -14,7 +14,7 @@
 #include <QtConcurrent>
 #include <functional>
 
-#define STAT_FILE_PATTERN "^([A-Z]+\\d*\\-\\d+)__(int|ext)stat_(\\d{8}\\-\\d{6}|archive)\\.csv\\.gz$"
+#define STAT_FILE_PATTERN QStringLiteral("^(.+)__.+\\.csv\\.gz$")
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -140,10 +140,6 @@ QVector<QString> MainWindow::addStatisticsFiles(const QStringList &fileNames)
             appendLogWarn(QStringLiteral("%1 ignored. Please add only one node's statistics files!").arg(fileInfo.fileName()));
             continue;
         }
-        if (!checkStatisticsFileType(regExp.cap(2))) {
-            appendLogWarn(QStringLiteral("%1 ignored. Please add only one type of statistics files!").arg(fileInfo.fileName()));
-            continue;
-        }
         QListWidgetItem *item = new QListWidgetItem(icon, fileInfo.fileName());
         item->setCheckState(Qt::Checked);
         item->setToolTip(nativeName);
@@ -164,18 +160,6 @@ bool MainWindow::checkStatisticsFileNode(const QString &node)
     QRegExp regExp(STAT_FILE_PATTERN);
     regExp.exactMatch(item->text());
     return regExp.cap(1) == node;
-}
-
-bool MainWindow::checkStatisticsFileType(const QString &type)
-{
-    if (_ui->lwStatisticsFiles->count() == 0) {
-        return true;
-    }
-
-    QListWidgetItem *item = _ui->lwStatisticsFiles->item(0);
-    QRegExp regExp(STAT_FILE_PATTERN);
-    regExp.exactMatch(item->text());
-    return regExp.cap(2) == type;
 }
 
 void MainWindow::parseStatisticsFileHeader(const QVector<QString> &fileNames, bool updateModel)
