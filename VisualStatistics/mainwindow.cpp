@@ -43,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(_ui->lvStatisticsName->model(), SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(updateStatNameStatus()));
     connect(_ui->lvStatisticsName->model(), SIGNAL(modelReset()), this, SLOT(updateStatNameStatus()));
 
+    _ui->cbRegExpFilter->completer()->setCaseSensitivity(Qt::CaseSensitive);
     _ui->cbRegExpFilter->lineEdit()->setPlaceholderText(QStringLiteral("regular expression filter"));
     connect(_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::updateFilterPattern);
     connect(_ui->lvStatisticsName, &QListView::doubleClicked, this, &MainWindow::listViewDoubleClicked);
