@@ -24,7 +24,7 @@ ColorGenerator::ColorGenerator(int s, int l) :
 
 QColor ColorGenerator::genColor()
 {
-    if (_count < sizeof(_predefined)/sizeof(_predefined[0])) {
+    if (_count < int(sizeof(_predefined)/sizeof(_predefined[0]))) {
         return _predefined[_count++];
     }
     int h = calculateH();

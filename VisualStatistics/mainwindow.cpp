@@ -51,7 +51,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logEditContextMenuRequest);
     connect(_ui->lvStatisticsName, &QListView::customContextMenuRequested, this, &MainWindow::listViewContextMenuRequest);
 
+#if defined(Q_OS_WIN)
     startCheckNewVersionTask();
+#endif
 }
 
 MainWindow::~MainWindow()
