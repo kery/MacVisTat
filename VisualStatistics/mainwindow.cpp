@@ -67,7 +67,7 @@ void MainWindow::startCheckNewVersionTask()
     QFutureWatcher<QString> *watcher = new QFutureWatcher<QString>();
     connect(watcher, SIGNAL(finished()), SLOT(checkNewVersionTaskFinished()));
     watcher->setFuture(QtConcurrent::run([] {
-        QDir dir(QStringLiteral("\\\\cdvasfile.china.nsn-net.net\\data\\sdu\\Tools"));
+        QDir dir(QStringLiteral("\\\\cdvasfile.china.nsn-net.net\\data\\sdu\\Tools\\VisualStatistics\\win"));
         QStringList nameFilter(QStringLiteral("*.exe"));
         QFileInfoList infoList = dir.entryInfoList(nameFilter, QDir::Files);
 #if defined(Q_OS_WIN64)
