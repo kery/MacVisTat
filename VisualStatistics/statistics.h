@@ -13,6 +13,7 @@ public:
     Statistics(NodeNameDataMap &nndm);
 
     QList<QString> getNodes() const;
+    int getNodeCount() const;
     QString getNodesString() const;
     QList<QString> getNames(const QString &node) const;
     int totalNameCount() const;
@@ -20,9 +21,11 @@ public:
     QCPDataMap* getDataMap(const QString &formattedName);
     bool removeDataMap(const QString &node, const QString &name);
     bool removeDataMap(const QString &formattedName);
+    void trimNodeNameDataMap();
     QString formatName(const QString &node, const QString &name) const;
     void parseFormattedName(const QString &formattedName,
                             QString &node, QString &name) const;
+    QString removeNodePrefix(const QString &name) const;
 
     int dateTimeCount() const;
     DateTimeVector::value_type getDateTime(int index) const;

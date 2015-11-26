@@ -32,6 +32,11 @@ QList<QString> Statistics::getNodes() const
     return m_nndm.keys();
 }
 
+int Statistics::getNodeCount() const
+{
+    return m_nndm.size();
+}
+
 QString Statistics::getNodesString() const
 {
     return QStringList(getNodes()).join(',');
@@ -75,9 +80,6 @@ bool Statistics::removeDataMap(const QString &node, const QString &name)
         auto pos = ndm.find(name);
         if (pos != ndm.end()) {
             ndm.erase(pos);
-            if (ndm.empty()) {
-                m_nndm.erase(m_nndm.find(node));
-            }
             return true;
         }
     }
@@ -89,6 +91,17 @@ bool Statistics::removeDataMap(const QString &formattedName)
     QString node, name;
     parseFormattedName(formattedName, node, name);
     return removeDataMap(node, name);
+}
+
+void Statistics::trimNodeNameDataMap()
+{
+    for (auto iter = m_nndm.begin(); iter != m_nndm.end();) {
+        if (iter->empty()) {
+            iter = m_nndm.erase(iter);
+        } else {
+            ++iter;
+        }
+    }
 }
 
 QString Statistics::formatName(const QString &node, const QString &name) const
@@ -112,6 +125,13 @@ void Statistics::parseFormattedName(const QString &formattedName,
         node = m_nndm.firstKey();
         name = formattedName;
     }
+}
+
+QString Statistics::removeNodePrefix(const QString &name) const
+{
+    QVector<QStringRef> refs = name.splitRef(':');
+    Q_ASSERT(refs.size() == 2);
+    return refs.at(1).toString();
 }
 
 int Statistics::dateTimeCount() const

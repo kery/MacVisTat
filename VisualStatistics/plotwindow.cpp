@@ -314,6 +314,14 @@ void PlotWindow::removeSelectedGraph()
             m_stat.removeDataMap(graph->name());
             plot->removeGraph(graph);
         }
+        int preNodeCount = m_stat.getNodeCount();
+        m_stat.trimNodeNameDataMap();
+        if (preNodeCount > 1 && m_stat.getNodeCount() == 1) {
+            for (int i = 0; i < plot->graphCount(); ++i) {
+                QCPGraph *graph = plot->graph(i);
+                graph->setName(m_stat.removeNodePrefix(graph->name()));
+            }
+        }
         setWindowTitle(m_stat.getNodesString());
         plot->xAxis2->setLabel(m_stat.getNodesString());
 

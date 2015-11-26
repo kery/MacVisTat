@@ -58,7 +58,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>PushButton</string>
+    <string>Cancel</string>
    </property>
   </widget>
   <zorder>pushButton</zorder>
