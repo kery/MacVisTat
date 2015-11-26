@@ -571,10 +571,6 @@ void MainWindow::on_actionCalculateTimeDuration_triggered()
     }
 }
 
-void MainWindow::on_actionOpenPlotFile_triggered()
-{
-}
-
 void MainWindow::on_actionAbout_triggered()
 {
     AboutDialog dialog(this);

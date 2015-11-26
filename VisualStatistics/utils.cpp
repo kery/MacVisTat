@@ -1,5 +1,4 @@
 #include "utils.h"
-//#include "statistics.h"
 #include <cstring>
 
 int versionStringToNumber(const QString &version)
@@ -20,30 +19,6 @@ void splitString(const char *str, char ch, vector<string> &out)
         out.push_back(string(str));
     }
 }
-
-QDataStream& operator<< (QDataStream &out, const QCPData &data)
-{
-    out << data.key << data.value;
-    return out;
-}
-
-QDataStream& operator>> (QDataStream &in, QCPData &data)
-{
-    in >> data.key >> data.value;
-    return in;
-}
-
-//QDataStream& operator<< (QDataStream &out, const ParsedStatisticsSingleNode &pssn)
-//{
-//    out << pssn._dateTimes << pssn._node << pssn._data;
-//    return out;
-//}
-
-//QDataStream& operator>> (QDataStream &in, ParsedStatisticsSingleNode &pssn)
-//{
-//    in >> pssn._dateTimes >> pssn._node >> pssn._data;
-//    return in;
-//}
 
 void adjustYAxisRange(QCPAxis *yAxis)
 {

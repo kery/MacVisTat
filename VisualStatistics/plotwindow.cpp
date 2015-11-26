@@ -14,13 +14,6 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_ui->setupUi(this);
     setWindowTitle(m_stat.getNodesString());
 
-    QToolButton *saveButton = static_cast<QToolButton*>(
-                m_ui->toolBar->widgetForAction(m_ui->actionSaveAsImage));
-    saveButton->setPopupMode(QToolButton::MenuButtonPopup);
-    QMenu *saveToFileMenu = new QMenu(this);
-    saveToFileMenu->addAction(m_ui->actionSaveToFile);
-    saveButton->setMenu(saveToFileMenu);
-
     QWidget *spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_ui->toolBar->addWidget(spacer);
@@ -459,31 +452,6 @@ void PlotWindow::on_actionMarkAbnormalTime_triggered(bool checked)
     }
     m_ui->customPlot->replot();
     QSettings().setValue(QStringLiteral("PlotWindow/MarkAbnormal"), checked);
-}
-
-void PlotWindow::on_actionSaveToFile_triggered()
-{
-//    QString fileName = QDir(getDocumentDir()).filePath(_node);
-
-//    if (_result.size() == 1) {
-//        fileName += QStringLiteral("-%1").arg(_result.firstKey());
-//    }
-
-//    QString path = QFileDialog::getSaveFileName(this, QStringLiteral("Save To File"),
-//                                                    fileName,
-//                                                    QStringLiteral("Plot File (*.plot)"));
-//    if (!path.isEmpty()) {
-//        QFile file(path);
-//        if (file.open(QFile::WriteOnly)) {
-//            QDataStream out(&file);
-//            out << plotFileMagicNum << (qint32)VER_FILEVERSION_NUM;
-//            out << _node << _dateTimes << _result;
-//            out << static_cast<qint32>(_ui->customPlot->axisRect()->insetLayout()->insetAlignment(0));
-//            file.close();
-//        } else {
-//            showErrorMsgBox(this, QStringLiteral("Failed to open file %1!").arg(fileName));
-//        }
-//    }
 }
 
 void PlotWindow::on_actionScript_triggered()

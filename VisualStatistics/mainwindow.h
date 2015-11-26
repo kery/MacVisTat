@@ -69,7 +69,6 @@ private slots:
     void on_actionInvertSelection_triggered();
     void on_actionViewHelp_triggered();
     void on_actionCalculateTimeDuration_triggered();
-    void on_actionOpenPlotFile_triggered();
     void on_actionAbout_triggered();
 
 signals:

@@ -52,8 +52,6 @@ private slots:
 
     void on_actionMarkAbnormalTime_triggered(bool checked);
 
-    void on_actionSaveToFile_triggered();
-
     void on_actionScript_triggered();
 
 private:
