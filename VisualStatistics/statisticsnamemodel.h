@@ -7,12 +7,14 @@
 class StatisticsNameModel : public QAbstractListModel
 {
 public:
-    explicit StatisticsNameModel(QObject *parent = NULL);
+    typedef std::vector<std::string> StatisticsNames;
+
+    explicit StatisticsNameModel(QObject *parent);
+    StatisticsNameModel(const StatisticsNameModel &) = delete;
+    StatisticsNameModel& operator=(const StatisticsNameModel &) = delete;
     ~StatisticsNameModel();
 
-    void beforeDataContainerUpdate();
-    std::vector<std::string>& getDataContainer();
-    void endDataContainerUpdate();
+    void setStatisticsNames(StatisticsNames &sns);
 
     void clearStatisticsNames();
 
@@ -26,12 +28,11 @@ public:
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
 private:
-    int _fetchedCount;
-    int _fetchIncrement;
-    QString _pattern;
-    std::vector<std::string> _statisticsNames;
-    std::vector<int> _indexes;
-    pcre_jit_stack *_jitStack;
+    int m_fetchedCount;
+    QString m_pattern;
+    StatisticsNames m_statNames;
+    std::vector<int> m_indexes;
+    pcre_jit_stack *m_jitStack;
 };
 
 #endif // STATISTICSNAMEMODEL_H

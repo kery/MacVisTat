@@ -13,11 +13,13 @@ class ScriptWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit ScriptWindow(QWidget *parent = 0);
+    explicit ScriptWindow(QWidget *parent);
+    ScriptWindow(const ScriptWindow &) = delete;
+    ScriptWindow& operator=(const ScriptWindow &) = delete;
     ~ScriptWindow();
 
-    bool initialize(QCustomPlot *plot, QString &err);
-    void setDateTimeVec(void *vec);
+    bool initialize(QString &err);
+    void appendLog(const QString &text);
 
 private slots:
     void on_actionRun_triggered();
@@ -27,9 +29,9 @@ private slots:
     void on_actionOpen_triggered();
 
 private:
-    Ui::ScriptWindow *_ui;
-    LuaEnvironment _luaEnv;
-    QString _scriptFile;
+    Ui::ScriptWindow *m_ui;
+    LuaEnvironment m_luaEnv;
+    QString m_scriptFile;
 };
 
 #endif // SCRIPTWINDOW_H

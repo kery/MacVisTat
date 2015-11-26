@@ -3,18 +3,18 @@
 
 AboutDialog::AboutDialog(QWidget *parent) :
     QDialog(parent),
-    _ui(new Ui::AboutDialog)
+    m_ui(new Ui::AboutDialog)
 {
-    _ui->setupUi(this);
-    _ui->labelMailTo->setOpenExternalLinks(true);
+    m_ui->setupUi(this);
+    m_ui->labelMailTo->setOpenExternalLinks(true);
 }
 
 AboutDialog::~AboutDialog()
 {
-    delete _ui;
+    delete m_ui;
 }
 
 void AboutDialog::setLabelText(const QString &text)
 {
-    _ui->label->setText(text);
+    m_ui->label->setText(text);
 }

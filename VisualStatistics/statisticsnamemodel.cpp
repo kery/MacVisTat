@@ -2,55 +2,45 @@
 
 StatisticsNameModel::StatisticsNameModel(QObject *parent) :
     QAbstractListModel(parent),
-    _fetchedCount(0),
-    _fetchIncrement(100),
-    _jitStack(pcre_jit_stack_alloc(32 * 1024, 1024 * 1024))
+    m_fetchedCount(0),
+    m_jitStack(pcre_jit_stack_alloc(32 * 1024, 1024 * 1024))
 {
 }
 
 StatisticsNameModel::~StatisticsNameModel()
 {
-    if (_jitStack) {
-        pcre_jit_stack_free(_jitStack);
+    if (m_jitStack) {
+        pcre_jit_stack_free(m_jitStack);
     }
 }
 
-void StatisticsNameModel::beforeDataContainerUpdate()
+void StatisticsNameModel::setStatisticsNames(StatisticsNames &sns)
 {
     emit beginResetModel();
-    _pattern = "";
-}
-
-std::vector<std::string>& StatisticsNameModel::getDataContainer()
-{
-    return _statisticsNames;
-}
-
-void StatisticsNameModel::endDataContainerUpdate()
-{
-    _indexes.reserve(_statisticsNames.size());
-    for (int i = 0; i < (int)_statisticsNames.size(); ++i) {
-        _indexes.push_back(i);
+    m_pattern = "";
+    m_statNames.swap(sns);
+    m_indexes.reserve(m_statNames.size());
+    for (int i = 0; i < (int)m_statNames.size(); ++i) {
+        m_indexes.push_back(i);
     }
-    _fetchedCount = 0;
+    m_fetchedCount = 0;
     emit endResetModel();
 }
 
 void StatisticsNameModel::clearStatisticsNames()
 {
     emit beginResetModel();
-    _statisticsNames.resize(0);
-    _indexes.resize(0);
-    _fetchedCount = 0;
+    m_statNames.resize(0);
+    m_indexes.resize(0);
+    m_fetchedCount = 0;
     emit endResetModel();
 }
 
 // Use pcre for regular expression matching because the QRegExp
 // is much slower in some situations
-
 bool StatisticsNameModel::setFilterPattern(const QString &pattern)
 {
-    if (pattern == _pattern || _statisticsNames.empty()) {
+    if (pattern == m_pattern || m_statNames.empty()) {
         return true;
     }
 
@@ -67,19 +57,19 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern)
 
     extra = pcre_study(re, PCRE_STUDY_EXTRA_NEEDED | PCRE_STUDY_JIT_COMPILE, &err);
     // pcre_assign_jit_stack() does nothing unless the extra argument is non-NULL
-    pcre_assign_jit_stack(extra, NULL, _jitStack);
+    pcre_assign_jit_stack(extra, NULL, m_jitStack);
 
     emit beginResetModel();
-    _pattern = pattern;
-    _indexes.resize(0);
-    for (int i = 0; i < (int)_statisticsNames.size(); ++i) {
-        const std::string &statisticsName = _statisticsNames[i];
-        if (pcre_jit_exec(re, extra, statisticsName.c_str(), (int)statisticsName.length(),
-                            0, 0, ovector, OVECCOUNT, _jitStack) > -1) {
-            _indexes.push_back(i);
+    m_pattern = pattern;
+    m_indexes.resize(0);
+    for (int i = 0; i < (int)m_statNames.size(); ++i) {
+        const std::string &statName = m_statNames[i];
+        if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
+                            0, 0, ovector, OVECCOUNT, m_jitStack) > -1) {
+            m_indexes.push_back(i);
         }
     }
-    _fetchedCount = 0;
+    m_fetchedCount = 0;
     emit endResetModel();
 
     pcre_free(re);
@@ -91,17 +81,17 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern)
 
 int StatisticsNameModel::filteredCount() const
 {
-    return (int)_indexes.size();
+    return (int)m_indexes.size();
 }
 
 int StatisticsNameModel::totalCount() const
 {
-    return (int)_statisticsNames.size();
+    return (int)m_statNames.size();
 }
 
 bool StatisticsNameModel::canFetchMore(const QModelIndex &parent) const
 {
-    return _fetchedCount < (int)_indexes.size() && !parent.isValid();
+    return m_fetchedCount < (int)m_indexes.size() && !parent.isValid();
 }
 
 void StatisticsNameModel::fetchMore(const QModelIndex &parent)
@@ -109,28 +99,28 @@ void StatisticsNameModel::fetchMore(const QModelIndex &parent)
     if (parent.isValid()) {
         return;
     }
-    int newCount = _fetchedCount + _fetchIncrement;
-    if (newCount > (int)_indexes.size()) {
-        newCount = static_cast<int>(_indexes.size());
+    int newCount = m_fetchedCount + 100;
+    if (newCount > (int)m_indexes.size()) {
+        newCount = static_cast<int>(m_indexes.size());
     }
-    emit beginInsertRows(QModelIndex(), _fetchedCount, newCount - 1);
-    _fetchedCount = newCount;
+    emit beginInsertRows(QModelIndex(), m_fetchedCount, newCount - 1);
+    m_fetchedCount = newCount;
     emit endInsertRows();
 }
 
 int	StatisticsNameModel::rowCount(const QModelIndex &parent) const
 {
-    return parent.isValid() ? 0 : _fetchedCount;
+    return parent.isValid() ? 0 : m_fetchedCount;
 }
 
 QVariant StatisticsNameModel::data(const QModelIndex &index, int role) const
 {
     if (index.isValid()) {
         if (role == Qt::DisplayRole) {
-            return _statisticsNames[_indexes[index.row()]].c_str();
+            return m_statNames[m_indexes[index.row()]].c_str();
         } else if (role == Qt::UserRole) {
             // Consider the first 2 column: ##date;time;shm_xxx
-            return _indexes[index.row()] + 2;
+            return m_indexes[index.row()] + 2;
         }
     }
     return QVariant();

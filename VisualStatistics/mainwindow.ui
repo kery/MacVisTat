@@ -13,6 +13,9 @@
   <property name="contextMenuPolicy">
    <enum>Qt::NoContextMenu</enum>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>Visual Statistics</string>
   </property>
@@ -30,7 +33,7 @@
        <property name="childrenCollapsible">
         <bool>false</bool>
        </property>
-       <widget class="QListWidget" name="lwStatisticsFiles">
+       <widget class="QListWidget" name="lwStatFiles">
         <property name="mouseTracking">
          <bool>true</bool>
         </property>
@@ -54,7 +57,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QListView" name="lvStatisticsName">
+          <widget class="QListView" name="lvStatName">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>

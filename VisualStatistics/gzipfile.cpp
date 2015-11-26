@@ -2,15 +2,15 @@
 #include <QFile>
 
 GZipFile::GZipFile(const QString &path) :
-    _gzFile(gzopen(path.toStdString().c_str(), "rb")),
-    _compressedSize(0)
+    m_gzFile(gzopen(path.toStdString().c_str(), "rb")),
+    m_size(0)
 {
-    if (_gzFile) {
-        gzbuffer(_gzFile, 64 * 1024);
-        QFile tmpFile(path);
-        if (tmpFile.open(QFile::ReadOnly)) {
-            _compressedSize = tmpFile.size();
-            tmpFile.close();
+    if (m_gzFile) {
+        gzbuffer(m_gzFile, 64 * 1024);
+        QFile file(path);
+        if (file.open(QFile::ReadOnly)) {
+            m_size = file.size();
+            file.close();
         }
     }
 }
@@ -33,13 +33,13 @@ if (text.endsWith('\n')) {\
 bool GZipFile::readLine(QString &text)
 {
     char buff[4096];
-    if (gzgets(_gzFile, buff, sizeof(buff))) {
+    if (gzgets(m_gzFile, buff, sizeof(buff))) {
         text = buff;
         IF_LINE_RETURN(text)
     } else {
         return false;
     }
-    while (gzgets(_gzFile, buff, sizeof(buff))) {
+    while (gzgets(m_gzFile, buff, sizeof(buff))) {
         text += buff;
         IF_LINE_RETURN(text)
     }
@@ -59,23 +59,23 @@ if (text.back() == '\n') {\
 bool GZipFile::readLine(std::string &text)
 {
     char buff[4096];
-    if (gzgets(_gzFile, buff, sizeof(buff))) {
+    if (gzgets(m_gzFile, buff, sizeof(buff))) {
         text = buff;
         IF_LINE_RETURN(text)
     } else {
         return false;
     }
-    while (gzgets(_gzFile, buff, sizeof(buff))) {
+    while (gzgets(m_gzFile, buff, sizeof(buff))) {
         text += buff;
         IF_LINE_RETURN(text)
     }
     return true;
 }
 
-int GZipFile::completionRate() const
+int GZipFile::progress() const
 {
-    if (_compressedSize > 0) {
-        return ((double)gzoffset(_gzFile) / _compressedSize) * 100;
+    if (m_size > 0) {
+        return ((double)gzoffset(m_gzFile) / m_size) * 100;
     } else {
         return -1;
     }
@@ -83,9 +83,9 @@ int GZipFile::completionRate() const
 
 bool GZipFile::close()
 {
-    if (_gzFile) {
-        if (gzclose(_gzFile) == Z_OK) {
-            _gzFile = NULL;
+    if (m_gzFile) {
+        if (gzclose(m_gzFile) == Z_OK) {
+            m_gzFile = NULL;
             return true;
         }
     }

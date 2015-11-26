@@ -60,7 +60,9 @@ SOURCES += main.cpp\
     third_party/lua/lzio.cpp \
     colorgenerator.cpp \
     luaenvironment.cpp \
-    scriptwindow.cpp
+    scriptwindow.cpp \
+    statisticsfileparser.cpp \
+    statistics.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -97,17 +99,21 @@ HEADERS  += mainwindow.h \
     third_party/lua/lzio.h \
     colorgenerator.h \
     luaenvironment.h \
-    scriptwindow.h
+    scriptwindow.h \
+    statisticsfileparser.h \
+    statistics.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \
     aboutdialog.ui \
-    scriptwindow.ui
+    scriptwindow.ui \
+    progressdialog.ui
 
 RESOURCES += \
     VisualStatistics.qrc
 
 INCLUDEPATH += $$PWD/third_party/breakpad/
+INCLUDEPATH += $$PWD/third_party/qcustomplot/
 
 win32 {
     QT += winextras

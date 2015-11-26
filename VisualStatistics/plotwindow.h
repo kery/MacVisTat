@@ -1,7 +1,7 @@
 #ifndef PLOTWINDOW_H
 #define PLOTWINDOW_H
 
-#include "mainwindow.h"
+#include "statistics.h"
 #include "colorgenerator.h"
 
 namespace Ui {
@@ -13,26 +13,22 @@ class PlotWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, QWidget *parent = NULL);
-    explicit PlotWindow(const QString &node, const QMap<QString, QCPDataMap> &result, const QVector<qint32> &dateTimes, qint32 legendAlignment, QWidget *parent = NULL);
+    explicit PlotWindow(Statistics &stat);
+    PlotWindow(const PlotWindow &) = delete;
+    PlotWindow& operator=(const PlotWindow &) = delete;
     ~PlotWindow();
 
 private:
-    PlotWindow(const QString &node, QWidget *parent = NULL);
-
-    void convertResultFirstData(const QMap<QString, QCPDataMap> &result);
-    void convertResultRestData(const QMap<QString, QCPDataMap> &result);
-    void initializePlot(Qt::Alignment legendAlignment);
+    void initializePlot();
 
     QVector<double> calcTickVector(int plotWidth, int fontHeight, const QCPRange &range);
     QVector<QString> calcTickLabelVector(const QVector<double> &ticks);
 
     void calcDelta(QCPGraph *graph);
 
-    QVector<int> findAbnormalTimeIndex() const;
+    QVector<double> findAbnormalTimeIndex() const;
+    void findAbnormalTimeIndexForNode(const QString &node, QVector<double> &out) const;
     void markAbnormalTime();
-
-    int getDateTime(int index) const;
 
 private slots:
     void adjustTicks();
@@ -54,22 +50,20 @@ private slots:
 
     void on_actionShowDelta_toggled(bool checked);
 
-    void on_actionMarkAbnormalTime_toggled(bool checked);
+    void on_actionMarkAbnormalTime_triggered(bool checked);
 
     void on_actionSaveToFile_triggered();
 
     void on_actionScript_triggered();
 
 private:
-    Ui::PlotWindow *_ui;
-    const QString _node;
-    QVector<qint32> _dateTimes;
-    QMap<QString, QCPDataMap> _result;
-    QDateTimeEdit *_dtEditFrom;
-    QDateTimeEdit *_dtEditTo;
-    bool _userEditFlag;
-    bool _userDragFlag;
-    ColorGenerator _colorGenerator;
+    Ui::PlotWindow *m_ui;
+    QDateTimeEdit *m_dtEditFrom;
+    QDateTimeEdit *m_dtEditTo;
+    bool m_userEditFlag;
+    bool m_userDragFlag;
+    ColorGenerator m_colorGenerator;
+    Statistics m_stat;
 };
 
 #endif // PLOTWINDOW_H

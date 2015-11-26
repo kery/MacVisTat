@@ -8,19 +8,22 @@ class GZipFile
 {
 public:
     explicit GZipFile(const QString &path);
+    GZipFile(const GZipFile &) = delete;
+    GZipFile& operator=(const GZipFile &) = delete;
     ~GZipFile();
 
     bool readLine(QString &text);
 
     bool readLine(std::string &text);
 
-    int completionRate() const;
+    int progress() const;
 
+private:
     bool close();
 
 private:
-    gzFile _gzFile;
-    qint64 _compressedSize;
+    gzFile m_gzFile;
+    qint64 m_size;
 };
 
 #endif // GZIPFILE_H

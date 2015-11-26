@@ -4,53 +4,49 @@
 
 ScriptWindow::ScriptWindow(QWidget *parent) :
     QMainWindow(parent),
-    _ui(new Ui::ScriptWindow)
+    m_ui(new Ui::ScriptWindow)
 {
-    _ui->setupUi(this);
+    m_ui->setupUi(this);
 
-    _ui->splitter->setSizes(QList<int>() << height() - 120 << 120);
-    _ui->splitter->setCollapsible(0, false);
+    m_ui->splitter->setSizes(QList<int>() << height() - 120 << 120);
+    m_ui->splitter->setCollapsible(0, false);
 }
 
 ScriptWindow::~ScriptWindow()
 {
-    delete _ui;
+    delete m_ui;
 }
 
-bool ScriptWindow::initialize(QCustomPlot *plot, QString &err)
+bool ScriptWindow::initialize(QString &err)
 {
-    if (_luaEnv.initialize(plot, err)) {
-        _luaEnv.setPrintLogEdit(_ui->logTextEdit);
-        return true;
-    }
-    return false;
+    return m_luaEnv.initialize(this, err);
 }
 
-void ScriptWindow::setDateTimeVec(void *vec)
+void ScriptWindow::appendLog(const QString &text)
 {
-    _luaEnv.setDateTimeVector(vec);
+    m_ui->logTextEdit->appendPlainText(text);
 }
 
 void ScriptWindow::on_actionRun_triggered()
 {
     QString err;
-    QString scriptStr = _ui->scriptTextEdit->toPlainText();
+    QString scriptStr = m_ui->scriptTextEdit->toPlainText();
     if (scriptStr.isEmpty()) {
-        if (!_scriptFile.isEmpty()) {
-            if (!_luaEnv.doFile(_scriptFile, err)) {
-                _ui->logTextEdit->appendPlainText(err);
+        if (!m_scriptFile.isEmpty()) {
+            if (!m_luaEnv.doFile(m_scriptFile, err)) {
+                m_ui->logTextEdit->appendPlainText(err);
             }
         }
     } else {
-        if (!_luaEnv.doString(scriptStr, err)) {
-            _ui->logTextEdit->appendPlainText(err);
+        if (!m_luaEnv.doString(scriptStr, err)) {
+            m_ui->logTextEdit->appendPlainText(err);
         }
     }
 }
 
 void ScriptWindow::on_actionClearLog_triggered()
 {
-    _ui->logTextEdit->clear();
+    m_ui->logTextEdit->clear();
 }
 
 void ScriptWindow::on_actionOpen_triggered()
@@ -62,8 +58,8 @@ void ScriptWindow::on_actionOpen_triggered()
 
     if (fileDialog.exec() == QDialog::Accepted) {
         if (fileDialog.selectedFiles().size() > 0) {
-            _scriptFile = QDir::toNativeSeparators(fileDialog.selectedFiles().at(0));
-            setWindowTitle(QStringLiteral("Script Window - ") + _scriptFile);
+            m_scriptFile = QDir::toNativeSeparators(fileDialog.selectedFiles().at(0));
+            setWindowTitle(QStringLiteral("Script Window - ") + m_scriptFile);
         }
     }
 }

@@ -1,40 +1,65 @@
 #include "progressdialog.h"
+#include "ui_progressdialog.h"
 
 ProgressDialog::ProgressDialog(QWidget *parent) :
-    QProgressDialog(parent)
+    QDialog(parent),
+    m_ui(new Ui::ProgressDialog)
 {
+    m_ui->setupUi(this);
+
+    setFixedSize(size());
+    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+
 #if defined(Q_OS_WIN)
-    _taskbarButton.setWindow(parent->windowHandle());
-    _taskbarProgress = _taskbarButton.progress();
-    _taskbarProgress->setVisible(true);
+    m_taskbarButton.setWindow(parent->windowHandle());
+    m_taskbarProgress = m_taskbarButton.progress();
+    m_taskbarProgress->setVisible(true);
 #endif
 }
 
 ProgressDialog::~ProgressDialog()
 {
 #if defined(Q_OS_WIN)
-    _taskbarProgress->setVisible(false);
+    m_taskbarProgress->setVisible(false);
 #endif
+    delete m_ui;
+}
+
+void ProgressDialog::setLabelText(const QString &text)
+{
+    m_ui->label->setText(text);
+}
+
+void ProgressDialog::enableCancelButton(bool enabled)
+{
+    m_ui->pushButton->setEnabled(enabled);
 }
 
 void ProgressDialog::setRange(int minimum, int maximum)
 {
-    QProgressDialog::setRange(minimum, maximum);
+    m_ui->progressBar->setRange(minimum, maximum);
+    m_ui->progressBar->setValue(minimum);
 #if defined(Q_OS_WIN)
-    _taskbarProgress->setRange(minimum, maximum);
+    m_taskbarProgress->setRange(minimum, maximum);
+    m_taskbarProgress->setValue(minimum);
 #endif
 }
 
 void ProgressDialog::setValue(int progress)
 {
-    QProgressDialog::setValue(progress);
+    m_ui->progressBar->setValue(progress);
 #if defined(Q_OS_WIN)
-    _taskbarProgress->setValue(progress);
+    m_taskbarProgress->setValue(progress);
 #endif
 }
 
-void ProgressDialog::increaseValue(int value)
+void ProgressDialog::increaseValue(int val)
 {
-    value += this->value();
-    setValue(value);
+    setValue(m_ui->progressBar->value() + val);
+}
+
+void ProgressDialog::on_pushButton_clicked()
+{
+    emit canceled();
+    reject();
 }

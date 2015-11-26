@@ -12,13 +12,15 @@ class AboutDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AboutDialog(QWidget *parent = 0);
+    explicit AboutDialog(QWidget *parent);
+    AboutDialog(const AboutDialog &) = delete;
+    AboutDialog& operator=(const AboutDialog &) = delete;
     ~AboutDialog();
 
     void setLabelText(const QString &text);
 
 private:
-    Ui::AboutDialog *_ui;
+    Ui::AboutDialog *m_ui;
 };
 
 #endif // ABOUTDIALOG_H

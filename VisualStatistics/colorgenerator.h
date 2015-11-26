@@ -2,25 +2,29 @@
 #define COLORGENERATOR_H
 
 #include <QColor>
-#include <QPair>
+#include <array>
+#include <random>
 
 class ColorGenerator
 {
 public:
-    ColorGenerator(int s, int l);
-    QColor genColor();
+    ColorGenerator();
+    ColorGenerator(const ColorGenerator &) = delete;
+    ColorGenerator& operator=(const ColorGenerator &) = delete;
+    ~ColorGenerator() = default;
 
-    static int colorCount();
+    QColor nextColor();
+    void reset();
 
 private:
-    int calculateH();
+    QColor nextRandColor();
 
 private:
-    int _count;
-    int _s, _l;
-    QList<QPair<int, int> > _hList1, _hList2, *_ptr;
+    int m_usedPredef;
+    std::default_random_engine m_randEngine;
+    std::uniform_int_distribution<> m_unifDistrib;
 
-    static const QColor _predefined[8];
+    static const std::array<QColor, 8> s_predefColors;
 };
 
 #endif // COLORGENERATOR_H
