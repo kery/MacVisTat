@@ -483,7 +483,6 @@ void MainWindow::on_actionAdd_triggered()
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
     fileDialog.setNameFilter(QStringLiteral("Statistics File (*.csv.gz)"));
-    fileDialog.setDirectory(getDocumentDir());
 
     if (fileDialog.exec() == QDialog::Accepted) {
         addStatFiles(fileDialog.selectedFiles());

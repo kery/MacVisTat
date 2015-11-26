@@ -34,11 +34,6 @@ QString getAppDataDir()
     return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 }
 
-QString getDocumentDir()
-{
-    return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-}
-
 void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info)
 {
     QMessageBox msgBox(parent);

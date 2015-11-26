@@ -404,18 +404,12 @@ void PlotWindow::on_actionFullScreen_toggled(bool checked)
 
 void PlotWindow::on_actionSaveAsImage_triggered()
 {
-//    QString fileName = QDir(getDocumentDir()).filePath(_node);
-
-//    if (_result.size() == 1) {
-//        fileName += QStringLiteral("-%1").arg(_result.firstKey());
-//    }
-
-//    QString path = QFileDialog::getSaveFileName(this, QStringLiteral("Save As Image"),
-//                                                    fileName,
-//                                                    QStringLiteral("PNG File (*.png)"));
-//    if (!path.isEmpty()) {
-//        _ui->customPlot->savePng(path);
-//    }
+    QString path = QFileDialog::getSaveFileName(this, QStringLiteral("Save As Image"),
+                                                    QString(),
+                                                    QStringLiteral("PNG File (*.png)"));
+    if (!path.isEmpty()) {
+        m_ui->customPlot->savePng(path);
+    }
 }
 
 void PlotWindow::on_actionRestoreScale_triggered()

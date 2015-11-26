@@ -54,7 +54,6 @@ void ScriptWindow::on_actionOpen_triggered()
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::ExistingFile);
     fileDialog.setNameFilter(QStringLiteral("Lua File (*.lua)"));
-    fileDialog.setDirectory(getDocumentDir());
 
     if (fileDialog.exec() == QDialog::Accepted) {
         if (fileDialog.selectedFiles().size() > 0) {
