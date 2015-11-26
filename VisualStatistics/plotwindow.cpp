@@ -182,6 +182,30 @@ void PlotWindow::markAbnormalTime()
     }
 }
 
+void PlotWindow::removeGraphs(const QVector<QCPGraph *> &graphs)
+{
+    if (graphs.size() > 0) {
+        QCustomPlot *plot = m_ui->customPlot;
+        for (QCPGraph *graph : graphs) {
+            m_stat.removeDataMap(graph->name());
+            plot->removeGraph(graph);
+        }
+        int preNodeCount = m_stat.getNodeCount();
+        m_stat.trimNodeNameDataMap();
+        if (preNodeCount > 1 && m_stat.getNodeCount() == 1) {
+            for (int i = 0; i < plot->graphCount(); ++i) {
+                QCPGraph *graph = plot->graph(i);
+                graph->setName(m_stat.removeNodePrefix(graph->name()));
+            }
+        }
+        setWindowTitle(m_stat.getNodesString());
+        plot->xAxis2->setLabel(m_stat.getNodesString());
+
+        selectionChanged();
+        plot->replot();
+    }
+}
+
 void PlotWindow::adjustTicks()
 {
     QCustomPlot *plot = m_ui->customPlot;
@@ -302,25 +326,7 @@ void PlotWindow::removeSelectedGraph()
         }
     }
 
-    if (graphsToBeRemoved.size() > 0) {
-        for (QCPGraph *graph : graphsToBeRemoved) {
-            m_stat.removeDataMap(graph->name());
-            plot->removeGraph(graph);
-        }
-        int preNodeCount = m_stat.getNodeCount();
-        m_stat.trimNodeNameDataMap();
-        if (preNodeCount > 1 && m_stat.getNodeCount() == 1) {
-            for (int i = 0; i < plot->graphCount(); ++i) {
-                QCPGraph *graph = plot->graph(i);
-                graph->setName(m_stat.removeNodePrefix(graph->name()));
-            }
-        }
-        setWindowTitle(m_stat.getNodesString());
-        plot->xAxis2->setLabel(m_stat.getNodesString());
-
-        selectionChanged();
-        plot->replot();
-    }
+    removeGraphs(graphsToBeRemoved);
 }
 
 void PlotWindow::xAxisRangeChanged(const QCPRange &newRange)
@@ -471,4 +477,26 @@ void PlotWindow::on_actionScript_triggered()
         scriptWindow->setAttribute(Qt::WA_DeleteOnClose);
         scriptWindow->showNormal();
     }
+}
+
+void PlotWindow::on_actionRemoveZeroCounters_triggered()
+{
+    QVector<QCPGraph*> graphsToBeRemoved;
+    QCustomPlot *plot = m_ui->customPlot;
+    for (int i = 0; i < plot->graphCount(); ++i) {
+        QCPGraph *graph = plot->graph(i);
+        QCPDataMap *dataMap = m_stat.getDataMap(graph->name());
+        bool isZeroCounter = true;
+        for (const QCPData &data : *dataMap) {
+            if (static_cast<int>(data.value) != 0) {
+                isZeroCounter = false;
+                break;
+            }
+        }
+        if (isZeroCounter) {
+            graphsToBeRemoved << graph;
+        }
+    }
+
+    removeGraphs(graphsToBeRemoved);
 }

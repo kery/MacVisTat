@@ -30,6 +30,8 @@ private:
     void findAbnormalTimeIndexForNode(const QString &node, QVector<double> &out) const;
     void markAbnormalTime();
 
+    void removeGraphs(const QVector<QCPGraph*> &graphs);
+
 private slots:
     void adjustTicks();
     void selectionChanged();
@@ -53,6 +55,8 @@ private slots:
     void on_actionMarkAbnormalTime_triggered(bool checked);
 
     void on_actionScript_triggered();
+
+    void on_actionRemoveZeroCounters_triggered();
 
 private:
     Ui::PlotWindow *m_ui;

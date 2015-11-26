@@ -16,5 +16,6 @@
         <file>resource/image/eraser.png</file>
         <file>resource/image/play.png</file>
         <file>resource/image/script.png</file>
+        <file>resource/image/remove.png</file>
     </qresource>
 </RCC>
