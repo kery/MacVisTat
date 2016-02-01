@@ -19,7 +19,7 @@ ColorGenerator::ColorGenerator() :
 
 QColor ColorGenerator::nextColor()
 {
-    if (m_usedPredef < s_predefColors.size()) {
+    if (m_usedPredef < (int)s_predefColors.size()) {
         return s_predefColors[m_usedPredef++];
     } else {
         return nextRandColor();

@@ -107,7 +107,7 @@ bool MainWindow::statFileAlreadyAdded(const QString &filePath)
         QListWidgetItem *item = m_ui->lwStatFiles->item(i);
 #if defined(Q_OS_WIN)
         Qt::CaseSensitivity cs = Qt::CaseInsensitive;
-#elif
+#else
         Qt::CaseSensitivity cs = Qt::CaseSensitive;
 #endif
         if (item->toolTip().compare(filePath, cs) == 0) {
@@ -320,13 +320,15 @@ void MainWindow::handleParsedStat(Statistics::NodeNameDataMap &nndm, bool multip
         QMap<QString, Statistics::NodeNameDataMap> nndms(
                     Statistics::groupNodeNameDataMapByName(std::move(nndm)));
         for (Statistics::NodeNameDataMap &nndm : nndms) {
-            PlotWindow *plotWindow = new PlotWindow(Statistics(std::move(nndm)));
+            Statistics stat(nndm);
+            PlotWindow *plotWindow = new PlotWindow(stat);
             plotWindow->setAttribute(Qt::WA_DeleteOnClose);
             connect(this, SIGNAL(aboutToBeClosed()), plotWindow, SLOT(close()));
             plotWindow->showMaximized();
         }
     } else {
-        PlotWindow *plotWindow = new PlotWindow(Statistics(std::move(nndm)));
+        Statistics stat(nndm);
+        PlotWindow *plotWindow = new PlotWindow(stat);
         plotWindow->setAttribute(Qt::WA_DeleteOnClose);
         connect(this, SIGNAL(aboutToBeClosed()), plotWindow, SLOT(close()));
         plotWindow->showMaximized();
@@ -485,7 +487,8 @@ void MainWindow::on_actionAdd_triggered()
     fileDialog.setNameFilter(QStringLiteral("Statistics File (*.csv.gz)"));
 
     if (fileDialog.exec() == QDialog::Accepted) {
-        addStatFiles(fileDialog.selectedFiles());
+        QStringList strList = fileDialog.selectedFiles();
+        addStatFiles(strList);
     }
 }
 

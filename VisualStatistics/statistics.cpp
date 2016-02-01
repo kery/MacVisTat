@@ -1,5 +1,7 @@
+#if defined(_MSC_VER)
 // Disable warning C4244: possible loss of data
 #pragma warning(disable: 4244)
+#endif
 
 #include "statistics.h"
 #include "utils.h"
