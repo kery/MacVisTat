@@ -39,6 +39,16 @@ PlotWindow::~PlotWindow()
     delete m_ui;
 }
 
+Statistics& PlotWindow::getStat()
+{
+    return m_stat;
+}
+
+QCustomPlot* PlotWindow::getPlot()
+{
+    return m_ui->customPlot;
+}
+
 void PlotWindow::initializePlot()
 {
     QCustomPlot *plot = m_ui->customPlot;
@@ -186,20 +196,27 @@ void PlotWindow::removeGraphs(const QVector<QCPGraph *> &graphs)
 {
     if (graphs.size() > 0) {
         QCustomPlot *plot = m_ui->customPlot;
+        bool updateNameAndTitle = false;
         for (QCPGraph *graph : graphs) {
-            m_stat.removeDataMap(graph->name());
+            if (!graph->property("add_by_script").isValid()) {
+                updateNameAndTitle = true;
+                m_stat.removeDataMap(graph->name());
+            }
             plot->removeGraph(graph);
         }
-        int preNodeCount = m_stat.getNodeCount();
-        m_stat.trimNodeNameDataMap();
-        if (preNodeCount > 1 && m_stat.getNodeCount() == 1) {
-            for (int i = 0; i < plot->graphCount(); ++i) {
-                QCPGraph *graph = plot->graph(i);
-                graph->setName(m_stat.removeNodePrefix(graph->name()));
+        if (updateNameAndTitle) {
+            int preNodeCount = m_stat.getNodeCount();
+            m_stat.trimNodeNameDataMap();
+            if (preNodeCount > 1 && m_stat.getNodeCount() == 1) {
+                for (int i = 0; i < plot->graphCount(); ++i) {
+                    QCPGraph *graph = plot->graph(i);
+                    if (!graph->property("add_by_script").isValid())
+                        graph->setName(m_stat.removeNodePrefix(graph->name()));
+                }
             }
+            setWindowTitle(m_stat.getNodesString());
+            plot->xAxis2->setLabel(m_stat.getNodesString());
         }
-        setWindowTitle(m_stat.getNodesString());
-        plot->xAxis2->setLabel(m_stat.getNodesString());
 
         selectionChanged();
         plot->replot();

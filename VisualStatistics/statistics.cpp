@@ -47,6 +47,16 @@ QList<QString> Statistics::getNames(const QString &node) const
     return m_nndm.value(node).keys();
 }
 
+QList<double> Statistics::getDataKeys(const QString &node) const
+{
+    const QCPDataMap &dm = m_nndm.value(node).first();
+    if (dm.empty()) {
+        return QList<double>();
+    } else {
+        return dm.keys();
+    }
+}
+
 int Statistics::totalNameCount() const
 {
     int count = 0;

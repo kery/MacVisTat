@@ -5,41 +5,6 @@
 
 static char kScriptWindow;
 
-//static QCustomPlot* checkCustomPlot(lua_State *L)
-//{
-//    lua_pushlightuserdata(L, &kPlot);
-//    lua_rawget(L, LUA_REGISTRYINDEX);
-//    if (!lua_isuserdata(L, -1)) {
-//        luaL_error(L, "invalid plot object in registry");
-//    }
-//    QCustomPlot *plot = (QCustomPlot*)lua_touserdata(L, -1);
-//    lua_pop(L, 1);
-//    return plot;
-//}
-
-//static QCustomPlot* checkCustomPlotAndGraphIndex(lua_State *L, int index, int arg)
-//{
-//    QCustomPlot *plot = checkCustomPlot(L);
-//    luaL_argcheck(L, index >= 0 && index < plot->graphCount(), arg, "out of range");
-//    return plot;
-//}
-
-//static int getDateTime(lua_State *L, int arg)
-//{
-//    lua_pushlightuserdata(L, &kDateTimeVector);
-//    lua_rawget(L, LUA_REGISTRYINDEX);
-//    if (!lua_isuserdata(L, -1)) {
-//        luaL_error(L, "invalid date time vector in registry");
-//    }
-//    QVector<qint32> *vec = (QVector<qint32>*)lua_touserdata(L, -1);
-//    lua_pop(L, 1);
-
-//    int index = luaL_checkint(L, arg);
-//    luaL_argcheck(L, index >=0 && index < vec->size(), arg, "out of range");
-
-//    return vec->at(index);
-//}
-
 static ScriptWindow* scriptWindow(lua_State *L)
 {
     lua_rawgetp(L, LUA_REGISTRYINDEX, &kScriptWindow);
@@ -54,6 +19,17 @@ static PlotWindow* plotWindow(lua_State *L)
     return qobject_cast<PlotWindow*>(scriptWindow(L)->parent());
 }
 
+static QCPDataMap* dataMap(lua_State *L,
+                           const char *node,
+                           const char *name)
+{
+    QCPDataMap *dataMap = plotWindow(L)->getStat().getDataMap(node, name);
+    if (dataMap == nullptr) {
+        luaL_error(L, "invalid node or statistics name");
+    }
+    return dataMap;
+}
+
 static int custom_print(lua_State *L)
 {
     const char *str = luaL_checkstring(L, 1);
@@ -62,132 +38,127 @@ static int custom_print(lua_State *L)
     return 0;
 }
 
-//static int value_cfunc(lua_State *L)
-//{
-//    int graph_index = luaL_checkint(L, 1);
-//    int value_index = luaL_checkint(L, 2);
+static int get_nodes(lua_State *L)
+{
+    int index = 0;
+    lua_newtable(L);
+    for (const QString &node : plotWindow(L)->getStat().getNodes()) {
+        lua_pushinteger(L, ++index); // Lua table start from 1
+        lua_pushstring(L, node.toStdString().c_str());
+        lua_settable(L, 1);
+    }
 
-//    QCustomPlot *plot = checkCustomPlotAndGraphIndex(L, graph_index, 1);
+    return 1;
+}
 
-//    QCPGraph *graph = plot->graph(graph_index);
-//    if (graph->data()->contains(value_index)) {
-//        lua_pushinteger(L, (int)graph->data()->value(value_index).value);
-//    } else {
-//        luaL_error(L, "no value at %d", value_index);
-//    }
+static int get_stat_names(lua_State *L)
+{
+    const char *node = luaL_checkstring(L, 1);
 
-//    return 1;
-//}
+    int index = 0;
+    lua_newtable(L);
+    for (const QString &name : plotWindow(L)->getStat().getNames(node)) {
+        lua_pushinteger(L, ++index);
+        lua_pushstring(L, name.toStdString().c_str());
+        lua_settable(L, 2);
+    }
 
-//static int dt_cfunc(lua_State *L)
-//{
-//    int dt_num = getDateTime(L, 1);
-//    lua_pushinteger(L, dt_num);
+    return 1;
+}
 
-//    return 1;
-//}
+static int get_keys(lua_State *L)
+{
+    const char *node = luaL_checkstring(L, 1);
 
-//static int dt_str_cfunc(lua_State *L)
-//{
-//    int dt_num = getDateTime(L, 1);
-//    QDateTime dt = QDateTime::fromTime_t(dt_num);
-//    lua_pushstring(L, dt.toString(DT_FORMAT).toStdString().c_str());
-//    return 1;
-//}
+    int index = 0;
+    lua_newtable(L);
+    for (double key : plotWindow(L)->getStat().getDataKeys(node)) {
+        lua_pushinteger(L, ++index);
+        lua_pushinteger(L, (int)key);
+        lua_rawset(L, 2);
+    }
+    return 1;
+}
 
-//static int value_count_cfunc(lua_State *L)
-//{
-//    int graph_index = luaL_checkint(L, 1);
+static int get_value(lua_State *L)
+{
+    const char *node = luaL_checkstring(L, 1);
+    const char *name = luaL_checkstring(L, 2);
 
-//    QCustomPlot *plot = checkCustomPlotAndGraphIndex(L, graph_index, 1);
+    QCPDataMap *dm = dataMap(L, node, name);
 
-//    QCPGraph *graph = plot->graph(graph_index);
-//    lua_pushinteger(L, graph->data()->size());
+    int key = luaL_checkint(L, 3);
+    luaL_argcheck(L, dm->contains(key), 3, "invalid key");
 
-//    return 1;
-//}
+    lua_pushinteger(L, dm->value(key).value);
+    return 1;
+}
 
-//static int add_graph_cfunc(lua_State *L)
-//{
-//    const char *name = luaL_checkstring(L, 1);
-//    luaL_checktype(L, 2, LUA_TTABLE);
+static int get_dt(lua_State *L)
+{
+    int key = luaL_checkint(L, 1);
 
-//    QCustomPlot *plot = checkCustomPlot(L);
+    Statistics &stat = plotWindow(L)->getStat();
+    luaL_argcheck(L, key >= 0 && key < stat.dateTimeCount(), 1, "invalid key");
 
-//    QCPGraph *graph = plot->addGraph();
-//    if (graph) {
-//        QCPData data;
-//        QCPDataMap *dataMap = graph->data();
-//        graph->setName(name);
-//        graph->setPen(QPen(QColor(51, 102, 0)));
+    lua_pushinteger(L, stat.getDateTime(key));
+    return 1;
+}
 
-//        lua_pushnil(L);
-//        while (lua_next(L, 2) != 0) {
-//            if (lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
-//                data.key = lua_tonumber(L, -2);
-//                data.value = lua_tonumber(L, -1);
-//                dataMap->insert(data.key, data);
-//            }
-//            lua_pop(L, 1);
-//        }
+static int get_dt_str(lua_State *L)
+{
+    int key = luaL_checkint(L, 1);
 
-//        lua_pushinteger(L, plot->graphCount() - 1);
-//    } else {
-//        luaL_error(L, "add graph failed");
-//    }
+    Statistics &stat = plotWindow(L)->getStat();
+    luaL_argcheck(L, key >= 0 && key < stat.dateTimeCount(), 1, "invalid key");
 
-//    return 1;
-//}
+    lua_pushstring(L, stat.getDateTimeString(key).toStdString().c_str());
+    return 1;
+}
 
-//static int remove_graph_cfunc(lua_State *L)
-//{
-//    int index = luaL_checkint(L, 1);
+static int add_graph(lua_State *L)
+{
+    const char *name = luaL_checkstring(L, 1);
+    luaL_checktype(L, 2, LUA_TTABLE);
 
-//    // get initial graph count from registry
-//    lua_pushlightuserdata(L, &kInitialGraphCount);
-//    lua_rawget(L, LUA_REGISTRYINDEX);
-//    int initialGraphCount = luaL_checkint(L, -1);
-//    lua_pop(L, 1);
+    QCustomPlot *plot = plotWindow(L)->getPlot();
+    QCPGraph *graph = plot->addGraph();
+    graph->setProperty("add_by_script", true);
+    if (graph) {
+        QCPData data;
+        QCPDataMap *dataMap = graph->data();
+        graph->setName(name);
+        graph->setPen(QPen(QColor(51, 102, 0)));
 
-//    luaL_argcheck(L, index >= initialGraphCount, 1, "only custom graph can be removed");
+        lua_pushnil(L);
+        while (lua_next(L, 2) != 0) {
+            if (lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
+                data.key = lua_tonumber(L, -2);
+                data.value = lua_tonumber(L, -1);
+                dataMap->insert(data.key, data);
+            }
+            lua_pop(L, 1);
+        }
 
-//    QCustomPlot *plot = checkCustomPlot(L);
-//    bool ret = plot->removeGraph(index);
-//    lua_pushboolean(L, ret ? 1 : 0);
+        lua_pushinteger(L, plot->graphCount() - 1);
+    } else {
+        luaL_error(L, "add graph failed");
+    }
 
-//    return 1;
-//}
+    return 1;
+}
 
-//static int graph_count_cfunc(lua_State *L)
-//{
-//    QCustomPlot *plot = checkCustomPlot(L);
-//    lua_pushinteger(L, plot->graphCount());
-
-//    return 1;
-//}
-
-//static int graph_name_cfunc(lua_State *L)
-//{
-//    int graph_index = luaL_checkint(L, 1);
-
-//    QCustomPlot *plot = checkCustomPlotAndGraphIndex(L, graph_index, 1);
-
-//    lua_pushstring(L, plot->graph(graph_index)->name().toStdString().c_str());
-
-//    return 1;
-//}
-
-//static int update_cfunc(lua_State *L)
-//{
-//    QCustomPlot *plot = checkCustomPlot(L);
-//    int rescaleY = lua_toboolean(L, 1);
-//    if (rescaleY) {
-//        plot->yAxis->rescale();
-//        adjustYAxisRange(plot->yAxis);
-//    }
-//    plot->replot();
-//    return 0;
-//}
+static int update(lua_State *L)
+{
+    QCustomPlot *plot = plotWindow(L)->getPlot();
+    int rescaleY = lua_toboolean(L, 1);
+    if (rescaleY) {
+        plot->yAxis->rescale();
+        adjustYAxisRange(plot->yAxis);
+    }
+    plot->replot();
+    return 0;
+}
 
 static int init_cfunc(lua_State *L)
 {
@@ -203,15 +174,14 @@ static int init_cfunc(lua_State *L)
     lua_rawset(L, LUA_REGISTRYINDEX);
 
     const struct luaL_Reg methods[] = {
-//        {"value", value_cfunc},
-//        {"dt", dt_cfunc},
-//        {"dt_str", dt_str_cfunc},
-//        {"value_count", value_count_cfunc},
-//        {"add_graph", add_graph_cfunc},
-//        {"remove_graph", remove_graph_cfunc},
-//        {"graph_count", graph_count_cfunc},
-//        {"graph_name", graph_name_cfunc},
-//        {"update", update_cfunc},
+        {"get_nodes", get_nodes},
+        {"get_stat_names", get_stat_names},
+        {"get_keys", get_keys},
+        {"get_value", get_value},
+        {"get_dt", get_dt},
+        {"get_dt_str", get_dt_str},
+        {"add_graph", add_graph},
+        {"update", update},
         {NULL, NULL}
     };
 

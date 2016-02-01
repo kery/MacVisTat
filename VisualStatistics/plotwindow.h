@@ -18,6 +18,9 @@ public:
     PlotWindow& operator=(const PlotWindow &) = delete;
     ~PlotWindow();
 
+    Statistics& getStat();
+    QCustomPlot* getPlot();
+
 private:
     void initializePlot();
 

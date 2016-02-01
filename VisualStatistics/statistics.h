@@ -16,6 +16,7 @@ public:
     int getNodeCount() const;
     QString getNodesString() const;
     QList<QString> getNames(const QString &node) const;
+    QList<double> getDataKeys(const QString &node) const;
     int totalNameCount() const;
     QCPDataMap* getDataMap(const QString &node, const QString &name);
     QCPDataMap* getDataMap(const QString &formattedName);
