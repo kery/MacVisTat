@@ -16,6 +16,9 @@
     <height>380</height>
    </size>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::ClickFocus</enum>
+  </property>
   <property name="contextMenuPolicy">
    <enum>Qt::NoContextMenu</enum>
   </property>
@@ -137,15 +140,15 @@
     <string>Mark Abnormal Time</string>
    </property>
   </action>
-  <action name="actionSaveToFile">
+  <action name="actionCopyToClipboard">
    <property name="text">
-    <string>Save To File</string>
+    <string>Copy To Clipboard</string>
    </property>
    <property name="toolTip">
-    <string>Save To File</string>
+    <string>Copy To Clipboard</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+S</string>
+    <string>Ctrl+C</string>
    </property>
   </action>
   <action name="actionScript">

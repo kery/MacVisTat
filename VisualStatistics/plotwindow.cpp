@@ -14,6 +14,13 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_ui->setupUi(this);
     setWindowTitle(m_stat.getNodesString());
 
+    QToolButton *saveButton = static_cast<QToolButton*>(
+                m_ui->toolBar->widgetForAction(m_ui->actionSaveAsImage));
+    saveButton->setPopupMode(QToolButton::MenuButtonPopup);
+    QMenu *copyToClipboard = new QMenu(this);
+    copyToClipboard->addAction(m_ui->actionCopyToClipboard);
+    saveButton->setMenu(copyToClipboard);
+
     QWidget *spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_ui->toolBar->addWidget(spacer);
@@ -31,6 +38,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
     connect(m_dtEditFrom, SIGNAL(dateTimeChanged(QDateTime)), SLOT(fromDateTimeChanged(QDateTime)));
     connect(m_dtEditTo, SIGNAL(dateTimeChanged(QDateTime)), SLOT(toDateTimeChanged(QDateTime)));
 
+    setFocus();
     initializePlot();
 }
 
@@ -510,4 +518,9 @@ void PlotWindow::on_actionRemoveZeroCounters_triggered()
     }
 
     removeGraphs(graphsToBeRemoved);
+}
+
+void PlotWindow::on_actionCopyToClipboard_triggered()
+{
+    QApplication::clipboard()->setPixmap(m_ui->customPlot->toPixmap());
 }

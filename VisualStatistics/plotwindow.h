@@ -61,6 +61,8 @@ private slots:
 
     void on_actionRemoveZeroCounters_triggered();
 
+    void on_actionCopyToClipboard_triggered();
+
 private:
     Ui::PlotWindow *m_ui;
     QDateTimeEdit *m_dtEditFrom;
