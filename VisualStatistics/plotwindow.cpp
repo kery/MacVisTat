@@ -301,6 +301,9 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         QMenu *menu = new QMenu(this);
         menu->setAttribute(Qt::WA_DeleteOnClose);
 
+        QAction *actionCopy = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
+        menu->addSeparator();
+
         menu->addAction(QStringLiteral("Move to Top Left"), this, SLOT(moveLegend()))->setData(
             static_cast<int>(Qt::AlignTop | Qt::AlignLeft));
         menu->addAction(QStringLiteral("Move to Top Center"), this, SLOT(moveLegend()))->setData(
@@ -317,9 +320,10 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
 
         menu->addSeparator();
 
-        QAction *action = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
+        QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
         if (!plot->legend->selectedItems().size()) {
-            action->setEnabled(false);
+            actionCopy->setEnabled(false);
+            actionRemove->setEnabled(false);
         }
 
         menu->popup(plot->mapToGlobal(pos));
@@ -352,6 +356,15 @@ void PlotWindow::removeSelectedGraph()
     }
 
     removeGraphs(graphsToBeRemoved);
+}
+
+void PlotWindow::copyGraphName()
+{
+    QStringList strList;
+    for (auto item : m_ui->customPlot->legend->selectedItems()) {
+        strList << qobject_cast<QCPPlottableLegendItem *>(item)->plottable()->name();
+    }
+    QApplication::clipboard()->setText(strList.join('\n'));
 }
 
 void PlotWindow::xAxisRangeChanged(const QCPRange &newRange)

@@ -43,6 +43,7 @@ private slots:
     void contextMenuRequest(const QPoint &pos);
     void moveLegend();
     void removeSelectedGraph();
+    void copyGraphName();
     void xAxisRangeChanged(const QCPRange &newRange);
     void fromDateTimeChanged(const QDateTime &dateTime);
     void toDateTimeChanged(const QDateTime &dateTime);
