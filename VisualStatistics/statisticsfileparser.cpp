@@ -43,7 +43,7 @@ Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
             while ((ptr = strchr(cstr, ';')) != NULL) {
                 int tmpIndex = indexes.at(parsedStatCount);
                 if (index == tmpIndex) {
-                    data.value = atoi(cstr);
+                    data.value = strtoll(cstr, NULL, 10);
                     ndm[inm.value(tmpIndex)].insert(data.key, data);
                     if (++parsedStatCount == indexes.size()) {
                         break;
@@ -56,7 +56,7 @@ Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
             if (parsedStatCount < indexes.size() && *cstr) {
                 int tmpIndex = indexes.at(parsedStatCount);
                 if (index == tmpIndex) {
-                    data.value = atoi(cstr);
+                    data.value = strtoll(cstr, NULL, 10);
                     ndm[inm.value(tmpIndex)].insert(data.key, data);
                     ++parsedStatCount;
                 }
