@@ -517,7 +517,8 @@ void PlotWindow::on_actionRemoveZeroCounters_triggered()
     QCustomPlot *plot = m_ui->customPlot;
     for (int i = 0; i < plot->graphCount(); ++i) {
         QCPGraph *graph = plot->graph(i);
-        QCPDataMap *dataMap = m_stat.getDataMap(graph->name());
+        // Also remove the counters that delta is zero
+        QCPDataMap *dataMap = m_ui->actionShowDelta->isChecked() ? graph->data() : m_stat.getDataMap(graph->name());
         bool isZeroCounter = true;
         for (const QCPData &data : *dataMap) {
             if (static_cast<int>(data.value) != 0) {
