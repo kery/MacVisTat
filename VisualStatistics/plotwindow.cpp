@@ -69,6 +69,8 @@ void PlotWindow::initializePlot()
     plot->xAxis->setAutoSubTicks(false);
     plot->xAxis->setSubTickCount(0);
     plot->xAxis->setTickLabelRotation(90);
+    plot->yAxis->setNumberFormat(QStringLiteral("f"));
+    plot->yAxis->setNumberPrecision(0);
     plot->yAxis->setIntegralAutoTickStep(true);
     plot->xAxis2->setTicks(false);
     plot->yAxis2->setTicks(false);
