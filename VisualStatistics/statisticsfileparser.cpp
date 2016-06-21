@@ -82,10 +82,11 @@ end:
 
 void reducedFunction(Result &result, const Result &partial)
 {
-    const QString &node = partial.nndm.firstKey();
-    const Statistics::NameDataMap &ndm = partial.nndm.first();
-    Statistics::NameDataMap &finalNdm = result.nndm[node];
     if (partial.failedFiles.isEmpty()) {
+        const QString &node = partial.nndm.firstKey();
+        const Statistics::NameDataMap &ndm = partial.nndm.first();
+        Statistics::NameDataMap &finalNdm = result.nndm[node];
+
         for (auto iter = ndm.begin(); iter != ndm.end(); ++iter) {
             const QCPDataMap &src = iter.value();
             QCPDataMap &dest = finalNdm[iter.key()];
