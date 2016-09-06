@@ -4,6 +4,8 @@
 #include "utils.h"
 #include "version.h"
 
+static const char *SUFFIX_DELTA = " (DELTA)";
+
 PlotWindow::PlotWindow(Statistics &stat) :
     QMainWindow(nullptr),
     m_ui(new Ui::PlotWindow),
@@ -223,7 +225,11 @@ void PlotWindow::removeGraphs(const QVector<QCPGraph *> &graphs)
                 }
             }
             setWindowTitle(m_stat.getNodesString());
-            plot->xAxis2->setLabel(m_stat.getNodesString());
+            if (m_ui->actionShowDelta->isChecked()) {
+                plot->xAxis2->setLabel(m_stat.getNodesString() + SUFFIX_DELTA);
+            } else {
+                plot->xAxis2->setLabel(m_stat.getNodesString());
+            }
         }
 
         selectionChanged();
@@ -459,10 +465,9 @@ void PlotWindow::on_actionRestoreScale_triggered()
 
 void PlotWindow::on_actionShowDelta_toggled(bool checked)
 {
-    const char *SUFFIX = " (DELTA)";
     QCustomPlot *plot = m_ui->customPlot;
     if (checked) {
-        plot->xAxis2->setLabel(m_stat.getNodesString() + SUFFIX);
+        plot->xAxis2->setLabel(m_stat.getNodesString() + SUFFIX_DELTA);
         // The script added graphs are not show in delta mode
         for (int i = 0; i < m_stat.totalNameCount(); ++i) {
             calcDelta(plot->graph(i));
