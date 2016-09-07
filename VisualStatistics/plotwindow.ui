@@ -66,7 +66,6 @@
    <addaction name="actionRestoreScale"/>
    <addaction name="actionShowDelta"/>
    <addaction name="actionRemoveZeroCounters"/>
-   <addaction name="actionMarkAbnormalTime"/>
    <addaction name="actionFullScreen"/>
    <addaction name="separator"/>
    <addaction name="actionScript"/>
@@ -126,18 +125,6 @@
    </property>
    <property name="toolTip">
     <string>Show Delta</string>
-   </property>
-  </action>
-  <action name="actionMarkAbnormalTime">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/pencil.png</normaloff>:/resource/image/pencil.png</iconset>
-   </property>
-   <property name="text">
-    <string>Mark Abnormal Time</string>
    </property>
   </action>
   <action name="actionCopyToClipboard">

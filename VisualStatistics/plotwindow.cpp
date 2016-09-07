@@ -99,12 +99,7 @@ void PlotWindow::initializePlot()
         }
     }
 
-    QSettings settings;
-    bool markAbnormal = settings.value(QStringLiteral("PlotWindow/MarkAbnormal"), false).toBool();
-    m_ui->actionMarkAbnormalTime->setChecked(markAbnormal);
-    if (markAbnormal) {
-        markAbnormalTime();
-    }
+    markAbnormalTime();
 
     plot->rescaleAxes();
     adjustYAxisRange(plot->yAxis);
@@ -484,17 +479,6 @@ void PlotWindow::on_actionShowDelta_toggled(bool checked)
     plot->yAxis->rescale();
     adjustYAxisRange(plot->yAxis);
     plot->replot();
-}
-
-void PlotWindow::on_actionMarkAbnormalTime_triggered(bool checked)
-{
-    if (checked) {
-        markAbnormalTime();
-    } else {
-        m_ui->customPlot->clearItems();
-    }
-    m_ui->customPlot->replot();
-    QSettings().setValue(QStringLiteral("PlotWindow/MarkAbnormal"), checked);
 }
 
 void PlotWindow::on_actionScript_triggered()

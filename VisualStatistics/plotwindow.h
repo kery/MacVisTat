@@ -56,8 +56,6 @@ private slots:
 
     void on_actionShowDelta_toggled(bool checked);
 
-    void on_actionMarkAbnormalTime_triggered(bool checked);
-
     void on_actionScript_triggered();
 
     void on_actionRemoveZeroCounters_triggered();
