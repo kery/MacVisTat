@@ -190,12 +190,12 @@ void PlotWindow::markAbnormalTime()
     QVector<double> abnormalIndex = findAbnormalTimeIndex();
     if (abnormalIndex.size() > 0) {
         QCustomPlot *plot = m_ui->customPlot;
-        QPen pen(Qt::red);
+        QPen pen(Qt::red, 2);
         pen.setStyle(Qt::DotLine);
         for (double index : abnormalIndex) {
             QCPItemStraightLine *line = new QCPItemStraightLine(plot);
-            line->point1->setCoords(index, 0);
-            line->point2->setCoords(index, 100);
+            line->point1->setCoords(index, std::numeric_limits<double>::min());
+            line->point2->setCoords(index, std::numeric_limits<double>::max());
             line->setPen(pen);
             plot->addItem(line);
         }
