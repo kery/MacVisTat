@@ -56,7 +56,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, QStringList &
     int errOffset;
     pcre *re = pcre_compile(firstPattern.toStdString().c_str(), 0, &err, &errOffset, NULL);
     if (!re) {
-        errList << "PCRE compile failed: " + firstPattern;
+        errList << "invalid regular expression: " + firstPattern;
         return false;
     }
 
@@ -129,7 +129,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, QStringList &
             }
             re = pcre_compile((*iter).toStdString().c_str(), 0, &err, &errOffset, NULL);
             if (!re) {
-                errList << "PCRE compile failed: " + *iter;
+                errList << "invalid regular expression: " + *iter;
                 break;
             }
 
