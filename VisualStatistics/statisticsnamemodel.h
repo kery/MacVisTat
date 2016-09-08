@@ -18,7 +18,7 @@ public:
 
     void clearStatisticsNames();
 
-    bool setFilterPattern(const QString &pattern);
+    bool setFilterPattern(const QString &pattern, QStringList &errList);
     int filteredCount() const;
     int totalCount() const;
 

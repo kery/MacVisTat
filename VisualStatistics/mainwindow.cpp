@@ -193,7 +193,11 @@ void MainWindow::parseStatFileHeader(QStringList &filePaths, QStringList &failIn
 
         QString filterText = m_ui->cbRegExpFilter->lineEdit()->text();
         if (!filterText.isEmpty()) {
-            model->setFilterPattern(filterText);
+            QStringList errList;
+            model->setFilterPattern(filterText, errList);
+            for (const QString &err : errList) {
+                appendLogError(err);
+            }
         }
     }
 }
@@ -406,8 +410,12 @@ void MainWindow::checkNewVersionTaskFinished()
 
 void MainWindow::updateFilterPattern()
 {
+    QStringList errList;
     static_cast<StatisticsNameModel*>(m_ui->lvStatName->model())->setFilterPattern(
-                m_ui->cbRegExpFilter->lineEdit()->text());
+                m_ui->cbRegExpFilter->lineEdit()->text(), errList);
+    for (const QString &err : errList) {
+        appendLogError(err);
+    }
 }
 
 void MainWindow::listViewDoubleClicked(const QModelIndex &index)

@@ -1,4 +1,5 @@
 #include "statisticsnamemodel.h"
+#include <set>
 
 StatisticsNameModel::StatisticsNameModel(QObject *parent) :
     QAbstractListModel(parent),
@@ -38,16 +39,24 @@ void StatisticsNameModel::clearStatisticsNames()
 
 // Use pcre for regular expression matching because the QRegExp
 // is much slower in some situations
-bool StatisticsNameModel::setFilterPattern(const QString &pattern)
+bool StatisticsNameModel::setFilterPattern(const QString &pattern, QStringList &errList)
 {
     if (pattern == m_pattern || m_statNames.empty()) {
         return true;
     }
 
+    QStringList patterns = pattern.split('#');
+    QString &firstPattern = patterns.first();
+    bool invert = firstPattern.startsWith('!');
+    if (invert) {
+        firstPattern.remove(0, 1);
+    }
+
     const char *err;
     int errOffset;
-    pcre *re = pcre_compile(pattern.toStdString().c_str(), 0, &err, &errOffset, NULL);
+    pcre *re = pcre_compile(firstPattern.toStdString().c_str(), 0, &err, &errOffset, NULL);
     if (!re) {
+        errList << "PCRE compile failed: " + firstPattern;
         return false;
     }
 
@@ -61,21 +70,108 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern)
 
     emit beginResetModel();
     m_pattern = pattern;
-    m_indexes.resize(0);
-    for (int i = 0; i < (int)m_statNames.size(); ++i) {
-        const std::string &statName = m_statNames[i];
-        if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
-                            0, 0, ovector, OVECCOUNT, m_jitStack) > -1) {
-            m_indexes.push_back(i);
+
+    if (patterns.size() == 1) {
+        m_indexes.resize(0);
+        if (invert) {
+            for (int i = 0; i < (int)m_statNames.size(); ++i) {
+                const std::string &statName = m_statNames[i];
+                if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
+                                  0, 0, ovector, OVECCOUNT, m_jitStack) == -1)
+                {
+                    m_indexes.push_back(i);
+                }
+            }
+        } else {
+            for (int i = 0; i < (int)m_statNames.size(); ++i) {
+                const std::string &statName = m_statNames[i];
+                if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
+                                  0, 0, ovector, OVECCOUNT, m_jitStack) > -1)
+                {
+                    m_indexes.push_back(i);
+                }
+            }
         }
+        pcre_free(re);
+        if (extra) {
+            pcre_free_study(extra);
+        }
+    } else {
+        std::set<int> tempIndexes;
+        if (invert) {
+            for (int i = 0; i < (int)m_statNames.size(); ++i) {
+                const std::string &statName = m_statNames[i];
+                if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
+                                  0, 0, ovector, OVECCOUNT, m_jitStack) == -1)
+                {
+                    tempIndexes.insert(i);
+                }
+            }
+        } else {
+            for (int i = 0; i < (int)m_statNames.size(); ++i) {
+                const std::string &statName = m_statNames[i];
+                if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
+                                  0, 0, ovector, OVECCOUNT, m_jitStack) > -1)
+                {
+                    tempIndexes.insert(i);
+                }
+            }
+        }
+        pcre_free(re);
+        if (extra) {
+            pcre_free_study(extra);
+        }
+
+        for (auto iter = patterns.begin() + 1; iter != patterns.end(); ++iter) {
+            invert = iter->startsWith('!');
+            if (invert) {
+                iter->remove(0, 1);
+            }
+            re = pcre_compile((*iter).toStdString().c_str(), 0, &err, &errOffset, NULL);
+            if (!re) {
+                errList << "PCRE compile failed: " + *iter;
+                break;
+            }
+
+            extra = pcre_study(re, PCRE_STUDY_EXTRA_NEEDED | PCRE_STUDY_JIT_COMPILE, &err);
+            // pcre_assign_jit_stack() does nothing unless the extra argument is non-NULL
+            pcre_assign_jit_stack(extra, NULL, m_jitStack);
+
+            if (invert) {
+                for (auto iter = tempIndexes.begin(); iter != tempIndexes.end();) {
+                    const std::string &statName = m_statNames[*iter];
+                    if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
+                                      0, 0, ovector, OVECCOUNT, m_jitStack) > -1)
+                    {
+                        iter = tempIndexes.erase(iter);
+                    } else {
+                        ++iter;
+                    }
+                }
+            } else {
+                for (auto iter = tempIndexes.begin(); iter != tempIndexes.end();) {
+                    const std::string &statName = m_statNames[*iter];
+                    if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
+                                      0, 0, ovector, OVECCOUNT, m_jitStack) > -1)
+                    {
+                        ++iter;
+                    } else {
+                        iter = tempIndexes.erase(iter);
+                    }
+                }
+            }
+            pcre_free(re);
+            if (extra) {
+                pcre_free_study(extra);
+            }
+        }
+
+        m_indexes.resize(tempIndexes.size());
+        std::copy(tempIndexes.begin(), tempIndexes.end(), m_indexes.begin());
     }
     m_fetchedCount = 0;
     emit endResetModel();
 
-    pcre_free(re);
-    if (extra) {
-        pcre_free_study(extra);
-    }
     return true;
 }
 
