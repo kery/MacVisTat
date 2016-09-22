@@ -111,6 +111,9 @@
    <property name="toolTip">
     <string>Restore Scale</string>
    </property>
+   <property name="shortcut">
+    <string>Esc</string>
+   </property>
   </action>
   <action name="actionShowDelta">
    <property name="checkable">
