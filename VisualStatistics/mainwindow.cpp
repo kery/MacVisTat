@@ -11,10 +11,6 @@
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QDragEnterEvent>
-#include <QMimeData>
-#include <QtConcurrent>
-#include <functional>
-#include <utility>
 
 #define STAT_FILE_PATTERN QStringLiteral("^(.+)__.+\\.csv\\.gz$")
 
@@ -51,9 +47,7 @@ MainWindow::MainWindow() :
     connect(m_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logEditContextMenuRequest);
     connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::listViewContextMenuRequest);
 
-#if defined(Q_OS_WIN)
     startCheckNewVersionTask();
-#endif
 }
 
 MainWindow::~MainWindow()
@@ -63,30 +57,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::startCheckNewVersionTask()
 {
-#if defined(Q_OS_WIN)
-    QFutureWatcher<QString> *watcher = new QFutureWatcher<QString>();
-    connect(watcher, SIGNAL(finished()), SLOT(checkNewVersionTaskFinished()));
-    watcher->setFuture(QtConcurrent::run([] {
-        QDir dir(QStringLiteral("\\\\cdvasfile.china.nsn-net.net\\data\\sdu\\Tools\\VisualStatistics\\win"));
-        QStringList nameFilter(QStringLiteral("*.exe"));
-        QFileInfoList infoList = dir.entryInfoList(nameFilter, QDir::Files);
-#if defined(Q_OS_WIN64)
-        QRegExp regExp(QStringLiteral("VisualStatisticsSetup_win64_v(\\d+\\.\\d+\\.\\d+\\.\\d+)\\.exe"));
-#else
-        QRegExp regExp(QStringLiteral("VisualStatisticsSetup_win32_v(\\d+\\.\\d+\\.\\d+\\.\\d+)\\.exe"));
-#endif
-        for (const QFileInfo &fileInfo : infoList) {
-            QString file = fileInfo.fileName();
-            if (regExp.exactMatch(file)) {
-                int verNum = versionStringToNumber(regExp.cap(1));
-                if (verNum > VER_FILEVERSION_NUM) {
-                    return file;
-                }
-            }
-        }
-        return QString();
-    }));
-#endif
+    QString maintenanceToolPath = getMaintenanceToolPath();
+    if (maintenanceToolPath.isEmpty())
+        return;
+    QProcess *process = new QProcess();
+    connect(process, SIGNAL(finished(int,QProcess::ExitStatus)), SLOT(checkNewVersionTaskFinished(int,QProcess::ExitStatus)));
+    process->start(maintenanceToolPath, QStringList("--checkupdates"));
 }
 
 void MainWindow::installEventFilterForAllToolButton()
@@ -339,6 +315,19 @@ void MainWindow::handleParsedStat(Statistics::NodeNameDataMap &nndm, bool multip
     }
 }
 
+QString MainWindow::getMaintenanceToolPath()
+{
+    QDir appDir(QCoreApplication::applicationDirPath());
+#if defined(Q_OS_WIN)
+    QString fileName = QStringLiteral("maintenancetool.exe");
+#else
+    QString fileName = QStringLiteral("maintenancetool");
+#endif
+    if (appDir.exists(fileName))
+        return appDir.absoluteFilePath(fileName);
+    return QString();
+}
+
 void MainWindow::appendLogInfo(const QString &text)
 {
     m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='green'>INFO: %1</font>").arg(text));
@@ -390,22 +379,22 @@ void MainWindow::closeEvent(QCloseEvent *)
     emit aboutToBeClosed();
 }
 
-void MainWindow::checkNewVersionTaskFinished()
+void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-#if defined(Q_OS_WIN)
-    QFutureWatcher<QString> *watcher = static_cast<QFutureWatcher<QString>*>(sender());
-    QString newVersion = watcher->result();
-    delete watcher;
-    if (!newVersion.isEmpty()) {
-        int answer = showQuestionMsgBox(this,
-                                        QStringLiteral("A new version of this program has been found. Do you want to get it?"),
-                                        newVersion);
-        if (answer == QMessageBox::Yes) {
-            QDesktopServices::openUrl(QUrl::fromLocalFile(QStringLiteral("\\\\cdvasfile.china.nsn-net.net\\data\\sdu\\Tools")));
-            QApplication::exit();
-        }
+    delete sender();
+
+    // exitCode != 0 indicates that there is no update available
+    if (exitCode != 0 || exitStatus != QProcess::NormalExit)
+        return;
+
+    int answer = showQuestionMsgBox(this,
+                                    QStringLiteral("A new version of this program has been found"),
+                                    QStringLiteral("Do you want to update it?"));
+    if (answer == QMessageBox::Yes) {
+        QString maintenanceToolPath = getMaintenanceToolPath();
+        QProcess::startDetached(maintenanceToolPath, QStringList("--updater"));
+        QApplication::exit();
     }
-#endif
 }
 
 void MainWindow::updateFilterPattern()

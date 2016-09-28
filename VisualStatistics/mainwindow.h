@@ -38,6 +38,7 @@ private:
     // When parsed result is ready the slot handleParsedResult will be called
     void parseStatFileData(bool multipleWindows);
     void handleParsedStat(Statistics::NodeNameDataMap &nndm, bool multipleWindows);
+    QString getMaintenanceToolPath();
 
     void appendLogInfo(const QString &text);
     void appendLogWarn(const QString &text);
@@ -49,7 +50,7 @@ private:
     virtual void closeEvent(QCloseEvent *) Q_DECL_OVERRIDE;
 
 private slots:
-    void checkNewVersionTaskFinished();
+    void checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
     void updateFilterPattern();
     void listViewDoubleClicked(const QModelIndex &index);

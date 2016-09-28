@@ -19,7 +19,7 @@ def get_version():
     # out, err = proc.communicate()
     # if proc.returncode != 0:
     #     raise Exception("get tag information failed")
-    out = "v3.8.2.9"
+    out = "v6.8.2.9"
     mo = re.match(r"v(\d)\.(\d)\.(\d)\.(\d)", out)
     if mo is None:
         raise Exception("invalid tag format: " + out)
@@ -101,6 +101,17 @@ def update_repository():
 
     os.chdir(cwd)
 
+def restore_files():
+    proc = subprocess.Popen(["git", "checkout", "--", "version.h",
+                            "../installer/installer/packages/visualstatistics/meta/package.xml"],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = proc.communicate()
+    if proc.returncode != 0:
+        raise Exception("restore files failed")
+
+def copy_pdf_file():
+    pass
+
 if __name__ == "__main__":
     if sys.argv[1] == "prebuild":
         import re
@@ -119,3 +130,6 @@ if __name__ == "__main__":
 
         copy_target_file()
         update_repository()
+        restore_files()
+        if is_windows():
+            copy_pdf_file()
