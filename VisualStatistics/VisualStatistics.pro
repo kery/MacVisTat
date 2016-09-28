@@ -151,7 +151,7 @@ unix:!macx {
     # Generate debug info also in release mode so that it is possible to use breakpad
     # After dump symbol to a separate file, use strip --strip-debug to strip the debug
     # infos
-    QMAKE_CXXFLAGS_RELEASE += -g
+    # QMAKE_CXXFLAGS_RELEASE += -g
 
     INCLUDEPATH += $$PWD/third_party/pcre/linux
     INCLUDEPATH += $$PWD/third_party/breakpad/client/linux/handler

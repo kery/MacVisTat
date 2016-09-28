@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>Visual Statistics</Name>
+    <Version>1.0.0</Version>
+    <Title>Visual Statistics</Title>
+    <Publisher>Nokia</Publisher>
+    <WizardStyle>Modern</WizardStyle>
+    <StartMenuDir>VisualStatistics</StartMenuDir>
+    <TargetDir>@HomeDir@/VisualStatistics</TargetDir>
+    <RemoteRepositories>
+        <Repository>
+            <Url>http://cdvasfile.china.nsn-net.net:4099/win</Url>
+        </Repository>
+    </RemoteRepositories>
+    <RepositorySettingsPageVisible>false</RepositorySettingsPageVisible>
+</Installer>
