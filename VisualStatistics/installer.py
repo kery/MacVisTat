@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import os
+import re
 
 def is_windows():
     return sys.platform.find("win") >= 0
@@ -16,10 +17,9 @@ def proj_root_dir():
 def get_version():
     proc = subprocess.Popen(["git", "describe", "--tags", "--exact-match"],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # out, err = proc.communicate()
-    # if proc.returncode != 0:
-    #     raise Exception("get tag information failed")
-    out = "v6.8.2.9"
+    out, err = proc.communicate()
+    if proc.returncode != 0:
+        raise Exception("get tag information failed")
     mo = re.match(r"v(\d)\.(\d)\.(\d)\.(\d)", out)
     if mo is None:
         raise Exception("invalid tag format: " + out)
@@ -81,14 +81,15 @@ def copy_target_file():
     src = os.path.join(src, "build", "VisualStatistics")
     if  is_windows():
         src += ".exe"
-    dst = proj_root_dir()
-    dst = os.path.join(dst, "installer", "installer", "packages",
+    dest = proj_root_dir()
+    dest = os.path.join(dest, "installer", "installer", "packages",
                        "visualstatistics", "data")
-    if not os.path.exists(dst):
-        os.makedirs(dst)
-    shutil.copy(src, dst)
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+    shutil.copy(src, dest)
 
 def update_repository():
+    print "updating repository..."
     cwd = os.getcwd()
     path = os.path.join(proj_root_dir(), "installer", "installer")
     os.chdir(path)
@@ -101,6 +102,32 @@ def update_repository():
 
     os.chdir(cwd)
 
+def upload_repositry():
+    print "uploading updated packages..."
+    ver_info = get_version()
+    files = "%s*" % ".".join(ver_info)
+    path = "../installer/installer/repository/visualstatistics/" + files
+
+    if is_windows():
+        platform_dir = "win"
+    else:
+        platform_dir = "linux"
+    dest = "root@cdvasfile.china.nsn-net.net:/visualstat/%s/visualstatistics" % platform_dir
+
+    proc = subprocess.Popen(["scp", "-B", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = proc.communicate()
+    if proc.returncode != 0:
+        raise Exception(err)
+
+    print "uploading Updates.xml..."
+    path = "../installer/installer/repository/Updates.xml"
+    dest = os.path.dirname(dest)
+
+    proc = subprocess.Popen(["scp", "-B", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = proc.communicate()
+    if proc.returncode != 0:
+        raise Exception(err)
+
 def restore_files():
     proc = subprocess.Popen(["git", "checkout", "--", "version.h",
                             "../installer/installer/packages/visualstatistics/meta/package.xml"],
@@ -109,12 +136,15 @@ def restore_files():
     if proc.returncode != 0:
         raise Exception("restore files failed")
 
-def copy_pdf_file():
-    pass
+def copy_pdb_file():
+    ver_info = get_version()
+    dest = os.path.join(r"D:\VisualStatisticsPDB", "v" + ".".join(ver_info))
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+    shutil.copy(r"..\build\visualstatistics.pdb", dest)
 
 if __name__ == "__main__":
     if sys.argv[1] == "prebuild":
-        import re
         import fileinput
         import time
 
@@ -130,6 +160,7 @@ if __name__ == "__main__":
 
         copy_target_file()
         update_repository()
+        upload_repositry()
         restore_files()
         if is_windows():
-            copy_pdf_file()
+            copy_pdb_file()
