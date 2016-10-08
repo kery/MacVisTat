@@ -114,7 +114,8 @@ def upload_repositry():
         platform_dir = "linux"
     dest = "root@cdvasfile.china.nsn-net.net:/visualstat/%s/visualstatistics" % platform_dir
 
-    proc = subprocess.Popen(["scp", "-B", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen("scp -B %s %s" % (path, dest), stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, shell=True)
     out, err = proc.communicate()
     if proc.returncode != 0:
         raise Exception(err)
