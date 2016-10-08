@@ -1,10 +1,10 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define VER_FILEVERSION             3,8,2,9
-#define VER_FILEVERSION_STR         "3.8.2.9\0"
+#define VER_FILEVERSION             1,3,0,0
+#define VER_FILEVERSION_STR         "1.3.0.0\0"
 // Below version is used in about dialog box and serialized plot file
-#define VER_FILEVERSION_NUM         3829
+#define VER_FILEVERSION_NUM         1300
 
 //#define VER_PRODUCTVERSION          1,0,0,0
 //#define VER_PRODUCTVERSION_STR      "1.0\0"
