@@ -44,6 +44,7 @@ private slots:
     void moveLegend();
     void removeSelectedGraph();
     void copyGraphName();
+    void toggleLegendVisibility();
     void xAxisRangeChanged(const QCPRange &newRange);
     void fromDateTimeChanged(const QDateTime &dateTime);
     void toDateTimeChanged(const QDateTime &dateTime);

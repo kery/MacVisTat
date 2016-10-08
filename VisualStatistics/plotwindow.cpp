@@ -298,37 +298,35 @@ void PlotWindow::mouseWheel(QWheelEvent *event)
 void PlotWindow::contextMenuRequest(const QPoint &pos)
 {
     QCustomPlot *plot = m_ui->customPlot;
-    if (plot->legend->selectTest(pos, false) >= 0) {
-        QMenu *menu = new QMenu(this);
-        menu->setAttribute(Qt::WA_DeleteOnClose);
+    QMenu *menu = new QMenu(this);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
 
-        QAction *actionCopy = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
-        menu->addSeparator();
+    menu->addAction(plot->legend->visible() ? QStringLiteral("Hide Legend") : QStringLiteral("Show Legend"),
+                    this, SLOT(toggleLegendVisibility()));
+    QMenu *subMenu = menu->addMenu(QStringLiteral("Move Legend to"));
+    QMenu *subMenuTop = subMenu->addMenu(QStringLiteral("Top"));
+    QMenu *subMenuBottom = subMenu->addMenu(QStringLiteral("Bottom"));
+    subMenuTop->addAction(QStringLiteral("Left"), this, SLOT(moveLegend()))->setData(
+        static_cast<int>(Qt::AlignTop | Qt::AlignLeft));
+    subMenuTop->addAction(QStringLiteral("Center"), this, SLOT(moveLegend()))->setData(
+        static_cast<int>(Qt::AlignTop | Qt::AlignCenter));
+    subMenuTop->addAction(QStringLiteral("Right"), this, SLOT(moveLegend()))->setData(
+        static_cast<int>(Qt::AlignTop | Qt::AlignRight));
+    subMenuBottom->addAction(QStringLiteral("Left"), this, SLOT(moveLegend()))->setData(
+        static_cast<int>(Qt::AlignBottom | Qt::AlignLeft));
+    subMenuBottom->addAction(QStringLiteral("Center"), this, SLOT(moveLegend()))->setData(
+        static_cast<int>(Qt::AlignBottom | Qt::AlignCenter));
+    subMenuBottom->addAction(QStringLiteral("Right"), this, SLOT(moveLegend()))->setData(
+        static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
 
-        menu->addAction(QStringLiteral("Move to Top Left"), this, SLOT(moveLegend()))->setData(
-            static_cast<int>(Qt::AlignTop | Qt::AlignLeft));
-        menu->addAction(QStringLiteral("Move to Top Center"), this, SLOT(moveLegend()))->setData(
-            static_cast<int>(Qt::AlignTop | Qt::AlignCenter));
-        menu->addAction(QStringLiteral("Move to Top Right"), this, SLOT(moveLegend()))->setData(
-            static_cast<int>(Qt::AlignTop | Qt::AlignRight));
-        menu->addSeparator();
-        menu->addAction(QStringLiteral("Move to Bottom Left"), this, SLOT(moveLegend()))->setData(
-            static_cast<int>(Qt::AlignBottom | Qt::AlignLeft));
-        menu->addAction(QStringLiteral("Move to Bottom Center"), this, SLOT(moveLegend()))->setData(
-            static_cast<int>(Qt::AlignBottom | Qt::AlignCenter));
-        menu->addAction(QStringLiteral("Move to Bottom Right"), this, SLOT(moveLegend()))->setData(
-            static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
-
-        menu->addSeparator();
-
-        QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
-        if (!plot->legend->selectedItems().size()) {
-            actionCopy->setEnabled(false);
-            actionRemove->setEnabled(false);
-        }
-
-        menu->popup(plot->mapToGlobal(pos));
+    QAction *actionCopy = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
+    QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
+    if (!plot->legend->selectedItems().size()) {
+        actionCopy->setEnabled(false);
+        actionRemove->setEnabled(false);
     }
+
+    menu->popup(plot->mapToGlobal(pos));
 }
 
 void PlotWindow::moveLegend()
@@ -366,6 +364,13 @@ void PlotWindow::copyGraphName()
         strList << qobject_cast<QCPPlottableLegendItem *>(item)->plottable()->name();
     }
     QApplication::clipboard()->setText(strList.join('\n'));
+}
+
+void PlotWindow::toggleLegendVisibility()
+{
+    QCustomPlot *plot = m_ui->customPlot;
+    plot->legend->setVisible(!plot->legend->visible());
+    plot->replot();
 }
 
 void PlotWindow::xAxisRangeChanged(const QCPRange &newRange)
