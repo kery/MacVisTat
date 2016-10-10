@@ -6,7 +6,7 @@ var canceled = false;
 
 Controller.prototype.IntroductionPageCallback = function()
 {
-  if (installer.isInstaller()) {
+  if (installer.value("os") === "win" && installer.isInstaller()) {
     installer.setDefaultPageVisible(QInstaller.StartMenuSelection, false);
     var startMenuDir = installer.value("AllUsersStartMenuProgramsPath") + "\\VisualStatistics";
     var oldExe = "C:\\Program Files\\VisualStatistics\\VisualStatistics.exe";
@@ -33,7 +33,11 @@ Controller.prototype.IntroductionPageCallback = function()
 
 Controller.prototype.FinishedPageCallback = function()
 {
-  if (installer.isInstaller() && canceled) {
+  if (installer.isUpdater()) {
+    if (installer.status == QInstaller.Success) {
+      gui.clickButton(buttons.FinishButton);
+    }
+  } else if (installer.isInstaller() && canceled) {
     var page = gui.currentPageWidget();
     page.RunItCheckBox.setChecked(false);
     page.RunItCheckBox.setVisible(false);
