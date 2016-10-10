@@ -62,7 +62,7 @@ void MainWindow::startCheckNewVersionTask()
         return;
     QProcess *process = new QProcess();
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)), SLOT(checkNewVersionTaskFinished(int,QProcess::ExitStatus)));
-    process->start(maintenanceToolPath, QStringList("--checkupdates"));
+    process->start(maintenanceToolPath, QStringList() << "--checkupdates" << "--proxy");
 }
 
 void MainWindow::installEventFilterForAllToolButton()
