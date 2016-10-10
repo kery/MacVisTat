@@ -4,6 +4,7 @@
     <Version>1.0.0</Version>
     <Title>Visual Statistics</Title>
     <Publisher>Nokia</Publisher>
+    <RunProgram>@TargetDir@/VisualStatistics.sh</RunProgram>
     <WizardStyle>Modern</WizardStyle>
     <TargetDir>@HomeDir@/VisualStatistics</TargetDir>
     <RemoteRepositories>
