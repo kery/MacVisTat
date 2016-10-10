@@ -392,7 +392,7 @@ void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus 
                                     QStringLiteral("Do you want to update it?"));
     if (answer == QMessageBox::Yes) {
         QString maintenanceToolPath = getMaintenanceToolPath();
-        QProcess::startDetached(maintenanceToolPath, QStringList("--updater"));
+        QProcess::startDetached(maintenanceToolPath, QStringList() << ("--updater") << "--proxy");
         QApplication::exit();
     }
 }
