@@ -131,6 +131,7 @@ static int add_graph(lua_State *L)
         graph->setPen(QPen(QColor(luaL_optint(L, 3, 255) % 255,
                                   luaL_optint(L, 4, 0) % 255,
                                   luaL_optint(L, 5, 0) % 255)));
+        graph->setSelectedPen(graph->pen());
 
         lua_pushnil(L);
         while (lua_next(L, 2) != 0) {

@@ -81,7 +81,7 @@ void PlotWindow::initializePlot()
 
     plot->setNoAntialiasingOnDrag(true);
 
-    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectLegend);
+    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectLegend | QCP::iSelectPlottables);
 
     connect(plot->xAxis, &QCPAxis::ticksRequest, this, &PlotWindow::adjustTicks);
     connect(plot, &QCustomPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
@@ -94,6 +94,7 @@ void PlotWindow::initializePlot()
             QCPGraph *graph = plot->addGraph();
             graph->setName(m_stat.formatName(node, name));
             graph->setPen(QPen(m_colorGenerator.nextColor()));
+            graph->setSelectedPen(graph->pen());
             // Set copy to true to avoid the data being deleted if show delta function is used
             graph->setData(m_stat.getDataMap(node, name), true);
         }
@@ -246,6 +247,15 @@ void PlotWindow::adjustTicks()
 void PlotWindow::selectionChanged()
 {
     QCustomPlot *plot = m_ui->customPlot;
+
+    for (int i = 0; i < plot->graphCount(); ++i) {
+        QCPGraph *graph = plot->graph(i);
+        QCPPlottableLegendItem *item = plot->legend->itemWithPlottable(graph);
+        if (item->selected() || graph->selected()) {
+            item->setSelected(true);
+            graph->setSelected(true);
+        }
+    }
 
     if (plot->legend->selectedItems().isEmpty()) {
         for (int i = 0; i < plot->graphCount(); ++i) {
