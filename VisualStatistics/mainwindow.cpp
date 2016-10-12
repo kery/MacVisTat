@@ -11,6 +11,8 @@
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QDragEnterEvent>
+#include <QHostInfo>
+#include <QNetworkAccessManager>
 
 #define STAT_FILE_PATTERN QStringLiteral("^(.+)__.+\\.csv\\.gz$")
 
@@ -48,6 +50,7 @@ MainWindow::MainWindow() :
     connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::listViewContextMenuRequest);
 
     startCheckNewVersionTask();
+    startUserReportTask();
 }
 
 MainWindow::~MainWindow()
@@ -63,6 +66,18 @@ void MainWindow::startCheckNewVersionTask()
     QProcess *process = new QProcess();
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)), SLOT(checkNewVersionTaskFinished(int,QProcess::ExitStatus)));
     process->start(maintenanceToolPath, QStringList() << "--checkupdates" << "--proxy");
+}
+
+void MainWindow::startUserReportTask()
+{
+    QNetworkAccessManager *manager = new QNetworkAccessManager();
+    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(userReportTaskFinished(QNetworkReply*)));
+
+    QByteArray hostNameHash = QCryptographicHash::hash(QHostInfo::localHostName().toLatin1(),
+                                                       QCryptographicHash::Md5);
+    QString postData("host=");
+    postData += hostNameHash.toHex();
+    manager->post(QNetworkRequest(QUrl("http://cdvasfile.china.nsn-net.net:4099/report")), postData.toLatin1());
 }
 
 void MainWindow::installEventFilterForAllToolButton()
@@ -395,6 +410,12 @@ void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus 
         QProcess::startDetached(maintenanceToolPath, QStringList() << ("--updater") << "--proxy");
         QApplication::exit();
     }
+}
+
+void MainWindow::userReportTaskFinished(QNetworkReply *reply)
+{
+    sender()->deleteLater();
+    reply->deleteLater();
 }
 
 void MainWindow::updateFilterPattern()

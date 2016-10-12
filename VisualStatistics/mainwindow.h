@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QNetworkReply>
 #include "statistics.h"
 
 namespace Ui {
@@ -21,6 +22,7 @@ public:
 
 private:
     void startCheckNewVersionTask();
+    void startUserReportTask();
 
     void installEventFilterForAllToolButton();
     bool isToolTipEventOfToolButton(QObject *obj, QEvent *event);
@@ -51,6 +53,7 @@ private:
 
 private slots:
     void checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void userReportTaskFinished(QNetworkReply *reply);
 
     void updateFilterPattern();
     void listViewDoubleClicked(const QModelIndex &index);
