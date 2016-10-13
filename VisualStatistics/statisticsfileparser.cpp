@@ -149,6 +149,7 @@ std::string parseHeader(QStringList &filePaths, QStringList &failInfo, ProgressD
             {
                 break;
             } else {
+                result.clear();
                 failInfo.append(QStringLiteral("%1: invalid header format!").arg(QFileInfo(*iter).fileName()));
             }
         } else {
@@ -157,18 +158,20 @@ std::string parseHeader(QStringList &filePaths, QStringList &failInfo, ProgressD
         iter->clear(); // Clear the file path so that we can remove it from filePaths later
     }
 
-    // Parse the rest files' header
-    std::string header;
-    while (++iter != filePaths.end()) {
-        QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
-        if (GZipFile(*iter).readLine(header)) {
-            if (header != result) {
-                failInfo.append(QStringLiteral("%1: header is not the same!").arg(QFileInfo(*iter).fileName()));
+    if (iter != filePaths.end()) {
+        // Parse the rest files' header
+        std::string header;
+        while (++iter != filePaths.end()) {
+            QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
+            if (GZipFile(*iter).readLine(header)) {
+                if (header != result) {
+                    failInfo.append(QStringLiteral("%1: header is not the same!").arg(QFileInfo(*iter).fileName()));
+                    iter->clear();
+                }
+            } else {
+                failInfo.append(QStringLiteral("%1: reading header failed!").arg(QFileInfo(*iter).fileName()));
                 iter->clear();
             }
-        } else {
-            failInfo.append(QStringLiteral("%1: reading header failed!").arg(QFileInfo(*iter).fileName()));
-            iter->clear();
         }
     }
 
