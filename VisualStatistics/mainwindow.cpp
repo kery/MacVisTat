@@ -13,6 +13,7 @@
 #include <QDragEnterEvent>
 #include <QHostInfo>
 #include <QNetworkAccessManager>
+#include <QNetworkProxyQuery>
 
 #define STAT_FILE_PATTERN QStringLiteral("^(.+)__.+\\.csv\\.gz$")
 
@@ -71,13 +72,18 @@ void MainWindow::startCheckNewVersionTask()
 void MainWindow::startUserReportTask()
 {
     QNetworkAccessManager *manager = new QNetworkAccessManager();
+    QUrl url("http://cdvasfile.china.nsn-net.net:4099/report");
+    QNetworkProxyQuery npq(url);
+    QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(npq);
+    if (proxies.size() > 0)
+        manager->setProxy(proxies[0]);
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(userReportTaskFinished(QNetworkReply*)));
 
     QByteArray hostNameHash = QCryptographicHash::hash(QHostInfo::localHostName().toLatin1(),
                                                        QCryptographicHash::Md5);
     QString postData("host=");
     postData += hostNameHash.toHex();
-    manager->post(QNetworkRequest(QUrl("http://cdvasfile.china.nsn-net.net:4099/report")), postData.toLatin1());
+    manager->post(QNetworkRequest(url), postData.toLatin1());
 }
 
 void MainWindow::installEventFilterForAllToolButton()
