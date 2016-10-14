@@ -10,6 +10,11 @@ Controller.prototype.IntroductionPageCallback = function()
     installer.setDefaultPageVisible(QInstaller.StartMenuSelection, false);
     var startMenuDir = installer.value("AllUsersStartMenuProgramsPath") + "\\VisualStatistics";
     var oldExe = "C:\\Program Files\\VisualStatistics\\VisualStatistics.exe";
+    if (installer.fileExists(startMenuDir)) {
+      QDesktopServices.openUrl(startMenuDir);
+    } else if (installer.fileExists(oldExe)) {
+      QDesktopServices.openUrl("C:\\Program Files\\VisualStatistics");
+    }
     while (installer.fileExists(startMenuDir) || installer.fileExists(oldExe)) {
       var result = QMessageBox.critical("quit.oldexe", "Installer",
           "An old version of this program has been found, please uninstall it before continue!",
