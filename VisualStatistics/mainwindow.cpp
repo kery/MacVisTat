@@ -12,6 +12,7 @@
 #include <QFileDialog>
 #include <QDragEnterEvent>
 #include <QHostInfo>
+#include <QSysInfo>
 #include <QNetworkAccessManager>
 #include <QNetworkProxyQuery>
 
@@ -83,6 +84,8 @@ void MainWindow::startUserReportTask()
                                                        QCryptographicHash::Md5);
     QString postData("host=");
     postData += hostNameHash.toHex();
+    postData += QStringLiteral("&pt=");
+    postData += QSysInfo::productType();
     manager->post(QNetworkRequest(url), postData.toLatin1());
 }
 
