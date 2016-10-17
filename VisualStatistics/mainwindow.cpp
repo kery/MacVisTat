@@ -86,6 +86,8 @@ void MainWindow::startUserReportTask()
     postData += hostNameHash.toHex();
     postData += QStringLiteral("&pt=");
     postData += QSysInfo::productType();
+    postData += QStringLiteral("&ver=");
+    postData += VER_FILEVERSION_STR;
     manager->post(QNetworkRequest(url), postData.toLatin1());
 }
 
