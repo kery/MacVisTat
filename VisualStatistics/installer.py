@@ -42,6 +42,22 @@ def get_package_xml_file():
     return os.path.join(path, "installer", "installer", "packages",
                         "visualstatistics", "meta", "package.xml")
 
+def check_version_existance(ver_info):
+    path = "/visualstat/"
+    if is_windows():
+        path += "win/"
+    else:
+        path += "linux/"
+    path += "visualstatistics/%s.%s.%s.%scontent.7z" % ver_info
+
+    proc = subprocess.Popen(["ssh", "root@cdvasfile.china.nsn-net.net", "test", "-f",
+                            path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = proc.communicate()
+    if err:
+        raise Exception("check version existance failed: " + err)
+    if proc.returncode == 0:
+        raise Exception("version %s.%s.%s.%s already exists on remote" % ver_info)
+
 def update_version_file(ver_info):
     version_file = get_version_file()
     for line in fileinput.input(version_file, inplace=True):
@@ -150,6 +166,7 @@ if __name__ == "__main__":
         import time
 
         ver_info = get_version()
+        check_version_existance(ver_info)
         update_version_file(ver_info)
         update_package_xml_file(ver_info)
 
