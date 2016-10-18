@@ -20,6 +20,6 @@ QString getAppDataDir();
 
 void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info = QString());
 void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info = QString());
-int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info = QString());
+int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info = QString(), bool defaultYes=true);
 
 #endif // UTILS_H

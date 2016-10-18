@@ -58,7 +58,7 @@ void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info)
     msgBox.exec();
 }
 
-int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info)
+int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info, bool defaultYes)
 {
     QMessageBox msgBox(parent);
     msgBox.setWindowTitle(QStringLiteral("Question"));
@@ -68,5 +68,6 @@ int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info
     if (!info.isEmpty()) {
         msgBox.setInformativeText(info);
     }
+    msgBox.setDefaultButton(defaultYes ? QMessageBox::Yes : QMessageBox::No);
     return msgBox.exec();
 }

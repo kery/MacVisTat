@@ -88,7 +88,10 @@ void MainWindow::startUserReportTask()
     postData += QSysInfo::productType();
     postData += QStringLiteral("&ver=");
     postData += VER_FILEVERSION_STR;
-    manager->post(QNetworkRequest(url), postData.toLatin1());
+
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    manager->post(request, postData.toLatin1());
 }
 
 void MainWindow::installEventFilterForAllToolButton()
