@@ -29,9 +29,9 @@ private:
 
     void calcDelta(QCPGraph *graph);
 
-    QVector<double> findAbnormalTimeIndex() const;
-    void findAbnormalTimeIndexForNode(const QString &node, QVector<double> &out) const;
-    void markAbnormalTime();
+    QVector<double> findRestartTimeIndex() const;
+    void findRestartTimeIndexForNode(const QString &node, QVector<double> &out) const;
+    void markRestartTime();
 
     void removeGraphs(const QVector<QCPGraph*> &graphs);
 

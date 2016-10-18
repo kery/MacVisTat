@@ -100,7 +100,7 @@ void PlotWindow::initializePlot()
         }
     }
 
-    markAbnormalTime();
+    markRestartTime();
 
     plot->rescaleAxes();
     adjustYAxisRange(plot->yAxis);
@@ -155,11 +155,11 @@ void PlotWindow::calcDelta(QCPGraph *graph)
     }
 }
 
-QVector<double> PlotWindow::findAbnormalTimeIndex() const
+QVector<double> PlotWindow::findRestartTimeIndex() const
 {
     QVector<double> result;
     for (const QString &node : m_stat.getNodes()) {
-        findAbnormalTimeIndexForNode(node, result);
+        findRestartTimeIndexForNode(node, result);
     }
 
     // Remove duplicate index if any
@@ -169,7 +169,7 @@ QVector<double> PlotWindow::findAbnormalTimeIndex() const
     return result;
 }
 
-void PlotWindow::findAbnormalTimeIndexForNode(const QString &node, QVector<double> &out) const
+void PlotWindow::findRestartTimeIndexForNode(const QString &node, QVector<double> &out) const
 {
     QMap<int, qint32> map = m_stat.getIndexDateTimeMap(node);
     if (map.size() > 0) {
@@ -181,14 +181,14 @@ void PlotWindow::findAbnormalTimeIndexForNode(const QString &node, QVector<doubl
     }
 }
 
-void PlotWindow::markAbnormalTime()
+void PlotWindow::markRestartTime()
 {
-    QVector<double> abnormalIndex = findAbnormalTimeIndex();
-    if (abnormalIndex.size() > 0) {
+    QVector<double> restartIndex = findRestartTimeIndex();
+    if (restartIndex.size() > 0) {
         QCustomPlot *plot = m_ui->customPlot;
         QPen pen(Qt::red, 2);
         pen.setStyle(Qt::DotLine);
-        for (double index : abnormalIndex) {
+        for (double index : restartIndex) {
             QCPItemStraightLine *line = new QCPItemStraightLine(plot);
             line->point1->setCoords(index, std::numeric_limits<double>::min());
             line->point2->setCoords(index, std::numeric_limits<double>::max());
