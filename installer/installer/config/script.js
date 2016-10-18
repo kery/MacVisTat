@@ -34,6 +34,9 @@ Controller.prototype.IntroductionPageCallback = function()
       }
     }
   }
+
+  if (installer.isUpdater())
+    gui.clickButton(buttons.NextButton);
 }
 
 Controller.prototype.FinishedPageCallback = function()
