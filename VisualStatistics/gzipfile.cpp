@@ -2,9 +2,10 @@
 #include <QFile>
 
 GZipFile::GZipFile(const QString &path) :
-    m_gzFile(gzopen(path.toStdString().c_str(), "rb")),
     m_size(0)
 {
+    QByteArray pathLocal8Bit = path.toLocal8Bit();
+    m_gzFile = gzopen(pathLocal8Bit.data(), "rb");
     if (m_gzFile) {
         gzbuffer(m_gzFile, 64 * 1024);
         QFile file(path);

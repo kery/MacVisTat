@@ -138,7 +138,6 @@ std::string parseHeader(QStringList &filePaths, QStringList &failInfo, ProgressD
 {
     std::string result;
     int progress = 0;
-    dialog.setRange(0, filePaths.size());
 
     auto iter = filePaths.begin();
     for (; iter != filePaths.end(); ++iter) {
@@ -187,6 +186,7 @@ std::string parseHeader(QStringList &filePaths, QStringList &failInfo, ProgressD
 
 std::string StatisticsFileParser::parseFileHeader(QStringList &filePaths, QStringList &failInfo)
 {
+    m_dialog.setRange(0, filePaths.size());
     QFuture<std::string> future = QtConcurrent::run(
                 std::bind(parseHeader, std::ref(filePaths), std::ref(failInfo), std::ref(m_dialog)));
 
@@ -198,7 +198,6 @@ std::string StatisticsFileParser::parseFileHeader(QStringList &filePaths, QStrin
 void checkHeader(QStringList &filePaths, QStringList &failInfo, ProgressDialog &dialog)
 {
     int progress = 0;
-    dialog.setRange(0, filePaths.size());
 
     QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
     std::string header;
@@ -232,6 +231,7 @@ void checkHeader(QStringList &filePaths, QStringList &failInfo, ProgressDialog &
 
 void StatisticsFileParser::checkFileHeader(QStringList &filePaths, QStringList &failInfo)
 {
+    m_dialog.setRange(0, filePaths.size());
     QFuture<void> future = QtConcurrent::run(
                 std::bind(checkHeader, std::ref(filePaths), std::ref(failInfo), std::ref(m_dialog)));
 
