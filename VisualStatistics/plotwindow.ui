@@ -66,6 +66,7 @@
    <addaction name="actionRestoreScale"/>
    <addaction name="actionShowDelta"/>
    <addaction name="actionRemoveZeroCounters"/>
+   <addaction name="actionMarkRestartTime"/>
    <addaction name="actionFullScreen"/>
    <addaction name="separator"/>
    <addaction name="actionScript"/>
@@ -157,6 +158,21 @@
    </property>
    <property name="text">
     <string>Remove Zero Counters</string>
+   </property>
+  </action>
+  <action name="actionMarkRestartTime">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="VisualStatistics.qrc">
+     <normaloff>:/resource/image/pencil.png</normaloff>:/resource/image/pencil.png</iconset>
+   </property>
+   <property name="text">
+    <string>Mark Restart Time</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
    </property>
   </action>
  </widget>

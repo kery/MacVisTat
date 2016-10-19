@@ -100,6 +100,7 @@ void PlotWindow::initializePlot()
         }
     }
 
+    m_ui->actionMarkRestartTime->setChecked(true);
     markRestartTime();
 
     plot->rescaleAxes();
@@ -541,4 +542,14 @@ void PlotWindow::on_actionRemoveZeroCounters_triggered()
 void PlotWindow::on_actionCopyToClipboard_triggered()
 {
     QApplication::clipboard()->setPixmap(m_ui->customPlot->toPixmap());
+}
+
+void PlotWindow::on_actionMarkRestartTime_triggered(bool checked)
+{
+    if (checked) {
+        markRestartTime();
+    } else {
+        m_ui->customPlot->clearItems();
+    }
+    m_ui->customPlot->replot();
 }

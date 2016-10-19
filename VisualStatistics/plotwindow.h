@@ -63,6 +63,8 @@ private slots:
 
     void on_actionCopyToClipboard_triggered();
 
+    void on_actionMarkRestartTime_triggered(bool checked);
+
 private:
     Ui::PlotWindow *m_ui;
     QDateTimeEdit *m_dtEditFrom;
