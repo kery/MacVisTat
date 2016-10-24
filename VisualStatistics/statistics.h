@@ -22,6 +22,7 @@ public:
     QCPDataMap* getDataMap(const QString &formattedName);
     bool removeDataMap(const QString &node, const QString &name);
     bool removeDataMap(const QString &formattedName);
+    bool renameDataMap(const QString &node, const QString &name, const QString &newName);
     void trimNodeNameDataMap();
     QString formatName(const QString &node, const QString &name) const;
     void parseFormattedName(const QString &formattedName,

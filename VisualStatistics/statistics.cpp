@@ -105,6 +105,30 @@ bool Statistics::removeDataMap(const QString &formattedName)
     return removeDataMap(node, name);
 }
 
+bool Statistics::renameDataMap(const QString &node, const QString &name, const QString &newName)
+{
+    if (name == newName) {
+        return false;
+    }
+    if (m_nndm.contains(node)) {
+        NameDataMap &ndm = m_nndm[node];
+        auto pos1 = ndm.find(name);
+        if (pos1 == ndm.end()) {
+            return false;
+        }
+        auto pos2 = ndm.find(newName);
+        if (pos2 != ndm.end()) {
+            return false;
+        }
+        QCPDataMap temp;
+        (*pos1).swap(temp);
+        ndm.erase(pos1);
+        ndm.insert(newName, temp);
+        return true;
+    }
+    return false;
+}
+
 void Statistics::trimNodeNameDataMap()
 {
     for (auto iter = m_nndm.begin(); iter != m_nndm.end();) {
@@ -127,13 +151,11 @@ QString Statistics::formatName(const QString &node, const QString &name) const
 void Statistics::parseFormattedName(const QString &formattedName,
                                     QString &node, QString &name) const
 {
-    if (m_nndm.size() > 1) {
-        Q_ASSERT(formattedName.indexOf(':') > -1);
+    if (formattedName.indexOf(':') > -1) {
         QStringList strList = formattedName.split(':');
         node = strList[0];
         name = strList[1];
     } else {
-        Q_ASSERT(formattedName.indexOf(':') == -1);
         node = m_nndm.firstKey();
         name = formattedName;
     }

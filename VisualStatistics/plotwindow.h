@@ -41,6 +41,7 @@ private slots:
     void mousePress(QMouseEvent *event);
     void mouseWheel(QWheelEvent *event);
     void contextMenuRequest(const QPoint &pos);
+    void legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *item);
     void moveLegend();
     void removeSelectedGraph();
     void copyGraphName();

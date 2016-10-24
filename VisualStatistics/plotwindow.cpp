@@ -88,6 +88,7 @@ void PlotWindow::initializePlot()
     connect(plot, &QCustomPlot::mousePress, this, &PlotWindow::mousePress);
     connect(plot, &QCustomPlot::mouseWheel, this, &PlotWindow::mouseWheel);
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
+    connect(plot, &QCustomPlot::legendDoubleClick, this, &PlotWindow::legendDoubleClick);
 
     for (const QString &node : m_stat.getNodes()) {
         for (const QString &name : m_stat.getNames(node)) {
@@ -338,6 +339,29 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     }
 
     menu->popup(plot->mapToGlobal(pos));
+}
+
+void PlotWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *item)
+{
+    Q_UNUSED(legend)
+
+    if (item) {
+        QString node, name;
+        QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
+        m_stat.parseFormattedName(plItem->plottable()->name(), node, name);
+
+        bool ok;
+        QString newName = QInputDialog::getText(this, QStringLiteral("Input graph name"),
+                                                QStringLiteral("New graph name:"),
+                                                QLineEdit::Normal,
+                                                name, &ok);
+        if (ok && !newName.isEmpty() && newName.indexOf(':') < 0 &&
+                m_stat.renameDataMap(node, name, newName))
+        {
+            plItem->plottable()->setName(m_stat.formatName(node, newName));
+            m_ui->customPlot->replot();
+        }
+    }
 }
 
 void PlotWindow::moveLegend()
