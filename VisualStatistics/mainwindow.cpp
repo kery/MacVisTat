@@ -52,7 +52,9 @@ MainWindow::MainWindow() :
     connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::listViewContextMenuRequest);
 
     startCheckNewVersionTask();
+#ifdef INSTALLER
     startUserReportTask();
+#endif
 }
 
 MainWindow::~MainWindow()
