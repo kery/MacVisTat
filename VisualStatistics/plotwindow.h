@@ -66,7 +66,10 @@ private slots:
 
     void on_actionMarkRestartTime_triggered(bool checked);
 
+    void on_actionSetSampleInterval_triggered();
+
 private:
+    int m_sampleInterval;
     Ui::PlotWindow *m_ui;
     QDateTimeEdit *m_dtEditFrom;
     QDateTimeEdit *m_dtEditTo;

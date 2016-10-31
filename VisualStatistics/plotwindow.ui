@@ -175,6 +175,11 @@
     <string>Ctrl+M</string>
    </property>
   </action>
+  <action name="actionSetSampleInterval">
+   <property name="text">
+    <string>Set Sample Interval</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

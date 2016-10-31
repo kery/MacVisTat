@@ -153,6 +153,8 @@ void MainWindow::addStatFiles(QStringList &filePaths)
     for (const QString &info : failInfo) {
         appendLogError(info);
     }
+
+    m_ui->cbRegExpFilter->lineEdit()->setFocus();
 }
 
 void MainWindow::filterOutAlreadyAddedFiles(QStringList &filePaths)

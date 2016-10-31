@@ -8,6 +8,7 @@ static const char *SUFFIX_DELTA = " (DELTA)";
 
 PlotWindow::PlotWindow(Statistics &stat) :
     QMainWindow(nullptr),
+    m_sampleInterval(60),
     m_ui(new Ui::PlotWindow),
     m_userEditFlag(true),
     m_userDragFlag(true),
@@ -22,6 +23,13 @@ PlotWindow::PlotWindow(Statistics &stat) :
     QMenu *copyToClipboard = new QMenu(this);
     copyToClipboard->addAction(m_ui->actionCopyToClipboard);
     saveButton->setMenu(copyToClipboard);
+
+    QToolButton *markRestartButton = static_cast<QToolButton*>(
+                m_ui->toolBar->widgetForAction(m_ui->actionMarkRestartTime));
+    markRestartButton->setPopupMode(QToolButton::MenuButtonPopup);
+    QMenu *setSampleInterval = new QMenu(this);
+    setSampleInterval->addAction(m_ui->actionSetSampleInterval);
+    markRestartButton->setMenu(setSampleInterval);
 
     QWidget *spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -176,7 +184,7 @@ void PlotWindow::findRestartTimeIndexForNode(const QString &node, QVector<double
     QMap<int, qint32> map = m_stat.getIndexDateTimeMap(node);
     if (map.size() > 0) {
         for (auto iter = map.begin() + 1; iter != map.end(); ++iter) {
-            if (iter.value() - (iter - 1).value() > 60 * 2) {
+            if (iter.value() - (iter - 1).value() > m_sampleInterval * 2) {
                 out << iter.key();
             }
         }
@@ -576,4 +584,18 @@ void PlotWindow::on_actionMarkRestartTime_triggered(bool checked)
         m_ui->customPlot->clearItems();
     }
     m_ui->customPlot->replot();
+}
+
+void PlotWindow::on_actionSetSampleInterval_triggered()
+{
+    bool ok;
+    int interval = QInputDialog::getInt(this, QStringLiteral("Set Sample Interval"),
+                                        QStringLiteral("Sample Interval (secs):"),
+                                        m_sampleInterval, 60, 3600, 60, &ok);
+    if (ok) {
+        m_sampleInterval = interval;
+        m_ui->customPlot->clearItems();
+        markRestartTime();
+        m_ui->customPlot->replot();
+    }
 }
