@@ -133,6 +133,8 @@ QVector<double> PlotWindow::calcTickVector(int plotWidth, int fontHeight, const 
         result << 0; // At least show one tick
     }
 
+    updateScatter(result, plotWidth);
+
     return result;
 }
 
@@ -204,6 +206,31 @@ void PlotWindow::markRestartTime()
             line->point2->setCoords(index, std::numeric_limits<double>::max());
             line->setPen(pen);
             plot->addItem(line);
+        }
+    }
+}
+
+void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth)
+{
+    static bool hasScatter = false;
+
+    QCustomPlot *plot = m_ui->customPlot;
+
+    if (tickVector.size() > 1 && tickVector[2] - tickVector[1] == 1 && plotWidth / tickVector.size() > 20) {
+        if (!hasScatter) {
+            hasScatter = true;
+            for (int i = 0; i < plot->graphCount(); ++i) {
+                QCPGraph *graph = plot->graph(i);
+                graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, graph->pen().color(), 6));
+            }
+        }
+    } else {
+        if (hasScatter) {
+            hasScatter = false;
+            for (int i = 0; i < plot->graphCount(); ++i) {
+                QCPGraph *graph = plot->graph(i);
+                graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone));
+            }
         }
     }
 }
