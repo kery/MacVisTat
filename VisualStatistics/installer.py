@@ -19,7 +19,7 @@ def get_version():
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
-        raise Exception("get tag information failed: %s" % err)
+        raise Exception("get tag information failed: " + err)
     mo = re.match(r"v(\d)\.(\d)\.(\d)\.(\d)", out)
     if mo is None:
         raise Exception("invalid tag format: " + out)
@@ -50,7 +50,7 @@ def check_version_existance(ver_info):
         path += "linux/"
     path += "visualstatistics/%s.%s.%s.%scontent.7z" % ver_info
 
-    proc = subprocess.Popen(["ssh", "root@cdvasfile.china.nsn-net.net", "test", "-f",
+    proc = subprocess.Popen(["ssh", "root@135.242.202.254", "test", "-f",
                             path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if err:
@@ -128,7 +128,7 @@ def upload_repositry():
         platform_dir = "win"
     else:
         platform_dir = "linux"
-    dest = "root@cdvasfile.china.nsn-net.net:/visualstat/%s/visualstatistics" % platform_dir
+    dest = "root@135.242.202.254:/visualstat/%s/visualstatistics" % platform_dir
 
     proc = subprocess.Popen("scp -B %s %s" % (path, dest), stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
