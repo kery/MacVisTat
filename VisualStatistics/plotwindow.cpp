@@ -12,6 +12,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_ui(new Ui::PlotWindow),
     m_userEditFlag(true),
     m_userDragFlag(true),
+    m_hasScatter(false),
     m_stat(std::move(stat))
 {
     m_ui->setupUi(this);
@@ -154,7 +155,7 @@ void PlotWindow::calcDelta(QCPGraph *graph)
     QCPDataMap *data = graph->data();
     if (data->size() > 0) {
         for (auto iter = data->end() - 1; iter != data->begin(); --iter) {
-            if (m_stat.getDateTime(iter.key()) - m_stat.getDateTime((iter - 1).key()) > 60 * 2) {
+            if (m_stat.getDateTime(iter.key()) - m_stat.getDateTime((iter - 1).key()) > m_sampleInterval * 2) {
                 // If timestamp difference is larger than 2 minutes then set delta to 0
                 (*iter).value = 0;
             } else {
@@ -212,21 +213,19 @@ void PlotWindow::markRestartTime()
 
 void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth)
 {
-    static bool hasScatter = false;
-
     QCustomPlot *plot = m_ui->customPlot;
 
     if (tickVector.size() > 1 && tickVector[2] - tickVector[1] == 1 && plotWidth / tickVector.size() > 20) {
-        if (!hasScatter) {
-            hasScatter = true;
+        if (!m_hasScatter) {
+            m_hasScatter = true;
             for (int i = 0; i < plot->graphCount(); ++i) {
                 QCPGraph *graph = plot->graph(i);
                 graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, graph->pen().color(), 6));
             }
         }
     } else {
-        if (hasScatter) {
-            hasScatter = false;
+        if (m_hasScatter) {
+            m_hasScatter = false;
             for (int i = 0; i < plot->graphCount(); ++i) {
                 QCPGraph *graph = plot->graph(i);
                 graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone));

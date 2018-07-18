@@ -76,6 +76,7 @@ private:
     QDateTimeEdit *m_dtEditTo;
     bool m_userEditFlag;
     bool m_userDragFlag;
+    bool m_hasScatter;
     ColorGenerator m_colorGenerator;
     Statistics m_stat;
 };
