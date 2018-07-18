@@ -10,7 +10,7 @@
     <TargetDir>@HomeDir@/VisualStatistics</TargetDir>
     <RemoteRepositories>
         <Repository>
-            <Url>http://cdvasfile.china.nsn-net.net:4099/win</Url>
+            <Url>http://135.242.202.254:4099/win</Url>
         </Repository>
     </RemoteRepositories>
     <ControlScript>script.js</ControlScript>
