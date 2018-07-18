@@ -19,7 +19,7 @@ def get_version():
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
-        raise Exception("get tag information failed")
+        raise Exception("get tag information failed: %s" % err)
     mo = re.match(r"v(\d)\.(\d)\.(\d)\.(\d)", out)
     if mo is None:
         raise Exception("invalid tag format: " + out)
