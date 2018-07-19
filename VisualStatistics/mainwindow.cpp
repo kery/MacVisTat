@@ -420,14 +420,11 @@ void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus 
     if (exitCode != 0 || exitStatus != QProcess::NormalExit)
         return;
 
-    int answer = showQuestionMsgBox(this,
-                                    QStringLiteral("A new version of this program has been found"),
-                                    QStringLiteral("Do you want to update it?"));
-    if (answer == QMessageBox::Yes) {
-        QString maintenanceToolPath = getMaintenanceToolPath();
-        QProcess::startDetached(maintenanceToolPath, QStringList() << ("--updater") << "--proxy");
-        QApplication::exit();
-    }
+    showInfoMsgBox(this, QStringLiteral("A new version of this application is available. Auto update will be applied after closing this dialog."));
+
+    QString maintenanceToolPath = getMaintenanceToolPath();
+    QProcess::startDetached(maintenanceToolPath, QStringList() << ("--updater") << "--proxy");
+    QApplication::exit();
 }
 
 void MainWindow::userReportTaskFinished(QNetworkReply *reply)
