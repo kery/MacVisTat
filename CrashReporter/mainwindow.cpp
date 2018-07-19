@@ -63,10 +63,10 @@ void MainWindow::on_buttonBox_accepted()
 {
     if (_dumpFile.open(QFile::ReadOnly)) {
 #if defined(Q_OS_LINUX)
-        QUrl url(QStringLiteral("ftp://135.242.202.254/visualstatistics/coredump/%1.%2").arg(
+        QUrl url(QStringLiteral("ftp://135.242.202.254/data/tmp/visualstatistics/coredump/%1.%2").arg(
                      QFileInfo(_dumpFile).fileName()).arg(VER_FILEVERSION_NUM));
 #elif defined(Q_OS_WIN)
-        QUrl url(QStringLiteral("ftp://135.242.202.254/visualstatistics/coredump/%1").arg(
+        QUrl url(QStringLiteral("ftp://135.242.202.254/data/tmp/visualstatistics/coredump/%1").arg(
                      QFileInfo(_dumpFile).fileName()));
 #endif
         url.setUserName(QStringLiteral("sdu"));
