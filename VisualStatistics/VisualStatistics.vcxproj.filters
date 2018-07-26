@@ -195,6 +195,9 @@
     <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ValueTipLabel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="aboutdialog.h">
@@ -311,18 +314,14 @@
     <ClInclude Include="version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <QtMoc Include="ValueTipLabel.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    
-    
-    
     <CustomBuild Include="moc\moc_predefs.h.cbt">
       <Filter>Generated Files</Filter>
     </CustomBuild>
-    
-    
-    
-    
     <ClInclude Include="ui\ui_aboutdialog.h">
       <Filter>Generated Files</Filter>
     </ClInclude>

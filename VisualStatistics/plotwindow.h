@@ -3,6 +3,7 @@
 
 #include "statistics.h"
 #include "colorgenerator.h"
+#include "ValueTipLabel.h"
 
 namespace Ui {
 class PlotWindow;
@@ -34,12 +35,15 @@ private:
     void markRestartTime();
     void updateScatter(const QVector<double> &tickVector, int plotWidth);
 
+    QCPGraph * findGraphValueToShow(int index, double yCoord, double &value);
+
     void removeGraphs(const QVector<QCPGraph*> &graphs);
 
 private slots:
     void adjustTicks();
     void selectionChanged();
     void mousePress(QMouseEvent *event);
+    void mouseMove(QMouseEvent *event);
     void mouseWheel(QWheelEvent *event);
     void contextMenuRequest(const QPoint &pos);
     void legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *item);
@@ -72,6 +76,8 @@ private slots:
 private:
     int m_sampleInterval;
     Ui::PlotWindow *m_ui;
+    ValueTipLabel m_valueTip;
+    QCPItemTracer *m_tracer;
     QDateTimeEdit *m_dtEditFrom;
     QDateTimeEdit *m_dtEditTo;
     bool m_userEditFlag;

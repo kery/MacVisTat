@@ -6,6 +6,9 @@
 
 static const char *SUFFIX_DELTA = " (DELTA)";
 
+static const double SCATTER_SIZE = 6.0;
+static const double TRACER_SIZE = SCATTER_SIZE + 1.0;
+
 PlotWindow::PlotWindow(Statistics &stat) :
     QMainWindow(nullptr),
     m_sampleInterval(60),
@@ -17,6 +20,15 @@ PlotWindow::PlotWindow(Statistics &stat) :
 {
     m_ui->setupUi(this);
     setWindowTitle(m_stat.getNodesString());
+
+    // Must be called after setupUi because member customPlot is initialized
+    // in it. QCustomPlot takes ownership of tracer.
+    m_tracer = new QCPItemTracer(m_ui->customPlot);
+    m_tracer->setInterpolating(true);
+    m_tracer->setStyle(QCPItemTracer::tsCircle);
+    m_tracer->setSize(TRACER_SIZE);
+    m_tracer->setPen(QPen(Qt::red));
+    m_tracer->setBrush(QColor(255, 0, 0, 100));
 
     QToolButton *saveButton = static_cast<QToolButton*>(
                 m_ui->toolBar->widgetForAction(m_ui->actionSaveAsImage));
@@ -45,6 +57,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_dtEditTo = new QDateTimeEdit();
     m_dtEditTo->setDisplayFormat(DT_FORMAT);
     m_ui->toolBar->addWidget(m_dtEditTo);
+
     connect(m_ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), SLOT(xAxisRangeChanged(QCPRange)));
     connect(m_dtEditFrom, SIGNAL(dateTimeChanged(QDateTime)), SLOT(fromDateTimeChanged(QDateTime)));
     connect(m_dtEditTo, SIGNAL(dateTimeChanged(QDateTime)), SLOT(toDateTimeChanged(QDateTime)));
@@ -95,6 +108,7 @@ void PlotWindow::initializePlot()
     connect(plot->xAxis, &QCPAxis::ticksRequest, this, &PlotWindow::adjustTicks);
     connect(plot, &QCustomPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
     connect(plot, &QCustomPlot::mousePress, this, &PlotWindow::mousePress);
+    connect(plot, &QCustomPlot::mouseMove, this, &PlotWindow::mouseMove);
     connect(plot, &QCustomPlot::mouseWheel, this, &PlotWindow::mouseWheel);
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
     connect(plot, &QCustomPlot::legendDoubleClick, this, &PlotWindow::legendDoubleClick);
@@ -220,7 +234,7 @@ void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth)
             m_hasScatter = true;
             for (int i = 0; i < plot->graphCount(); ++i) {
                 QCPGraph *graph = plot->graph(i);
-                graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, graph->pen().color(), 6));
+                graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, graph->pen().color(), SCATTER_SIZE));
             }
         }
     } else {
@@ -232,6 +246,34 @@ void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth)
             }
         }
     }
+}
+
+QCPGraph * PlotWindow::findGraphValueToShow(int index, double yCoord, double &value)
+{
+    QCustomPlot *plot = m_ui->customPlot;
+    QCPGraph *retGraph = NULL;
+    double minDistance = std::numeric_limits<double>::max();
+
+    for (int i = 0; i < plot->graphCount(); ++i) {
+        QCPGraph *graph = plot->graph(i);
+        if (!graph->visible()) {
+            continue;
+        }
+
+        QCPDataMap *data = graph->data();
+        auto iter = data->find(index);
+        if (iter == data->end() || !plot->yAxis->range().contains(iter->value)) {
+            continue;
+        }
+
+        double yDistance = qAbs(iter->value - yCoord);
+        if (yDistance < minDistance) {
+            minDistance = yDistance;
+            value = iter->value;
+            retGraph = graph;
+        }
+    }
+    return retGraph;
 }
 
 void PlotWindow::removeGraphs(const QVector<QCPGraph *> &graphs)
@@ -325,6 +367,45 @@ void PlotWindow::mousePress(QMouseEvent *event)
         plot->axisRect()->setRangeDrag(plot->yAxis->orientation());
     } else {
         plot->axisRect()->setRangeDrag(Qt::Horizontal | Qt::Vertical);
+    }
+}
+
+void PlotWindow::mouseMove(QMouseEvent *event)
+{
+    if (!(event->modifiers() & Qt::ControlModifier)) {
+        if (m_tracer->graph()) {
+            m_tracer->setGraph(NULL);
+            m_tracer->setVisible(false);
+            m_ui->customPlot->replot();
+
+            m_valueTip.hide();
+        }
+        return;
+    }
+
+    QCustomPlot *plot = m_ui->customPlot;
+
+    QCPRange xRange = plot->xAxis->range();
+    int index = qRound(plot->xAxis->pixelToCoord(event->pos().x()));
+    if (index >= 0 && xRange.contains(index)) {
+        double value, yCoord = plot->yAxis->pixelToCoord(event->pos().y());
+        QCPGraph *graph = findGraphValueToShow(index, yCoord, value);
+        if (graph) {
+            m_tracer->setGraph(graph);
+            m_tracer->setGraphKey(index);
+            m_tracer->setVisible(true);
+            plot->replot();
+
+            QPoint toolTipPos(
+                static_cast<int>(plot->xAxis->coordToPixel(index)),
+                static_cast<int>(plot->yAxis->coordToPixel(value)));
+            QRect rect = plot->axisRect()->rect();
+            QRect rectGlobal(
+                plot->mapToGlobal(rect.topLeft()),
+                plot->mapToGlobal(rect.bottomRight())
+            );
+            m_valueTip.show(plot->mapToGlobal(toolTipPos), rectGlobal, QString::number(static_cast<qint64>(value)));
+        }
     }
 }
 
