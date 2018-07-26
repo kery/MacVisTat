@@ -229,7 +229,7 @@ void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth)
 {
     QCustomPlot *plot = m_ui->customPlot;
 
-    if (tickVector.size() > 1 && tickVector[2] - tickVector[1] == 1 && plotWidth / tickVector.size() > 20) {
+    if (tickVector.size() > 1 && tickVector[1] - tickVector[0] == 1 && plotWidth / tickVector.size() > 20) {
         if (!m_hasScatter) {
             m_hasScatter = true;
             for (int i = 0; i < plot->graphCount(); ++i) {
