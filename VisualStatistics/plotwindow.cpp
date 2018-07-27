@@ -442,9 +442,9 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     QMenu *menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
-    menu->addAction(QStringLiteral("Set Custom Title..."), this, SLOT(setCustomTitle()));
     menu->addAction(plot->legend->visible() ? QStringLiteral("Hide Legend") : QStringLiteral("Show Legend"),
                     this, SLOT(toggleLegendVisibility()));
+    menu->addAction(QStringLiteral("Set Custom Title..."), this, SLOT(setCustomTitle()));
     QMenu *subMenu = menu->addMenu(QStringLiteral("Move Legend to"));
     QMenu *subMenuTop = subMenu->addMenu(QStringLiteral("Top"));
     QMenu *subMenuBottom = subMenu->addMenu(QStringLiteral("Bottom"));
