@@ -298,17 +298,31 @@ void PlotWindow::removeGraphs(const QVector<QCPGraph *> &graphs)
                         graph->setName(m_stat.removeNodePrefix(graph->name()));
                 }
             }
-            setWindowTitle(m_stat.getNodesString());
-            if (m_ui->actionShowDelta->isChecked()) {
-                plot->xAxis2->setLabel(m_stat.getNodesString() + SUFFIX_DELTA);
-            } else {
-                plot->xAxis2->setLabel(m_stat.getNodesString());
-            }
+
+            setWindowTitle(evaluateWindowTitle());
+            plot->xAxis2->setLabel(evaluatePlotTitle(m_ui->actionShowDelta->isChecked()));
         }
 
         selectionChanged();
         plot->replot();
     }
+}
+
+QString PlotWindow::evaluateWindowTitle() const
+{
+    if (m_customTitle.isEmpty()) {
+        return m_stat.getNodesString();
+    }
+    return m_customTitle;
+}
+
+QString PlotWindow::evaluatePlotTitle(bool deltaMode) const
+{
+    QString title = evaluateWindowTitle();
+    if (deltaMode) {
+        title += SUFFIX_DELTA;
+    }
+    return title;
 }
 
 void PlotWindow::adjustTicks()
@@ -428,6 +442,7 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     QMenu *menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
+    menu->addAction(QStringLiteral("Set Custom Title..."), this, SLOT(setCustomTitle()));
     menu->addAction(plot->legend->visible() ? QStringLiteral("Hide Legend") : QStringLiteral("Show Legend"),
                     this, SLOT(toggleLegendVisibility()));
     QMenu *subMenu = menu->addMenu(QStringLiteral("Move Legend to"));
@@ -514,6 +529,21 @@ void PlotWindow::copyGraphName()
         strList << qobject_cast<QCPPlottableLegendItem *>(item)->plottable()->name();
     }
     QApplication::clipboard()->setText(strList.join('\n'));
+}
+
+void PlotWindow::setCustomTitle()
+{
+    bool ok;
+    QString title = QInputDialog::getText(this, QStringLiteral("Set Custom Title"),
+        QStringLiteral("Custom Title:"),
+        QLineEdit::Normal,
+        QString(), &ok);
+    if (ok) {
+        m_customTitle = title;
+        setWindowTitle(evaluateWindowTitle());
+        m_ui->customPlot->xAxis2->setLabel(evaluatePlotTitle(m_ui->actionShowDelta->isChecked()));
+        m_ui->customPlot->replot();
+    }
 }
 
 void PlotWindow::toggleLegendVisibility()
@@ -616,14 +646,14 @@ void PlotWindow::on_actionRestoreScale_triggered()
 void PlotWindow::on_actionShowDelta_toggled(bool checked)
 {
     QCustomPlot *plot = m_ui->customPlot;
+    plot->xAxis2->setLabel(evaluatePlotTitle(checked));
+
     if (checked) {
-        plot->xAxis2->setLabel(m_stat.getNodesString() + SUFFIX_DELTA);
         // The script added graphs are not show in delta mode
         for (int i = 0; i < m_stat.totalNameCount(); ++i) {
             calcDelta(plot->graph(i));
         }
     } else {
-        plot->xAxis2->setLabel(m_stat.getNodesString());
         for (int i = 0; i < m_stat.totalNameCount(); ++i) {
             QCPGraph *graph = plot->graph(i);
             // Set copy to true to avoid the data being deleted if show delta function is used

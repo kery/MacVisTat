@@ -39,6 +39,9 @@ private:
 
     void removeGraphs(const QVector<QCPGraph*> &graphs);
 
+    QString evaluateWindowTitle() const;
+    QString evaluatePlotTitle(bool deltaMode) const;
+
 private slots:
     void adjustTicks();
     void selectionChanged();
@@ -50,32 +53,26 @@ private slots:
     void moveLegend();
     void removeSelectedGraph();
     void copyGraphName();
+    void setCustomTitle();
     void toggleLegendVisibility();
     void xAxisRangeChanged(const QCPRange &newRange);
     void fromDateTimeChanged(const QDateTime &dateTime);
     void toDateTimeChanged(const QDateTime &dateTime);
 
     void on_actionFullScreen_toggled(bool checked);
-
     void on_actionSaveAsImage_triggered();
-
     void on_actionRestoreScale_triggered();
-
     void on_actionShowDelta_toggled(bool checked);
-
     void on_actionScript_triggered();
-
     void on_actionRemoveZeroCounters_triggered();
-
     void on_actionCopyToClipboard_triggered();
-
     void on_actionMarkRestartTime_triggered(bool checked);
-
     void on_actionSetSampleInterval_triggered();
 
 private:
     int m_sampleInterval;
     Ui::PlotWindow *m_ui;
+    QString m_customTitle;
     ValueTipLabel m_valueTip;
     QCPItemTracer *m_tracer;
     QDateTimeEdit *m_dtEditFrom;
