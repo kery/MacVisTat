@@ -8,4 +8,8 @@
     <QTDIR>C:\Qt\5.9.4\msvc2017_64</QTDIR>
     <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b$(PATH)</LocalDebuggerEnvironment>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Installer|x64'">
+    <QTDIR>C:\Qt\5.9.4\msvc2017_64</QTDIR>
+    <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b$(PATH)</LocalDebuggerEnvironment>
+  </PropertyGroup>
 </Project>
