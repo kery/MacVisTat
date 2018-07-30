@@ -29,6 +29,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_tracer->setSize(TRACER_SIZE);
     m_tracer->setPen(QPen(Qt::red));
     m_tracer->setBrush(QColor(255, 0, 0, 100));
+    m_tracer->setVisible(false);
 
     QToolButton *saveButton = static_cast<QToolButton*>(
                 m_ui->toolBar->widgetForAction(m_ui->actionSaveAsImage));
