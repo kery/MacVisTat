@@ -41,6 +41,8 @@ public:
     static QMap<QString, NodeNameDataMap>
         groupNodeNameDataMapByName(NodeNameDataMap &&nndm);
 
+    int getSampleInterval() const;
+
 private:
     void initDateTimes();
     void updateDataKeys();

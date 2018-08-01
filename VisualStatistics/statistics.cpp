@@ -22,6 +22,31 @@ Statistics::groupNodeNameDataMapByName(NodeNameDataMap &&nndm)
     return grouped;
 }
 
+int Statistics::getSampleInterval() const
+{
+    std::vector<int> timeDiff;
+
+    const QCPDataMap &dataMap = m_nndm.first().first();
+    for (const QCPData &data : dataMap) {
+        timeDiff.push_back(getDateTime(data.key));
+    }
+
+    int interval = 60;
+    if (timeDiff.size() > 1) {
+        for (auto iter = timeDiff.begin(); iter != timeDiff.end() - 1; ++iter) {
+            *iter = *(iter + 1) - *iter;
+        }
+
+        timeDiff.pop_back();
+
+        size_t nth = timeDiff.size() / 2;
+        std::nth_element(timeDiff.begin(), timeDiff.begin() + nth, timeDiff.end());
+        interval = timeDiff[nth];
+    }
+
+    return interval;
+}
+
 Statistics::Statistics(NodeNameDataMap &nndm) :
     m_nndm(std::move(nndm))
 {

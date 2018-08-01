@@ -21,6 +21,8 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_ui->setupUi(this);
     setWindowTitle(m_stat.getNodesString());
 
+    m_sampleInterval = m_stat.getSampleInterval();
+
     // Must be called after setupUi because member customPlot is initialized
     // in it. QCustomPlot takes ownership of tracer.
     m_tracer = new QCPItemTracer(m_ui->customPlot);
