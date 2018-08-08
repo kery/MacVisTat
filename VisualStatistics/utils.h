@@ -5,7 +5,7 @@
 #include <string>
 #include "third_party/qcustomplot/qcustomplot.h"
 
-#define DT_FORMAT QStringLiteral("dd.MM.yyyy HH:mm:ss")
+#define DT_FORMAT QStringLiteral("yyyy-MM-dd HH:mm:ss")
 #define DT_FORMAT_IN_FILE QStringLiteral("dd.MM.yyyy;HH:mm:ss")
 
 using namespace std;

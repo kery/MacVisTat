@@ -422,7 +422,11 @@ void PlotWindow::mouseMove(QMouseEvent *event)
                 plot->mapToGlobal(rect.topLeft()),
                 plot->mapToGlobal(rect.bottomRight())
             );
-            m_valueTip.show(plot->mapToGlobal(toolTipPos), rectGlobal, QString::number(static_cast<qint64>(value)));
+
+            QString text = m_stat.getDateTimeString(index);
+            text += '\n';
+            text += QString::number(static_cast<qint64>(value));
+            m_valueTip.show(plot->mapToGlobal(toolTipPos), rectGlobal, text);
         }
     }
 }
