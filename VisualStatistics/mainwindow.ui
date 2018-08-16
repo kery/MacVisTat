@@ -142,6 +142,8 @@
     <addaction name="actionDrawPlot"/>
     <addaction name="actionDrawPlotInMultipleWindows"/>
     <addaction name="actionCalculateTimeDuration"/>
+    <addaction name="separator"/>
+    <addaction name="actionIgnoreConstantData"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Selection"/>
@@ -314,6 +316,20 @@
    </property>
    <property name="statusTip">
     <string>Show about dialog</string>
+   </property>
+  </action>
+  <action name="actionIgnoreConstantData">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Ignore Constant Data</string>
+   </property>
+   <property name="statusTip">
+    <string>In multiple windows mode, don't draw a plot if all of it's datas are constant</string>
    </property>
   </action>
  </widget>

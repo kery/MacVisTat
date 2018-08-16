@@ -46,6 +46,8 @@ private:
     void appendLogWarn(const QString &text);
     void appendLogError(const QString &text);
 
+    static bool allDataUnchanged(const Statistics::NodeNameDataMap &nndm);
+
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
     virtual void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
     virtual void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;

@@ -276,16 +276,7 @@ void MainWindow::parseStatFileData(bool multipleWindows)
         countToBeDrawn = selectedIndexes.size();
     }
 
-    const int MAX_COUNT_TO_BE_DRAWN = 256;
-    if (countToBeDrawn > MAX_COUNT_TO_BE_DRAWN)
-    {
-        showInfoMsgBox(this,
-                       QStringLiteral("Too many statistics names specified, please change your filter text."),
-                       QStringLiteral("At most %1 statistics names are allowed.").arg(MAX_COUNT_TO_BE_DRAWN));
-        return;
-    }
-
-    if (multipleWindows && countToBeDrawn > 8) {
+    if (multipleWindows && countToBeDrawn > 16) {
         int answer = showQuestionMsgBox(this,
                                         QStringLiteral("You clicked [%1]. There are %2 windows will be created. Do you want to continue?").
                                         arg(m_ui->actionDrawPlotInMultipleWindows->text()).arg(countToBeDrawn));
@@ -327,12 +318,29 @@ void MainWindow::parseStatFileData(bool multipleWindows)
     }
 }
 
+bool MainWindow::allDataUnchanged(const Statistics::NodeNameDataMap &nndm)
+{
+    for (const Statistics::NameDataMap &ndm : nndm) {
+        const QCPDataMap &dataMap = ndm.first();
+        qint64 firstValue = (qint64)dataMap.first().value;
+        for (const QCPData &data : dataMap) {
+            if (firstValue != (qint64)data.value) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 void MainWindow::handleParsedStat(Statistics::NodeNameDataMap &nndm, bool multipleWindows)
 {
     if (multipleWindows) {
         QMap<QString, Statistics::NodeNameDataMap> nndms(
                     Statistics::groupNodeNameDataMapByName(std::move(nndm)));
         for (Statistics::NodeNameDataMap &nndm : nndms) {
+            if (m_ui->actionIgnoreConstantData->isChecked() && allDataUnchanged(nndm)) {
+                continue;
+            }
             Statistics stat(nndm);
             PlotWindow *plotWindow = new PlotWindow(stat);
             plotWindow->setAttribute(Qt::WA_DeleteOnClose);
