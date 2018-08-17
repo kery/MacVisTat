@@ -94,6 +94,20 @@ static int get_value(lua_State *L)
     return 1;
 }
 
+static int get_graph_value(lua_State *L)
+{
+    int index = luaL_checkint(L, 1);
+    QCustomPlot *plot = plotWindow(L)->getPlot();
+    luaL_argcheck(L, index >= 0 && index < plot->graphCount(), 1, "graph index out of range");
+
+    int key = luaL_checkint(L, 2);
+    QCPDataMap *dm = plot->graph(index)->data();
+    luaL_argcheck(L, dm->contains(key), 2, "invalid key");
+
+    lua_pushinteger(L, dm->value(key).value);
+    return 1;
+}
+
 static int get_dt(lua_State *L)
 {
     int key = luaL_checkint(L, 1);
@@ -177,14 +191,15 @@ static int init_cfunc(lua_State *L)
     lua_rawset(L, LUA_REGISTRYINDEX);
 
     const struct luaL_Reg methods[] = {
-        {"get_nodes", get_nodes},
-        {"get_stat_names", get_stat_names},
-        {"get_keys", get_keys},
-        {"get_value", get_value},
-        {"get_dt", get_dt},
-        {"get_dt_str", get_dt_str},
-        {"add_graph", add_graph},
-        {"update", update},
+        { "get_nodes", get_nodes },
+        { "get_stat_names", get_stat_names },
+        { "get_keys", get_keys },
+        { "get_value", get_value },
+        { "get_graph_value", get_graph_value },
+        { "get_dt", get_dt },
+        { "get_dt_str", get_dt_str },
+        { "add_graph", add_graph },
+        { "update", update },
         {NULL, NULL}
     };
 
