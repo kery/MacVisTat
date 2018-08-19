@@ -7,7 +7,7 @@ GZipFile::GZipFile(const QString &path) :
     QByteArray pathLocal8Bit = path.toLocal8Bit();
     m_gzFile = gzopen(pathLocal8Bit.data(), "rb");
     if (m_gzFile) {
-        gzbuffer(m_gzFile, 64 * 1024);
+        gzbuffer(m_gzFile, 128 * 1024);
         QFile file(path);
         if (file.open(QFile::ReadOnly)) {
             m_size = file.size();
