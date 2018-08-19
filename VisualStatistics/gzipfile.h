@@ -12,8 +12,6 @@ public:
     GZipFile& operator=(const GZipFile &) = delete;
     ~GZipFile();
 
-    bool readLine(QString &text);
-
     bool readLine(std::string &text);
 
     int progress() const;
