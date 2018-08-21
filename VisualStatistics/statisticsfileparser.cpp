@@ -33,18 +33,18 @@ Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
     }
 
     while (working && gzFile.readLine(line)) {
-        QDateTime dt = QDateTime::fromString(QString::fromLatin1(line.c_str(), 19), DT_FORMAT_IN_FILE);
+        QDateTime dt = QDateTime::fromString(QString::fromLatin1(line.c_str(),
+            DT_FORMAT_IN_FILE.length()), DT_FORMAT_IN_FILE);
         if (dt.isValid()) {
             data.key = dt.toTime_t();
-            int index = 0;
+            int index = 2; // date;time;shm_xxx
             int parsedStatCount = 0;
-            const char *cstr = line.c_str();
+            const char *cstr = line.c_str() + DT_FORMAT_IN_FILE.length() + 1;
             const char *ptr;
             while ((ptr = strchr(cstr, ';')) != NULL) {
-                int tmpIndex = indexes.at(parsedStatCount);
-                if (index == tmpIndex) {
+                if (index == indexes.at(parsedStatCount)) {
                     data.value = strtoll(cstr, NULL, 10);
-                    ndm[inm.value(tmpIndex)].insert(data.key, data);
+                    ndm[inm.value(index)].insert(data.key, data);
                     if (++parsedStatCount == indexes.size()) {
                         break;
                     }
