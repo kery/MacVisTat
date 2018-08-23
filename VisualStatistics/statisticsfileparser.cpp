@@ -12,6 +12,21 @@ StatisticsFileParser::StatisticsFileParser(ProgressDialog &dialog) :
 {
 }
 
+static inline const char * searchr(const char *ptr, unsigned int len, char ch, const char **newline)
+{
+    for (unsigned int i = 0; i < len; ++i) {
+        if (ptr[i] == ch) {
+            *newline = NULL;
+            return ptr + i;
+        }
+        if (ptr[i] == '\n') {
+            *newline = ptr + i;
+            return NULL;
+        }
+    }
+    return *newline = NULL;
+}
+
 Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
                       ProgressDialog &dialog,
                       volatile bool &working,
@@ -19,64 +34,101 @@ Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
 {
     Result result;
     std::string line;
+    GZipFile gzFile(fileName);
+
+    // Read the header
+    if (!gzFile.readLine(line)) {
+        result.failedFiles << QFileInfo(fileName).fileName();
+        return result;
+    }
+
     QCPData data;
     int progress = 0;
     Statistics::NameDataMap &ndm = result.nndm[
             StatisticsFileParser::getNodeFromFileName(QFileInfo(fileName).fileName())];
-
-    GZipFile gzFile(fileName);
     QList<int> indexes = inm.keys();
-    // Read the header
-    if (!gzFile.readLine(line)) {
+
+    const unsigned int BUFFER_SIZE = 4096;
+    unsigned int index, parsed, copied, len;
+    std::unique_ptr<char[]> buffer(new char[BUFFER_SIZE]);
+    const char *newline, *ptr, *semicolon;
+
+    int bytes = gzFile.read(buffer.get(), BUFFER_SIZE);
+    if (bytes <= 0) {
         result.failedFiles << QFileInfo(fileName).fileName();
-        goto end;
+        return result;
     }
 
-    while (working && gzFile.readLine(line)) {
-        QDateTime dt = QDateTime::fromString(QString::fromLatin1(line.c_str(),
-            DT_FORMAT_IN_FILE.length()), DT_FORMAT_IN_FILE);
-        if (dt.isValid()) {
-            data.key = dt.toTime_t();
-            int index = 2; // date;time;shm_xxx
-            int parsedStatCount = 0;
-            const char *cstr = line.c_str() + DT_FORMAT_IN_FILE.length() + 1;
-            const char *ptr;
-            while ((ptr = strchr(cstr, ';')) != NULL) {
-                if (index == indexes.at(parsedStatCount)) {
-                    data.value = strtoll(cstr, NULL, 10);
-                    ndm[inm.value(index)].insert(data.key, data);
-                    if (++parsedStatCount == indexes.size()) {
-                        break;
-                    }
-                }
-                cstr = ptr + 1;
-                ++index;
-            }
-            // Last occurence
-            if (parsedStatCount < indexes.size() && *cstr) {
-                int tmpIndex = indexes.at(parsedStatCount);
-                if (index == tmpIndex) {
-                    data.value = strtoll(cstr, NULL, 10);
-                    ndm[inm.value(tmpIndex)].insert(data.key, data);
-                    ++parsedStatCount;
-                }
-            }
-            if (parsedStatCount != indexes.size()) {
+    len = bytes;
+    newline = buffer.get();
+    while (working) {
+        int newProgress = gzFile.progress();
+        if (newProgress - progress >= 9) {
+            QMetaObject::invokeMethod(&dialog, "increaseValue", Qt::QueuedConnection,
+                Q_ARG(int, newProgress - progress));
+            progress = newProgress;
+        }
+        if (newline) {
+            QDateTime dt = QDateTime::fromString(QString::fromLatin1(newline,
+                DT_FORMAT_IN_FILE.length()), DT_FORMAT_IN_FILE);
+            if (dt.isValid()) {
+                index = 2;
+                parsed = 0;
+                data.key = dt.toTime_t();
+                len -= DT_FORMAT_IN_FILE.length() + 1;
+                ptr = newline + DT_FORMAT_IN_FILE.length() + 1;
+            } else {
                 result.failedFiles << QFileInfo(fileName).fileName();
-                goto end;
+                return result;
             }
-            int newProgress = gzFile.progress();
-            if (newProgress - progress > 10) {
-                QMetaObject::invokeMethod(&dialog, "increaseValue", Qt::QueuedConnection,
-                                          Q_ARG(int, newProgress - progress));
-                progress = newProgress;
+        }
+        while (semicolon = searchr(ptr, len, ';', &newline)) {
+            if (index == indexes.at(parsed)) {
+                data.value = strtoll(ptr, NULL, 10);
+                ndm[inm.value(index)].insert(data.key, data);
+                if (++parsed == indexes.size()) {
+                    len -= semicolon - ptr;
+                    ptr = semicolon;
+                    while ((newline = (const char *)memchr(ptr, '\n', len)) == NULL) {
+                        if ((bytes = gzFile.read(buffer.get(), BUFFER_SIZE)) <= 0) {
+                            return result;
+                        }
+                        len = bytes;
+                        ptr = buffer.get();
+                    }
+                    break;
+                }
+            }
+            ++index;
+            len -= (semicolon - ptr) + 1;
+            ptr = semicolon + 1;
+        }
+        if (newline) {
+            if (parsed < (unsigned int)indexes.size() && index == indexes.at(parsed)) {
+                data.value = strtoll(ptr, NULL, 10);
+                ndm[inm.value(index)].insert(data.key, data);
+            }
+            len -= newline - ptr;
+            ptr = newline;
+            if (len > (unsigned int)DT_FORMAT_IN_FILE.length() + 1) {
+                ++newline;
+                --len;
+                continue;
+            } else {
+                copied = len - 1;
+                memcpy(buffer.get(), newline + 1, copied);
+                newline = buffer.get();
             }
         } else {
-            result.failedFiles << QFileInfo(fileName).fileName();
-            goto end;
+            copied = len;
+            memcpy(buffer.get(), ptr, copied);
+            ptr = buffer.get();
         }
+        if ((bytes = gzFile.read(buffer.get() + copied, BUFFER_SIZE - copied)) <= 0) {
+            return result;
+        }
+        len = copied + bytes;
     }
-end:
     return result;
 }
 

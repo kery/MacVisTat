@@ -46,6 +46,11 @@ bool GZipFile::readLine(std::string &text)
     return true;
 }
 
+int GZipFile::read(char *buf, unsigned int len)
+{
+    return gzread(m_gzFile, buf, len);
+}
+
 int GZipFile::progress() const
 {
     if (m_size > 0) {

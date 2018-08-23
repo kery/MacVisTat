@@ -14,6 +14,8 @@ public:
 
     bool readLine(std::string &text);
 
+    int read(char *buf, unsigned int len);
+
     int progress() const;
 
 private:
