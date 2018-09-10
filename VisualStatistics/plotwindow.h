@@ -42,6 +42,8 @@ private:
     QString evaluateWindowTitle() const;
     QString evaluatePlotTitle(bool deltaMode) const;
 
+    QString defaultSaveFileName() const;
+
 private slots:
     void adjustTicks();
     void selectionChanged();

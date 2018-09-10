@@ -329,6 +329,21 @@ QString PlotWindow::evaluatePlotTitle(bool deltaMode) const
     return title;
 }
 
+QString PlotWindow::defaultSaveFileName() const
+{
+    QString defaultFileName;
+    for (const QString &node : m_stat.getNodes()) {
+        for (const QString &name : m_stat.getNames(node)) {
+            if (defaultFileName.isEmpty()) {
+                defaultFileName = name;
+            } else if (defaultFileName != name) {
+                return QString();
+            }
+        }
+    }
+    return defaultFileName.splitRef('.').back().toString();
+}
+
 void PlotWindow::adjustTicks()
 {
     QCustomPlot *plot = m_ui->customPlot;
@@ -637,7 +652,7 @@ void PlotWindow::on_actionFullScreen_toggled(bool checked)
 void PlotWindow::on_actionSaveAsImage_triggered()
 {
     QString path = QFileDialog::getSaveFileName(this, QStringLiteral("Save As Image"),
-                                                    QString(),
+                                                    defaultSaveFileName(),
                                                     QStringLiteral("PNG File (*.png)"));
     if (!path.isEmpty()) {
         m_ui->customPlot->savePng(path);
