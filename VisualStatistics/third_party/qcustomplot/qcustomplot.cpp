@@ -5639,7 +5639,7 @@ void QCPAxis::generateAutoTicks()
       }
     }
     if (mIntegralAutoTickStep) {
-        mTickStep = (int)mTickStep;
+        mTickStep = (quint64)mTickStep;
         if (mTickStep == 0) {
             mTickStep = 1;
         }
