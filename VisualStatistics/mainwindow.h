@@ -46,6 +46,10 @@ private:
     void appendLogWarn(const QString &text);
     void appendLogError(const QString &text);
 
+    QString filterHistoryFilePath();
+    void loadFilterHistory();
+    void saveFilterHistory();
+
     static bool allDataUnchanged(const Statistics::NodeNameDataMap &nndm);
 
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
@@ -58,6 +62,7 @@ private slots:
     void userReportTaskFinished(QNetworkReply *reply);
 
     void updateFilterPattern();
+    void adjustFilterHistoryOrder();
     void listViewDoubleClicked(const QModelIndex &index);
     void logEditContextMenuRequest(const QPoint &pos);
     void listViewContextMenuRequest(const QPoint &pos);
@@ -70,6 +75,7 @@ private slots:
     void on_actionCloseAll_triggered();
     void on_actionDrawPlot_triggered();
     void on_actionDrawPlotInMultipleWindows_triggered();
+    void on_actionClearFilterHistory_triggered();
     void on_actionSelectAll_triggered();
     void on_actionClearSelection_triggered();
     void on_actionInvertSelection_triggered();

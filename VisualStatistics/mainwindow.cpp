@@ -46,6 +46,7 @@ MainWindow::MainWindow() :
     m_ui->cbRegExpFilter->completer()->setCaseSensitivity(Qt::CaseSensitive);
     m_ui->cbRegExpFilter->lineEdit()->setPlaceholderText(QStringLiteral("regular expression filter"));
     connect(m_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::updateFilterPattern);
+    connect(m_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::adjustFilterHistoryOrder);
     connect(m_ui->lvStatName, &QListView::doubleClicked, this, &MainWindow::listViewDoubleClicked);
 
     connect(m_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logEditContextMenuRequest);
@@ -55,6 +56,8 @@ MainWindow::MainWindow() :
 #ifdef INSTALLER
     startUserReportTask();
 #endif
+
+    loadFilterHistory();
 }
 
 MainWindow::~MainWindow()
@@ -384,6 +387,41 @@ void MainWindow::appendLogError(const QString &text)
     m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='red'>ERR: %1</font>").arg(text));
 }
 
+QString MainWindow::filterHistoryFilePath()
+{
+    return QDir::home().filePath(QStringLiteral(".vstat_filter_hist"));
+}
+
+void MainWindow::loadFilterHistory()
+{
+    QFile histFile(filterHistoryFilePath());
+    if (histFile.open(QIODevice::ReadOnly)) {
+        QTextStream ts(&histFile);
+        while (!ts.atEnd()) {
+            QString line = ts.readLine();
+            m_ui->cbRegExpFilter->addItem(line);
+        }
+        histFile.close();
+
+        m_ui->cbRegExpFilter->setCurrentIndex(-1);
+    }
+}
+
+void MainWindow::saveFilterHistory()
+{
+    const int MAX_FILTER_HISTORY = 100;
+
+    QFile histFile(filterHistoryFilePath());
+    if (histFile.open(QIODevice::WriteOnly)) {
+        QTextStream ts(&histFile);
+        for (int i = 0; i < MAX_FILTER_HISTORY && i < m_ui->cbRegExpFilter->count(); ++i) {
+            QString text = m_ui->cbRegExpFilter->itemText(i);
+            ts << text << endl;
+        }
+        histFile.close();
+    }
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (isToolTipEventOfToolButton(obj, event)) {
@@ -418,6 +456,8 @@ void MainWindow::dropEvent(QDropEvent *event)
 void MainWindow::closeEvent(QCloseEvent *)
 {
     emit aboutToBeClosed();
+
+    saveFilterHistory();
 }
 
 void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus exitStatus)
@@ -448,6 +488,17 @@ void MainWindow::updateFilterPattern()
                 m_ui->cbRegExpFilter->lineEdit()->text(), errList);
     for (const QString &err : errList) {
         appendLogError(err);
+    }
+}
+
+void MainWindow::adjustFilterHistoryOrder()
+{
+    QString currentText = m_ui->cbRegExpFilter->lineEdit()->text();
+    int index = m_ui->cbRegExpFilter->findText(currentText);
+    if (index > 0) {
+        m_ui->cbRegExpFilter->removeItem(index);
+        m_ui->cbRegExpFilter->insertItem(0, currentText);
+        m_ui->cbRegExpFilter->setCurrentIndex(0);
     }
 }
 
@@ -549,6 +600,11 @@ void MainWindow::on_actionDrawPlot_triggered()
 void MainWindow::on_actionDrawPlotInMultipleWindows_triggered()
 {
     parseStatFileData(true);
+}
+
+void MainWindow::on_actionClearFilterHistory_triggered()
+{
+    m_ui->cbRegExpFilter->clear();
 }
 
 void MainWindow::on_actionSelectAll_triggered()

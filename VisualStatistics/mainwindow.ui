@@ -54,6 +54,9 @@
            <property name="editable">
             <bool>true</bool>
            </property>
+           <property name="insertPolicy">
+            <enum>QComboBox::InsertAtTop</enum>
+           </property>
           </widget>
          </item>
          <item>
@@ -144,6 +147,7 @@
     <addaction name="actionCalculateTimeDuration"/>
     <addaction name="separator"/>
     <addaction name="actionIgnoreConstantData"/>
+    <addaction name="actionClearFilterHistory"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Selection"/>
@@ -330,6 +334,14 @@
    </property>
    <property name="statusTip">
     <string>In multiple windows mode, don't draw a plot if all of it's datas are constant</string>
+   </property>
+  </action>
+  <action name="actionClearFilterHistory">
+   <property name="text">
+    <string>Clear Filter History</string>
+   </property>
+   <property name="statusTip">
+    <string>Clear filter history</string>
    </property>
   </action>
  </widget>
