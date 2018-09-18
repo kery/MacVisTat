@@ -377,9 +377,6 @@
     <None Include="resource\image\eraser.png">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="resource\image\full_screen.png">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="resource\image\help.png">
       <Filter>Resource Files</Filter>
     </None>
@@ -405,9 +402,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="resource\image\script.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\image\time.png">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

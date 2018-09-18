@@ -462,7 +462,6 @@
     <None Include="resource\image\draw_plot.png" />
     <None Include="resource\image\draw_plot_multiple.png" />
     <None Include="resource\image\eraser.png" />
-    <None Include="resource\image\full_screen.png" />
     <None Include="resource\image\help.png" />
     <None Include="resource\image\minus.png" />
     <None Include="resource\image\pencil.png" />
@@ -472,7 +471,6 @@
     <None Include="resource\image\restore.png" />
     <None Include="resource\image\save.png" />
     <None Include="resource\image\script.png" />
-    <None Include="resource\image\time.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="third_party\lua\Makefile" />
