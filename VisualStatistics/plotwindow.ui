@@ -67,7 +67,6 @@
    <addaction name="actionShowDelta"/>
    <addaction name="actionRemoveZeroCounters"/>
    <addaction name="actionMarkRestartTime"/>
-   <addaction name="actionFullScreen"/>
    <addaction name="separator"/>
    <addaction name="actionScript"/>
   </widget>

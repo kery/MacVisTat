@@ -74,13 +74,12 @@ private slots:
     void on_actionAdd_triggered();
     void on_actionCloseAll_triggered();
     void on_actionDrawPlot_triggered();
-    void on_actionDrawPlotInMultipleWindows_triggered();
+    void on_actionDrawPlotSeparately_triggered();
     void on_actionClearFilterHistory_triggered();
     void on_actionSelectAll_triggered();
     void on_actionClearSelection_triggered();
     void on_actionInvertSelection_triggered();
     void on_actionViewHelp_triggered();
-    void on_actionCalculateTimeDuration_triggered();
     void on_actionAbout_triggered();
 
 signals:

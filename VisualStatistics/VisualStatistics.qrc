@@ -2,7 +2,6 @@
     <qresource prefix="/">
         <file>resource/image/draw_plot.png</file>
         <file>resource/image/save.png</file>
-        <file>resource/image/full_screen.png</file>
         <file>resource/image/archive.png</file>
         <file>resource/image/draw_plot_multiple.png</file>
         <file>resource/image/plus.png</file>
@@ -10,7 +9,6 @@
         <file>resource/image/help.png</file>
         <file>resource/image/minus.png</file>
         <file>resource/image/restore.png</file>
-        <file>resource/image/time.png</file>
         <file>resource/image/document.png</file>
         <file>resource/image/eraser.png</file>
         <file>resource/image/play.png</file>

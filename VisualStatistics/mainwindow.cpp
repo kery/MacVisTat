@@ -282,7 +282,7 @@ void MainWindow::parseStatFileData(bool multipleWindows)
     if (multipleWindows && countToBeDrawn > 16) {
         int answer = showQuestionMsgBox(this,
                                         QStringLiteral("You clicked [%1]. There are %2 windows will be created. Do you want to continue?").
-                                        arg(m_ui->actionDrawPlotInMultipleWindows->text()).arg(countToBeDrawn));
+                                        arg(m_ui->actionDrawPlotSeparately->text()).arg(countToBeDrawn));
         if (answer != QMessageBox::Yes) {
             return;
         }
@@ -597,7 +597,7 @@ void MainWindow::on_actionDrawPlot_triggered()
     parseStatFileData(false);
 }
 
-void MainWindow::on_actionDrawPlotInMultipleWindows_triggered()
+void MainWindow::on_actionDrawPlotSeparately_triggered()
 {
     parseStatFileData(true);
 }
@@ -648,26 +648,6 @@ void MainWindow::on_actionViewHelp_triggered()
 {
     QUrl url(QStringLiteral("http://viini.dev.cic.nsn-rdnet.net/twiki/bin/view/SA/VisualStatistics"));
     QDesktopServices::openUrl(url);
-}
-
-void MainWindow::on_actionCalculateTimeDuration_triggered()
-{
-    QStringList filesToCalculate;
-    for (int i = 0; i < m_ui->lwStatFiles->count(); ++i) {
-        QListWidgetItem *item = m_ui->lwStatFiles->item(i);
-        if (item->checkState() == Qt::Checked && item->statusTip().isEmpty()) {
-            filesToCalculate << item->toolTip();
-        }
-    }
-
-    if (filesToCalculate.size() > 0) {
-        ProgressDialog dialog(this);
-        dialog.setWindowTitle(QStringLiteral("Please Wait"));
-        dialog.setLabelText(QStringLiteral("Parsing statistics files' time duration..."));
-
-        StatisticsFileParser fileParser(dialog);
-        fileParser.parseTimeDuration(filesToCalculate, this, SLOT(handleTimeDurationResult(int)));
-    }
 }
 
 void MainWindow::on_actionAbout_triggered()

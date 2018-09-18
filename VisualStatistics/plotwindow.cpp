@@ -640,15 +640,6 @@ void PlotWindow::toDateTimeChanged(const QDateTime &dateTime)
     }
 }
 
-void PlotWindow::on_actionFullScreen_toggled(bool checked)
-{
-    if (checked) {
-        showFullScreen();
-    } else {
-        showNormal();
-    }
-}
-
 void PlotWindow::on_actionSaveAsImage_triggered()
 {
     QString path = QFileDialog::getSaveFileName(this, QStringLiteral("Save As Image"),

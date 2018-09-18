@@ -61,7 +61,6 @@ private slots:
     void fromDateTimeChanged(const QDateTime &dateTime);
     void toDateTimeChanged(const QDateTime &dateTime);
 
-    void on_actionFullScreen_toggled(bool checked);
     void on_actionSaveAsImage_triggered();
     void on_actionRestoreScale_triggered();
     void on_actionShowDelta_toggled(bool checked);

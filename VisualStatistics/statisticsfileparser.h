@@ -24,7 +24,6 @@ public:
                        Result &result);
     std::string parseFileHeader(QStringList &filePaths, QStringList &failInfo);
     void checkFileHeader(QStringList &filePaths, QStringList &failInfo);
-    void parseTimeDuration(const QStringList &filePaths, QObject *receiver, const char *slot);
 
     static QString getNodeFromFileName(const QString &fileName);
 
