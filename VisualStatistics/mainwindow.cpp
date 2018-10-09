@@ -317,7 +317,9 @@ void MainWindow::parseStatFileData(bool multipleWindows)
         for (const QString &failedFile : result.failedFiles) {
             appendLogError(QStringLiteral("Parse file %1 failed.").arg(failedFile));
         }
-        handleParsedStat(result.nndm, multipleWindows);
+        if (!result.nndm.isEmpty()) {
+            handleParsedStat(result.nndm, multipleWindows);
+        }
     }
 }
 
