@@ -52,8 +52,8 @@ MainWindow::MainWindow() :
     connect(m_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logEditContextMenuRequest);
     connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::listViewContextMenuRequest);
 
-    startCheckNewVersionTask();
 #ifdef INSTALLER
+    startCheckNewVersionTask();
     startUserReportTask();
 #endif
 
