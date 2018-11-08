@@ -121,7 +121,7 @@ void PlotWindow::initializePlot()
         for (const QString &name : m_stat.getNames(node)) {
             QCPGraph *graph = plot->addGraph();
             graph->setName(m_stat.formatName(node, name));
-            graph->setPen(QPen(m_colorGenerator.nextColor()));
+            graph->setPen(QPen(m_colorManager.getColor()));
             graph->setSelectedPen(graph->pen());
             // Set copy to true to avoid the data being deleted if show delta function is used
             graph->setData(m_stat.getDataMap(node, name), true);

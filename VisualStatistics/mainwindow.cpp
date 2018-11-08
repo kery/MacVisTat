@@ -7,7 +7,7 @@
 #include "aboutdialog.h"
 #include "progressdialog.h"
 #include "statisticsfileparser.h"
-#include "gzipfile.h"
+#include "gzipfilereader.h"
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QDragEnterEvent>

@@ -2,7 +2,7 @@
 #define PLOTWINDOW_H
 
 #include "statistics.h"
-#include "colorgenerator.h"
+#include "colormanager.h"
 #include "ValueTipLabel.h"
 
 namespace Ui {
@@ -81,7 +81,7 @@ private:
     bool m_userEditFlag;
     bool m_userDragFlag;
     bool m_hasScatter;
-    ColorGenerator m_colorGenerator;
+    ColorManager m_colorManager;
     Statistics m_stat;
 };
 

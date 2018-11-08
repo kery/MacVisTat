@@ -60,12 +60,6 @@
     <ClCompile Include="aboutdialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="colorgenerator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="gzipfile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="third_party\lua\lapi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -198,17 +192,17 @@
     <ClCompile Include="plotwindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gzipfilereader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="colormanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="aboutdialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <ClInclude Include="colorgenerator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="gzipfile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="third_party\lua\lapi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -317,6 +311,9 @@
     <QtMoc Include="ValueTipLabel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="gzipfilereader.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="moc\moc_predefs.h.cbt">
@@ -412,5 +409,10 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="VisualStatistics.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="colormanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

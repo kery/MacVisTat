@@ -1,6 +1,6 @@
 #include "statisticsfileparser.h"
 #include "progressdialog.h"
-#include "gzipfile.h"
+#include "gzipfilereader.h"
 #include "utils.h"
 #include <QtConcurrent>
 #include <functional>
@@ -34,10 +34,10 @@ Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
 {
     Result result;
     std::string line;
-    GZipFile gzFile(fileName);
+    GzipFileReader reader;
 
     // Read the header
-    if (!gzFile.readLine(line)) {
+    if (!reader.open(fileName) || !reader.readLine(line)) {
         result.failedFiles << QFileInfo(fileName).fileName();
         return result;
     }
@@ -53,7 +53,7 @@ Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
     std::unique_ptr<char[]> buffer(new char[BUFFER_SIZE]);
     const char *newline, *ptr, *semicolon;
 
-    int bytes = gzFile.read(buffer.get(), BUFFER_SIZE);
+    int bytes = reader.read(buffer.get(), BUFFER_SIZE);
     if (bytes <= 0) {
         result.failedFiles << QFileInfo(fileName).fileName();
         return result;
@@ -62,7 +62,7 @@ Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
     len = bytes;
     newline = buffer.get();
     while (working) {
-        int newProgress = gzFile.progress();
+        int newProgress = reader.progress();
         if (newProgress - progress >= 9) {
             QMetaObject::invokeMethod(&dialog, "increaseValue", Qt::QueuedConnection,
                 Q_ARG(int, newProgress - progress));
@@ -90,7 +90,7 @@ Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
                     len -= semicolon - ptr;
                     ptr = semicolon;
                     while ((newline = (const char *)memchr(ptr, '\n', len)) == NULL) {
-                        if ((bytes = gzFile.read(buffer.get(), BUFFER_SIZE)) <= 0) {
+                        if ((bytes = reader.read(buffer.get(), BUFFER_SIZE)) <= 0) {
                             return result;
                         }
                         len = bytes;
@@ -124,7 +124,7 @@ Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
             memcpy(buffer.get(), ptr, copied);
             ptr = buffer.get();
         }
-        if ((bytes = gzFile.read(buffer.get() + copied, BUFFER_SIZE - copied)) <= 0) {
+        if ((bytes = reader.read(buffer.get() + copied, BUFFER_SIZE - copied)) <= 0) {
             return result;
         }
         len = copied + bytes;
@@ -194,7 +194,9 @@ std::string parseHeader(QStringList &filePaths, QStringList &failInfo, ProgressD
     auto iter = filePaths.begin();
     for (; iter != filePaths.end(); ++iter) {
         QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
-        if (GZipFile(*iter).readLine(result)) {
+        
+        GzipFileReader reader;
+        if (reader.open(*iter) && reader.readLine(result)) {
             if (strncmp(result.c_str(), "##date;time;", 12) == 0 &&
                 strcmp(result.c_str() + result.length() - 2, "##") == 0)
             {
@@ -214,7 +216,9 @@ std::string parseHeader(QStringList &filePaths, QStringList &failInfo, ProgressD
         std::string header;
         while (++iter != filePaths.end()) {
             QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
-            if (GZipFile(*iter).readLine(header)) {
+
+            GzipFileReader reader;
+            if (reader.open(*iter) && reader.readLine(header)) {
                 if (header != result) {
                     failInfo.append(QStringLiteral("%1: header is not the same!").arg(QFileInfo(*iter).fileName()));
                     iter->clear();
@@ -252,12 +256,16 @@ void checkHeader(QStringList &filePaths, QStringList &failInfo, ProgressDialog &
     int progress = 0;
 
     QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
+    
     std::string header;
-    if (GZipFile(filePaths.at(0)).readLine(header)) {
+    GzipFileReader reader;
+    if (reader.open(filePaths.at(0)) && reader.readLine(header)) {
         std::string tempHeader;
         for (auto iter = filePaths.begin() + 1; iter != filePaths.end(); ++iter) {
             QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
-            if (GZipFile(*iter).readLine(tempHeader)) {
+
+            GzipFileReader reader;
+            if (reader.open(*iter) && reader.readLine(tempHeader)) {
                 if (tempHeader != header) {
                     failInfo.append(QStringLiteral("%1: header is not the same!").arg(QFileInfo(*iter).fileName()));
                     iter->clear();
