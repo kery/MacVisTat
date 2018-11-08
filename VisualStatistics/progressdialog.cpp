@@ -60,6 +60,7 @@ void ProgressDialog::increaseValue(int val)
 
 void ProgressDialog::on_pushButton_clicked()
 {
-    emit canceled();
-    reject();
+    setLabelText(QStringLiteral("Canceling..."));
+    enableCancelButton(false);
+    emit canceling();
 }

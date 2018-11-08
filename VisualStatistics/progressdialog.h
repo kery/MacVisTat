@@ -41,7 +41,7 @@ public slots:
     void increaseValue(int val);
 
 signals:
-    void canceled();
+    void canceling();
 
 private slots:
     void on_pushButton_clicked();

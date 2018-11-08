@@ -172,10 +172,12 @@ bool StatisticsFileParser::parseFileData(const IndexNameMap &inm,
     // is not accurate. Instead, we calculate the progress ourselves
     QFutureWatcher<Result> watcher;
     QObject::connect(&watcher, SIGNAL(finished()), &dialog, SLOT(accept()));
-    QObject::connect(&dialog, &ProgressDialog::canceled, [&working, &watcher] () {watcher.cancel();working = false;});
+    QObject::connect(&dialog, &ProgressDialog::canceling, [&working, &watcher] () {
+        watcher.cancel();
+        working = false;
+    });
     watcher.setFuture(QtConcurrent::mappedReduced<Result>(fileNames, mappedCallable, reducedFunction));
     dialog.exec();
-    watcher.waitForFinished();
 
     if (watcher.isCanceled()) {
         return false;
@@ -247,7 +249,6 @@ std::string StatisticsFileParser::parseFileHeader(QStringList &filePaths, QStrin
                 std::bind(parseHeader, std::ref(filePaths), std::ref(failInfo), std::ref(m_dialog)));
 
     m_dialog.exec();
-    future.waitForFinished();
     return future.result();
 }
 
