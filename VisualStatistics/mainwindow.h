@@ -67,7 +67,6 @@ private slots:
     void logEditContextMenuRequest(const QPoint &pos);
     void listViewContextMenuRequest(const QPoint &pos);
     void clearLogEdit();
-    void handleTimeDurationResult(int index);
     void copyStatisticsNames();
     void updateStatNameInfo();
 

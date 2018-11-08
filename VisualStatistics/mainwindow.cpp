@@ -536,22 +536,6 @@ void MainWindow::clearLogEdit()
     m_ui->logTextEdit->clear();
 }
 
-void MainWindow::handleTimeDurationResult(int index)
-{
-    QFutureWatcher<QString> *watcher = static_cast<QFutureWatcher<QString>*>(sender());
-    if (!watcher->isCanceled()) {
-        QString result = watcher->resultAt(index);
-        QStringList stringList = result.split("##");
-        Q_ASSERT(stringList.size() == 2);
-        QList<QListWidgetItem*> items = m_ui->lwStatFiles->findItems(
-                    QFileInfo(stringList.at(0)).fileName(),
-                    Qt::MatchFixedString);
-        if (items.size() > 0) {
-            items.at(0)->setStatusTip(stringList.at(1));
-        }
-    }
-}
-
 void MainWindow::copyStatisticsNames()
 {
     QModelIndexList indexList = m_ui->lvStatName->selectionModel()->selectedIndexes();
