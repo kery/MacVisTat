@@ -84,7 +84,7 @@ Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
         }
         while (semicolon = searchr(ptr, len, ';', &newline)) {
             if (index == indexes.at(parsed)) {
-                data.value = strtoll(ptr, NULL, 10);
+                data.value = strtod(ptr, NULL);
                 ndm[inm.value(index)].insert(data.key, data);
                 if (++parsed == indexes.size()) {
                     len -= semicolon - ptr;
@@ -105,7 +105,7 @@ Result mappedFunction(const StatisticsFileParser::IndexNameMap &inm,
         }
         if (newline) {
             if (parsed < (unsigned int)indexes.size() && index == indexes.at(parsed)) {
-                data.value = strtoll(ptr, NULL, 10);
+                data.value = strtod(ptr, NULL);
                 ndm[inm.value(index)].insert(data.key, data);
             }
             len -= newline - ptr;

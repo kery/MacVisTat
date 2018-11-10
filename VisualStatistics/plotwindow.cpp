@@ -439,7 +439,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
 
             QString text = m_stat.getDateTimeString(index);
             text += '\n';
-            text += QString::number(static_cast<qint64>(value));
+            text += QString::number(value);
             m_valueTip.show(plot->mapToGlobal(toolTipPos), rectGlobal, text);
         }
     }
