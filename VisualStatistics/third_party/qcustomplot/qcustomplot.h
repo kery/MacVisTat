@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 25.04.15                                             **
-**          Version: 1.3.1                                                **
+**             Date: 22.12.15                                             **
+**          Version: 1.3.2                                                **
 ****************************************************************************/
 
 #ifndef QCUSTOMPLOT_H
@@ -51,7 +51,7 @@
 #  include <QPrintEngine>
 #else
 #  include <QtNumeric>
-#  include <QtPrintSupport>
+#  include <QtPrintSupport/QtPrintSupport>
 #endif
 
 class QCPPainter;
@@ -992,7 +992,6 @@ class QCP_LIB_DECL QCPAxis : public QCPLayerable
   Q_PROPERTY(bool autoTickLabels READ autoTickLabels WRITE setAutoTickLabels)
   Q_PROPERTY(bool autoTickStep READ autoTickStep WRITE setAutoTickStep)
   Q_PROPERTY(bool autoSubTicks READ autoSubTicks WRITE setAutoSubTicks)
-  Q_PROPERTY(bool integralAutoTickStep READ integralAutoTickStep WRITE setIntegralAutoTickStep)
   Q_PROPERTY(bool ticks READ ticks WRITE setTicks)
   Q_PROPERTY(bool tickLabels READ tickLabels WRITE setTickLabels)
   Q_PROPERTY(int tickLabelPadding READ tickLabelPadding WRITE setTickLabelPadding)
@@ -1101,7 +1100,6 @@ public:
   bool autoTickLabels() const { return mAutoTickLabels; }
   bool autoTickStep() const { return mAutoTickStep; }
   bool autoSubTicks() const { return mAutoSubTicks; }
-  bool integralAutoTickStep() const { return mIntegralAutoTickStep; }
   bool ticks() const { return mTicks; }
   bool tickLabels() const { return mTickLabels; }
   int tickLabelPadding() const;
@@ -1158,7 +1156,6 @@ public:
   void setAutoTickLabels(bool on);
   void setAutoTickStep(bool on);
   void setAutoSubTicks(bool on);
-  void setIntegralAutoTickStep(bool on);
   void setTicks(bool show);
   void setTickLabels(bool show);
   void setTickLabelPadding(int padding);
@@ -1264,7 +1261,6 @@ protected:
   double mTickStep;
   int mSubTickCount, mAutoTickCount;
   bool mAutoTicks, mAutoTickStep, mAutoSubTicks;
-  bool mIntegralAutoTickStep;
   //int mTickLengthIn, mTickLengthOut, mSubTickLengthIn, mSubTickLengthOut; // QCPAxisPainter
   QPen mTickPen, mSelectedTickPen;
   QPen mSubTickPen, mSelectedSubTickPen;
@@ -2634,16 +2630,6 @@ protected:
   friend class QCPLegend;
 };
 
-class QCP_LIB_DECL MyGraph : public QCPGraph
-{
-    Q_OBJECT
-
-public:
-    explicit MyGraph(QCPAxis *keyAxis, QCPAxis *valueAxis);
-
-    virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
-};
-
 
 /*! \file */
 
@@ -3629,6 +3615,7 @@ protected:
   QPixmap mPixmap;
   QPixmap mScaledPixmap;
   bool mScaled;
+  bool mScaledPixmapInvalidated;
   Qt::AspectRatioMode mAspectRatioMode;
   Qt::TransformationMode mTransformationMode;
   QPen mPen, mSelectedPen;

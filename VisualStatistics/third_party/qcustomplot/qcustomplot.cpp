@@ -19,8 +19,8 @@
 ****************************************************************************
 **           Author: Emanuel Eichhammer                                   **
 **  Website/Contact: http://www.qcustomplot.com/                          **
-**             Date: 25.04.15                                             **
-**          Version: 1.3.1                                                **
+**             Date: 22.12.15                                             **
+**          Version: 1.3.2                                                **
 ****************************************************************************/
 
 #include "qcustomplot.h"
@@ -912,10 +912,12 @@ void QCPLayer::removeChild(QCPLayerable *layerable)
   It is possible to provide 0 as \a plot. In that case, you should assign a parent plot at a later
   time with \ref initializeParentPlot.
   
-  The layerable's parent layerable is set to \a parentLayerable, if provided. Direct layerable parents
-  are mainly used to control visibility in a hierarchy of layerables. This means a layerable is
-  only drawn, if all its ancestor layerables are also visible. Note that \a parentLayerable does
-  not become the QObject-parent (for memory management) of this layerable, \a plot does.
+  The layerable's parent layerable is set to \a parentLayerable, if provided. Direct layerable
+  parents are mainly used to control visibility in a hierarchy of layerables. This means a
+  layerable is only drawn, if all its ancestor layerables are also visible. Note that \a
+  parentLayerable does not become the QObject-parent (for memory management) of this layerable, \a
+  plot does. It is not uncommon to set the QObject-parent to something else in the constructors of
+  QCPLayerable subclasses, to guarantee a working destruction hierarchy.
 */
 QCPLayerable::QCPLayerable(QCustomPlot *plot, QString targetLayer, QCPLayerable *parentLayerable) :
   QObject(plot),
@@ -957,7 +959,10 @@ void QCPLayerable::setVisible(bool on)
   Sets the \a layer of this layerable object. The object will be placed on top of the other objects
   already on \a layer.
   
-  Returns true on success, i.e. if \a layer is a valid layer.
+  If \a layer is 0, this layerable will not be on any layer and thus not appear in the plot (or
+  interact/receive events).
+  
+  Returns true if the layer of this layerable was successfully changed to \a layer.
 */
 bool QCPLayerable::setLayer(QCPLayer *layer)
 {
@@ -1453,17 +1458,12 @@ bool QCPRange::contains(double value) const
 */
 bool QCPRange::validRange(double lower, double upper)
 {
-  /*
   return (lower > -maxRange &&
           upper < maxRange &&
           qAbs(lower-upper) > minRange &&
-          (lower < -minRange || lower > minRange) &&
-          (upper < -minRange || upper > minRange));
-          */
-  return (lower > -maxRange &&
-          upper < maxRange &&
-          qAbs(lower-upper) > minRange &&
-          qAbs(lower-upper) < maxRange);
+          qAbs(lower-upper) < maxRange &&
+          !(lower > 0 && qIsInf(upper/lower)) &&
+          !(upper < 0 && qIsInf(lower/upper)));
 }
 
 /*!
@@ -1477,18 +1477,12 @@ bool QCPRange::validRange(double lower, double upper)
 */
 bool QCPRange::validRange(const QCPRange &range)
 {
-  /*
   return (range.lower > -maxRange &&
           range.upper < maxRange &&
           qAbs(range.lower-range.upper) > minRange &&
           qAbs(range.lower-range.upper) < maxRange &&
-          (range.lower < -minRange || range.lower > minRange) &&
-          (range.upper < -minRange || range.upper > minRange));
-          */
-  return (range.lower > -maxRange &&
-          range.upper < maxRange &&
-          qAbs(range.lower-range.upper) > minRange &&
-          qAbs(range.lower-range.upper) < maxRange);
+          !(range.lower > 0 && qIsInf(range.upper/range.lower)) &&
+          !(range.upper < 0 && qIsInf(range.lower/range.upper)));
 }
 
 
@@ -4030,7 +4024,6 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mAutoTicks(true),
   mAutoTickStep(true),
   mAutoSubTicks(true),
-  mIntegralAutoTickStep(false),
   mTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
   mSelectedTickPen(QPen(Qt::blue, 2)),
   mSubTickPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap)),
@@ -4049,6 +4042,7 @@ QCPAxis::QCPAxis(QCPAxisRect *parent, AxisType type) :
   mCachedMarginValid(false),
   mCachedMargin(0)
 {
+  setParent(parent);
   mGrid->setVisible(false);
   setAntialiased(false);
   setLayer(mParentPlot->currentLayer()); // it's actually on that layer already, but we want it in front of the grid, so we place it on there again
@@ -4495,14 +4489,6 @@ void QCPAxis::setAutoSubTicks(bool on)
     mAutoSubTicks = on;
     mCachedMarginValid = false;
   }
-}
-
-void QCPAxis::setIntegralAutoTickStep(bool on)
-{
-    if (mIntegralAutoTickStep != on) {
-        mIntegralAutoTickStep = on;
-        mCachedMarginValid = false;
-    }
 }
 
 /*!
@@ -5638,12 +5624,6 @@ void QCPAxis::generateAutoTicks()
         mTickStep = (int)(tickStepMantissa/2.0)*2.0*magnitudeFactor;
       }
     }
-    if (mIntegralAutoTickStep) {
-        mTickStep = (quint64)mTickStep;
-        if (mTickStep == 0) {
-            mTickStep = 1;
-        }
-    }
     if (mAutoSubTicks)
       mSubTickCount = calculateAutoSubTickCount(mTickStep);
     // Generate tick positions according to mTickStep:
@@ -6511,12 +6491,19 @@ QCPAxisPainterPrivate::TickLabelData QCPAxisPainterPrivate::getTickLabelData(con
   
   // determine whether beautiful decimal powers should be used
   bool useBeautifulPowers = false;
-  int ePos = -1;
+  int ePos = -1; // first index of exponent part, text before that will be basePart, text until eLast will be expPart
+  int eLast = -1; // last index of exponent part, rest of text after this will be suffixPart
   if (substituteExponent)
   {
     ePos = text.indexOf(QLatin1Char('e'));
-    if (ePos > -1)
-      useBeautifulPowers = true;
+    if (ePos > 0 && text.at(ePos-1).isDigit())
+    {
+      eLast = ePos;
+      while (eLast+1 < text.size() && (text.at(eLast+1) == QLatin1Char('+') || text.at(eLast+1) == QLatin1Char('-') || text.at(eLast+1).isDigit()))
+        ++eLast;
+      if (eLast > ePos) // only if also to right of 'e' is a digit/+/- interpret it as beautifiable power
+        useBeautifulPowers = true;
+    }
   }
   
   // calculate text bounding rects and do string preparation for beautiful decimal powers:
@@ -9722,7 +9709,7 @@ QCPGraph *QCustomPlot::addGraph(QCPAxis *keyAxis, QCPAxis *valueAxis)
     return 0;
   }
   
-  QCPGraph *newGraph = new MyGraph(keyAxis, valueAxis);
+  QCPGraph *newGraph = new QCPGraph(keyAxis, valueAxis);
   if (addPlottable(newGraph))
   {
     newGraph->setName(QLatin1String("Graph ")+QString::number(mGraphs.size()));
@@ -10187,7 +10174,11 @@ bool QCustomPlot::moveLayer(QCPLayer *layer, QCPLayer *otherLayer, QCustomPlot::
     return false;
   }
   
-  mLayers.move(layer->index(), otherLayer->index() + (insertMode==limAbove ? 1:0));
+  if (layer->index() > otherLayer->index())
+    mLayers.move(layer->index(), otherLayer->index() + (insertMode==limAbove ? 1:0));
+  else if (layer->index() < otherLayer->index())
+    mLayers.move(layer->index(), otherLayer->index() + (insertMode==limAbove ? 0:-1));
+  
   updateLayerIndices();
   return true;
 }
@@ -12879,7 +12870,6 @@ void QCPPlottableLegendItem::draw(QCPPainter *painter)
   QSizeF iconSize = mParentLegend->iconSize();
   QRectF textRect = painter->fontMetrics().boundingRect(0, 0, 0, iconSize.height(), Qt::TextDontClip, mPlottable->name());
   QRectF iconRect(mRect.topLeft(), iconSize);
-  iconRect.translate(0, mRect.height() - iconSize.height() - 1);
   int textHeight = qMax(textRect.height(), iconSize.height());  // if text has smaller height than icon, center text vertically in icon height, else align tops
   painter->drawText(mRect.x()+iconSize.width()+mParentLegend->iconTextPadding(), mRect.y(), textRect.width(), textHeight, Qt::TextDontClip, mPlottable->name());
   // draw icon:
@@ -14435,8 +14425,8 @@ QCPData::QCPData(double key, double value) :
 
   \image html QCPGraph.png
   
-  Usually QCustomPlot creates graphs internally via QCustomPlot::addGraph and the resulting
-  instance is accessed via QCustomPlot::graph.
+  Usually you create new graphs by calling QCustomPlot::addGraph. The resulting instance can be
+  accessed via QCustomPlot::graph.
 
   To plot data, assign it with the \ref setData or \ref addData functions. Alternatively, you can
   also access and modify the graph's data via the \ref data method, which returns a pointer to the
@@ -15112,7 +15102,8 @@ void QCPGraph::draw(QCPPainter *painter)
 #endif
 
   // draw fill of graph:
-  drawFill(painter, lineData);
+  if (mLineStyle != lsNone)
+    drawFill(painter, lineData);
   
   // draw line:
   if (mLineStyle == lsImpulse)
@@ -15620,8 +15611,8 @@ void QCPGraph::drawLinePlot(QCPPainter *painter, QVector<QPointF> *lineData) con
       int i = 0;
       const int lineDataSize = lineData->size();
       while (i < lineDataSize)
-      {
-        if (qIsNaN(lineData->at(i).y()) || qIsNaN(lineData->at(i).x())) // NaNs create a gap in the line
+     {
+        if (qIsNaN(lineData->at(i).y()) || qIsNaN(lineData->at(i).x()) || qIsInf(lineData->at(i).y())) // NaNs create a gap in the line. Also filter Infs which make drawPolyline block
         {
           painter->drawPolyline(lineData->constData()+segmentStart, i-segmentStart); // i, because we don't want to include the current NaN point
           segmentStart = i+1;
@@ -16028,6 +16019,8 @@ int QCPGraph::countDataInBounds(const QCPDataMap::const_iterator &lower, const Q
 void QCPGraph::addFillBasePoints(QVector<QPointF> *lineData) const
 {
   if (!mKeyAxis) { qDebug() << Q_FUNC_INFO << "invalid key axis"; return; }
+  if (!lineData) { qDebug() << Q_FUNC_INFO << "passed null as lineData"; return; }
+  if (lineData->isEmpty()) return;
   
   // append points that close the polygon fill at the key axis:
   if (mKeyAxis.data()->orientation() == Qt::Vertical)
@@ -16049,6 +16042,9 @@ void QCPGraph::addFillBasePoints(QVector<QPointF> *lineData) const
 */
 void QCPGraph::removeFillBasePoints(QVector<QPointF> *lineData) const
 {
+  if (!lineData) { qDebug() << Q_FUNC_INFO << "passed null as lineData"; return; }
+  if (lineData->isEmpty()) return;
+  
   lineData->remove(lineData->size()-2, 2);
 }
 
@@ -16729,16 +16725,6 @@ QCPRange QCPGraph::getValueRange(bool &foundRange, SignDomain inSignDomain, bool
   
   foundRange = haveLower && haveUpper;
   return range;
-}
-
-MyGraph::MyGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
-    QCPGraph(keyAxis, valueAxis)
-{
-}
-
-void MyGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
-{
-    painter->fillRect(rect, mPen.color());
 }
 
 
@@ -18635,7 +18621,7 @@ void QCPBars::moveBelow(QCPBars *bars)
   plottable.
   
   Inserting into and removing from existing bar stacking is handled gracefully. If \a bars already
-  has a bars object below itself, this bars object is inserted between the two. If this bars object
+  has a bars object above itself, this bars object is inserted between the two. If this bars object
   is already between two other bars, the two other bars will be stacked on top of each other after
   the operation.
   
@@ -19999,7 +19985,7 @@ void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, dou
   
   A color map has three dimensions to represent a data point: The \a key dimension, the \a value
   dimension and the \a data dimension. As with other plottables such as graphs, \a key and \a value
-  correspond to two orthogonal axes on the QCustomPlot surface that you specify in the QColorMap
+  correspond to two orthogonal axes on the QCustomPlot surface that you specify in the QCPColorMap
   constructor. The \a data dimension however is encoded as the color of the point at (\a key, \a
   value).
 
@@ -22752,7 +22738,8 @@ QCPItemPixmap::QCPItemPixmap(QCustomPlot *parentPlot) :
   right(createAnchor(QLatin1String("right"), aiRight)),
   bottom(createAnchor(QLatin1String("bottom"), aiBottom)),
   bottomLeft(createAnchor(QLatin1String("bottomLeft"), aiBottomLeft)),
-  left(createAnchor(QLatin1String("left"), aiLeft))
+  left(createAnchor(QLatin1String("left"), aiLeft)),
+  mScaledPixmapInvalidated(true)
 {
   topLeft->setCoords(0, 1);
   bottomRight->setCoords(1, 0);
@@ -22772,6 +22759,7 @@ QCPItemPixmap::~QCPItemPixmap()
 void QCPItemPixmap::setPixmap(const QPixmap &pixmap)
 {
   mPixmap = pixmap;
+  mScaledPixmapInvalidated = true;
   if (mPixmap.isNull())
     qDebug() << Q_FUNC_INFO << "pixmap is null";
 }
@@ -22785,7 +22773,7 @@ void QCPItemPixmap::setScaled(bool scaled, Qt::AspectRatioMode aspectRatioMode, 
   mScaled = scaled;
   mAspectRatioMode = aspectRatioMode;
   mTransformationMode = transformationMode;
-  updateScaledPixmap();
+  mScaledPixmapInvalidated = true;
 }
 
 /*!
@@ -22889,7 +22877,7 @@ void QCPItemPixmap::updateScaledPixmap(QRect finalRect, bool flipHorz, bool flip
   {
     if (finalRect.isNull())
       finalRect = getFinalRect(&flipHorz, &flipVert);
-    if (finalRect.size() != mScaledPixmap.size())
+    if (mScaledPixmapInvalidated || finalRect.size() != mScaledPixmap.size())
     {
       mScaledPixmap = mPixmap.scaled(finalRect.size(), mAspectRatioMode, mTransformationMode);
       if (flipHorz || flipVert)
@@ -22897,6 +22885,7 @@ void QCPItemPixmap::updateScaledPixmap(QRect finalRect, bool flipHorz, bool flip
     }
   } else if (!mScaledPixmap.isNull())
     mScaledPixmap = QPixmap();
+  mScaledPixmapInvalidated = false;
 }
 
 /*! \internal
