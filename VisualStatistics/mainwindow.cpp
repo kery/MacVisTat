@@ -589,15 +589,17 @@ void MainWindow::on_actionXmlToCSV_triggered()
     QStringList selectedFiles = fileDialog.selectedFiles();
     QString convertedPath = fileParser.kciKpiToCsvFormat(selectedFiles, error);
     if (error.isEmpty()) {
-        QString info = "KCI/KPI files have been converted to " + convertedPath;
-        appendLogInfo(info);
+        if (!convertedPath.isEmpty()) {
+            QString info = "KCI/KPI files have been converted to " + convertedPath;
+            appendLogInfo(info);
 
-        int answer = showQuestionMsgBox(this, info, QStringLiteral("Do you want to open it?"));
-        if (answer == QMessageBox::Yes) {
-            on_actionCloseAll_triggered();
+            int answer = showQuestionMsgBox(this, info, QStringLiteral("Do you want to open it?"));
+            if (answer == QMessageBox::Yes) {
+                on_actionCloseAll_triggered();
 
-            QStringList filePaths(convertedPath);
-            addStatFiles(filePaths);
+                QStringList filePaths(convertedPath);
+                addStatFiles(filePaths);
+            }
         }
     } else {
         showErrorMsgBox(this, error);
