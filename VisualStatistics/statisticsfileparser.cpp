@@ -395,7 +395,7 @@ struct XmlHeaderResult
     QVector<QString> errors;
 };
 
-static XmlHeaderResult parseXmlHeader(ProgressDialog &dialog, volatile const bool &working, const QString &filePath)
+static XmlHeaderResult parseXmlHeader(volatile const bool &working, const QString &filePath)
 {
     XmlHeaderResult result;
 
@@ -406,19 +406,12 @@ static XmlHeaderResult parseXmlHeader(ProgressDialog &dialog, volatile const boo
         return result;
     }
 
-    int progress = 0;
     bool isMeasTypeElement = false;
     QVector<QString> measTypes;
     QXmlStreamReader xmlReader(&fileReader);
 
     while (working && !xmlReader.atEnd()) {
         QXmlStreamReader::TokenType tokenType = xmlReader.readNext();
-        int newProgress = fileReader.progress() / 10;
-        if (newProgress > progress) {
-            QMetaObject::invokeMethod(&dialog, "increaseValue", Qt::QueuedConnection,
-                Q_ARG(int, newProgress - progress));
-            progress = newProgress;
-        }
         if (tokenType == QXmlStreamReader::StartElement) {
             if (xmlReader.name() == "measType") {
                 isMeasTypeElement = true;
@@ -475,9 +468,6 @@ static void writeXmlHeader(ProgressDialog &dialog, volatile const bool &working,
     int progress = 0;
     QVector<QString> fullNames = genFullKciKpiNames(root);
 
-    QMetaObject::invokeMethod(&dialog, "setRange", Qt::BlockingQueuedConnection, Q_ARG(int, 0), Q_ARG(int, 100));
-    QMetaObject::invokeMethod(&dialog, "setValue", Qt::BlockingQueuedConnection, Q_ARG(int, 0));
-
     fileWriter.write("##date;time", 11);
 
     for (int index = 0; working && index < fullNames.size(); ++index) {
@@ -504,7 +494,7 @@ struct XmlDataResult
 };
 
 static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, int> &indexes,
-    ProgressDialog &dialog, volatile const bool &working)
+    volatile const bool &working)
 {
     XmlDataResult result;
 
@@ -512,12 +502,9 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
     if (!fileReader.open(filePath)) {
         result.errors.reserve(1);
         result.errors.append("failed to open " + filePath);
-        QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection,
-            Q_ARG(int, 10));
         return result;
     }
 
-    int progress = 0;
     bool isMeasTypeElement = false;
     bool isRElement = false;
     QString valueP, objLdn;
@@ -527,12 +514,6 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
 
     while (working && !xmlReader.atEnd()) {
         QXmlStreamReader::TokenType tokenType = xmlReader.readNext();
-        int newProgress = fileReader.progress() / 10;
-        if (newProgress > progress) {
-            QMetaObject::invokeMethod(&dialog, "increaseValue", Qt::QueuedConnection,
-                Q_ARG(int, newProgress - progress));
-            progress = newProgress;
-        }
         if (tokenType == QXmlStreamReader::StartElement) {
             if (xmlReader.name() == "measType") {
                 isMeasTypeElement = true;
@@ -541,8 +522,6 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
                 if (!attributes.hasAttribute(QLatin1String("p"))) {
                     result.errors.reserve(1);
                     result.errors.append("no 'p' attribute of measType in file " + filePath);
-                    QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection,
-                        Q_ARG(int, 10));
                     return result;
                 }
                 valueP = attributes.value(QLatin1String("p")).toString();
@@ -556,8 +535,6 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
                 if (!attributes.hasAttribute(QLatin1String("p"))) {
                     result.errors.reserve(1);
                     result.errors.append("no 'p' attribute of r in file " + filePath);
-                    QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection,
-                        Q_ARG(int, 10));
                     return result;
                 }
                 valueP = attributes.value(QLatin1String("p")).toString();
@@ -571,8 +548,6 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
                     } else {
                         result.errors.reserve(1);
                         result.errors.append("invalid date time format in file " + filePath);
-                        QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection,
-                            Q_ARG(int, 10));
                         return result;
                     }
                 }
@@ -594,8 +569,6 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
         } else if (tokenType == QXmlStreamReader::Invalid) {
             result.errors.reserve(1);
             result.errors.append("failed to parse KCI/KPI file " + filePath + ": " + xmlReader.errorString());
-            QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection,
-                Q_ARG(int, 10));
             return result;
         }
     }
@@ -604,7 +577,7 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
     return result;
 }
 
-static void writeXmlData(GzipFile &fileWriter, ProgressDialog &dialog, XmlDataResult &finalResult, const XmlDataResult &intermediateResult)
+static void writeXmlData(GzipFile &fileWriter, XmlDataResult &finalResult, const XmlDataResult &intermediateResult)
 {
     if (intermediateResult.errors.isEmpty() && !intermediateResult.values.isEmpty()) {
         fileWriter.write(intermediateResult.dateTime);
@@ -620,8 +593,6 @@ static void writeXmlData(GzipFile &fileWriter, ProgressDialog &dialog, XmlDataRe
     } else {
         finalResult.errors.append(intermediateResult.errors);
     }
-
-    QMetaObject::invokeMethod(&dialog, "increaseValue", Qt::QueuedConnection, Q_ARG(int, 1));
 }
 
 static QString getGwNameFromFileName(const QString &fileName)
@@ -678,8 +649,6 @@ QString StatisticsFileParser::kciKpiToCsvFormat(QStringList &filePaths, QString 
     std::sort(filePaths.begin(), filePaths.end());
 
     volatile bool working = true;
-    m_dialog.setRange(0, filePaths.size() * 10);
-    m_dialog.setValue(0);
     m_dialog.setLabelText(QStringLiteral("Parsing statistics names from the selected files..."));
 
     QFutureWatcher<XmlHeaderResult> watcher;
@@ -687,10 +656,12 @@ QString StatisticsFileParser::kciKpiToCsvFormat(QStringList &filePaths, QString 
         working = false;
         watcher.cancel();
     });
+    QObject::connect(&watcher, SIGNAL(progressRangeChanged(int, int)), &m_dialog, SLOT(setRange(int, int)));
+    QObject::connect(&watcher, SIGNAL(progressValueChanged(int)), &m_dialog, SLOT(setValue(int)));
     QObject::connect(&watcher, SIGNAL(finished()), &m_dialog, SLOT(accept()));
     
     watcher.setFuture(QtConcurrent::mappedReduced(filePaths,
-        std::bind(parseXmlHeader, std::ref(m_dialog), std::ref(working), std::placeholders::_1),
+        std::bind(parseXmlHeader, std::ref(working), std::placeholders::_1),
         mergeXmlHeader));
     m_dialog.exec();
 
@@ -718,6 +689,8 @@ QString StatisticsFileParser::kciKpiToCsvFormat(QStringList &filePaths, QString 
     });
     QObject::connect(&writeXmlHeaderWatcher, SIGNAL(finished()), &m_dialog, SLOT(accept()));
 
+    m_dialog.setValue(0);
+    m_dialog.setRange(0, 100);
     m_dialog.setLabelText(QStringLiteral("Writing statistics names to file..."));
 
     writeXmlHeaderWatcher.setFuture(QtConcurrent::run(
@@ -734,20 +707,27 @@ QString StatisticsFileParser::kciKpiToCsvFormat(QStringList &filePaths, QString 
         working = false;
         xmlDataWatcher.cancel();
     });
+    QObject::connect(&xmlDataWatcher, SIGNAL(progressRangeChanged(int, int)), &m_dialog, SLOT(setRange(int, int)));
+    QObject::connect(&xmlDataWatcher, SIGNAL(progressValueChanged(int)), &m_dialog, SLOT(setValue(int)));
     QObject::connect(&xmlDataWatcher, SIGNAL(finished()), &m_dialog, SLOT(accept()));
 
-    m_dialog.setRange(0, filePaths.size() * 11);
-    m_dialog.setValue(0);
     m_dialog.setLabelText(QStringLiteral("Writing statistics data to file..."));
 
-    std::bind(parseXmlData, std::placeholders::_1, std::cref(indexes), std::ref(m_dialog), std::cref(working));
-    std::bind(writeXmlData, std::ref(fileWriter), std::ref(m_dialog), std::placeholders::_1, std::placeholders::_2);
-
     xmlDataWatcher.setFuture(QtConcurrent::mappedReduced<XmlDataResult>(filePaths,
-        std::bind(parseXmlData, std::placeholders::_1, std::cref(indexes), std::ref(m_dialog), std::cref(working)),
-        std::bind(writeXmlData, std::ref(fileWriter), std::ref(m_dialog), std::placeholders::_1, std::placeholders::_2),
+        std::bind(parseXmlData, std::placeholders::_1, std::cref(indexes), std::cref(working)),
+        std::bind(writeXmlData, std::ref(fileWriter), std::placeholders::_1, std::placeholders::_2),
         QtConcurrent::OrderedReduce | QtConcurrent::SequentialReduce));
     m_dialog.exec();
+
+    if (xmlDataWatcher.isCanceled()) {
+        return QString();
+    }
+
+    XmlDataResult dataResult = xmlDataWatcher.result();
+    if (!dataResult.errors.isEmpty()) {
+        error = dataResult.errors.first();
+        return QString();
+    }
 
     return destFilePath;
 }
