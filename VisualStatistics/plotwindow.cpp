@@ -141,8 +141,8 @@ QVector<double> PlotWindow::calcTickVector(int plotWidth, int fontHeight, const 
     int count = plotWidth / (fontHeight * 1.2);
     if (count > 0) {
         int step = qMax(1, static_cast<int>(range.size() / count));
-        int upper = qMin(static_cast<int>(range.upper), m_stat.dateTimeCount());
-        for (int i = qMax(static_cast<int>(range.lower), 0); i < upper; i += step) {
+        int upper = qMin(static_cast<int>(range.upper), m_stat.dateTimeCount() - 1);
+        for (int i = qMax(static_cast<int>(range.lower), 0); i <= upper; i += step) {
             result << i;
         }
     }
