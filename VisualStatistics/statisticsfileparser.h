@@ -10,20 +10,16 @@ class StatisticsFileParser
 public:
     typedef QMap<int, QString> IndexNameMap;
 
-    struct Result {
-        QVector<QString> failedFiles;
-        Statistics::NodeNameDataMap nndm;
-    };
-
     StatisticsFileParser(ProgressDialog &dialog);
     StatisticsFileParser(const StatisticsFileParser &) = delete;
     StatisticsFileParser& operator=(const StatisticsFileParser &) = delete;
 
-    bool parseFileData(const IndexNameMap &inm,
-                       const QVector<QString> &fileNames,
-                       Result &result);
+    bool parseFileData(const IndexNameMap &inm, const QVector<QString> &fileNames,
+        Statistics::NodeNameDataMap &nndm, QVector<QString> &errors);
     std::string parseFileHeader(QStringList &filePaths, QStringList &failInfo);
     void checkFileHeader(QStringList &filePaths, QStringList &failInfo);
+
+    QString kciKpiToCsvFormat(QStringList &filePaths, QString &error);
 
     static QString getNodeFromFileName(const QString &fileName);
 

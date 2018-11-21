@@ -192,10 +192,10 @@
     <ClCompile Include="plotwindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gzipfilereader.cpp">
+    <ClCompile Include="colormanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="colormanager.cpp">
+    <ClCompile Include="gzipfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -311,7 +311,7 @@
     <QtMoc Include="ValueTipLabel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="gzipfilereader.h">
+    <QtMoc Include="gzipfile.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

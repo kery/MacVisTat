@@ -120,6 +120,7 @@
     </property>
     <addaction name="actionAdd"/>
     <addaction name="actionCloseAll"/>
+    <addaction name="actionXmlToCSV"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -340,6 +341,14 @@
    </property>
    <property name="statusTip">
     <string>Clear filter history</string>
+   </property>
+  </action>
+  <action name="actionXmlToCSV">
+   <property name="text">
+    <string>Convert KCI/KPI Files...</string>
+   </property>
+   <property name="statusTip">
+    <string>Convert selected KCI/KPI files to a file in CSV format</string>
    </property>
   </action>
  </widget>

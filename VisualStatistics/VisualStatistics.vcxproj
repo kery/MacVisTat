@@ -306,7 +306,7 @@
   <ItemGroup>
     <ClCompile Include="aboutdialog.cpp" />
     <ClCompile Include="colormanager.cpp" />
-    <ClCompile Include="gzipfilereader.cpp" />
+    <ClCompile Include="gzipfile.cpp" />
     <ClCompile Include="third_party\lua\lapi.cpp" />
     <ClCompile Include="third_party\lua\lauxlib.cpp" />
     <ClCompile Include="third_party\lua\lbaselib.cpp" />
@@ -369,7 +369,7 @@
     <QtMoc Include="aboutdialog.h">
     </QtMoc>
     <ClInclude Include="colormanager.h" />
-    <QtMoc Include="gzipfilereader.h">
+    <QtMoc Include="gzipfile.h">
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Installer|x64'">.\GeneratedFiles\$(ConfigurationName)\.;.\GeneratedFiles;.;.\third_party\breakpad;.\third_party\qcustomplot;.\third_party\pcre\win;.\third_party\breakpad\client\windows\handler;$(QTDIR)\include;$(QTDIR)\include\QtPrintSupport;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtWinExtras;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtConcurrent;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtCore;.\moc;.\ui;$(QTDIR)\mkspecs\win32-msvc</IncludePath>
       <Define Condition="'$(Configuration)|$(Platform)'=='Installer|x64'">_WINDOWS;UNICODE;_UNICODE;WIN32;WIN64;_CRT_SECURE_NO_WARNINGS;QT_NO_DEBUG;QT_PRINTSUPPORT_LIB;QT_WIDGETS_LIB;QT_WINEXTRAS_LIB;QT_GUI_LIB;QT_CONCURRENT_LIB;QT_NETWORK_LIB;QT_CORE_LIB;NDEBUG;INSTALLER</Define>
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\$(ConfigurationName)\.;.\GeneratedFiles;.;.\third_party\breakpad;.\third_party\qcustomplot;.\third_party\pcre\win;.\third_party\breakpad\client\windows\handler;$(QTDIR)\include;$(QTDIR)\include\QtPrintSupport;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtWinExtras;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtConcurrent;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtCore;.\moc;.\ui;$(QTDIR)\mkspecs\win32-msvc</IncludePath>

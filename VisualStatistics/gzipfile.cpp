@@ -1,33 +1,35 @@
-#include "GzipFileReader.h"
+#include "gzipfile.h"
 
 #include <QFileInfo>
 
-GzipFileReader::GzipFileReader(QObject *parent) :
+GzipFile::GzipFile(QObject *parent) :
     QIODevice(parent),
     _gzFile(nullptr),
     _fileSize(-1)
 {
 }
 
-GzipFileReader::~GzipFileReader()
+GzipFile::~GzipFile()
 {
     close();
 }
 
-bool GzipFileReader::open(const QString &path)
+bool GzipFile::open(const QString &path, int mode)
 {
     Q_ASSERT(_gzFile == nullptr);
 
-    _gzFile = gzopen(path.toLocal8Bit().data(), "rb");
+    _gzFile = gzopen(path.toLocal8Bit().data(), mode == QIODevice::ReadOnly ? "rb" : "wb");
     if (_gzFile != nullptr) {
         gzbuffer(_gzFile, 128 * 1024);
-        _fileSize = QFileInfo(path).size();
+        if (mode == QIODevice::ReadOnly) {
+            _fileSize = QFileInfo(path).size();
+        }
         return QIODevice::open(QIODevice::ReadOnly);
     }
     return false;
 }
 
-void GzipFileReader::close()
+void GzipFile::close()
 {
     if (_gzFile != nullptr) {
         gzclose(_gzFile);
@@ -38,13 +40,30 @@ void GzipFileReader::close()
     QIODevice::close();
 }
 
-int GzipFileReader::read(char *data, int maxlen)
+int GzipFile::read(char *data, int maxlen)
 {
+    Q_ASSERT(_fileSize > -1);
+
     return (int)readData(data, maxlen);
 }
 
-bool GzipFileReader::readLine(std::string &line)
+int GzipFile::write(const char *data, int len)
 {
+    Q_ASSERT(_fileSize == -1);
+
+    return writeData(data, len);
+}
+
+int GzipFile::write(const QString &data)
+{
+    QByteArray ba = data.toLatin1();
+    return write(ba.data(), ba.length());
+}
+
+bool GzipFile::readLine(std::string &line)
+{
+    Q_ASSERT(_fileSize > -1);
+
     char buffer[4096];
 
     line.clear();
@@ -63,27 +82,28 @@ bool GzipFileReader::readLine(std::string &line)
     return gzeof(_gzFile);
 }
 
-int GzipFileReader::progress() const
+int GzipFile::progress() const
 {
+    Q_ASSERT(_fileSize > -1);
+
     if (_fileSize > 0) {
         return static_cast<double>(gzoffset(_gzFile)) / _fileSize * 100;
     }
     return -1;
 }
 
-qint64 GzipFileReader::readData(char *data, qint64 maxlen)
+qint64 GzipFile::readData(char *data, qint64 maxlen)
 {
+    Q_ASSERT(_fileSize > -1);
     Q_ASSERT(maxlen <= UINT_MAX);
 
     return gzread(_gzFile, data, maxlen);
 }
 
-qint64 GzipFileReader::writeData(const char *data, qint64 len)
+qint64 GzipFile::writeData(const char *data, qint64 len)
 {
-    Q_UNUSED(data);
-    Q_UNUSED(len);
+    Q_ASSERT(_fileSize == -1);
+    Q_ASSERT(len <= UINT_MAX);
 
-    Q_ASSERT(false);
-
-    return -1;
+    return gzwrite(_gzFile, data, len);
 }

@@ -7,7 +7,7 @@
 #include "aboutdialog.h"
 #include "progressdialog.h"
 #include "statisticsfileparser.h"
-#include "gzipfilereader.h"
+#include "gzipfile.h"
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QDragEnterEvent>
@@ -312,13 +312,14 @@ void MainWindow::parseStatFileData(bool multipleWindows)
     }
 
     StatisticsFileParser fileParser(dialog);
-    StatisticsFileParser::Result result;
-    if (fileParser.parseFileData(indexNameMap, checkedFiles, result)) {
-        for (const QString &failedFile : result.failedFiles) {
-            appendLogError(QStringLiteral("Parse file %1 failed.").arg(failedFile));
+    Statistics::NodeNameDataMap nndm;
+    QVector<QString> errors;
+    if (fileParser.parseFileData(indexNameMap, checkedFiles, nndm, errors)) {
+        for (const QString &error : errors) {
+            appendLogError(error);
         }
-        if (!result.nndm.isEmpty()) {
-            handleParsedStat(result.nndm, multipleWindows);
+        if (!nndm.isEmpty()) {
+            handleParsedStat(nndm, multipleWindows);
         }
     }
 }
@@ -567,6 +568,39 @@ void MainWindow::on_actionAdd_triggered()
     if (fileDialog.exec() == QDialog::Accepted) {
         QStringList strList = fileDialog.selectedFiles();
         addStatFiles(strList);
+    }
+}
+
+void MainWindow::on_actionXmlToCSV_triggered()
+{
+    QFileDialog fileDialog(this);
+    fileDialog.setFileMode(QFileDialog::ExistingFiles);
+    fileDialog.setNameFilter(QStringLiteral("KCI/KPI File (*.xml *xml.gz)"));
+
+    if (fileDialog.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    ProgressDialog dialog(this);
+    dialog.setWindowTitle(QStringLiteral("Please Wait"));
+
+    StatisticsFileParser fileParser(dialog);
+    QString error;
+    QStringList selectedFiles = fileDialog.selectedFiles();
+    QString convertedPath = fileParser.kciKpiToCsvFormat(selectedFiles, error);
+    if (error.isEmpty()) {
+        QString info = "KCI/KPI files have been converted to " + convertedPath;
+        appendLogInfo(info);
+
+        int answer = showQuestionMsgBox(this, info, QStringLiteral("Do you want to open it?"));
+        if (answer == QMessageBox::Yes) {
+            on_actionCloseAll_triggered();
+
+            QStringList filePaths(convertedPath);
+            addStatFiles(filePaths);
+        }
+    } else {
+        showErrorMsgBox(this, error);
     }
 }
 

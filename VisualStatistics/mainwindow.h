@@ -71,6 +71,7 @@ private slots:
     void updateStatNameInfo();
 
     void on_actionAdd_triggered();
+    void on_actionXmlToCSV_triggered();
     void on_actionCloseAll_triggered();
     void on_actionDrawPlot_triggered();
     void on_actionDrawPlotSeparately_triggered();

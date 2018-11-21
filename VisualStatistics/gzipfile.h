@@ -3,18 +3,20 @@
 #include <QIODevice>
 #include <QtZlib/zlib.h>
 
-class GzipFileReader : public QIODevice
+class GzipFile : public QIODevice
 {
     Q_OBJECT
 
 public:
-    GzipFileReader(QObject *parent = nullptr);
-    ~GzipFileReader();
+    GzipFile(QObject *parent = nullptr);
+    ~GzipFile();
 
-    bool open(const QString &path);
+    bool open(const QString &path, int mode=QIODevice::ReadOnly);
     virtual void close();
 
     int read(char *data, int maxlen);
+    int write(const char *data, int len);
+    int write(const QString &data);
 
     bool readLine(std::string &line);
     int progress() const;
