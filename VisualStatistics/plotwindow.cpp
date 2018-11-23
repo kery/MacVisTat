@@ -147,10 +147,6 @@ QVector<double> PlotWindow::calcTickVector(int plotWidth, int fontHeight, const 
         }
     }
 
-    if (result.isEmpty()) {
-        result << 0; // At least show one tick
-    }
-
     updateScatter(result, plotWidth);
 
     return result;
@@ -158,8 +154,6 @@ QVector<double> PlotWindow::calcTickVector(int plotWidth, int fontHeight, const 
 
 QVector<QString> PlotWindow::calcTickLabelVector(const QVector<double> &ticks)
 {
-    Q_ASSERT(static_cast<int>(ticks.last()) < m_stat.dateTimeCount());
-
     QVector<QString> result;
     for (double index : ticks) {
         result << m_stat.getDateTimeString(index);
@@ -228,11 +222,36 @@ void PlotWindow::markRestartTime()
     }
 }
 
+bool PlotWindow::shouldDrawScatter(const QVector<double> &tickVector, int plotWidth) const
+{
+    if (tickVector.size() < 2) {
+        return false;
+    }
+
+    int step = tickVector[1] - tickVector[0];
+    if (step > 1) {
+        return false;
+    }
+
+    int tickCount = tickVector.size();
+    QCPRange range = m_ui->customPlot->xAxis->range();
+    if (tickVector.first() > range.lower) {
+        tickCount += tickVector.first() - range.lower;
+    }
+    if (range.upper > tickVector.last()) {
+        tickCount += range.upper - tickVector.last();
+    }
+
+    const int MIN_SPACE = 20;
+
+    return (plotWidth / tickCount) > MIN_SPACE;
+}
+
 void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth)
 {
     QCustomPlot *plot = m_ui->customPlot;
 
-    if (tickVector.size() > 1 && tickVector[1] - tickVector[0] == 1 && plotWidth / tickVector.size() > 20) {
+    if (shouldDrawScatter(tickVector, plotWidth)) {
         if (!m_hasScatter) {
             m_hasScatter = true;
             for (int i = 0; i < plot->graphCount(); ++i) {

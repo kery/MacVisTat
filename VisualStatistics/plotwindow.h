@@ -33,6 +33,7 @@ private:
     QVector<double> findRestartTimeIndex() const;
     void findRestartTimeIndexForNode(const QString &node, QVector<double> &out) const;
     void markRestartTime();
+    bool shouldDrawScatter(const QVector<double> &tickVector, int plotWidth) const;
     void updateScatter(const QVector<double> &tickVector, int plotWidth);
 
     QCPGraph * findGraphValueToShow(int index, double yCoord, double &value);
