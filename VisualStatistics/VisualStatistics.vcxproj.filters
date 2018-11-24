@@ -198,6 +198,9 @@
     <ClCompile Include="gzipfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CounterGraph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="aboutdialog.h">
@@ -312,6 +315,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="gzipfile.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="CounterGraph.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

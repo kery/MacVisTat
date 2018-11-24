@@ -135,8 +135,8 @@ static int add_graph(lua_State *L)
     const char *name = luaL_checkstring(L, 1);
     luaL_checktype(L, 2, LUA_TTABLE);
 
-    QCustomPlot *plot = plotWindow(L)->getPlot();
-    QCPGraph *graph = plot->addGraph();
+    PlotWindow *plotWnd = plotWindow(L);
+    QCPGraph *graph = plotWnd->addCounterGraph();
     graph->setProperty("add_by_script", true);
     if (graph) {
         QCPData data;
@@ -157,6 +157,7 @@ static int add_graph(lua_State *L)
             lua_pop(L, 1);
         }
 
+        QCustomPlot *plot = plotWnd->getPlot();
         lua_pushinteger(L, plot->graphCount() - 1);
     } else {
         luaL_error(L, "add graph failed");

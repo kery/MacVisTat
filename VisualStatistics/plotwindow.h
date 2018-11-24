@@ -19,6 +19,8 @@ public:
     PlotWindow& operator=(const PlotWindow &) = delete;
     ~PlotWindow();
 
+    QCPGraph * addCounterGraph();
+
     Statistics& getStat();
     QCustomPlot* getPlot();
 

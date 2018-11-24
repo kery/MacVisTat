@@ -1,6 +1,7 @@
 #include "plotwindow.h"
 #include "ui_plotwindow.h"
 #include "scriptwindow.h"
+#include "CounterGraph.h"
 #include "utils.h"
 #include "version.h"
 
@@ -75,6 +76,18 @@ PlotWindow::~PlotWindow()
     delete m_ui;
 }
 
+QCPGraph * PlotWindow::addCounterGraph()
+{
+    QCPGraph *graph = new CounterGraph(m_ui->customPlot->xAxis, m_ui->customPlot->yAxis);
+    if (m_ui->customPlot->addPlottable(graph)) {
+        graph->setName(QLatin1String("Graph ") + QString::number(m_ui->customPlot->graphCount()));
+        return graph;
+    } else {
+        delete graph;
+        return nullptr;
+    }
+}
+
 Statistics& PlotWindow::getStat()
 {
     return m_stat;
@@ -118,7 +131,7 @@ void PlotWindow::initializePlot()
 
     for (const QString &node : m_stat.getNodes()) {
         for (const QString &name : m_stat.getNames(node)) {
-            QCPGraph *graph = plot->addGraph();
+            QCPGraph *graph = addCounterGraph();
             graph->setName(m_stat.formatName(node, name));
             graph->setPen(QPen(m_colorManager.getColor()));
             graph->setSelectedPen(graph->pen());
