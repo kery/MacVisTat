@@ -43,6 +43,7 @@ static bool minidumpCallback(const wchar_t* dump_path,
 
 #elif defined(Q_OS_LINUX)
 
+#include "version.h"
 #include <third_party/lss/linux_syscall_support.h>
 
 static char* getCrashReporterPath()
@@ -61,7 +62,10 @@ static bool minidumpCallback(const google_breakpad::MinidumpDescriptor &descript
     if (succeeded) {
         pid_t pid = sys_fork();
         if (pid == 0) { // Child process
-            const char * const argv[] = {"CrashReporter", "--file", descriptor.path(), NULL};
+            const char * const argv[] = {"CrashReporter",
+                "--file", descriptor.path(),
+                "--version", VER_FILEVERSION_STR,
+                NULL};
             char *crPath = static_cast<char*>(context);
             sys_execv(crPath, argv);
         }

@@ -15,8 +15,11 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(const QString &path, QWidget *parent = 0);
+    explicit MainWindow(const QString &path, const QString &version, QWidget *parent = 0);
     ~MainWindow();
+
+private:
+    QString getUploadFileName();
 
 private slots:
     void uploadFinished(QNetworkReply *reply);
@@ -27,6 +30,7 @@ private slots:
 private:
     Ui::MainWindow *_ui;
     QFile _dumpFile;
+    QString _version;
     QTimer _timer;
 };
 

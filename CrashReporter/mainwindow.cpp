@@ -4,20 +4,11 @@
 #include <QPushButton>
 #include <QNetworkAccessManager>
 
-// It is necessary to know VisualStatistics executable's version that
-// corresponding to the dump file.
-// On Windows platform this version is included in dump file which use
-// the "File version" of executable's resource
-// On linux platform it seems that there is no such kind of mechanism
-// so here append the version to the dump file name
-#if defined(Q_OS_LINUX)
-#include "../VisualStatistics/version.h"
-#endif
-
-MainWindow::MainWindow(const QString &path, QWidget *parent) :
+MainWindow::MainWindow(const QString &path, const QString &version, QWidget *parent) :
     QMainWindow(parent),
     _ui(new Ui::MainWindow),
-    _dumpFile(path)
+    _dumpFile(path),
+    _version(version)
 {
     _ui->setupUi(this);
     setFixedSize(size());
@@ -43,6 +34,16 @@ MainWindow::~MainWindow()
     delete _ui;
 }
 
+QString MainWindow::getUploadFileName()
+{
+    QString fileName = QFileInfo(_dumpFile).fileName();
+    if (!_version.isEmpty()) {
+        int index = fileName.lastIndexOf('.');
+        fileName.insert(qMax(index, 0), _version);
+    }
+    return fileName;
+}
+
 void MainWindow::uploadFinished(QNetworkReply *reply)
 {
     _timer.stop();
@@ -62,13 +63,8 @@ void MainWindow::uploadProgress(qint64 /*bytesSent*/, qint64 /*bytesTotal*/)
 void MainWindow::on_buttonBox_accepted()
 {
     if (_dumpFile.open(QFile::ReadOnly)) {
-#if defined(Q_OS_LINUX)
-        QUrl url(QStringLiteral("ftp://135.242.202.254/data/tmp/visualstatistics/coredump/%1.%2").arg(
-                     QFileInfo(_dumpFile).fileName()).arg(VER_FILEVERSION_NUM));
-#elif defined(Q_OS_WIN)
         QUrl url(QStringLiteral("ftp://135.242.202.254/data/tmp/visualstatistics/coredump/%1").arg(
-                     QFileInfo(_dumpFile).fileName()));
-#endif
+            getUploadFileName()));
         url.setUserName(QStringLiteral("sdu"));
         url.setPassword(QStringLiteral("sdu"));
 
