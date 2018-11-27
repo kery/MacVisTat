@@ -58,11 +58,13 @@ SOURCES += main.cpp\
     third_party/lua/lundump.cpp \
     third_party/lua/lvm.cpp \
     third_party/lua/lzio.cpp \
-    colorgenerator.cpp \
+    colormanager.cpp \
     luaenvironment.cpp \
     scriptwindow.cpp \
     statisticsfileparser.cpp \
-    statistics.cpp
+    statistics.cpp \
+    ValueTipLabel.cpp \
+    CounterGraph.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -97,11 +99,13 @@ HEADERS  += mainwindow.h \
     third_party/lua/lundump.h \
     third_party/lua/lvm.h \
     third_party/lua/lzio.h \
-    colorgenerator.h \
+    colormanager.h \
     luaenvironment.h \
     scriptwindow.h \
     statisticsfileparser.h \
-    statistics.h
+    statistics.h \
+    ValueTipLabel.h \
+    CounterGraph.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \
@@ -156,7 +160,7 @@ unix:!macx {
     INCLUDEPATH += $$PWD/third_party/pcre/linux
     INCLUDEPATH += $$PWD/third_party/breakpad/client/linux/handler
 
-    LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre
+    LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre -lz
     LIBS += -L$$PWD/third_party/breakpad/lib/linux/ -lbreakpad_client
 }
 

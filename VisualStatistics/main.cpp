@@ -1,7 +1,7 @@
+#include <exception_handler.h>
 #include "mainwindow.h"
 #include "utils.h"
 #include <QApplication>
-#include <exception_handler.h>
 #include <memory>
 
 #if defined(Q_OS_WIN)

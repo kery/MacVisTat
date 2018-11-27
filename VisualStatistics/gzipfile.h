@@ -1,7 +1,11 @@
 #pragma once
 
 #include <QIODevice>
-#include <QtZlib/zlib.h>
+#if defined(Q_OS_WIN)
+    #include <QtZlib/zlib.h>
+#elif defined(Q_OS_LINUX)
+    #include <zlib.h>
+#endif
 
 class GzipFile : public QIODevice
 {

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Google Inc.
+// Copyright 2015 Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,48 +27,26 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef CLIENT_LINUX_DUMP_WRITER_COMMON_MAPPING_INFO_H_
-#define CLIENT_LINUX_DUMP_WRITER_COMMON_MAPPING_INFO_H_
-
-#include <limits.h>
-#include <list>
-#include <stdint.h>
-
-#include "google_breakpad/common/minidump_format.h"
+#ifndef CLIENT_LINUX_HANDLER_MICRODUMP_EXTRA_INFO_H_
+#define CLIENT_LINUX_HANDLER_MICRODUMP_EXTRA_INFO_H_
 
 namespace google_breakpad {
 
-// One of these is produced for each mapping in the process (i.e. line in
-// /proc/$x/maps).
-struct MappingInfo {
-  // On Android, relocation packing can mean that the reported start
-  // address of the mapping must be adjusted by a bias in order to
-  // compensate for the compression of the relocation section. The
-  // following two members hold (after LateInit) the adjusted mapping
-  // range. See crbug.com/606972 for more information.
-  uintptr_t start_addr;
-  size_t size;
-  // When Android relocation packing causes |start_addr| and |size| to
-  // be modified with a load bias, we need to remember the unbiased
-  // address range. The following structure holds the original mapping
-  // address range as reported by the operating system.
-  struct {
-    uintptr_t start_addr;
-    uintptr_t end_addr;
-  } system_mapping_info;
-  size_t offset;  // offset into the backed file.
-  bool exec;  // true if the mapping has the execute bit set.
-  char name[NAME_MAX];
+struct MicrodumpExtraInfo {
+  // Strings pointed to by this struct are not copied, and are
+  // expected to remain valid for the lifetime of the process.
+  const char* build_fingerprint;
+  const char* product_info;
+  const char* gpu_fingerprint;
+  const char* process_type;
+
+  MicrodumpExtraInfo()
+      : build_fingerprint(NULL),
+        product_info(NULL),
+        gpu_fingerprint(NULL),
+        process_type(NULL) {}
 };
 
-struct MappingEntry {
-  MappingInfo first;
-  uint8_t second[sizeof(MDGUID)];
-};
+}
 
-// A list of <MappingInfo, GUID>
-typedef std::list<MappingEntry> MappingList;
-
-}  // namespace google_breakpad
-
-#endif  // CLIENT_LINUX_DUMP_WRITER_COMMON_MAPPING_INFO_H_
+#endif  // CLIENT_LINUX_HANDLER_MICRODUMP_EXTRA_INFO_H_

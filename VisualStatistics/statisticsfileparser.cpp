@@ -5,6 +5,7 @@
 #include <QtConcurrent>
 #include <functional>
 #include <set>
+#include <memory>
 
 StatisticsFileParser::StatisticsFileParser(ProgressDialog &dialog) :
     m_dialog(dialog)
