@@ -61,10 +61,12 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
             StatisticsFileParser::getNodeFromFileName(QFileInfo(fileName).fileName())];
     QList<int> indexes = inm.keys();
 
-    const unsigned int BUFFER_SIZE = 4096;
-    unsigned int index, parsed, copied, len;
+    const int BUFFER_SIZE = 4096;
+    int index = 2;
+    int parsed = 0;
+    int copied = 0;
     std::unique_ptr<char[]> buffer(new char[BUFFER_SIZE]);
-    const char *newline, *ptr, *semicolon;
+    const char *ptr = nullptr;
 
     int bytes = reader.read(buffer.get(), BUFFER_SIZE);
     if (bytes <= 0) {
@@ -73,8 +75,8 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
         return result;
     }
 
-    len = bytes;
-    newline = buffer.get();
+    int len = bytes;
+    const char *newline = buffer.get();
     while (working) {
         int newProgress = reader.progress() / 10;
         if (newProgress > progress) {
@@ -97,7 +99,8 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
                 return result;
             }
         }
-        while (semicolon = searchr(ptr, len, ';', &newline)) {
+        const char *semicolon;
+        while ((semicolon = searchr(ptr, len, ';', &newline)) != nullptr) {
             if (index == indexes.at(parsed)) {
                 data.value = strtod(ptr, NULL);
                 ndm[inm.value(index)].insert(data.key, data);
@@ -125,13 +128,13 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
             ptr = semicolon + 1;
         }
         if (newline) {
-            if (parsed < (unsigned int)indexes.size() && index == indexes.at(parsed)) {
+            if (parsed < indexes.size() && index == indexes.at(parsed)) {
                 data.value = strtod(ptr, NULL);
                 ndm[inm.value(index)].insert(data.key, data);
             }
             len -= newline - ptr;
             ptr = newline;
-            if (len > (unsigned int)DT_FORMAT_IN_FILE.length() + 1) {
+            if (len > DT_FORMAT_IN_FILE.length() + 1) {
                 ++newline;
                 --len;
                 continue;
