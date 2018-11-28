@@ -2,7 +2,7 @@
 <Package>
     <DisplayName>CrashReporter</DisplayName>
     <Description>Install the crash reporter of VisualStatistics</Description>
-    <Version>1.0.0.2</Version>
+    <Version>1.0.0.3</Version>
     <ReleaseDate>2018-07-20</ReleaseDate>
     <Default>true</Default>
     <ForcedInstallation>true</ForcedInstallation>
