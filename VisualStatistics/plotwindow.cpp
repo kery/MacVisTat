@@ -20,7 +20,6 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_stat(std::move(stat))
 {
     m_ui->setupUi(this);
-    setWindowTitle(m_stat.getNodesString());
 
     m_sampleInterval = m_stat.getSampleInterval();
 
@@ -69,6 +68,8 @@ PlotWindow::PlotWindow(Statistics &stat) :
 
     setFocus();
     initializePlot();
+
+    setWindowTitle(evaluateWindowTitle());
 }
 
 PlotWindow::~PlotWindow()
@@ -101,8 +102,6 @@ QCustomPlot* PlotWindow::getPlot()
 void PlotWindow::initializePlot()
 {
     QCustomPlot *plot = m_ui->customPlot;
-
-    plot->xAxis2->setLabel(m_stat.getNodesString());
 
     plot->axisRect()->setupFullAxesBox();
     plot->xAxis->setAutoTicks(false);
@@ -139,6 +138,8 @@ void PlotWindow::initializePlot()
             graph->setData(m_stat.getDataMap(node, name), true);
         }
     }
+
+    plot->xAxis2->setLabel(evaluatePlotTitle(false));
 
     m_ui->actionMarkRestartTime->setChecked(true);
     markRestartTime();
@@ -346,6 +347,15 @@ void PlotWindow::removeGraphs(const QVector<QCPGraph *> &graphs)
 QString PlotWindow::evaluateWindowTitle() const
 {
     if (m_customTitle.isEmpty()) {
+        if (m_ui->customPlot->graphCount() > 0) {
+            QString title = m_ui->customPlot->graph(0)->name();
+            int index = title.lastIndexOf('.');
+            title = title.mid(index + 1);
+            if (m_ui->customPlot->graphCount() > 1) {
+                title.append("...");
+            }
+            return title;
+        }
         return m_stat.getNodesString();
     }
     return m_customTitle;
