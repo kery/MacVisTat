@@ -133,7 +133,7 @@ void MainWindow::addStatFiles(QStringList &filePaths)
     filterOutAlreadyAddedFiles(filePaths);
     QStringList invalidFileNames = filterOutInvalidFileNames(filePaths);
     for (const QString &fileName : invalidFileNames) {
-        appendLogWarn(fileName + " ignored. Invalid file name.");
+        appendLogWarn("ignored invalid file name " + fileName);
     }
 
     if (filePaths.isEmpty()) {

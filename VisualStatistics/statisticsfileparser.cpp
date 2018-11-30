@@ -51,7 +51,7 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
 
     if (!reader.readLine(line)) {
         result.errors.reserve(1);
-        result.errors.append("failed to read the first line of " + fileName);
+        result.errors.append("failed to read header of " + fileName);
         return result;
     }
 
@@ -228,10 +228,10 @@ std::string parseHeader(QStringList &filePaths, QStringList &failInfo, ProgressD
                 break;
             } else {
                 result.clear();
-                failInfo.append(QStringLiteral("%1: invalid header format!").arg(QFileInfo(*iter).fileName()));
+                failInfo.append("invalid header format of " + *iter);
             }
         } else {
-            failInfo.append(QStringLiteral("%1: reading header failed!").arg(QFileInfo(*iter).fileName()));
+            failInfo.append("failed to read header from " + *iter);
         }
         iter->clear(); // Clear the file path so that we can remove it from filePaths later
     }
@@ -245,11 +245,11 @@ std::string parseHeader(QStringList &filePaths, QStringList &failInfo, ProgressD
             GzipFile reader;
             if (reader.open(*iter) && reader.readLine(header)) {
                 if (header != result) {
-                    failInfo.append(QStringLiteral("%1: header is not the same!").arg(QFileInfo(*iter).fileName()));
+                    failInfo.append("incompatible header of " + *iter);
                     iter->clear();
                 }
             } else {
-                failInfo.append(QStringLiteral("%1: reading header failed!").arg(QFileInfo(*iter).fileName()));
+                failInfo.append("failed to read header from " + *iter);
                 iter->clear();
             }
         }
@@ -292,16 +292,16 @@ static void checkHeader(QStringList &filePaths, QStringList &failInfo, ProgressD
             GzipFile reader;
             if (reader.open(*iter) && reader.readLine(tempHeader)) {
                 if (tempHeader != header) {
-                    failInfo.append(QStringLiteral("%1: header is not compatible with the opened files!").arg(QFileInfo(*iter).fileName()));
+                    failInfo.append("incompatible header of " + *iter);
                     iter->clear();
                 }
             } else {
-                failInfo.append(QStringLiteral("%1: reading header failed!").arg(QFileInfo(*iter).fileName()));
+                failInfo.append("failed to read header from " + *iter);
                 iter->clear();
             }
         }
     } else {
-        failInfo.append(QStringLiteral("%1 reading header failed, stop checking!").arg(QFileInfo(filePaths.at(0)).fileName()));
+        failInfo.append("failed to read header from " + filePaths[0]);
         filePaths.erase(filePaths.begin() + 1, filePaths.end());
     }
 
@@ -637,7 +637,7 @@ static bool checkKciKpiFileNames(const QStringList &filePaths, QString &error)
     for (const QString &filePath : filePaths) {
         QString fileName = QFileInfo(filePath).fileName();
         if (!fileNameExp.exactMatch(fileName)) {
-            error = "invalid KCI/KPI file name: " + fileName;
+            error = "invalid KCI/KPI file name " + fileName;
             return false;
         }
     }
