@@ -344,7 +344,7 @@ void MainWindow::handleParsedStat(Statistics::NodeNameDataMap &nndm, bool multip
         QMap<QString, Statistics::NodeNameDataMap> nndms(
                     Statistics::groupNodeNameDataMapByName(std::move(nndm)));
         for (Statistics::NodeNameDataMap &nndm : nndms) {
-            if (m_ui->actionIgnoreConstantData->isChecked() && allDataUnchanged(nndm)) {
+            if ((QApplication::keyboardModifiers() & Qt::ControlModifier) && allDataUnchanged(nndm)) {
                 continue;
             }
             Statistics stat(nndm);

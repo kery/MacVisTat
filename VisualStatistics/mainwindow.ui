@@ -146,7 +146,6 @@
     <addaction name="actionDrawPlot"/>
     <addaction name="actionDrawPlotSeparately"/>
     <addaction name="separator"/>
-    <addaction name="actionIgnoreConstantData"/>
     <addaction name="actionClearFilterHistory"/>
    </widget>
    <addaction name="menu_File"/>
