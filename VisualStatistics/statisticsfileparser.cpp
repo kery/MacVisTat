@@ -633,7 +633,7 @@ static QString getOutputFilePath(const QStringList &filePaths)
 
 static bool checkKciKpiFileNames(const QStringList &filePaths, QString &error)
 {
-    QRegExp fileNameExp(QStringLiteral("^A\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{4}[+-]\\d{4}.+\\.xml(\\.gz)?$"));
+    QRegExp fileNameExp(QStringLiteral("^[AC]\\d{8}\\.\\d{4}[+-]\\d{4}-.+\\.xml(\\.gz)?$"));
     for (const QString &filePath : filePaths) {
         QString fileName = QFileInfo(filePath).fileName();
         if (!fileNameExp.exactMatch(fileName)) {
@@ -641,6 +641,7 @@ static bool checkKciKpiFileNames(const QStringList &filePaths, QString &error)
             return false;
         }
     }
+
     return true;
 }
 
