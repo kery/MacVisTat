@@ -10,7 +10,7 @@
     <TargetDir>@HomeDir@/VisualStatistics</TargetDir>
     <RemoteRepositories>
         <Repository>
-            <Url>http://135.242.202.254:4099/win</Url>
+            <Url>http://sdu.int.nokia-sbell.com:4099/win</Url>
         </Repository>
     </RemoteRepositories>
     <ControlScript>script.js</ControlScript>
