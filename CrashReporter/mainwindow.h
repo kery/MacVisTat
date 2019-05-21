@@ -15,7 +15,9 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(const QString &path, const QString &version, QWidget *parent = 0);
+    explicit MainWindow(const QString &path, const QString &version,
+                        const QString &ftpDir, const QString &ftpUser,
+                        const QString &ftpPwd, QWidget *parent = 0);
     ~MainWindow();
 
 private:
@@ -31,6 +33,9 @@ private:
     Ui::MainWindow *_ui;
     QFile _dumpFile;
     QString _version;
+    QString _ftpDir;
+    QString _ftpUser;
+    QString _ftpPwd;
     QTimer _timer;
 };
 

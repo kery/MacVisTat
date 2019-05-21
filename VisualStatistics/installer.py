@@ -50,7 +50,7 @@ def check_version_existance(ver_info):
         path += "linux/"
     path += "visualstatistics/%s.%s.%s.%scontent.7z" % ver_info
 
-    proc = subprocess.Popen(["ssh", "root@135.242.202.254", "test", "-f",
+    proc = subprocess.Popen(["ssh", "root@sdu.int.nokia-sbell.com", "test", "-f",
                             path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if err:
@@ -94,7 +94,7 @@ def touch_rc_file():
 
 def copy_target_file():
     src = proj_root_dir()
-    src = os.path.join(src, "build", "VisualStatistics")
+    src = os.path.join(src, "build-VisualStatistics-Release", "VisualStatistics")
     if  is_windows():
         src += ".exe"
     dest = proj_root_dir()
@@ -128,7 +128,7 @@ def upload_repositry():
         platform_dir = "win"
     else:
         platform_dir = "linux"
-    dest = "root@135.242.202.254:/visualstat/%s/visualstatistics" % platform_dir
+    dest = "root@sdu.int.nokia-sbell.com:/visualstat/%s/visualstatistics" % platform_dir
 
     proc = subprocess.Popen("scp -B %s %s" % (path, dest), stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
@@ -158,7 +158,7 @@ def copy_pdb_file():
     dest = os.path.join(r"D:\VisualStatisticsPDB", "v" + ".".join(ver_info))
     if not os.path.exists(dest):
         os.makedirs(dest)
-    shutil.copy(r"..\build\visualstatistics.pdb", dest)
+    shutil.copy(r"..\build-VisualStatistics-Release\visualstatistics.pdb", dest)
 
 if __name__ == "__main__":
     if sys.argv[1] == "prebuild":

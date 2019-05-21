@@ -32,7 +32,7 @@ static bool minidumpCallback(const wchar_t* dump_path,
             wcscat_s(param, L"\\");
         }
         wcscat_s(param, minidump_id);
-        wcscat_s(param, L".dmp\"");
+        wcscat_s(param, L".dmp\" --ftpdir ftp://sdu.int.nokia-sbell.com/visualstatistics/ --ftpuser sdu --ftppwd chengdusdu123");
 
         wchar_t *crPath = static_cast<wchar_t*>(context);
         ShellExecuteW(NULL, NULL, crPath, param, NULL, SW_SHOW);

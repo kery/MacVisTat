@@ -4,11 +4,16 @@
 #include <QPushButton>
 #include <QNetworkAccessManager>
 
-MainWindow::MainWindow(const QString &path, const QString &version, QWidget *parent) :
+MainWindow::MainWindow(const QString &path, const QString &version,
+                       const QString &ftpDir, const QString &ftpUser,
+                       const QString &ftpPwd, QWidget *parent) :
     QMainWindow(parent),
     _ui(new Ui::MainWindow),
     _dumpFile(path),
-    _version(version)
+    _version(version),
+    _ftpDir(ftpDir),
+    _ftpUser(ftpUser),
+    _ftpPwd(ftpPwd)
 {
     _ui->setupUi(this);
     setFixedSize(size());
@@ -63,10 +68,9 @@ void MainWindow::uploadProgress(qint64 /*bytesSent*/, qint64 /*bytesTotal*/)
 void MainWindow::on_buttonBox_accepted()
 {
     if (_dumpFile.open(QFile::ReadOnly)) {
-        QUrl url(QStringLiteral("ftp://135.242.202.254/data/tmp/visualstatistics/coredump/%1").arg(
-            getUploadFileName()));
-        url.setUserName(QStringLiteral("sdu"));
-        url.setPassword(QStringLiteral("sdu"));
+        QUrl url(_ftpDir + getUploadFileName());
+        url.setUserName(_ftpUser);
+        url.setPassword(_ftpPwd);
 
         QNetworkAccessManager *nam = new QNetworkAccessManager();
         QNetworkReply *reply = nam->put(QNetworkRequest(url), &_dumpFile);

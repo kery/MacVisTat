@@ -78,7 +78,7 @@ void MainWindow::startCheckNewVersionTask()
 void MainWindow::startUserReportTask()
 {
     QNetworkAccessManager *manager = new QNetworkAccessManager();
-    QUrl url("http://135.242.202.254:4099/report");
+    QUrl url("http://sdu.int.nokia-sbell.com:4099/report");
     QNetworkProxyQuery npq(url);
     QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(npq);
     if (proxies.size() > 0)

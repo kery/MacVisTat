@@ -25,7 +25,7 @@ HEADERS  += mainwindow.h
 FORMS    += mainwindow.ui
 
 win32 {
-    TARGET = ../../../CrashReporter
+    TARGET = ../CrashReporter
 
     RC_FILE = CrashReporter.rc
 }

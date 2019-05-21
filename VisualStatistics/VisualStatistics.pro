@@ -121,7 +121,7 @@ INCLUDEPATH += $$PWD/third_party/qcustomplot/
 
 win32 {
     QT += winextras
-    TARGET = ../../../VisualStatistics
+    TARGET = ../VisualStatistics
 
     # Remove the warnings for calling function like strcmp
     DEFINES += _CRT_SECURE_NO_WARNINGS
