@@ -544,8 +544,8 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
                 valueP = attributes.value(QLatin1String("p")).toString();
             } else if (xmlReader.name() == "measCollec") {
                 QXmlStreamAttributes attributes = xmlReader.attributes();
-                if (attributes.hasAttribute(QLatin1String("beginTime"))) {
-                    QString dateText = attributes.value(QLatin1String("beginTime")).toString();
+                if (attributes.hasAttribute(QLatin1String("endTime"))) {
+                    QString dateText = attributes.value(QLatin1String("endTime")).toString();
                     QDateTime dateTime = QDateTime::fromString(dateText, Qt::ISODate);
                     if (dateTime.isValid()) {
                         result.dateTime = dateTime.toString(DT_FORMAT_IN_FILE);
