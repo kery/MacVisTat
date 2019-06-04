@@ -64,7 +64,8 @@ SOURCES += main.cpp\
     statisticsfileparser.cpp \
     statistics.cpp \
     ValueTipLabel.cpp \
-    CounterGraph.cpp
+    CounterGraph.cpp \
+    changelogdialog.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -105,13 +106,15 @@ HEADERS  += mainwindow.h \
     statisticsfileparser.h \
     statistics.h \
     ValueTipLabel.h \
-    CounterGraph.h
+    CounterGraph.h \
+    changelogdialog.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \
     aboutdialog.ui \
     scriptwindow.ui \
-    progressdialog.ui
+    progressdialog.ui \
+    changelogdialog.ui
 
 RESOURCES += \
     VisualStatistics.qrc

@@ -17,8 +17,6 @@ public:
     AboutDialog& operator=(const AboutDialog &) = delete;
     ~AboutDialog();
 
-    void setLabelText(const QString &text);
-
 private:
     Ui::AboutDialog *m_ui;
 };

@@ -8,6 +8,7 @@
 #include "progressdialog.h"
 #include "statisticsfileparser.h"
 #include "gzipfile.h"
+#include "changelogdialog.h"
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QDragEnterEvent>
@@ -81,8 +82,9 @@ void MainWindow::startUserReportTask()
     QUrl url("http://sdu.int.nokia-sbell.com:4099/report");
     QNetworkProxyQuery npq(url);
     QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(npq);
-    if (proxies.size() > 0)
+    if (proxies.size() > 0) {
         manager->setProxy(proxies[0]);
+    }
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(userReportTaskFinished(QNetworkReply*)));
 
     QByteArray hostNameHash = QCryptographicHash::hash(QHostInfo::localHostName().toLatin1(),
@@ -474,7 +476,8 @@ void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus 
     if (exitCode != 0 || exitStatus != QProcess::NormalExit)
         return;
 
-    showInfoMsgBox(this, QStringLiteral("A new version of this application is available. Auto update will be applied after closing this dialog."));
+    ChangeLogDialog dlg(this);
+    dlg.exec();
 
     QString maintenanceToolPath = getMaintenanceToolPath();
     QProcess::startDetached(maintenanceToolPath, QStringList() << ("--updater") << "--proxy");
@@ -675,10 +678,15 @@ void MainWindow::on_actionViewHelp_triggered()
     QDesktopServices::openUrl(url);
 }
 
+void MainWindow::on_actionChangeLog_triggered()
+{
+    ChangeLogDialog dlg(this);
+    dlg.hideLabel();
+    dlg.exec();
+}
+
 void MainWindow::on_actionAbout_triggered()
 {
     AboutDialog dialog(this);
-    dialog.setWindowFlags(dialog.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    dialog.setLabelText(QStringLiteral("Visual Statistics v%1").arg(VER_FILEVERSION_STR));
     dialog.exec();
 }

@@ -111,7 +111,7 @@
      <x>0</x>
      <y>0</y>
      <width>752</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -137,6 +137,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionViewHelp"/>
+    <addaction name="actionChangeLog"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -314,7 +315,7 @@
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About..</string>
+    <string>About...</string>
    </property>
    <property name="statusTip">
     <string>Show about dialog</string>
@@ -348,6 +349,14 @@
    </property>
    <property name="statusTip">
     <string>Convert selected KCI/KPI files to a file in CSV format</string>
+   </property>
+  </action>
+  <action name="actionChangeLog">
+   <property name="text">
+    <string>Change Log...</string>
+   </property>
+   <property name="statusTip">
+    <string>Show change log</string>
    </property>
   </action>
  </widget>
