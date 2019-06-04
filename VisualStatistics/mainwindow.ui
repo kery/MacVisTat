@@ -185,7 +185,7 @@
     <string>Add</string>
    </property>
    <property name="statusTip">
-    <string>Add statistics files</string>
+    <string>Add CSV format files</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -199,9 +199,6 @@
    <property name="text">
     <string>Close All</string>
    </property>
-   <property name="statusTip">
-    <string>Close all of the files</string>
-   </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
    </property>
@@ -209,9 +206,6 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
-   </property>
-   <property name="statusTip">
-    <string>Exit this program</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
@@ -221,9 +215,6 @@
    <property name="text">
     <string>Select All</string>
    </property>
-   <property name="statusTip">
-    <string>Select all of the files</string>
-   </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
    </property>
@@ -232,9 +223,6 @@
    <property name="text">
     <string>Clear Selection</string>
    </property>
-   <property name="statusTip">
-    <string>Unselect all of the files</string>
-   </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
    </property>
@@ -242,9 +230,6 @@
   <action name="actionInvertSelection">
    <property name="text">
     <string>Invert Selection</string>
-   </property>
-   <property name="statusTip">
-    <string>Invert current selection</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
@@ -259,7 +244,7 @@
     <string>View Help</string>
    </property>
    <property name="statusTip">
-    <string>View help document</string>
+    <string>View online help document</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -317,9 +302,6 @@
    <property name="text">
     <string>About...</string>
    </property>
-   <property name="statusTip">
-    <string>Show about dialog</string>
-   </property>
   </action>
   <action name="actionIgnoreConstantData">
    <property name="checkable">
@@ -339,16 +321,13 @@
    <property name="text">
     <string>Clear Filter History</string>
    </property>
-   <property name="statusTip">
-    <string>Clear filter history</string>
-   </property>
   </action>
   <action name="actionXmlToCSV">
    <property name="text">
-    <string>Convert KCI/KPI Files...</string>
+    <string>Convert KPI-KCI Files...</string>
    </property>
    <property name="statusTip">
-    <string>Convert selected KCI/KPI files to a file in CSV format</string>
+    <string>Convert selected KPI-KCI files to CSV format</string>
    </property>
   </action>
   <action name="actionChangeLog">

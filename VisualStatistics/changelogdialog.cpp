@@ -3,15 +3,17 @@
 
 #include <QNetworkAccessManager>
 #include <QNetworkProxyQuery>
+#include <QPushButton>
 
 ChangeLogDialog::ChangeLogDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ChangeLogDialog)
 {
     ui->setupUi(this);
+    ui->label->setVisible(false);
 
     setFixedSize(size());
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
     QNetworkAccessManager *manager = new QNetworkAccessManager();
     QUrl url("http://sdu.int.nokia-sbell.com:4099/changelog.txt");
@@ -31,9 +33,10 @@ ChangeLogDialog::~ChangeLogDialog()
     delete ui;
 }
 
-void ChangeLogDialog::hideLabel()
+void ChangeLogDialog::setShownAfterCheckingUpdates()
 {
-    ui->label->hide();
+    ui->label->setVisible(true);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setText(QStringLiteral("Update"));
 }
 
 void ChangeLogDialog::fetchChangeLogFinished(QNetworkReply *reply)

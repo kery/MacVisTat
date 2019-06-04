@@ -16,7 +16,7 @@ public:
     explicit ChangeLogDialog(QWidget *parent = 0);
     ~ChangeLogDialog();
 
-    void hideLabel();
+    void setShownAfterCheckingUpdates();
 
 private slots:
     void fetchChangeLogFinished(QNetworkReply *reply);

@@ -69,8 +69,9 @@ MainWindow::~MainWindow()
 void MainWindow::startCheckNewVersionTask()
 {
     QString maintenanceToolPath = getMaintenanceToolPath();
-    if (maintenanceToolPath.isEmpty())
+    if (maintenanceToolPath.isEmpty()) {
         return;
+    }
     QProcess *process = new QProcess();
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)), SLOT(checkNewVersionTaskFinished(int,QProcess::ExitStatus)));
     process->start(maintenanceToolPath, QStringList() << "--checkupdates" << "--proxy");
@@ -473,10 +474,12 @@ void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus 
     delete sender();
 
     // exitCode != 0 indicates that there is no update available
-    if (exitCode != 0 || exitStatus != QProcess::NormalExit)
+    if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
         return;
+    }
 
     ChangeLogDialog dlg(this);
+    dlg.setShownAfterCheckingUpdates();
     dlg.exec();
 
     QString maintenanceToolPath = getMaintenanceToolPath();
@@ -681,7 +684,6 @@ void MainWindow::on_actionViewHelp_triggered()
 void MainWindow::on_actionChangeLog_triggered()
 {
     ChangeLogDialog dlg(this);
-    dlg.hideLabel();
     dlg.exec();
 }
 
