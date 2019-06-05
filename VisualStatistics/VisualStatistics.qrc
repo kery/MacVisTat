@@ -15,5 +15,6 @@
         <file>resource/image/script.png</file>
         <file>resource/image/remove.png</file>
         <file>resource/image/pencil.png</file>
+        <file>resource/image/csv.png</file>
     </qresource>
 </RCC>

@@ -166,6 +166,7 @@
    </attribute>
    <addaction name="actionAdd"/>
    <addaction name="actionCloseAll"/>
+   <addaction name="actionXmlToCSV"/>
    <addaction name="separator"/>
    <addaction name="actionDrawPlot"/>
    <addaction name="actionDrawPlotSeparately"/>
@@ -283,38 +284,9 @@
     <string>Ctrl+M</string>
    </property>
   </action>
-  <action name="actionCalculateTimeDuration">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/resource/image/time.png</normaloff>:/resource/image/time.png</iconset>
-   </property>
-   <property name="text">
-    <string>Calculate Time Duration</string>
-   </property>
-   <property name="statusTip">
-    <string>Calculate statistics files' time duration</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+T</string>
-   </property>
-  </action>
   <action name="actionAbout">
    <property name="text">
     <string>About...</string>
-   </property>
-  </action>
-  <action name="actionIgnoreConstantData">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Ignore Constant Data</string>
-   </property>
-   <property name="statusTip">
-    <string>If draw separately, don't create plot window for constant counters</string>
    </property>
   </action>
   <action name="actionClearFilterHistory">
@@ -323,6 +295,10 @@
    </property>
   </action>
   <action name="actionXmlToCSV">
+   <property name="icon">
+    <iconset resource="VisualStatistics.qrc">
+     <normaloff>:/resource/image/csv.png</normaloff>:/resource/image/csv.png</iconset>
+   </property>
    <property name="text">
     <string>Convert KPI-KCI Files...</string>
    </property>
