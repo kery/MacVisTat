@@ -48,6 +48,6 @@ void ChangeLogDialog::fetchChangeLogFinished(QNetworkReply *reply)
         QByteArray allData = reply->readAll();
         ui->plainTextEdit->setPlainText(QString(allData));
     } else {
-        ui->plainTextEdit->setPlainText(QStringLiteral("Failed to fetch change log."));
+        ui->plainTextEdit->setPlainText("Failed to fetch change log: " + reply->errorString());
     }
 }
