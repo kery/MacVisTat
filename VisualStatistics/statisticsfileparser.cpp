@@ -449,7 +449,7 @@ static XmlHeaderResult parseXmlHeader(volatile const bool &working, const QStrin
             }
         } else if (tokenType == QXmlStreamReader::Invalid) {
             result.errors.reserve(1);
-            result.errors.append("failed to parse KCI/KPI file " + filePath + ": " + xmlReader.errorString());
+            result.errors.append("failed to parse KPI-KCI file " + filePath + ": " + xmlReader.errorString());
             return result;
         }
     }
@@ -572,7 +572,7 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
             }
         } else if (tokenType == QXmlStreamReader::Invalid) {
             result.errors.reserve(1);
-            result.errors.append("failed to parse KCI/KPI file " + filePath + ": " + xmlReader.errorString());
+            result.errors.append("failed to parse KPI-KCI file " + filePath + ": " + xmlReader.errorString());
             return result;
         }
     }
@@ -637,7 +637,7 @@ static bool checkKciKpiFileNames(const QStringList &filePaths, QString &error)
     for (const QString &filePath : filePaths) {
         QString fileName = QFileInfo(filePath).fileName();
         if (!fileNameExp.exactMatch(fileName)) {
-            error = "invalid KCI/KPI file name " + fileName;
+            error = "invalid KPI-KCI file name " + fileName;
             return false;
         }
     }
