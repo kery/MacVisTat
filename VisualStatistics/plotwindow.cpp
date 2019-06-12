@@ -347,11 +347,25 @@ void PlotWindow::removeGraphs(const QVector<QCPGraph *> &graphs)
 QString PlotWindow::evaluateWindowTitle() const
 {
     if (m_customTitle.isEmpty()) {
-        if (m_ui->customPlot->graphCount() > 0) {
-            QString title = m_ui->customPlot->graph(0)->name();
-            int index = title.lastIndexOf('.');
-            title = title.mid(index + 1);
-            if (m_ui->customPlot->graphCount() > 1) {
+        int graphCount = m_ui->customPlot->graphCount();
+        if (graphCount > 0) {
+            QStringList names;
+            bool appendEllipsis = false;
+            for (int i = 0; i < graphCount; ++i) {
+                QString tempName = m_ui->customPlot->graph(i)->name();
+                QString rightPart = tempName.mid(tempName.lastIndexOf('.') + 1);
+                if (!names.contains(rightPart)) {
+                    if (names.size() < 3) {
+                        names.append(rightPart);
+                    } else {
+                        appendEllipsis = true;
+                        break;
+                    }
+                }
+            }
+
+            QString title = names.join(QLatin1String(", "));
+            if (appendEllipsis) {
                 title.append("...");
             }
             return title;
