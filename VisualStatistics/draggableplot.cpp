@@ -50,7 +50,9 @@ void DraggablePlot::mouseMoveEvent(QMouseEvent *event)
 
 void DraggablePlot::dragEnterEvent(QDragEnterEvent *event)
 {
-    if (event->mimeData()->hasFormat(QStringLiteral("application/visualstat-legend"))) {
+    if (event->mimeData()->hasFormat(QStringLiteral("application/visualstat-legend")) &&
+            event->source() == this)
+    {
         event->acceptProposedAction();
     }
 }
@@ -72,7 +74,6 @@ void DraggablePlot::dropEvent(QDropEvent *event)
         layout->setInsetRect(0, QRectF((newPos.x() - insetLayoutRect.left())/insetLayoutRect.width(),
                                        (newPos.y() - insetLayoutRect.top())/insetLayoutRect.height(),
                                        0, 0));
-
         replot();
     }
 }
