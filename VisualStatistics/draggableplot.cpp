@@ -29,7 +29,7 @@ void DraggablePlot::mouseMoveEvent(QMouseEvent *event)
         QRect rect = legend->outerRect();
         QPixmap pixmap(rect.width(), calcLegendPixmapHeight());
         QCPPainter painter(&pixmap);
-        painter.fillRect(pixmap.rect(), QColor(196, 196, 196));
+        painter.fillRect(pixmap.rect(), QColor(96, 96, 96));
 
         QByteArray itemData;
         QDataStream dataStream(&itemData, QIODevice::WriteOnly);
