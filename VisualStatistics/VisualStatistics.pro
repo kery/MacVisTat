@@ -65,7 +65,8 @@ SOURCES += main.cpp\
     statistics.cpp \
     ValueTipLabel.cpp \
     CounterGraph.cpp \
-    changelogdialog.cpp
+    changelogdialog.cpp \
+    draggableplot.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -107,7 +108,8 @@ HEADERS  += mainwindow.h \
     statistics.h \
     ValueTipLabel.h \
     CounterGraph.h \
-    changelogdialog.h
+    changelogdialog.h \
+    draggableplot.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \

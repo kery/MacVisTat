@@ -40,7 +40,7 @@
      <number>5</number>
     </property>
     <item>
-     <widget class="QCustomPlot" name="customPlot" native="true">
+     <widget class="DraggablePlot" name="customPlot" native="true">
       <property name="contextMenuPolicy">
        <enum>Qt::CustomContextMenu</enum>
       </property>
@@ -83,21 +83,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionFullScreen">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/full_screen.png</normaloff>:/resource/image/full_screen.png</iconset>
-   </property>
-   <property name="text">
-    <string>Full Screen</string>
-   </property>
-   <property name="shortcut">
-    <string>F11</string>
    </property>
   </action>
   <action name="actionRestoreScale">
@@ -182,9 +167,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QCustomPlot</class>
+   <class>DraggablePlot</class>
    <extends>QWidget</extends>
-   <header>third_party/qcustomplot/qcustomplot.h</header>
+   <header>draggableplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
