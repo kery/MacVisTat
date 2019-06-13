@@ -579,7 +579,9 @@ void PlotWindow::moveLegend()
         int align = action->data().toInt(&ok);
         if (ok) {
             QCustomPlot *plot = m_ui->customPlot;
-            plot->axisRect()->insetLayout()->setInsetAlignment(0, (Qt::Alignment)align);
+            QCPLayoutInset *layout = plot->axisRect()->insetLayout();
+            layout->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
+            layout->setInsetAlignment(0, (Qt::Alignment)align);
             plot->replot();
         }
     }
