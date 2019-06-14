@@ -48,6 +48,37 @@ void DraggablePlot::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
+void DraggablePlot::resizeEvent(QResizeEvent *event)
+{
+    QCPLayoutInset *layout = axisRect()->insetLayout();
+    QRect oldRect = layout->rect();
+
+    QCustomPlot::resizeEvent(event);
+
+    if (layout->insetPlacement(0) == QCPLayoutInset::ipFree) {
+        QRect newRect = layout->rect();
+        QRectF insetRect = layout->insetRect(0);
+        bool insetRectChanged = false;
+
+        if (insetRect.left() < 0) {
+            qreal leftPixels = oldRect.width() * insetRect.left();
+            insetRect.setLeft(leftPixels / newRect.width());
+            insetRectChanged = true;
+        }
+
+        if (insetRect.top() < 0) {
+            qreal topPixels = oldRect.height() * insetRect.top();
+            insetRect.setTop(topPixels / newRect.height());
+            insetRectChanged = true;
+        }
+
+        if (insetRectChanged) {
+            layout->setInsetRect(0, insetRect);
+            replot(rpQueued);
+        }
+    }
+}
+
 void DraggablePlot::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasFormat(QStringLiteral("application/visualstat-legend")) &&
