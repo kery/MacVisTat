@@ -512,6 +512,20 @@ void PlotWindow::mouseWheel(QWheelEvent *event)
     } else {
         plot->axisRect()->setRangeZoom(Qt::Horizontal | Qt::Vertical);
     }
+
+    if (plot->legend->rect().contains(event->pos())) {
+        const int STEP = 25;
+
+        QPoint delta = event->angleDelta();
+        QColor color = plot->legend->brush().color();
+        if (delta.y() < 0) {
+            color.setAlpha(qMax(0, color.alpha() - STEP));
+        } else {
+            color.setAlpha(qMin(color.alpha() + STEP, 255));
+        }
+        plot->legend->setBrush(QBrush(color));
+        plot->replot();
+    }
 }
 
 void PlotWindow::contextMenuRequest(const QPoint &pos)
