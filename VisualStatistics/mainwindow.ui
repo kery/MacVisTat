@@ -144,8 +144,8 @@
     <property name="title">
      <string>Plot</string>
     </property>
-    <addaction name="actionDrawPlot"/>
-    <addaction name="actionDrawPlotSeparately"/>
+    <addaction name="actionPlot"/>
+    <addaction name="actionPlotSeparately"/>
     <addaction name="separator"/>
     <addaction name="actionClearFilterHistory"/>
    </widget>
@@ -168,8 +168,8 @@
    <addaction name="actionCloseAll"/>
    <addaction name="actionXmlToCSV"/>
    <addaction name="separator"/>
-   <addaction name="actionDrawPlot"/>
-   <addaction name="actionDrawPlotSeparately"/>
+   <addaction name="actionPlot"/>
+   <addaction name="actionPlotSeparately"/>
    <addaction name="separator"/>
    <addaction name="actionViewHelp"/>
   </widget>
@@ -251,34 +251,34 @@
     <string>F1</string>
    </property>
   </action>
-  <action name="actionDrawPlot">
+  <action name="actionPlot">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/draw_plot.png</normaloff>:/resource/image/draw_plot.png</iconset>
+     <normaloff>:/resource/image/plot.png</normaloff>:/resource/image/plot.png</iconset>
    </property>
    <property name="text">
-    <string>Draw Plot</string>
+    <string>Plot</string>
    </property>
    <property name="statusTip">
-    <string>Draw plot in a single window</string>
+    <string>Plot in a single window</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
    </property>
   </action>
-  <action name="actionDrawPlotSeparately">
+  <action name="actionPlotSeparately">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/draw_plot_multiple.png</normaloff>:/resource/image/draw_plot_multiple.png</iconset>
+     <normaloff>:/resource/image/plot-separately.png</normaloff>:/resource/image/plot-separately.png</iconset>
    </property>
    <property name="text">
-    <string>Draw Plot Separately</string>
+    <string>Plot Separately</string>
    </property>
    <property name="toolTip">
-    <string>Draw Plot Separately</string>
+    <string>Plot Separately</string>
    </property>
    <property name="statusTip">
-    <string>Draw plot separately in multiple windows</string>
+    <string>Plot separately in multiple windows</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>

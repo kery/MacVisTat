@@ -260,7 +260,7 @@ void MainWindow::parseStatFileData(bool multipleWindows)
 
     if (checkedItems.isEmpty()) {
         showInfoMsgBox(this,
-                       QStringLiteral("Please check the statistics file(s) with which you want to draw plot!"),
+                       QStringLiteral("Please check the statistics file(s) with which you want to plot!"),
                        QStringLiteral("No statistics file checked."));
         return;
     }
@@ -269,23 +269,23 @@ void MainWindow::parseStatFileData(bool multipleWindows)
     Q_ASSERT(model != NULL);
     if (model->rowCount() == 0) {
         showInfoMsgBox(this,
-                       QStringLiteral("Please specify at lease one statistics name which you want to draw!"),
+                       QStringLiteral("Please specify at lease one statistics name which you want to plot!"),
                        QStringLiteral("No statistics name found."));
         return;
     }
 
-    int countToBeDrawn;
+    int statCountToPlot;
     QModelIndexList selectedIndexes = m_ui->lvStatName->selectionModel()->selectedIndexes();
     if (selectedIndexes.isEmpty()) {
-        countToBeDrawn = model->rowCount();
+        statCountToPlot = model->rowCount();
     } else {
-        countToBeDrawn = selectedIndexes.size();
+        statCountToPlot = selectedIndexes.size();
     }
 
-    if (multipleWindows && countToBeDrawn > 16) {
+    if (multipleWindows && statCountToPlot > 16) {
         int answer = showQuestionMsgBox(this,
                                         QStringLiteral("You clicked [%1]. There are %2 windows will be created. Do you want to continue?").
-                                        arg(m_ui->actionDrawPlotSeparately->text()).arg(countToBeDrawn));
+                                        arg(m_ui->actionPlotSeparately->text()).arg(statCountToPlot));
         if (answer != QMessageBox::Yes) {
             return;
         }
@@ -623,12 +623,12 @@ void MainWindow::on_actionCloseAll_triggered()
     }
 }
 
-void MainWindow::on_actionDrawPlot_triggered()
+void MainWindow::on_actionPlot_triggered()
 {
     parseStatFileData(false);
 }
 
-void MainWindow::on_actionDrawPlotSeparately_triggered()
+void MainWindow::on_actionPlotSeparately_triggered()
 {
     parseStatFileData(true);
 }

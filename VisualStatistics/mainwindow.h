@@ -73,8 +73,8 @@ private slots:
     void on_actionAdd_triggered();
     void on_actionXmlToCSV_triggered();
     void on_actionCloseAll_triggered();
-    void on_actionDrawPlot_triggered();
-    void on_actionDrawPlotSeparately_triggered();
+    void on_actionPlot_triggered();
+    void on_actionPlotSeparately_triggered();
     void on_actionClearFilterHistory_triggered();
     void on_actionSelectAll_triggered();
     void on_actionClearSelection_triggered();
