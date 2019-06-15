@@ -561,11 +561,11 @@ void MainWindow::copyStatisticsNames()
 void MainWindow::updateStatNameInfo()
 {
     StatisticsNameModel *model = static_cast<StatisticsNameModel*>(m_ui->lvStatName->model());
-    int displayed = model->rowCount();
+    int loaded = model->rowCount();
     int filtered = model->filteredCount();
     int total = model->totalCount();
 
-    m_lbStatNameInfo->setText(QStringLiteral("%1, %2, %3").arg(displayed).arg(filtered).arg(total));
+    m_lbStatNameInfo->setText(QStringLiteral("loaded:%1, filtered:%2, total:%3").arg(loaded).arg(filtered).arg(total));
 }
 
 void MainWindow::on_actionAdd_triggered()
