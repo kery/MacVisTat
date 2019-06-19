@@ -116,6 +116,10 @@ void PlotWindow::initializePlot()
     plot->legend->setIconSize(15, 6);
     plot->legend->setVisible(true);
 
+    QColor color = plot->legend->brush().color();
+    color.setAlpha(200);
+    plot->legend->setBrush(QBrush(color));
+
     plot->setNoAntialiasingOnDrag(true);
 
     plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectLegend | QCP::iSelectPlottables);
