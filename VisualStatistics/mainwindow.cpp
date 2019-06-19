@@ -596,7 +596,7 @@ void MainWindow::on_actionXmlToCSV_triggered()
     StatisticsFileParser fileParser(dialog);
     QString error;
     QStringList selectedFiles = fileDialog.selectedFiles();
-    QString convertedPath = fileParser.kciKpiToCsvFormat(selectedFiles, error);
+    QString convertedPath = fileParser.kpiKciToCsvFormat(selectedFiles, error);
     if (error.isEmpty()) {
         if (!convertedPath.isEmpty()) {
             QString info = "KPI-KCI files have been converted to " + convertedPath;

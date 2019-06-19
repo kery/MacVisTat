@@ -219,7 +219,7 @@ std::string parseHeader(QStringList &filePaths, QStringList &failInfo, ProgressD
     auto iter = filePaths.begin();
     for (; iter != filePaths.end(); ++iter) {
         QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
-        
+
         GzipFile reader;
         if (reader.open(*iter) && reader.readLine(result)) {
             if (strncmp(result.c_str(), "##date;time;", 12) == 0 &&
@@ -281,7 +281,7 @@ static void checkHeader(QStringList &filePaths, QStringList &failInfo, ProgressD
     int progress = 0;
 
     QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
-    
+
     std::string header;
     GzipFile reader;
     if (reader.open(filePaths.at(0)) && reader.readLine(header)) {
@@ -325,46 +325,46 @@ void StatisticsFileParser::checkFileHeader(QStringList &filePaths, QStringList &
     future.waitForFinished();
 }
 
-struct KciKpiNameNode
+struct kpiKciNameNode
 {
     QString name;
-    mutable std::set<KciKpiNameNode> children;
+    mutable std::set<kpiKciNameNode> children;
 
-    KciKpiNameNode();
-    KciKpiNameNode(const QStringRef &n);
-    KciKpiNameNode(const QString &n);
+    kpiKciNameNode();
+    kpiKciNameNode(const QStringRef &n);
+    kpiKciNameNode(const QString &n);
 
-    bool operator<(const KciKpiNameNode &other) const;
+    bool operator<(const kpiKciNameNode &other) const;
 };
 
-KciKpiNameNode::KciKpiNameNode()
+kpiKciNameNode::kpiKciNameNode()
 {
 }
 
-KciKpiNameNode::KciKpiNameNode(const QStringRef &n) :
+kpiKciNameNode::kpiKciNameNode(const QStringRef &n) :
     name(n.toString())
 {
 }
 
-KciKpiNameNode::KciKpiNameNode(const QString &n) :
+kpiKciNameNode::kpiKciNameNode(const QString &n) :
     name(n)
 {
 }
 
-bool KciKpiNameNode::operator<(const KciKpiNameNode &other) const
+bool kpiKciNameNode::operator<(const kpiKciNameNode &other) const
 {
     return name < other.name;
 }
 
-static void mergeKciKpiNameNode(const KciKpiNameNode &dest, const KciKpiNameNode &src)
+static void mergekpiKciNameNode(const kpiKciNameNode &dest, const kpiKciNameNode &src)
 {
-    for (const KciKpiNameNode &child : src.children) {
+    for (const kpiKciNameNode &child : src.children) {
         auto insertResult = dest.children.insert(child);
-        mergeKciKpiNameNode(*insertResult.first, child);
+        mergekpiKciNameNode(*insertResult.first, child);
     }
 }
 
-static void feedFullKciKpiNames(const KciKpiNameNode &node, QVector<QString> &result, QVector<const QString *> &stack)
+static void feedFullkpiKciNames(const kpiKciNameNode &node, QVector<QString> &result, QVector<const QString *> &stack)
 {
     if (node.children.empty()) {
         QString fullName;
@@ -376,26 +376,26 @@ static void feedFullKciKpiNames(const KciKpiNameNode &node, QVector<QString> &re
         result.append(std::move(fullName));
     } else {
         stack.push_back(&node.name);
-        for (const KciKpiNameNode &child : node.children) {
-            feedFullKciKpiNames(child, result, stack);
+        for (const kpiKciNameNode &child : node.children) {
+            feedFullkpiKciNames(child, result, stack);
         }
         stack.pop_back();
     }
 }
 
-static QVector<QString> genFullKciKpiNames(const KciKpiNameNode &root)
+static QVector<QString> genFullkpiKciNames(const kpiKciNameNode &root)
 {
     QVector<QString> result;
-    for (const KciKpiNameNode &child : root.children) {
+    for (const kpiKciNameNode &child : root.children) {
         QVector<const QString *> stack;
-        feedFullKciKpiNames(child, result, stack);
+        feedFullkpiKciNames(child, result, stack);
     }
     return result;
 }
 
 struct XmlHeaderResult
 {
-    KciKpiNameNode root;
+    kpiKciNameNode root;
     QVector<QString> errors;
 };
 
@@ -422,7 +422,7 @@ static XmlHeaderResult parseXmlHeader(volatile const bool &working, const QStrin
             } else if (xmlReader.name() == "measValue") {
                 QXmlStreamAttributes attributes = xmlReader.attributes();
                 if (attributes.hasAttribute(QLatin1String("measObjLdn"))) {
-                    const KciKpiNameNode *nameNode = &result.root;
+                    const kpiKciNameNode *nameNode = &result.root;
                     QVector<QStringRef> objLdnItems = attributes.value(QLatin1String("measObjLdn")).split(',');
                     for (const QStringRef &ldnItem : objLdnItems) {
                         auto insertResult = nameNode->children.insert(ldnItem);
@@ -460,17 +460,17 @@ static XmlHeaderResult parseXmlHeader(volatile const bool &working, const QStrin
 static void mergeXmlHeader(XmlHeaderResult &finalResult, const XmlHeaderResult &intermediateResult)
 {
     if (intermediateResult.errors.isEmpty()) {
-        mergeKciKpiNameNode(finalResult.root, intermediateResult.root);
+        mergekpiKciNameNode(finalResult.root, intermediateResult.root);
     } else {
         finalResult.errors.append(intermediateResult.errors);
     }
 }
 
 static void writeXmlHeader(ProgressDialog &dialog, volatile const bool &working,
-    GzipFile &fileWriter, const KciKpiNameNode &root, QHash<QString, int> &indexes)
+    GzipFile &fileWriter, const kpiKciNameNode &root, QHash<QString, int> &indexes)
 {
     int progress = 0;
-    QVector<QString> fullNames = genFullKciKpiNames(root);
+    QVector<QString> fullNames = genFullkpiKciNames(root);
 
     fileWriter.write("##date;time", 11);
 
@@ -631,7 +631,7 @@ static QString getOutputFilePath(const QStringList &filePaths)
     return fileInfo.absoluteDir().absoluteFilePath(outputFileName);
 }
 
-static bool checkKciKpiFileNames(const QStringList &filePaths, QString &error)
+static bool checkkpiKciFileNames(const QStringList &filePaths, QString &error)
 {
     QRegExp fileNameExp(QStringLiteral("^[AC]\\d{8}\\.\\d{4}[+-]\\d{4}-.+\\.xml(\\.gz)?$"));
     for (const QString &filePath : filePaths) {
@@ -645,9 +645,9 @@ static bool checkKciKpiFileNames(const QStringList &filePaths, QString &error)
     return true;
 }
 
-QString StatisticsFileParser::kciKpiToCsvFormat(QStringList &filePaths, QString &error)
+QString StatisticsFileParser::kpiKciToCsvFormat(QStringList &filePaths, QString &error)
 {
-    if (!checkKciKpiFileNames(filePaths, error)) {
+    if (!checkkpiKciFileNames(filePaths, error)) {
         return QString();
     }
 
@@ -664,7 +664,7 @@ QString StatisticsFileParser::kciKpiToCsvFormat(QStringList &filePaths, QString 
     QObject::connect(&watcher, SIGNAL(progressRangeChanged(int, int)), &m_dialog, SLOT(setRange(int, int)));
     QObject::connect(&watcher, SIGNAL(progressValueChanged(int)), &m_dialog, SLOT(setValue(int)));
     QObject::connect(&watcher, SIGNAL(finished()), &m_dialog, SLOT(accept()));
-    
+
     watcher.setFuture(QtConcurrent::mappedReduced(filePaths,
         std::bind(parseXmlHeader, std::ref(working), std::placeholders::_1),
         mergeXmlHeader));

@@ -19,7 +19,7 @@ public:
     std::string parseFileHeader(QStringList &filePaths, QStringList &failInfo);
     void checkFileHeader(QStringList &filePaths, QStringList &failInfo);
 
-    QString kciKpiToCsvFormat(QStringList &filePaths, QString &error);
+    QString kpiKciToCsvFormat(QStringList &filePaths, QString &error);
 
     static QString getNodeFromFileName(const QString &fileName);
 
