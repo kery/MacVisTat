@@ -400,19 +400,19 @@ QString MainWindow::getMaintenanceToolPath()
 
 void MainWindow::appendLogInfo(const QString &text)
 {
-    m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='green'>[%1] INFO: %2</font>").arg(
+    m_ui->logTextEdit->appendHtml(QStringLiteral("[%1] INFO: %2").arg(
         QDateTime::currentDateTime().toString(DT_FORMAT), text));
 }
 
 void MainWindow::appendLogWarn(const QString &text)
 {
-    m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='#CC9900'>[%1] WARN: %2</font>").arg(
+    m_ui->logTextEdit->appendHtml(QStringLiteral("[%1] WARN: <font color='#CC9900'>%2</font>").arg(
         QDateTime::currentDateTime().toString(DT_FORMAT), text));
 }
 
 void MainWindow::appendLogError(const QString &text)
 {
-    m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='red'>[%1] ERR: %2</font>").arg(
+    m_ui->logTextEdit->appendHtml(QStringLiteral("[%1] ERR: <font color='red'>%2</font>").arg(
         QDateTime::currentDateTime().toString(DT_FORMAT), text));
 }
 
