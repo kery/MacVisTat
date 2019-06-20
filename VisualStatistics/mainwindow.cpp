@@ -21,7 +21,9 @@
 
 MainWindow::MainWindow() :
     QMainWindow(nullptr),
-    m_ui(new Ui::MainWindow)
+    m_ui(new Ui::MainWindow),
+    m_lbStatNameInfo(nullptr),
+    m_sepAction(nullptr)
 {
     m_ui->setupUi(this);
 
@@ -59,6 +61,9 @@ MainWindow::MainWindow() :
 #endif
 
     loadFilterHistory();
+
+    initializeRecentFileActions();
+    updateRecentFileActions();
 }
 
 MainWindow::~MainWindow()
@@ -161,6 +166,21 @@ void MainWindow::addStatFiles(QStringList &filePaths)
     }
 
     m_ui->cbRegExpFilter->lineEdit()->setFocus();
+
+    QSettings settings;
+    QStringList files = settings.value(QStringLiteral("recentFileList")).toStringList();
+    for (const QString &path : filePaths) {
+        files.removeOne(path);
+        files.prepend(path);
+    }
+
+    while (files.size() > m_recentFileActions.size()) {
+        files.removeLast();
+    }
+
+    settings.setValue(QStringLiteral("recentFileList"), files);
+
+    updateRecentFileActions();
 }
 
 void MainWindow::filterOutAlreadyAddedFiles(QStringList &filePaths)
@@ -431,6 +451,47 @@ void MainWindow::saveFilterHistory()
     }
 }
 
+void MainWindow::initializeRecentFileActions()
+{
+    m_sepAction = m_ui->menu_File->insertSeparator(m_ui->actionExit);
+
+    for (int i = 0; i < (int)m_recentFileActions.size(); ++i) {
+        m_recentFileActions[i] = new QAction(this);
+        m_recentFileActions[i]->setVisible(false);
+        connect(m_recentFileActions[i], SIGNAL(triggered()), this, SLOT(addRecentFile()));
+
+        m_ui->menu_File->insertAction(m_sepAction, m_recentFileActions[i]);
+    }
+}
+
+void MainWindow::updateRecentFileActions()
+{
+    QSettings settings;
+    QStringList files = settings.value(QStringLiteral("recentFileList")).toStringList();
+
+    files.erase(std::remove_if(files.begin(), files.end(),
+                               [](const QString &path) {
+        return !QFileInfo(path).exists();
+    }), files.end());
+
+    int numRecentFiles = qMin(files.size(), (int)m_recentFileActions.size());
+
+    for (int i = 0; i < numRecentFiles; ++i) {
+        QString path = files[i];
+        QString text = QString("%1: %2").arg(i + 1).arg(QFileInfo(path).fileName());
+
+        m_recentFileActions[i]->setText(text);
+        m_recentFileActions[i]->setData(path);
+        m_recentFileActions[i]->setVisible(true);
+    }
+
+    for (int j = numRecentFiles; j < (int)m_recentFileActions.size(); ++j) {
+        m_recentFileActions[j]->setVisible(false);
+    }
+
+    m_sepAction->setVisible(numRecentFiles > 0);
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (isToolTipEventOfToolButton(obj, event)) {
@@ -566,6 +627,13 @@ void MainWindow::updateStatNameInfo()
     int total = model->totalCount();
 
     m_lbStatNameInfo->setText(QStringLiteral("loaded:%1, filtered:%2, total:%3").arg(loaded).arg(filtered).arg(total));
+}
+
+void MainWindow::addRecentFile()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    QStringList recentFile = action->data().toStringList();
+    addStatFiles(recentFile);
 }
 
 void MainWindow::on_actionAdd_triggered()

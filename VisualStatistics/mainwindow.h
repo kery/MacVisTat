@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QLabel>
 #include <QNetworkReply>
+#include <array>
 #include "statistics.h"
 
 namespace Ui {
@@ -50,6 +51,9 @@ private:
     void loadFilterHistory();
     void saveFilterHistory();
 
+    void initializeRecentFileActions();
+    void updateRecentFileActions();
+
     static bool allDataUnchanged(const Statistics::NodeNameDataMap &nndm);
 
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
@@ -69,6 +73,7 @@ private slots:
     void clearLogEdit();
     void copyStatisticsNames();
     void updateStatNameInfo();
+    void addRecentFile();
 
     void on_actionAdd_triggered();
     void on_actionXmlToCSV_triggered();
@@ -89,6 +94,8 @@ signals:
 private:
     Ui::MainWindow *m_ui;
     QLabel *m_lbStatNameInfo;
+    QAction *m_sepAction;
+    std::array<QAction *, 10> m_recentFileActions;
 };
 
 #endif // MAINWINDOW_H
