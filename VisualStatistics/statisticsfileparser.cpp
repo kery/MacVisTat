@@ -653,6 +653,13 @@ QString StatisticsFileParser::kpiKciToCsvFormat(QStringList &filePaths, QString 
 
     std::sort(filePaths.begin(), filePaths.end());
 
+    if (filePaths.size() > 1 &&
+            QFileInfo(filePaths.first()).fileName().at(0) != QFileInfo(filePaths.last()).fileName().at(0))
+    {
+        error = "multiple KPI-KCI file types are not allowed in conversion";
+        return QString();
+    }
+
     volatile bool working = true;
     m_dialog.setLabelText(QStringLiteral("Parsing statistics names from the selected files..."));
 
