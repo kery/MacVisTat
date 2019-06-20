@@ -490,10 +490,17 @@ static void writeXmlHeader(ProgressDialog &dialog, volatile const bool &working,
     fileWriter.write("##\n", 3);
 }
 
-struct XmlDataResult
-{
+struct MeasData {
     QString dateTime;
     QVector<QString> values;
+
+    MeasData() {}
+    MeasData(int size) : values(size, QStringLiteral("0")) {}
+};
+
+struct XmlDataResult
+{
+    QVector<MeasData> datas;
     QVector<QString> errors;
 };
 
@@ -511,10 +518,10 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
 
     bool isMeasTypeElement = false;
     bool isRElement = false;
+    QDateTime tempEndTime;
     QString valueP, objLdn;
     QHash<QString, QString> pMeasType;
     QXmlStreamReader xmlReader(&fileReader);
-    QVector<QString> values(indexes.size(), QStringLiteral("0"));
 
     while (working && !xmlReader.atEnd()) {
         QXmlStreamReader::TokenType tokenType = xmlReader.readNext();
@@ -542,18 +549,21 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
                     return result;
                 }
                 valueP = attributes.value(QLatin1String("p")).toString();
-            } else if (xmlReader.name() == "measCollec") {
+            } else if (xmlReader.name() == "granPeriod") {
                 QXmlStreamAttributes attributes = xmlReader.attributes();
-                if (attributes.hasAttribute(QLatin1String("endTime"))) {
-                    QString dateText = attributes.value(QLatin1String("endTime")).toString();
-                    QDateTime dateTime = QDateTime::fromString(dateText, Qt::ISODate);
-                    if (dateTime.isValid()) {
-                        result.dateTime = dateTime.toString(DT_FORMAT_IN_FILE);
-                    } else {
-                        result.errors.reserve(1);
-                        result.errors.append("invalid date time format in file " + filePath);
-                        return result;
+                QString dateText = attributes.value(QLatin1String("endTime")).toString();
+                QDateTime dateTime = QDateTime::fromString(dateText, Qt::ISODate);
+                if (dateTime.isValid()) {
+                    if (dateTime != tempEndTime) {
+                        tempEndTime = dateTime;
+
+                        result.datas.append(MeasData(indexes.size()));
+                        result.datas.last().dateTime = dateTime.toString(DT_FORMAT_IN_FILE);
                     }
+                } else {
+                    result.errors.reserve(1);
+                    result.errors.append("invalid date time format in file " + filePath);
+                    return result;
                 }
             }
         } else if (tokenType == QXmlStreamReader::EndElement) {
@@ -568,7 +578,7 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
             } else if (isRElement) {
                 const QString &measType = pMeasType[valueP];
                 int index = indexes[objLdn + ',' + measType];
-                values[index] = xmlReader.text().toString();
+                result.datas.last().values[index] = xmlReader.text().toString();
             }
         } else if (tokenType == QXmlStreamReader::Invalid) {
             result.errors.reserve(1);
@@ -577,23 +587,24 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
         }
     }
 
-    result.values.swap(values);
     return result;
 }
 
 static void writeXmlData(GzipFile &fileWriter, XmlDataResult &finalResult, const XmlDataResult &intermediateResult)
 {
-    if (intermediateResult.errors.isEmpty() && !intermediateResult.values.isEmpty()) {
-        fileWriter.write(intermediateResult.dateTime);
-        fileWriter.write(";", 1);
-
-        for (auto iter = intermediateResult.values.begin(); iter != intermediateResult.values.end() - 1; ++iter) {
-            fileWriter.write(*iter);
+    if (intermediateResult.errors.isEmpty()) {
+        for (const MeasData &data : intermediateResult.datas) {
+            fileWriter.write(data.dateTime);
             fileWriter.write(";", 1);
-        }
 
-        fileWriter.write(intermediateResult.values.back());
-        fileWriter.write("\n", 1);
+            for (auto iter = data.values.begin(); iter != data.values.end() - 1; ++iter) {
+                fileWriter.write(*iter);
+                fileWriter.write(";", 1);
+            }
+
+            fileWriter.write(data.values.back());
+            fileWriter.write("\n", 1);
+        }
     } else {
         finalResult.errors.append(intermediateResult.errors);
     }
