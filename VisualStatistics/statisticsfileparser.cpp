@@ -7,6 +7,9 @@
 #include <set>
 #include <memory>
 
+#define KPIKCI_A_FILE_PATTERN "^A\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{4}[+-]\\d{4}_.+\\.xml(\\.gz)?$"
+#define KPIKCI_C_FILE_PATTERN "^C\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{8}\\.\\d{4}[+-]\\d{4}_.+\\.xml(\\.gz)?$"
+
 StatisticsFileParser::StatisticsFileParser(ProgressDialog &dialog) :
     m_dialog(dialog)
 {
@@ -617,24 +620,51 @@ static QString getGwNameFromFileName(const QString &fileName)
     return refs.first().toString();
 }
 
-static QString getTimeFromFileName(const QString &fileName)
+static QString getFirstEndTimeFromFile(const QString &path)
 {
-    return fileName.mid(1, 13);
+    GzipFile fileReader;
+    if (fileReader.open(path)) {
+        QXmlStreamReader xmlReader(&fileReader);
+
+        while (!xmlReader.atEnd()) {
+            QXmlStreamReader::TokenType tokenType = xmlReader.readNext();
+            if (tokenType == QXmlStreamReader::StartElement && xmlReader.name() == "granPeriod") {
+                QXmlStreamAttributes attributes = xmlReader.attributes();
+                QString endTimeText = attributes.value(QLatin1String("endTime")).toString();
+                QDateTime endTime = QDateTime::fromString(endTimeText, Qt::ISODate);
+                return endTime.toString(DT_FORMAT_IN_FILE_NAME);
+            }
+        }
+    }
+    return QString();
+}
+
+static QString getEndTimeFromFileName(const QString &fileName)
+{
+    if (fileName.startsWith('A')) {
+        QString endTime = fileName.mid(1, 8);
+        endTime.append(".");
+
+        QStringRef timeRef = fileName.midRef(20, 4);
+        endTime.append(timeRef);
+        return endTime;
+    } else if(fileName.startsWith('C')) {
+        return fileName.mid(20, 13);
+    } else {
+        return QString();
+    }
 }
 
 static QString getOutputFilePath(const QStringList &filePaths)
-{
+{  
     QFileInfo fileInfo(filePaths.first());
-    QString fileName = fileInfo.fileName();
-    QString outputFileName = getGwNameFromFileName(fileName);
+    QString outputFileName = getGwNameFromFileName(fileInfo.fileName());
     outputFileName += "__";
-    outputFileName += getTimeFromFileName(fileName);
+    outputFileName += getFirstEndTimeFromFile(filePaths.first());
 
     if (filePaths.size() > 1) {
-        fileInfo = QFileInfo(filePaths.last());
-        fileName = fileInfo.fileName();
         outputFileName += "-";
-        outputFileName += getTimeFromFileName(fileName);
+        outputFileName += getEndTimeFromFileName(QFileInfo(filePaths.last()).fileName());
     }
 
     outputFileName += ".csv.gz";
@@ -644,10 +674,12 @@ static QString getOutputFilePath(const QStringList &filePaths)
 
 static bool checkkpiKciFileNames(const QStringList &filePaths, QString &error)
 {
-    QRegExp fileNameExp(QStringLiteral("^[AC]\\d{8}\\.\\d{4}[+-]\\d{4}-.+\\.xml(\\.gz)?$"));
+    QRegExp fileNameAExp(QStringLiteral(KPIKCI_A_FILE_PATTERN));
+    QRegExp fileNameCExp(QStringLiteral(KPIKCI_C_FILE_PATTERN));
+
     for (const QString &filePath : filePaths) {
         QString fileName = QFileInfo(filePath).fileName();
-        if (!fileNameExp.exactMatch(fileName)) {
+        if (!fileNameAExp.exactMatch(fileName) && !fileNameCExp.exactMatch(fileName)) {
             error = "invalid KPI-KCI file name " + fileName;
             return false;
         }
