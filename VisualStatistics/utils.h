@@ -18,6 +18,7 @@ void splitString(const char *str, char ch, vector<string> &out);
 void adjustYAxisRange(QCPAxis *yAxis);
 
 QString getAppDataDir();
+QString getUserName();
 
 void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info = QString());
 void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info = QString());

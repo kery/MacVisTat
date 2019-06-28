@@ -34,6 +34,15 @@ QString getAppDataDir()
     return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 }
 
+QString getUserName()
+{
+#if defined(Q_OS_WIN)
+    return qgetenv("USERNAME");
+#else
+    return qgetenv("USER");
+#endif
+}
+
 void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info)
 {
     QMessageBox msgBox(parent);

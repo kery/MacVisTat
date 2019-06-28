@@ -97,9 +97,16 @@ void MainWindow::startUserReportTask()
                                                        QCryptographicHash::Md5);
     QString postData("host=");
     postData += hostNameHash.toHex();
-    postData += QStringLiteral("&pt=");
+    postData += "&pt=";
     postData += QSysInfo::productType();
-    postData += QStringLiteral("&ver=");
+
+    QString userName = getUserName();
+    if (!userName.isEmpty()) {
+        postData += "-";
+        postData += userName;
+    }
+
+    postData += "&ver=";
     postData += VER_FILEVERSION_STR;
 
     QNetworkRequest request(url);
