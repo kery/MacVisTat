@@ -63,10 +63,10 @@ SOURCES += main.cpp\
     scriptwindow.cpp \
     statisticsfileparser.cpp \
     statistics.cpp \
-    ValueTipLabel.cpp \
-    CounterGraph.cpp \
+    countergraph.cpp \
     changelogdialog.cpp \
-    draggableplot.cpp
+    draggableplot.cpp \
+    valuetext.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -106,10 +106,10 @@ HEADERS  += mainwindow.h \
     scriptwindow.h \
     statisticsfileparser.h \
     statistics.h \
-    ValueTipLabel.h \
-    CounterGraph.h \
+    countergraph.h \
     changelogdialog.h \
-    draggableplot.h
+    draggableplot.h \
+    valuetext.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \

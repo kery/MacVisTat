@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DRAGGABLEPLOT_H
+#define DRAGGABLEPLOT_H
 
 #include "third_party/qcustomplot/qcustomplot.h"
 
@@ -22,3 +23,5 @@ private:
 private:
     QPoint _dragStartPos;
 };
+
+#endif // DRAGGABLEPLOT_H

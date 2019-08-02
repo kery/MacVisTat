@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GZIPFILE_H
+#define GZIPFILE_H
 
 #include <QIODevice>
 #if defined(Q_OS_WIN)
@@ -33,3 +34,5 @@ private:
     gzFile _gzFile;
     qint64 _fileSize;
 };
+
+#endif // GZIPFILE_H

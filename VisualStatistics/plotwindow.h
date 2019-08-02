@@ -3,7 +3,7 @@
 
 #include "statistics.h"
 #include "colormanager.h"
-#include "ValueTipLabel.h"
+#include "valuetext.h"
 
 namespace Ui {
 class PlotWindow;
@@ -77,8 +77,8 @@ private:
     int m_sampleInterval;
     Ui::PlotWindow *m_ui;
     QString m_customTitle;
-    ValueTipLabel m_valueTip;
     QCPItemTracer *m_tracer;
+    ValueText *m_valueText;
     QDateTimeEdit *m_dtEditFrom;
     QDateTimeEdit *m_dtEditTo;
     bool m_userEditFlag;

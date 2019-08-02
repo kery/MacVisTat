@@ -1,7 +1,7 @@
 #include "plotwindow.h"
 #include "ui_plotwindow.h"
 #include "scriptwindow.h"
-#include "CounterGraph.h"
+#include "countergraph.h"
 #include "utils.h"
 #include "version.h"
 
@@ -33,6 +33,8 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_tracer->setBrush(QColor(255, 0, 0, 100));
     m_tracer->setLayer(QStringLiteral("axes"));
     m_tracer->setVisible(false);
+
+    m_valueText = new ValueText(m_tracer);
 
     QToolButton *saveButton = static_cast<QToolButton*>(
                 m_ui->toolBar->widgetForAction(m_ui->actionSaveAsImage));
@@ -468,15 +470,15 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         if (m_tracer->graph()) {
             m_tracer->setGraph(NULL);
             m_tracer->setVisible(false);
-            m_ui->customPlot->replot();
 
-            m_valueTip.hide();
+            m_valueText->setVisible(false);
+
+            m_ui->customPlot->replot();
         }
         return;
     }
 
     QCustomPlot *plot = m_ui->customPlot;
-
     QCPRange xRange = plot->xAxis->range();
     int index = qRound(plot->xAxis->pixelToCoord(event->pos().x()));
     if (index >= 0 && xRange.contains(index)) {
@@ -486,21 +488,15 @@ void PlotWindow::mouseMove(QMouseEvent *event)
             m_tracer->setGraph(graph);
             m_tracer->setGraphKey(index);
             m_tracer->setVisible(true);
-            plot->replot();
-
-            QPoint toolTipPos(
-                static_cast<int>(plot->xAxis->coordToPixel(index)),
-                static_cast<int>(plot->yAxis->coordToPixel(value)));
-            QRect rect = plot->axisRect()->rect();
-            QRect rectGlobal(
-                plot->mapToGlobal(rect.topLeft()),
-                plot->mapToGlobal(rect.bottomRight())
-            );
 
             QString text = m_stat.getDateTimeString(index);
             text += '\n';
             text += QString::number(value, 'f', 2);
-            m_valueTip.show(plot->mapToGlobal(toolTipPos), rectGlobal, text);
+
+            m_valueText->setText(text);
+            m_valueText->setVisible(true);
+
+            plot->replot();
         }
     }
 }

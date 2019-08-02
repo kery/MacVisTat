@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COLORMANAGER_H
+#define COLORMANAGER_H
 
 #include <QColor>
 
@@ -23,3 +24,5 @@ private:
 
     static const std::array<QColor, 8> s_predefinedColors;
 };
+
+#endif // COLORMANAGER_H

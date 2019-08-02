@@ -1,4 +1,4 @@
-#include "CounterGraph.h"
+#include "countergraph.h"
 
 CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
     QCPGraph(keyAxis, valueAxis)

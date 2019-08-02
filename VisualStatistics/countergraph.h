@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COUNTERGRAPH_H
+#define COUNTERGRAPH_H
 
 #include "third_party/qcustomplot/qcustomplot.h"
 
@@ -12,3 +13,5 @@ public:
 protected:
     virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
 };
+
+#endif // COUNTERGRAPH_H
