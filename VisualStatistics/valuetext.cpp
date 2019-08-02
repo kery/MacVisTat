@@ -9,6 +9,7 @@ ValueText::ValueText(const QCPItemTracer *tracer) :
     setLayer(tracer->layer());
     setTextAlignment(Qt::AlignLeft);
     setPositionAlignment(Qt::AlignLeft | Qt::AlignTop);
+    setVisible(false);
 
     position->setParentAnchor(tracer->position);
 }
@@ -22,14 +23,12 @@ void ValueText::draw(QCPPainter *painter)
     double width = right->pixelPoint().x() - left->pixelPoint().x();
     double height = bottom->pixelPoint().y() - top->pixelPoint().y();
 
-    double clippedX = tracerPos.x() + OFFSET + width - clipRect().right();
-    if (clippedX > 0) {
-        coords.rx() = OFFSET - clippedX - 3;
+    if (tracerPos.x() + OFFSET + width > clipRect().right()) {
+        coords.rx() = -OFFSET - width;
     }
 
-    double clippedY = tracerPos.y() + OFFSET + height - clipRect().bottom();
-    if (clippedY > 0) {
-        coords.ry() = OFFSET - clippedY - 3;
+    if (tracerPos.y() + OFFSET + height > clipRect().bottom()) {
+        coords.ry() = -OFFSET - height;
     }
 
     position->setCoords(coords);
