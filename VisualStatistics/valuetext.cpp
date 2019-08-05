@@ -9,6 +9,7 @@ ValueText::ValueText(const QCPItemTracer *tracer) :
     setLayer(tracer->layer());
     setTextAlignment(Qt::AlignLeft);
     setPositionAlignment(Qt::AlignLeft | Qt::AlignTop);
+    setAntialiased(false);
     setVisible(false);
 
     position->setParentAnchor(tracer->position);
