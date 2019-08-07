@@ -50,7 +50,7 @@ def check_version_existance(ver_info):
         path += "linux/"
     path += "visualstatistics/%s.%s.%s.%scontent.7z" % ver_info
 
-    proc = subprocess.Popen(["ssh", "root@sdu.int.nokia-sbell.com", "test", "-f",
+    proc = subprocess.Popen(["ssh", "-o", "StrictHostKeyChecking=no", "root@sdu.int.nokia-sbell.com", "test", "-f",
                             path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if err:
