@@ -3,6 +3,7 @@
 
 StatisticsNameModel::StatisticsNameModel(QObject *parent) :
     QAbstractListModel(parent),
+    m_caseSensitive(true),
     m_fetchedCount(0),
     m_jitStack(pcre_jit_stack_alloc(32 * 1024, 1024 * 1024))
 {
@@ -39,9 +40,9 @@ void StatisticsNameModel::clearStatisticsNames()
 
 // Use pcre for regular expression matching because the QRegExp
 // is much slower in some situations
-bool StatisticsNameModel::setFilterPattern(const QString &pattern, QStringList &errList)
+bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSensitive, QStringList &errList)
 {
-    if (pattern == m_pattern || m_statNames.empty()) {
+    if ((pattern == m_pattern && m_caseSensitive == caseSensitive) || m_statNames.empty()) {
         return true;
     }
 
@@ -54,7 +55,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, QStringList &
 
     const char *err;
     int errOffset;
-    pcre *re = pcre_compile(firstPattern.toStdString().c_str(), 0, &err, &errOffset, NULL);
+    pcre *re = pcre_compile(firstPattern.toStdString().c_str(), caseSensitive ? 0 : PCRE_CASELESS, &err, &errOffset, NULL);
     if (!re) {
         errList << "invalid regular expression: " + firstPattern;
         return false;
@@ -70,6 +71,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, QStringList &
 
     emit beginResetModel();
     m_pattern = pattern;
+    m_caseSensitive = caseSensitive;
 
     if (patterns.size() == 1) {
         m_indexes.resize(0);

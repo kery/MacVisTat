@@ -74,6 +74,7 @@ private slots:
     void copyStatisticsNames();
     void updateStatNameInfo();
     void addRecentFile();
+    void caseSensitiveButtonClicked(bool checked);
 
     void on_actionAdd_triggered();
     void on_actionXmlToCSV_triggered();
@@ -93,6 +94,7 @@ signals:
 
 private:
     Ui::MainWindow *m_ui;
+    bool m_caseSensitive;
     QLabel *m_lbStatNameInfo;
     QAction *m_sepAction;
     std::array<QAction *, 10> m_recentFileActions;

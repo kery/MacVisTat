@@ -22,6 +22,7 @@
 MainWindow::MainWindow() :
     QMainWindow(nullptr),
     m_ui(new Ui::MainWindow),
+    m_caseSensitive(true),
     m_lbStatNameInfo(nullptr),
     m_sepAction(nullptr)
 {
@@ -36,6 +37,21 @@ MainWindow::MainWindow() :
     m_ui->splitteVer->setSizes(QList<int>() << height() - 80 << 80);
     m_ui->splitteVer->setStretchFactor(0, 1);
     m_ui->splitteVer->setStretchFactor(1, 0);
+
+    QToolButton *toolButton = new QToolButton();
+    toolButton->setAutoRaise(true);
+    toolButton->setText(QStringLiteral("Aa"));
+    toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    toolButton->setToolTip(QStringLiteral("Case sensitive"));
+
+    QHBoxLayout *hLayout = new QHBoxLayout(m_ui->cbRegExpFilter);
+    hLayout->setContentsMargins(0, 0, 0, 0);
+    hLayout->setSpacing(0);
+    hLayout->addWidget(toolButton);
+    hLayout->addStretch();
+
+    m_ui->cbRegExpFilter->lineEdit()->setTextMargins(20, 0, 0, 0);
+    connect(toolButton, SIGNAL(clicked(bool)), this, SLOT(caseSensitiveButtonClicked(bool)));
 
     m_ui->lvStatName->setModel(new StatisticsNameModel(this));
 
@@ -236,7 +252,7 @@ void MainWindow::parseStatFileHeader(QStringList &filePaths, QStringList &failIn
         QString filterText = m_ui->cbRegExpFilter->lineEdit()->text();
         if (!filterText.isEmpty()) {
             QStringList errList;
-            model->setFilterPattern(filterText, errList);
+            model->setFilterPattern(filterText, m_caseSensitive, errList);
             for (const QString &err : errList) {
                 appendLogError(err);
             }
@@ -565,7 +581,7 @@ void MainWindow::updateFilterPattern()
 {
     QStringList errList;
     static_cast<StatisticsNameModel*>(m_ui->lvStatName->model())->setFilterPattern(
-                m_ui->cbRegExpFilter->lineEdit()->text(), errList);
+                m_ui->cbRegExpFilter->lineEdit()->text(), m_caseSensitive, errList);
     for (const QString &err : errList) {
         appendLogError(err);
     }
@@ -641,6 +657,20 @@ void MainWindow::addRecentFile()
     QAction *action = qobject_cast<QAction *>(sender());
     QStringList recentFile = action->data().toStringList();
     addStatFiles(recentFile);
+}
+
+void MainWindow::caseSensitiveButtonClicked(bool checked)
+{
+    Q_UNUSED(checked);
+
+    m_caseSensitive = !m_caseSensitive;
+
+    QToolButton *toolButton = m_ui->cbRegExpFilter->findChild<QToolButton *>();
+    QFont font = toolButton->font();
+    font.setStrikeOut(!m_caseSensitive);
+
+    toolButton->setFont(font);
+    toolButton->setToolTip(m_caseSensitive ? QStringLiteral("Case sensitive") : QStringLiteral("Case insensitive"));
 }
 
 void MainWindow::on_actionAdd_triggered()

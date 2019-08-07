@@ -18,7 +18,7 @@ public:
 
     void clearStatisticsNames();
 
-    bool setFilterPattern(const QString &pattern, QStringList &errList);
+    bool setFilterPattern(const QString &pattern, bool caseSensitive, QStringList &errList);
     int filteredCount() const;
     int totalCount() const;
 
@@ -28,6 +28,7 @@ public:
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
 private:
+    bool m_caseSensitive;
     int m_fetchedCount;
     QString m_pattern;
     StatisticsNames m_statNames;
