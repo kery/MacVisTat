@@ -1,0 +1,6 @@
+before_script:
+  - uname -a
+  
+build:
+  script:
+    - echo build...
