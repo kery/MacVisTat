@@ -79,7 +79,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSens
             for (int i = 0; i < (int)m_statNames.size(); ++i) {
                 const std::string &statName = m_statNames[i];
                 if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
-                                  0, 0, ovector, OVECCOUNT, m_jitStack) == -1)
+                                  0, 0, ovector, OVECCOUNT, m_jitStack) == PCRE_ERROR_NOMATCH)
                 {
                     m_indexes.push_back(i);
                 }
@@ -88,7 +88,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSens
             for (int i = 0; i < (int)m_statNames.size(); ++i) {
                 const std::string &statName = m_statNames[i];
                 if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
-                                  0, 0, ovector, OVECCOUNT, m_jitStack) > -1)
+                                  0, 0, ovector, OVECCOUNT, m_jitStack) != PCRE_ERROR_NOMATCH)
                 {
                     m_indexes.push_back(i);
                 }
@@ -104,7 +104,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSens
             for (int i = 0; i < (int)m_statNames.size(); ++i) {
                 const std::string &statName = m_statNames[i];
                 if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
-                                  0, 0, ovector, OVECCOUNT, m_jitStack) == -1)
+                                  0, 0, ovector, OVECCOUNT, m_jitStack) == PCRE_ERROR_NOMATCH)
                 {
                     tempIndexes.insert(i);
                 }
@@ -113,7 +113,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSens
             for (int i = 0; i < (int)m_statNames.size(); ++i) {
                 const std::string &statName = m_statNames[i];
                 if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
-                                  0, 0, ovector, OVECCOUNT, m_jitStack) > -1)
+                                  0, 0, ovector, OVECCOUNT, m_jitStack) != PCRE_ERROR_NOMATCH)
                 {
                     tempIndexes.insert(i);
                 }
@@ -143,7 +143,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSens
                 for (auto iter = tempIndexes.begin(); iter != tempIndexes.end();) {
                     const std::string &statName = m_statNames[*iter];
                     if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
-                                      0, 0, ovector, OVECCOUNT, m_jitStack) > -1)
+                                      0, 0, ovector, OVECCOUNT, m_jitStack) != PCRE_ERROR_NOMATCH)
                     {
                         iter = tempIndexes.erase(iter);
                     } else {
@@ -154,7 +154,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSens
                 for (auto iter = tempIndexes.begin(); iter != tempIndexes.end();) {
                     const std::string &statName = m_statNames[*iter];
                     if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
-                                      0, 0, ovector, OVECCOUNT, m_jitStack) > -1)
+                                      0, 0, ovector, OVECCOUNT, m_jitStack) != PCRE_ERROR_NOMATCH)
                     {
                         ++iter;
                     } else {

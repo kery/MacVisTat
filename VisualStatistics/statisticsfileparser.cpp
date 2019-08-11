@@ -2,13 +2,14 @@
 #include "progressdialog.h"
 #include "gzipfile.h"
 #include "utils.h"
+#include <pcre.h>
 #include <QtConcurrent>
 #include <functional>
 #include <set>
 #include <memory>
 
-#define KPIKCI_A_FILE_PATTERN "^A\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{4}[+-]\\d{4}_.+\\.xml(\\.gz)?$"
-#define KPIKCI_C_FILE_PATTERN "^C\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{8}\\.\\d{4}[+-]\\d{4}_.+\\.xml(\\.gz)?$"
+#define KPIKCI_A_FILE_PATTERN "^A\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{4}[+-]\\d{4}(_-.+?)?(_.+?)?(_-_.+?)?\\.xml(\\.gz)?$"
+#define KPIKCI_C_FILE_PATTERN "^C\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{8}\\.\\d{4}[+-]\\d{4}(_-.+?)?(_.+?)?(_-_.+?)?\\.xml(\\.gz)?$"
 
 StatisticsFileParser::StatisticsFileParser(ProgressDialog &dialog) :
     m_dialog(dialog)
@@ -615,9 +616,33 @@ static void writeXmlData(GzipFile &fileWriter, XmlDataResult &finalResult, const
 
 static QString getGwNameFromFileName(const QString &fileName)
 {
-    QVector<QStringRef> refs = fileName.splitRef('_');
-    refs = refs.back().split('.');
-    return refs.first().toString();
+    const char *err;
+    int errOffset;
+    pcre *re;
+    QString gwName("MG");
+
+    if (fileName.startsWith('A', Qt::CaseInsensitive)) {
+        re = pcre_compile(KPIKCI_A_FILE_PATTERN, PCRE_CASELESS, &err, &errOffset, NULL);
+    } else {
+        re = pcre_compile(KPIKCI_C_FILE_PATTERN, PCRE_CASELESS, &err, &errOffset, NULL);
+    }
+
+    if (re) {
+        const int OVECCOUNT = 30;
+        int ovector[OVECCOUNT];
+        std::string fname = fileName.toStdString();
+        int ret = pcre_exec(re, NULL, fname.c_str(), (int)fname.length(), 0, 0, ovector, OVECCOUNT);
+        if (ret != PCRE_ERROR_NOMATCH) {
+            const char *subStr;
+            if (pcre_get_substring(fname.c_str(), ovector, ret, 2, &subStr) > 0) {
+                gwName = subStr + 1; // exclude the leading '_'
+                pcre_free_substring(subStr);
+            }
+        }
+        pcre_free(re);
+    }
+
+    return gwName;
 }
 
 static QString getFirstEndTimeFromFile(const QString &path)
@@ -674,16 +699,35 @@ static QString getOutputFilePath(const QStringList &filePaths)
 
 static bool checkkpiKciFileNames(const QStringList &filePaths, QString &error)
 {
-    QRegExp fileNameAExp(QStringLiteral(KPIKCI_A_FILE_PATTERN));
-    QRegExp fileNameCExp(QStringLiteral(KPIKCI_C_FILE_PATTERN));
+    const char *err;
+    int errOffset;
+    pcre *re;
+
+    if (QFileInfo(filePaths.first()).fileName().startsWith('A', Qt::CaseInsensitive)) {
+        re = pcre_compile(KPIKCI_A_FILE_PATTERN, PCRE_CASELESS, &err, &errOffset, NULL);
+    } else {
+        re = pcre_compile(KPIKCI_C_FILE_PATTERN, PCRE_CASELESS, &err, &errOffset, NULL);
+    }
+
+    if (!re) {
+        error = QStringLiteral("failed to compile regular expression: %1, offset %2").arg(err).arg(errOffset);
+        return false;
+    }
+
+    const int OVECCOUNT = 30;
+    int ovector[OVECCOUNT];
 
     for (const QString &filePath : filePaths) {
-        QString fileName = QFileInfo(filePath).fileName();
-        if (!fileNameAExp.exactMatch(fileName) && !fileNameCExp.exactMatch(fileName)) {
-            error = "invalid KPI-KCI file name " + fileName;
+        std::string fileName = QFileInfo(filePath).fileName().toStdString();
+        int ret = pcre_exec(re, NULL, fileName.c_str(), (int)fileName.length(), 0, 0, ovector, OVECCOUNT);
+        if (ret == PCRE_ERROR_NOMATCH) {
+            error = "invalid KPI-KCI file name " + QFileInfo(filePath).fileName();
+            pcre_free(re);
             return false;
         }
     }
+
+    pcre_free(re);
 
     return true;
 }
