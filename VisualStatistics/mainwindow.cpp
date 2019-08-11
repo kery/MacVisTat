@@ -91,10 +91,12 @@ void MainWindow::startCheckNewVersionTask()
 {
     QString maintenanceToolPath = getMaintenanceToolPath();
     if (maintenanceToolPath.isEmpty()) {
+        appendLogWarn(QStringLiteral("unable to find updater"));
         return;
     }
     QProcess *process = new QProcess();
     connect(process, SIGNAL(finished(int,QProcess::ExitStatus)), SLOT(checkNewVersionTaskFinished(int,QProcess::ExitStatus)));
+    connect(process, SIGNAL(errorOccurred(QProcess::ProcessError)), SLOT(checkNewVersionTaskError(QProcess::ProcessError)));
     process->start(maintenanceToolPath, QStringList() << "--checkupdates" << "--proxy");
 }
 
@@ -555,10 +557,16 @@ void MainWindow::closeEvent(QCloseEvent *)
 
 void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    delete sender();
+    sender()->deleteLater();
+
+    if (exitStatus != QProcess::NormalExit) {
+        appendLogWarn(QStringLiteral("updater crashed"));
+        return;
+    }
 
     // exitCode != 0 indicates that there is no update available
-    if (exitCode != 0 || exitStatus != QProcess::NormalExit) {
+    // or failed to check update
+    if (exitCode != 0) {
         return;
     }
 
@@ -569,6 +577,17 @@ void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus 
     QString maintenanceToolPath = getMaintenanceToolPath();
     QProcess::startDetached(maintenanceToolPath, QStringList() << ("--updater") << "--proxy");
     QApplication::exit();
+}
+
+void MainWindow::checkNewVersionTaskError(QProcess::ProcessError error)
+{
+    // Don't worry about the deleteLater of QProcess will be called twice in case both finished and
+    // errorOccurred signals are emitted. Because deleteLater has below note:
+    // It is safe to call this function more than once; when the first deferred deletion event is
+    // delivered, any pending events for the object are removed from the event queue.
+    sender()->deleteLater();
+
+    appendLogWarn(QStringLiteral("updater failed with error %1").arg(error));
 }
 
 void MainWindow::userReportTaskFinished(QNetworkReply *reply)

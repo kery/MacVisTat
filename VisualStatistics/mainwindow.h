@@ -63,6 +63,7 @@ private:
 
 private slots:
     void checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void checkNewVersionTaskError(QProcess::ProcessError error);
     void userReportTaskFinished(QNetworkReply *reply);
 
     void updateFilterPattern();
