@@ -129,7 +129,7 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSens
             if (invert) {
                 iter->remove(0, 1);
             }
-            re = pcre_compile((*iter).toStdString().c_str(), 0, &err, &errOffset, NULL);
+            re = pcre_compile((*iter).toStdString().c_str(), caseSensitive ? 0 : PCRE_CASELESS, &err, &errOffset, NULL);
             if (!re) {
                 errList << "invalid regular expression: " + *iter;
                 break;
