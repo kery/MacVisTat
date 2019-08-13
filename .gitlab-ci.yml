@@ -5,4 +5,5 @@ before_script:
 
 build:
   script:
-    - ls -l VisualStatistics
+    - ls -l
+    - make
