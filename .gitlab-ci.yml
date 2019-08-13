@@ -1,8 +1,8 @@
 image: rabits/qt:5.9-desktop
 
 before_script:
-  - echo $USER
-  - wget https://www.zlib.net/zlib-1.2.11.tar.gz
+  - whoami
+  - curl https://www.zlib.net/zlib-1.2.11.tar.gz
 
 build:
   script:
