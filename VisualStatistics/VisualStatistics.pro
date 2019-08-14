@@ -121,10 +121,11 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     VisualStatistics.qrc
 
-INCLUDEPATH += $$PWD/third_party/breakpad/
 INCLUDEPATH += $$PWD/third_party/qcustomplot/
 
 win32 {
+    INCLUDEPATH += $$PWD/third_party/breakpad/
+
     QT += winextras
     TARGET = ../VisualStatistics
 
@@ -163,10 +164,8 @@ unix:!macx {
     # QMAKE_CXXFLAGS_RELEASE += -g
 
     INCLUDEPATH += $$PWD/third_party/pcre/linux
-    INCLUDEPATH += $$PWD/third_party/breakpad/client/linux/handler
 
     LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre -lz
-    LIBS += -L$$PWD/third_party/breakpad/lib/linux/ -lbreakpad_client
 }
 
 DISTFILES += \

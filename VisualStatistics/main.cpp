@@ -1,10 +1,11 @@
-#include <exception_handler.h>
 #include "mainwindow.h"
 #include "utils.h"
 #include <QApplication>
 #include <memory>
 
 #if defined(Q_OS_WIN)
+
+#include <exception_handler.h>
 
 static wchar_t* getCrashReporterPath()
 {
@@ -41,38 +42,6 @@ static bool minidumpCallback(const wchar_t* dump_path,
     return succeeded;
 }
 
-#elif defined(Q_OS_LINUX)
-
-#include "version.h"
-#include <third_party/lss/linux_syscall_support.h>
-
-static char* getCrashReporterPath()
-{
-    static char crPath[PATH_MAX];
-
-    QString appDir = QCoreApplication::applicationDirPath();
-    QString path = QDir(appDir).filePath(QStringLiteral("CrashReporter"));
-    strcpy(crPath, path.toStdString().c_str());
-    return crPath;
-}
-
-static bool minidumpCallback(const google_breakpad::MinidumpDescriptor &descriptor,
-                             void *context, bool succeeded)
-{
-    if (succeeded) {
-        pid_t pid = sys_fork();
-        if (pid == 0) { // Child process
-            const char * const argv[] = {"CrashReporter",
-                "--file", descriptor.path(),
-                "--version", VER_FILEVERSION_STR,
-                NULL};
-            char *crPath = static_cast<char*>(context);
-            sys_execv(crPath, argv);
-        }
-    }
-    return succeeded;
-}
-
 #endif
 
 int main(int argc, char *argv[])
@@ -85,19 +54,15 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Nokia");
     QCoreApplication::setApplicationName("VisualStatistics");
 
-    std::unique_ptr<google_breakpad::ExceptionHandler> exceptionHandler;
-
     if (QDir().mkpath(getAppDataDir())) {
 #if defined(Q_OS_WIN)
+        std::unique_ptr<google_breakpad::ExceptionHandler> exceptionHandler;
+
         exceptionHandler.reset(new google_breakpad::ExceptionHandler(
                     QDir::toNativeSeparators(getAppDataDir()).toStdWString(),
                     NULL, minidumpCallback, getCrashReporterPath(),
                     google_breakpad::ExceptionHandler::HANDLER_ALL,
                     MiniDumpNormal, (wchar_t*)NULL, NULL));
-#elif defined(Q_OS_LINUX)
-        exceptionHandler.reset(new google_breakpad::ExceptionHandler(
-                    google_breakpad::MinidumpDescriptor(getAppDataDir().toStdString()),
-                    NULL, minidumpCallback, getCrashReporterPath(), true, -1));
 #endif
     } else {
         showInfoMsgBox(NULL, QStringLiteral("Create application data directory failed!"));
