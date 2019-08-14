@@ -126,7 +126,7 @@ def upload_repositry():
     print "uploading updated packages..."
     ver_info = get_version()
     files = "%s*" % ".".join(ver_info)
-    path = "../installer/installer/repository/visualstatistics/" + files
+    path = os.path.join(proj_root_dir(), "installer", "installer", "repository", "visualstatistics", files)
 
     if is_windows():
         platform_dir = "win"
@@ -144,7 +144,7 @@ def upload_repositry():
         raise Exception(err)
 
     print "uploading Updates.xml..."
-    path = "../installer/installer/repository/Updates.xml"
+    path = os.path.join(proj_root_dir(), "installer", "installer", "repository", "Updates.xml")
     dest = os.path.dirname(dest)
 
     if is_windows():
@@ -157,8 +157,9 @@ def upload_repositry():
         raise Exception(err)
 
 def restore_files():
-    proc = subprocess.Popen(["git", "checkout", "--", "version.h",
-                            "../installer/installer/packages/visualstatistics/meta/package.xml"],
+    package_path = os.path.join(proj_root_dir(), "installer", "installer", "packages", "visualstatistics",
+        "meta", "package.xml")
+    proc = subprocess.Popen(["git", "checkout", "--", "version.h", package_path],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
