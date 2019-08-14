@@ -130,12 +130,15 @@ def upload_repositry():
 
     if is_windows():
         platform_dir = "win"
+        dest = "root@sdu.int.nokia-sbell.com:/visualstat/%s/visualstatistics" % platform_dir
+        proc = subprocess.Popen("scp -B %s %s" % (path, dest), stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, shell=True)
     else:
         platform_dir = "linux"
-    dest = "root@sdu.int.nokia-sbell.com:/visualstat/%s/visualstatistics" % platform_dir
-
-    proc = subprocess.Popen("scp -B %s %s" % (path, dest), stdout=subprocess.PIPE,
+        dest = "/visualstat/%s/visualstatistics" % platform_dir
+        proc = subprocess.Popen("cp %s %s" % (path, dest), stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
+
     out, err = proc.communicate()
     if proc.returncode != 0:
         raise Exception(err)
@@ -144,7 +147,11 @@ def upload_repositry():
     path = "../installer/installer/repository/Updates.xml"
     dest = os.path.dirname(dest)
 
-    proc = subprocess.Popen(["scp", "-B", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if is_windows():
+        proc = subprocess.Popen(["scp", "-B", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    else:
+        proc = subprocess.Popen(["cp", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
     out, err = proc.communicate()
     if proc.returncode != 0:
         raise Exception(err)
