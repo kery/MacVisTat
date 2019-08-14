@@ -1,11 +1,12 @@
 variables:
   QT_BIN: /data/s/kerwu/Qt5.9.4/5.9.4/gcc_64/bin
+  QT_IFW_BIN: /data/s/kerwu/QtIFW-3.1.1/bin
 
 stages:
   - deploy
 
 before_script:
-  - PATH=$QT_BIN:$PATH
+  - PATH=$QT_BIN:$QT_IFW_BIN:$PATH
 
 linux-deploy:
   stage: deploy
