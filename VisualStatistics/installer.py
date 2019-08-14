@@ -157,13 +157,17 @@ def upload_repositry():
         raise Exception(err)
 
 def restore_files():
-    package_path = os.path.join(proj_root_dir(), "installer", "installer", "packages", "visualstatistics",
-        "meta", "package.xml")
-    proc = subprocess.Popen(["git", "checkout", "--", "version.h", package_path],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cwd = os.getcwd()
+    os.chdir(proj_root_dir())
+
+    proc = subprocess.Popen(["git", "checkout", "--", "VisualStatistics/version.h",
+        "installer/installer/packages/visualstatistics/meta/package.xml"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
-        raise Exception("restore files failed")
+        raise Exception("restore files failed: " + err)
+
+    os.chdir(cwd)
 
 def copy_pdb_file():
     ver_info = get_version()
