@@ -48,10 +48,14 @@ def check_version_existance(ver_info):
         path += "win/"
     else:
         path += "linux/"
-    path += "visualstatistics/%s.%s.%s.%scontent.7z" % ver_info
 
-    proc = subprocess.Popen(["ssh", "-o", "StrictHostKeyChecking=no", "root@sdu.int.nokia-sbell.com", "test", "-f",
-                            path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    path += "visualstatistics/%s.%s.%s.%scontent.7z" % ver_info
+    cmd_list = ["test", "-f", path]
+
+    if is_windows():
+        cmd_list = ["ssh", "-o", "StrictHostKeyChecking=no", "root@sdu.int.nokia-sbell.com"] + cmd_list
+
+    proc = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if err:
         raise Exception("check version existance failed: " + err)
