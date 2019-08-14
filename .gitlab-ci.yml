@@ -1,0 +1,26 @@
+variables:
+  QT_BIN: /data/s/kerwu/Qt5.9.4/5.9.4/gcc_64/bin
+
+stages:
+  - build
+  - deploy
+
+before_script:
+  - PATH=$QT_BIN:$PATH
+
+linux-build:
+  stage: build
+  except:
+    - tags
+  script:
+    - qmake VisualStatistics/VisualStatistics.pro
+    - make
+
+linux-deploy:
+  stage: deploy
+  only:
+    - tags
+  script:
+    - python VisualStatistics/installer.py prebuild
+    - qmake VisualStatistics/VisualStatistics.pro DEFINES+=INSTALLER
+    - python VisualStatistics/installer.py postbuild
