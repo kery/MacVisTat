@@ -1,3 +1,6 @@
 build*
 !build-VisualStatistics-Release/pcre.dll
 *.pro.user
+installer/installer/packages/crashreporter/data/
+installer/installer/packages/dlls/data/
+installer/installer/packages/visualstatistics/data/
