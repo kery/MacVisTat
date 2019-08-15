@@ -39,6 +39,11 @@ MainWindow::MainWindow() :
     m_ui->splitteVer->setStretchFactor(1, 0);
 
     QToolButton *toolButton = new QToolButton();
+    QFont font = toolButton->font();
+    font.setBold(true);
+
+    toolButton->setStyleSheet(QStringLiteral("color:#999;"));
+    toolButton->setFont(font);
     toolButton->setAutoRaise(true);
     toolButton->setText(QStringLiteral("Aa"));
     toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
