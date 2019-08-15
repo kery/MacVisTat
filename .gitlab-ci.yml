@@ -18,3 +18,9 @@ linux-deploy:
     - qmake ../VisualStatistics/VisualStatistics.pro DEFINES+=INSTALLER
     - make && cd ..
     - python VisualStatistics/installer.py postbuild
+  cache:
+    paths:
+      - installer/installer/packages/crashreporter/data/
+      - installer/installer/packages/dlls/data/
+      - installer/installer/packages/visualstatistics/data/VisualStatistics.sh
+      - installer/installer/packages/visualstatistics/data/VisualStatistics.png
