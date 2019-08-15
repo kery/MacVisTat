@@ -14,6 +14,7 @@ linux-deploy:
     - tags
   script:
     - python VisualStatistics/installer.py prebuild
-    - qmake VisualStatistics/VisualStatistics.pro DEFINES+=INSTALLER
-    - make
+    - cd build-VisualStatistics-Release
+    - qmake ../VisualStatistics/VisualStatistics.pro DEFINES+=INSTALLER
+    - make && cd ..
     - python VisualStatistics/installer.py postbuild

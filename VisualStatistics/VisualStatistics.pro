@@ -156,7 +156,7 @@ win32:CONFIG(profiling) {
 }
 
 unix:!macx {
-    TARGET = build-VisualStatistics-Release/VisualStatistics
+    TARGET = VisualStatistics
 
     # Generate debug info also in release mode so that it is possible to use breakpad
     # After dump symbol to a separate file, use strip --strip-debug to strip the debug
