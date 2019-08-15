@@ -114,8 +114,8 @@ def update_repository():
     path = os.path.join(proj_root_dir(), "installer", "installer")
     os.chdir(path)
 
-    proc = subprocess.Popen(["repogen", "--update-new-components", "-p", "packages", "-i", "visualstatistics",
-                            "repository"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(["repogen", "--update-new-components", "-p", "packages", "repository"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
         raise Exception("update repository failed")
