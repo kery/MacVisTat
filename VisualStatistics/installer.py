@@ -126,16 +126,15 @@ def upload_repositry():
     print "uploading updated packages..."
     ver_info = get_version()
     files = "%s*" % ".".join(ver_info)
-    path = os.path.join(proj_root_dir(), "installer", "installer", "repository", "visualstatistics", files)
 
     if is_windows():
-        platform_dir = "win"
-        dest = "root@sdu.int.nokia-sbell.com:/visualstat/%s/visualstatistics" % platform_dir
+        path = "../installer/installer/repository/visualstatistics/" + files
+        dest = "root@sdu.int.nokia-sbell.com:/visualstat/win/visualstatistics"
         proc = subprocess.Popen("scp -B %s %s" % (path, dest), stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
     else:
-        platform_dir = "linux"
-        dest = "/visualstat/%s/visualstatistics" % platform_dir
+        path = os.path.join(proj_root_dir(), "installer", "installer", "repository", "visualstatistics", files)
+        dest = "/visualstat/linux/visualstatistics"
         proc = subprocess.Popen("cp %s %s" % (path, dest), stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
 
@@ -144,12 +143,13 @@ def upload_repositry():
         raise Exception(err)
 
     print "uploading Updates.xml..."
-    path = os.path.join(proj_root_dir(), "installer", "installer", "repository", "Updates.xml")
     dest = os.path.dirname(dest)
 
     if is_windows():
+        path = "../installer/installer/repository/Updates.xml"
         proc = subprocess.Popen(["scp", "-B", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
+        path = os.path.join(proj_root_dir(), "installer", "installer", "repository", "Updates.xml")
         proc = subprocess.Popen(["cp", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     out, err = proc.communicate()
@@ -180,6 +180,9 @@ if __name__ == "__main__":
     if sys.argv[1] == "prebuild":
         import fileinput
         import time
+
+        print os.getcwd()
+        raise Exception("aa")
 
         ver_info = get_version()
         check_version_existance(ver_info)
