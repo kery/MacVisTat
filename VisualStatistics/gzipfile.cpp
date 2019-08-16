@@ -54,10 +54,9 @@ int GzipFile::write(const char *data, int len)
     return writeData(data, len);
 }
 
-int GzipFile::write(const QString &data)
+int GzipFile::write(const std::string &data)
 {
-    QByteArray ba = data.toLatin1();
-    return write(ba.data(), ba.length());
+    return write(data.c_str(), data.length());
 }
 
 bool GzipFile::readLine(std::string &line)

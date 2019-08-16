@@ -21,7 +21,7 @@ public:
 
     int read(char *data, int maxlen);
     int write(const char *data, int len);
-    int write(const QString &data);
+    int write(const std::string &data);
 
     bool readLine(std::string &line);
     int progress() const;

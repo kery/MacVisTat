@@ -3,10 +3,12 @@
 #include "gzipfile.h"
 #include "utils.h"
 #include <pcre.h>
+#include <expat.h>
 #include <QtConcurrent>
 #include <functional>
 #include <set>
 #include <memory>
+#include <unordered_map>
 
 #define KPIKCI_A_FILE_PATTERN "^A\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{4}[+-]\\d{4}(_-.+?)?(_.+?)?(_-_.+?)?\\.xml(\\.gz)?$"
 #define KPIKCI_C_FILE_PATTERN "^C\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{8}\\.\\d{4}[+-]\\d{4}(_-.+?)?(_.+?)?(_-_.+?)?\\.xml(\\.gz)?$"
@@ -331,12 +333,13 @@ void StatisticsFileParser::checkFileHeader(QStringList &filePaths, QStringList &
 
 struct kpiKciNameNode
 {
-    QString name;
+    std::string name;
     mutable std::set<kpiKciNameNode> children;
 
     kpiKciNameNode();
-    kpiKciNameNode(const QStringRef &n);
-    kpiKciNameNode(const QString &n);
+    kpiKciNameNode(const char *s);
+    kpiKciNameNode(const char *s, size_t n);
+    kpiKciNameNode(const std::string &s);
 
     bool operator<(const kpiKciNameNode &other) const;
 };
@@ -345,15 +348,21 @@ kpiKciNameNode::kpiKciNameNode()
 {
 }
 
-kpiKciNameNode::kpiKciNameNode(const QStringRef &n) :
-    name(n.toString())
+kpiKciNameNode::kpiKciNameNode(const char *s) :
+    name(s)
 {
 }
 
-kpiKciNameNode::kpiKciNameNode(const QString &n) :
-    name(n)
+kpiKciNameNode::kpiKciNameNode(const char *s, size_t n) :
+    name(s, n)
 {
 }
+
+kpiKciNameNode::kpiKciNameNode(const std::string &s) :
+    name(s)
+{
+}
+
 
 bool kpiKciNameNode::operator<(const kpiKciNameNode &other) const
 {
@@ -368,16 +377,16 @@ static void mergekpiKciNameNode(const kpiKciNameNode &dest, const kpiKciNameNode
     }
 }
 
-static void feedFullkpiKciNames(const kpiKciNameNode &node, QVector<QString> &result, QVector<const QString *> &stack)
+static void feedFullkpiKciNames(const kpiKciNameNode &node, std::vector<std::string> &result, std::vector<const std::string *> &stack)
 {
     if (node.children.empty()) {
-        QString fullName;
-        for (const QString *item : stack) {
-            fullName.append(*item);
-            fullName.append(',');
+        std::string fullName;
+        for (const std::string *item : stack) {
+            fullName += *item;
+            fullName += ',';
         }
-        fullName.append(node.name);
-        result.append(std::move(fullName));
+        fullName += node.name;
+        result.push_back(std::move(fullName));
     } else {
         stack.push_back(&node.name);
         for (const kpiKciNameNode &child : node.children) {
@@ -387,11 +396,11 @@ static void feedFullkpiKciNames(const kpiKciNameNode &node, QVector<QString> &re
     }
 }
 
-static QVector<QString> genFullkpiKciNames(const kpiKciNameNode &root)
+static std::vector<std::string> genFullkpiKciNames(const kpiKciNameNode &root)
 {
-    QVector<QString> result;
+    std::vector<std::string> result;
     for (const kpiKciNameNode &child : root.children) {
-        QVector<const QString *> stack;
+        std::vector<const std::string *> stack;
         feedFullkpiKciNames(child, result, stack);
     }
     return result;
@@ -402,6 +411,88 @@ struct XmlHeaderResult
     kpiKciNameNode root;
     QVector<QString> errors;
 };
+
+struct XmlHeaderUserData
+{
+    bool isMeasTypeElement;
+    std::string character;
+    std::vector<std::string> measTypes;
+    XML_Parser parser;
+    const QString *filePath;
+    XmlHeaderResult *result;
+};
+
+static const char *expatHelperGetAtt(const char *name, const char **atts)
+{
+    for (int i = 0; atts[i]; i += 2) {
+        if (strcmp(atts[i], name) == 0) {
+            return atts[i + 1];
+        }
+    }
+    return nullptr;
+}
+
+static void headerStartElementHandler(void *ud, const char *name, const char **atts)
+{
+    XmlHeaderUserData *userData = (XmlHeaderUserData *)ud;
+
+    if (strcmp(name, "measType") == 0) {
+        userData->isMeasTypeElement = true;
+        return;
+    }
+
+    if (strcmp(name, "measValue")) {
+        return;
+    }
+
+    const char *measObjLdn = expatHelperGetAtt("measObjLdn", atts);
+    if (measObjLdn == nullptr) {
+        userData->result->errors.reserve(1);
+        userData->result->errors.append(QStringLiteral("measObjLdn is missing in file %1:%2")
+                                        .arg(*userData->filePath)
+                                        .arg(XML_GetCurrentLineNumber(userData->parser)));
+        XML_StopParser(userData->parser, XML_FALSE);
+        return;
+    }
+
+    const char *comma;
+    const kpiKciNameNode *nameNode = &userData->result->root;
+    while ((comma = strchr(measObjLdn, ',')) != nullptr) {
+        auto insertResult = nameNode->children.insert(kpiKciNameNode(measObjLdn, comma - measObjLdn));
+        nameNode = &(*insertResult.first);
+        measObjLdn = comma + 1;
+    }
+
+    auto insertResult = nameNode->children.insert(kpiKciNameNode(measObjLdn));
+    nameNode = &(*insertResult.first);
+
+    for (const std::string &measType : userData->measTypes) {
+        nameNode->children.insert(kpiKciNameNode(measType));
+    }
+}
+
+static void headerEndElementHandler(void *ud, const char *name)
+{
+    XmlHeaderUserData *userData = (XmlHeaderUserData *)ud;
+
+    if (strcmp(name, "measType") == 0) {
+        userData->isMeasTypeElement = false;
+
+        userData->measTypes.push_back(userData->character);
+        userData->character.clear();
+    } else if (strcmp(name, "measInfo") == 0) {
+        userData->measTypes.clear();
+    }
+}
+
+static void headerCharacterHandler(void *ud, const char *s, int len)
+{
+    XmlHeaderUserData *userData = (XmlHeaderUserData *)ud;
+
+    if (userData->isMeasTypeElement) {
+        userData->character.append(s, len);
+    }
+}
 
 static XmlHeaderResult parseXmlHeader(volatile const bool &working, const QString &filePath)
 {
@@ -414,49 +505,32 @@ static XmlHeaderResult parseXmlHeader(volatile const bool &working, const QStrin
         return result;
     }
 
-    bool isMeasTypeElement = false;
-    QVector<QString> measTypes;
-    QXmlStreamReader xmlReader(&fileReader);
+    XML_Parser parser = XML_ParserCreate(NULL);
 
-    while (working && !xmlReader.atEnd()) {
-        QXmlStreamReader::TokenType tokenType = xmlReader.readNext();
-        if (tokenType == QXmlStreamReader::StartElement) {
-            if (xmlReader.name() == "measType") {
-                isMeasTypeElement = true;
-            } else if (xmlReader.name() == "measValue") {
-                QXmlStreamAttributes attributes = xmlReader.attributes();
-                if (attributes.hasAttribute(QLatin1String("measObjLdn"))) {
-                    const kpiKciNameNode *nameNode = &result.root;
-                    QVector<QStringRef> objLdnItems = attributes.value(QLatin1String("measObjLdn")).split(',');
-                    for (const QStringRef &ldnItem : objLdnItems) {
-                        auto insertResult = nameNode->children.insert(ldnItem);
-                        nameNode = &(*insertResult.first);
-                    }
-                    for (const QString &measType : measTypes) {
-                        nameNode->children.insert(measType);
-                    }
-                } else {
-                    result.errors.reserve(1);
-                    result.errors.append("measObjLdn is missing in file " + filePath);
-                    return result;
-                }
-            }
-        } else if (tokenType == QXmlStreamReader::EndElement) {
-            if (xmlReader.name() == "measType") {
-                isMeasTypeElement = false;
-            } else if (xmlReader.name() == "measInfo") {
-                measTypes.clear();
-            }
-        } else if (tokenType == QXmlStreamReader::Characters) {
-            if (isMeasTypeElement) {
-                measTypes.append(xmlReader.text().toString());
-            }
-        } else if (tokenType == QXmlStreamReader::Invalid) {
+    XmlHeaderUserData userData;
+    userData.isMeasTypeElement = false;
+    userData.parser = parser;
+    userData.filePath = &filePath;
+    userData.result = &result;
+
+    XML_SetUserData(parser, &userData);
+    XML_SetElementHandler(parser, headerStartElementHandler, headerEndElementHandler);
+    XML_SetCharacterDataHandler(parser, headerCharacterHandler);
+
+    int len, done;
+    char buf[BUFSIZ];
+    while (working && result.errors.isEmpty() && (len = fileReader.read(buf, sizeof(buf))) > 0) {
+        done = len < sizeof(buf);
+        if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
             result.errors.reserve(1);
-            result.errors.append("failed to parse KPI-KCI file " + filePath + ": " + xmlReader.errorString());
-            return result;
+            result.errors.append(QStringLiteral("failed to parse KPI-KCI file %1: %2, line %3").arg(filePath)
+                                 .arg(XML_ErrorString(XML_GetErrorCode(parser)))
+                                 .arg(XML_GetCurrentLineNumber(parser)));
+            break;
         }
     }
+
+    XML_ParserFree(parser);
 
     return result;
 }
@@ -471,15 +545,15 @@ static void mergeXmlHeader(XmlHeaderResult &finalResult, const XmlHeaderResult &
 }
 
 static void writeXmlHeader(ProgressDialog &dialog, volatile const bool &working,
-    GzipFile &fileWriter, const kpiKciNameNode &root, QHash<QString, int> &indexes)
+    GzipFile &fileWriter, const kpiKciNameNode &root, std::unordered_map<std::string, int> &indexes)
 {
     int progress = 0;
-    QVector<QString> fullNames = genFullkpiKciNames(root);
+    std::vector<std::string> fullNames = genFullkpiKciNames(root);
 
     fileWriter.write("##date;time", 11);
 
     for (int index = 0; working && index < fullNames.size(); ++index) {
-        const QString &fullName = fullNames[index];
+        const std::string &fullName = fullNames[index];
         indexes[fullName] = index;
         fileWriter.write(";", 1);
         fileWriter.write(fullName);
@@ -495,20 +569,119 @@ static void writeXmlHeader(ProgressDialog &dialog, volatile const bool &working,
 }
 
 struct MeasData {
-    QString dateTime;
-    QVector<QString> values;
+    std::string dateTime;
+    std::vector<std::string> values;
 
     MeasData() {}
-    MeasData(int size) : values(size, QStringLiteral("0")) {}
+    MeasData(size_t size) : values(size, std::string("0")) {}
 };
 
 struct XmlDataResult
 {
-    QVector<MeasData> datas;
+    std::vector<MeasData> datas;
     QVector<QString> errors;
 };
 
-static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, int> &indexes,
+struct XmlDataUserData
+{
+    bool isMeasTypeElement;
+    bool isRElement;
+    QDateTime tempEndTime;
+    std::string valueP;
+    std::string objLdn;
+    std::string character;
+    std::unordered_map<std::string, std::string> pMeasType;
+    const std::unordered_map<std::string, int> *indexes;
+    XML_Parser parser;
+    const QString *filePath;
+    XmlDataResult *result;
+};
+
+static void dataStartElementHandler(void *ud, const char *name, const char **atts)
+{
+    XmlDataUserData *userData = (XmlDataUserData *)ud;
+
+    if (strcmp(name, "measType") == 0) {
+        userData->isMeasTypeElement = true;
+
+        const char *attP = expatHelperGetAtt("p", atts);
+        if (attP == nullptr) {
+            userData->result->errors.reserve(1);
+            userData->result->errors.append(QStringLiteral("no 'p' attribute in file %1:%2")
+                                            .arg(*userData->filePath)
+                                            .arg(XML_GetCurrentLineNumber(userData->parser)));
+
+            XML_StopParser(userData->parser, XML_FALSE);
+            return;
+        }
+
+        userData->valueP = attP;
+    } else if (strcmp(name, "measValue") == 0) {
+        userData->objLdn = expatHelperGetAtt("measObjLdn", atts);
+    } else if (strcmp(name, "r") == 0) {
+        userData->isRElement = true;
+
+        const char *attP = expatHelperGetAtt("p", atts);
+        if (attP == nullptr) {
+            userData->result->errors.reserve(1);
+            userData->result->errors.append(QStringLiteral("no 'p' attribute in file %1:%2")
+                                            .arg(*userData->filePath)
+                                            .arg(XML_GetCurrentLineNumber(userData->parser)));
+
+            XML_StopParser(userData->parser, XML_FALSE);
+            return;
+        }
+
+        userData->valueP = attP;
+    } else if (strcmp(name, "granPeriod") == 0) {
+        const char *endTime = expatHelperGetAtt("endTime", atts);
+        QDateTime dateTime = QDateTime::fromString(endTime, Qt::ISODate);
+        if (dateTime.isNull()) {
+            userData->result->errors.reserve(1);
+            userData->result->errors.append(QStringLiteral("invalid date time format in file %1:%2")
+                                            .arg(*userData->filePath)
+                                            .arg(XML_GetCurrentLineNumber(userData->parser)));
+            XML_StopParser(userData->parser, XML_FALSE);
+            return;
+        }
+
+        if (dateTime != userData->tempEndTime) {
+            userData->tempEndTime = dateTime;
+            userData->result->datas.push_back(MeasData(userData->indexes->size()));
+            userData->result->datas.back().dateTime = dateTime.toString(DT_FORMAT_IN_FILE).toStdString();
+        }
+    }
+}
+
+static void dataEndElementHandler(void *ud, const char *name)
+{
+    XmlDataUserData *userData = (XmlDataUserData *)ud;
+
+    if (strcmp(name, "measType") == 0) {
+        userData->isMeasTypeElement = false;
+
+        userData->pMeasType[userData->valueP] = userData->character;
+        userData->character.clear();
+    } else if (strcmp(name, "r") == 0) {
+        userData->isRElement = false;
+
+        const std::string &measType = userData->pMeasType[userData->valueP];
+        int index = userData->indexes->at(userData->objLdn + ',' + measType);
+        userData->result->datas.back().values[index] = userData->character;
+        userData->character.clear();
+    }
+}
+
+static void dataCharacterHandler(void *ud, const char *s, int len)
+{
+    XmlDataUserData *userData = (XmlDataUserData *)ud;
+
+    if (userData->isMeasTypeElement || userData->isRElement) {
+        userData->character.append(s, len);
+    }
+}
+
+static XmlDataResult parseXmlData(const QString &filePath, const std::unordered_map<std::string, int> &indexes,
     volatile const bool &working)
 {
     XmlDataResult result;
@@ -520,76 +693,34 @@ static XmlDataResult parseXmlData(const QString &filePath, const QHash<QString, 
         return result;
     }
 
-    bool isMeasTypeElement = false;
-    bool isRElement = false;
-    QDateTime tempEndTime;
-    QString valueP, objLdn;
-    QHash<QString, QString> pMeasType;
-    QXmlStreamReader xmlReader(&fileReader);
+    XML_Parser parser = XML_ParserCreate(NULL);
 
-    while (working && !xmlReader.atEnd()) {
-        QXmlStreamReader::TokenType tokenType = xmlReader.readNext();
-        if (tokenType == QXmlStreamReader::StartElement) {
-            if (xmlReader.name() == "measType") {
-                isMeasTypeElement = true;
+    XmlDataUserData userData;
+    userData.isMeasTypeElement = false;
+    userData.isRElement = false;
+    userData.indexes = &indexes;
+    userData.parser = parser;
+    userData.filePath = &filePath;
+    userData.result = &result;
 
-                QXmlStreamAttributes attributes = xmlReader.attributes();
-                if (!attributes.hasAttribute(QLatin1String("p"))) {
-                    result.errors.reserve(1);
-                    result.errors.append("no 'p' attribute of measType in file " + filePath);
-                    return result;
-                }
-                valueP = attributes.value(QLatin1String("p")).toString();
-            } else if (xmlReader.name() == "measValue") {
-                QXmlStreamAttributes attributes = xmlReader.attributes();
-                objLdn = attributes.value(QLatin1String("measObjLdn")).toString();
-            } else if (xmlReader.name() == 'r') {
-                isRElement = true;
+    XML_SetUserData(parser, &userData);
+    XML_SetElementHandler(parser, dataStartElementHandler, dataEndElementHandler);
+    XML_SetCharacterDataHandler(parser, dataCharacterHandler);
 
-                QXmlStreamAttributes attributes = xmlReader.attributes();
-                if (!attributes.hasAttribute(QLatin1String("p"))) {
-                    result.errors.reserve(1);
-                    result.errors.append("no 'p' attribute of r in file " + filePath);
-                    return result;
-                }
-                valueP = attributes.value(QLatin1String("p")).toString();
-            } else if (xmlReader.name() == "granPeriod") {
-                QXmlStreamAttributes attributes = xmlReader.attributes();
-                QString dateText = attributes.value(QLatin1String("endTime")).toString();
-                QDateTime dateTime = QDateTime::fromString(dateText, Qt::ISODate);
-                if (dateTime.isValid()) {
-                    if (dateTime != tempEndTime) {
-                        tempEndTime = dateTime;
-
-                        result.datas.append(MeasData(indexes.size()));
-                        result.datas.last().dateTime = dateTime.toString(DT_FORMAT_IN_FILE);
-                    }
-                } else {
-                    result.errors.reserve(1);
-                    result.errors.append("invalid date time format in file " + filePath);
-                    return result;
-                }
-            }
-        } else if (tokenType == QXmlStreamReader::EndElement) {
-            if (xmlReader.name() == "measType") {
-                isMeasTypeElement = false;
-            } else if (xmlReader.name() == "r") {
-                isRElement = false;
-            }
-        } else if (tokenType == QXmlStreamReader::Characters) {
-            if (isMeasTypeElement) {
-                pMeasType.insert(valueP, xmlReader.text().toString());
-            } else if (isRElement) {
-                const QString &measType = pMeasType[valueP];
-                int index = indexes[objLdn + ',' + measType];
-                result.datas.last().values[index] = xmlReader.text().toString();
-            }
-        } else if (tokenType == QXmlStreamReader::Invalid) {
+    int len, done;
+    char buf[BUFSIZ];
+    while (working && result.errors.isEmpty() && (len = fileReader.read(buf, sizeof(buf))) > 0) {
+        done = len < sizeof(buf);
+        if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
             result.errors.reserve(1);
-            result.errors.append("failed to parse KPI-KCI file " + filePath + ": " + xmlReader.errorString());
-            return result;
+            result.errors.append(QStringLiteral("failed to parse KPI-KCI file %1: %2, line %3").arg(filePath)
+                                 .arg(XML_ErrorString(XML_GetErrorCode(parser)))
+                                 .arg(XML_GetCurrentLineNumber(parser)));
+            break;
         }
     }
+
+    XML_ParserFree(parser);
 
     return result;
 }
@@ -781,7 +912,7 @@ QString StatisticsFileParser::kpiKciToCsvFormat(QStringList &filePaths, QString 
         return QString();
     }
 
-    QHash<QString, int> indexes;
+    std::unordered_map<std::string, int> indexes;
     QFutureWatcher<void> writeXmlHeaderWatcher;
     QObject::connect(&m_dialog, &ProgressDialog::canceling, [&working]() {
         working = false;

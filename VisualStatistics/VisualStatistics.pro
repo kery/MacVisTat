@@ -122,6 +122,7 @@ RESOURCES += \
     VisualStatistics.qrc
 
 INCLUDEPATH += $$PWD/third_party/qcustomplot/
+INCLUDEPATH += $$PWD/third_party/expat
 
 win32 {
     INCLUDEPATH += $$PWD/third_party/breakpad/
@@ -138,6 +139,7 @@ win32 {
     INCLUDEPATH += $$PWD/third_party/breakpad/client/windows/handler
 
     LIBS += -L$$PWD/third_party/pcre/win/ -lpcre
+    LIBS += -L$$PWD/third_party/expat/win/ -llibexpat
 }
 
 win32:CONFIG(debug, debug|release) {
@@ -166,6 +168,7 @@ unix:!macx {
     INCLUDEPATH += $$PWD/third_party/pcre/linux
 
     LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre -lz
+    LIBS += -L$$PWD/third_party/expat/linux/ -lexpat
 }
 
 DISTFILES += \
