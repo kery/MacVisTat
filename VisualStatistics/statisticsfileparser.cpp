@@ -517,11 +517,11 @@ static XmlHeaderResult parseXmlHeader(volatile const bool &working, const QStrin
     XML_SetElementHandler(parser, headerStartElementHandler, headerEndElementHandler);
     XML_SetCharacterDataHandler(parser, headerCharacterHandler);
 
-    int len, done;
+    int len;
     char buf[BUFSIZ];
     while (working && result.errors.isEmpty() && (len = fileReader.read(buf, sizeof(buf))) > 0) {
-        done = len < sizeof(buf);
-        if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
+        int isFinal = len < (int)sizeof(buf);
+        if (XML_Parse(parser, buf, len, isFinal) == XML_STATUS_ERROR) {
             result.errors.reserve(1);
             result.errors.append(QStringLiteral("failed to parse KPI-KCI file %1: %2, line %3").arg(filePath)
                                  .arg(XML_ErrorString(XML_GetErrorCode(parser)))
@@ -552,7 +552,7 @@ static void writeXmlHeader(ProgressDialog &dialog, volatile const bool &working,
 
     fileWriter.write("##date;time", 11);
 
-    for (int index = 0; working && index < fullNames.size(); ++index) {
+    for (int index = 0; working && index < (int)fullNames.size(); ++index) {
         const std::string &fullName = fullNames[index];
         indexes[fullName] = index;
         fileWriter.write(";", 1);
@@ -707,11 +707,11 @@ static XmlDataResult parseXmlData(const QString &filePath, const std::unordered_
     XML_SetElementHandler(parser, dataStartElementHandler, dataEndElementHandler);
     XML_SetCharacterDataHandler(parser, dataCharacterHandler);
 
-    int len, done;
+    int len;
     char buf[BUFSIZ];
     while (working && result.errors.isEmpty() && (len = fileReader.read(buf, sizeof(buf))) > 0) {
-        done = len < sizeof(buf);
-        if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
+        int isFinal = len < sizeof(buf);
+        if (XML_Parse(parser, buf, len, isFinal) == XML_STATUS_ERROR) {
             result.errors.reserve(1);
             result.errors.append(QStringLiteral("failed to parse KPI-KCI file %1: %2, line %3").arg(filePath)
                                  .arg(XML_ErrorString(XML_GetErrorCode(parser)))
@@ -812,7 +812,7 @@ static QString getEndTimeFromFileName(const QString &fileName)
 }
 
 static QString getOutputFilePath(const QStringList &filePaths)
-{  
+{
     QFileInfo fileInfo(filePaths.first());
     QString outputFileName = getGwNameFromFileName(fileInfo.fileName());
     outputFileName += "__";

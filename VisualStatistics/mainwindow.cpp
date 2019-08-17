@@ -204,7 +204,7 @@ void MainWindow::addStatFiles(QStringList &filePaths)
         files.prepend(path);
     }
 
-    while (files.size() > m_recentFileActions.size()) {
+    while (files.size() > (int)m_recentFileActions.size()) {
         files.removeLast();
     }
 
