@@ -20,6 +20,7 @@ public:
     int totalNameCount() const;
     QCPDataMap* getDataMap(const QString &node, const QString &name);
     QCPDataMap* getDataMap(const QString &formattedName);
+    QCPDataMap* addDataMap(const QString &node, const QString &name);
     bool removeDataMap(const QString &node, const QString &name);
     bool removeDataMap(const QString &formattedName);
     bool renameDataMap(const QString &node, const QString &name, const QString &newName);

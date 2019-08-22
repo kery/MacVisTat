@@ -40,6 +40,7 @@ private:
 
     QCPGraph * findGraphValueToShow(int index, double yCoord, double &value);
 
+    QString genAggregateGraphName() const;
     void removeGraphs(const QVector<QCPGraph*> &graphs);
 
     QString evaluateWindowTitle() const;
@@ -56,6 +57,7 @@ private slots:
     void contextMenuRequest(const QPoint &pos);
     void legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *item);
     void moveLegend();
+    void addAggregateGraph();
     void removeSelectedGraph();
     void copyGraphName();
     void setCustomTitle();

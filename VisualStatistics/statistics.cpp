@@ -111,6 +111,20 @@ QCPDataMap* Statistics::getDataMap(const QString &formattedName)
     return getDataMap(node, name);
 }
 
+QCPDataMap* Statistics::addDataMap(const QString &node, const QString &name)
+{
+    if (!m_nndm.contains(node)) {
+        return nullptr;
+    }
+
+    NameDataMap &ndm = m_nndm[node];
+    if (ndm.contains(name)) {
+        return nullptr;
+    }
+
+    return &ndm[name];
+}
+
 bool Statistics::removeDataMap(const QString &node, const QString &name)
 {
     if (m_nndm.contains(node)) {

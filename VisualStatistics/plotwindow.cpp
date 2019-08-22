@@ -93,7 +93,6 @@ QCPGraph * PlotWindow::addCounterGraph()
 {
     QCPGraph *graph = new CounterGraph(m_ui->customPlot->xAxis, m_ui->customPlot->yAxis);
     if (m_ui->customPlot->addPlottable(graph)) {
-        graph->setName(QLatin1String("Graph ") + QString::number(m_ui->customPlot->graphCount()));
         return graph;
     } else {
         delete graph;
@@ -326,6 +325,20 @@ QCPGraph * PlotWindow::findGraphValueToShow(int index, double yCoord, double &va
         }
     }
     return retGraph;
+}
+
+QString PlotWindow::genAggregateGraphName() const
+{
+    int aggregateGraphCount = 0;
+
+    QCustomPlot *plot = m_ui->customPlot;
+    for (int i = 0; i < plot->graphCount(); ++i) {
+        if (plot->graph(i)->name().startsWith(QLatin1String("aggregate_graph_"))) {
+            ++aggregateGraphCount;
+        }
+    }
+
+    return QStringLiteral("aggregate_graph_%1").arg(aggregateGraphCount + 1);
 }
 
 void PlotWindow::removeGraphs(const QVector<QCPGraph *> &graphs)
@@ -565,10 +578,17 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
 
     QAction *actionCopy = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
+    QAction *actionAdd = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
     QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
-    if (!plot->legend->selectedItems().size()) {
+
+    actionAdd->setEnabled(false);
+
+    auto selectedLegendItems = plot->legend->selectedItems();
+    if (selectedLegendItems.isEmpty()) {
         actionCopy->setEnabled(false);
         actionRemove->setEnabled(false);
+    } else if (selectedLegendItems.size() > 1) {
+        actionAdd->setEnabled(true);
     }
 
     menu->popup(plot->mapToGlobal(pos));
@@ -610,6 +630,62 @@ void PlotWindow::moveLegend()
             plot->replot();
         }
     }
+}
+
+void PlotWindow::addAggregateGraph()
+{
+    QCustomPlot *plot = m_ui->customPlot;
+    QList<QCPAbstractLegendItem *> selectedLegendItems = plot->legend->selectedItems();
+
+    QCPPlottableLegendItem *legendItem = static_cast<QCPPlottableLegendItem *>(selectedLegendItems.first());
+    QCPGraph *graph = static_cast<QCPGraph *>(legendItem->plottable());
+
+    QString node, name;
+    m_stat.parseFormattedName(graph->name(), node, name);
+
+    QVector<QCPDataMap *> selectedDataMaps;
+    selectedDataMaps.reserve(selectedLegendItems.size());
+    selectedDataMaps.append(m_stat.getDataMap(node, name));
+
+    for (int i = 1; i < selectedLegendItems.size(); ++i) {
+        legendItem = static_cast<QCPPlottableLegendItem *>(selectedLegendItems[i]);
+        graph = static_cast<QCPGraph *>(legendItem->plottable());
+
+        QString tempNode;
+        m_stat.parseFormattedName(graph->name(), tempNode, name);
+
+        if (tempNode != node) {
+            showErrorMsgBox(this, QStringLiteral("Cannot add aggregate graph because selected graphs belong to multiple nodes."));
+            return;
+        }
+
+        selectedDataMaps.append(m_stat.getDataMap(node, name));
+    }
+
+    QString aggregateGraphName = genAggregateGraphName();
+    QCPDataMap *aggregateDataMap = m_stat.addDataMap(node, aggregateGraphName);
+    *aggregateDataMap = *selectedDataMaps.first();
+
+    for (int i = 1; i < selectedDataMaps.size(); ++i) {
+        const QCPDataMap *dataMap = selectedDataMaps[i];
+        for (const QCPData &data : *dataMap) {
+            (*aggregateDataMap)[data.key].value += data.value;
+        }
+    }
+
+    QCPGraph *aggregateGraph = addCounterGraph();
+    aggregateGraph->setName(m_stat.formatName(node, aggregateGraphName));
+    aggregateGraph->setPen(QPen(m_colorManager.getColor()));
+    aggregateGraph->setSelectedPen(aggregateGraph->pen());
+    aggregateGraph->setData(aggregateDataMap, true);
+
+    if (m_ui->actionShowDelta->isChecked()) {
+        calcDelta(aggregateGraph);
+    }
+
+    plot->yAxis->rescale();
+    adjustYAxisRange(plot->yAxis);
+    plot->replot();
 }
 
 void PlotWindow::removeSelectedGraph()
