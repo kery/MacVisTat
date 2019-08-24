@@ -28,11 +28,21 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_tracer = new QCPItemTracer(m_ui->customPlot);
     m_tracer->setInterpolating(true);
     m_tracer->setStyle(QCPItemTracer::tsCircle);
-    m_tracer->setSize(TRACER_SIZE);
     m_tracer->setPen(QPen(Qt::red));
     m_tracer->setBrush(QColor(255, 0, 0, 100));
     m_tracer->setLayer(QStringLiteral("axes"));
     m_tracer->setVisible(false);
+
+    m_animation.setTargetObject(m_tracer);
+    m_animation.setPropertyName("size");
+    m_animation.setDuration(2000);
+    m_animation.setStartValue(TRACER_SIZE * 0.75);
+    m_animation.setEndValue(TRACER_SIZE * 1.5);
+    m_animation.setEasingCurve(QEasingCurve::SineCurve);
+    m_animation.setLoopCount(-1);
+    QObject::connect(&m_animation, &QPropertyAnimation::valueChanged, [this] () {
+        this->m_tracer->parentPlot()->replot();
+    });
 
     m_valueText = new ValueText(m_tracer);
 
@@ -467,12 +477,12 @@ void PlotWindow::mousePress(QMouseEvent *event)
 void PlotWindow::mouseMove(QMouseEvent *event)
 {
     if (!(event->modifiers() & Qt::ControlModifier)) {
-        if (m_tracer->graph()) {
+        if (m_tracer->visible()) {
             m_tracer->setGraph(NULL);
             m_tracer->setVisible(false);
-
             m_valueText->setVisible(false);
 
+            m_animation.stop();
             m_ui->customPlot->replot();
         }
         return;
@@ -484,7 +494,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
     if (index >= 0 && xRange.contains(index)) {
         double value, yCoord = plot->yAxis->pixelToCoord(event->pos().y());
         QCPGraph *graph = findGraphValueToShow(index, yCoord, value);
-        if (graph) {
+        if (graph != m_tracer->graph() || (int)m_tracer->graphKey() != index) {
             m_tracer->setGraph(graph);
             m_tracer->setGraphKey(index);
             m_tracer->setVisible(true);
@@ -496,7 +506,8 @@ void PlotWindow::mouseMove(QMouseEvent *event)
             m_valueText->setText(text);
             m_valueText->setVisible(true);
 
-            plot->replot();
+            m_animation.setCurrentTime(0);
+            m_animation.start();
         }
     }
 }

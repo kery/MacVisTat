@@ -77,6 +77,7 @@ private:
     int m_sampleInterval;
     Ui::PlotWindow *m_ui;
     QString m_customTitle;
+    QPropertyAnimation m_animation;
     QCPItemTracer *m_tracer;
     ValueText *m_valueText;
     QDateTimeEdit *m_dtEditFrom;
