@@ -56,6 +56,7 @@ MainWindow::MainWindow() :
     hLayout->addStretch();
 
     m_ui->cbRegExpFilter->lineEdit()->setTextMargins(20, 0, 0, 0);
+    m_ui->cbRegExpFilter->lineEdit()->setClearButtonEnabled(true);
     connect(toolButton, SIGNAL(clicked(bool)), this, SLOT(caseSensitiveButtonClicked(bool)));
 
     m_ui->lvStatName->setModel(new StatisticsNameModel(this));
