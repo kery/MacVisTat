@@ -28,8 +28,8 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_tracer = new QCPItemTracer(m_ui->customPlot);
     m_tracer->setInterpolating(true);
     m_tracer->setStyle(QCPItemTracer::tsCircle);
-    m_tracer->setPen(QPen(Qt::red));
-    m_tracer->setBrush(QColor(255, 0, 0, 100));
+    m_tracer->setPen(QPen(Qt::red, 2));
+    m_tracer->setBrush(Qt::white);
     m_tracer->setLayer(QStringLiteral("axes"));
     m_tracer->setVisible(false);
 
