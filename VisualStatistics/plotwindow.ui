@@ -62,6 +62,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionSaveAsImage"/>
+   <addaction name="actionCopyToClipboard"/>
    <addaction name="separator"/>
    <addaction name="actionRestoreScale"/>
    <addaction name="actionShowDelta"/>
@@ -116,6 +117,10 @@
    </property>
   </action>
   <action name="actionCopyToClipboard">
+   <property name="icon">
+    <iconset resource="VisualStatistics.qrc">
+     <normaloff>:/resource/image/copy.png</normaloff>:/resource/image/copy.png</iconset>
+   </property>
    <property name="text">
     <string>Copy To Clipboard</string>
    </property>

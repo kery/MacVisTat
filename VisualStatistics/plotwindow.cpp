@@ -46,13 +46,6 @@ PlotWindow::PlotWindow(Statistics &stat) :
 
     m_valueText = new ValueText(m_tracer);
 
-    QToolButton *saveButton = static_cast<QToolButton*>(
-                m_ui->toolBar->widgetForAction(m_ui->actionSaveAsImage));
-    saveButton->setPopupMode(QToolButton::MenuButtonPopup);
-    QMenu *copyToClipboard = new QMenu(this);
-    copyToClipboard->addAction(m_ui->actionCopyToClipboard);
-    saveButton->setMenu(copyToClipboard);
-
     QToolButton *markRestartButton = static_cast<QToolButton*>(
                 m_ui->toolBar->widgetForAction(m_ui->actionMarkRestartTime));
     markRestartButton->setPopupMode(QToolButton::MenuButtonPopup);
