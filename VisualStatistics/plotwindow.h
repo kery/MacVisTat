@@ -43,8 +43,8 @@ private:
     QString genAggregateGraphName() const;
     void removeGraphs(const QVector<QCPGraph*> &graphs);
 
-    QString evaluateWindowTitle() const;
-    QString evaluatePlotTitle(bool deltaMode) const;
+    void updateWindowTitle();
+    void updatePlotTitle();
 
     QString defaultSaveFileName() const;
 
@@ -60,7 +60,6 @@ private slots:
     void addAggregateGraph();
     void removeSelectedGraph();
     void copyGraphName();
-    void setCustomTitle();
     void toggleLegendVisibility();
     void xAxisRangeChanged(const QCPRange &newRange);
     void fromDateTimeChanged(const QDateTime &dateTime);
@@ -78,7 +77,6 @@ private slots:
 private:
     int m_sampleInterval;
     Ui::PlotWindow *m_ui;
-    QString m_customTitle;
     QPropertyAnimation m_animation;
     QCPItemTracer *m_tracer;
     ValueText *m_valueText;

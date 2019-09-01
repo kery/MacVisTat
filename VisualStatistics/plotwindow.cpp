@@ -78,7 +78,8 @@ PlotWindow::PlotWindow(Statistics &stat) :
     setFocus();
     initializePlot();
 
-    setWindowTitle(evaluateWindowTitle());
+    updateWindowTitle();
+    updatePlotTitle();
 }
 
 PlotWindow::~PlotWindow()
@@ -150,8 +151,6 @@ void PlotWindow::initializePlot()
             graph->setData(m_stat.getDataMap(node, name), true);
         }
     }
-
-    plot->xAxis2->setLabel(evaluatePlotTitle(false));
 
     m_ui->actionMarkRestartTime->setChecked(true);
     markRestartTime();
@@ -340,74 +339,70 @@ QString PlotWindow::genAggregateGraphName() const
 
 void PlotWindow::removeGraphs(const QVector<QCPGraph *> &graphs)
 {
-    if (graphs.size() > 0) {
-        QCustomPlot *plot = m_ui->customPlot;
-        bool updateNameAndTitle = false;
-        for (QCPGraph *graph : graphs) {
-            if (!graph->property("add_by_script").isValid()) {
-                updateNameAndTitle = true;
-                m_stat.removeDataMap(graph->name());
-            }
-            plot->removeGraph(graph);
-        }
-        if (updateNameAndTitle) {
-            int preNodeCount = m_stat.getNodeCount();
-            m_stat.trimNodeNameDataMap();
-            if (preNodeCount > 1 && m_stat.getNodeCount() == 1) {
-                for (int i = 0; i < plot->graphCount(); ++i) {
-                    QCPGraph *graph = plot->graph(i);
-                    if (!graph->property("add_by_script").isValid())
-                        graph->setName(m_stat.removeNodePrefix(graph->name()));
-                }
-            }
-
-            setWindowTitle(evaluateWindowTitle());
-            plot->xAxis2->setLabel(evaluatePlotTitle(m_ui->actionShowDelta->isChecked()));
-        }
-
-        selectionChanged();
-        plot->replot();
+    if (graphs.isEmpty()) {
+        return;
     }
+
+    QCustomPlot *plot = m_ui->customPlot;
+    bool updateNameAndTitle = false;
+    for (QCPGraph *graph : graphs) {
+        if (!graph->property("add_by_script").isValid()) {
+            updateNameAndTitle = true;
+            m_stat.removeDataMap(graph->name());
+        }
+        plot->removeGraph(graph);
+    }
+    if (updateNameAndTitle) {
+        int preNodeCount = m_stat.getNodeCount();
+        m_stat.trimNodeNameDataMap();
+        if (preNodeCount > 1 && m_stat.getNodeCount() == 1) {
+            for (int i = 0; i < plot->graphCount(); ++i) {
+                QCPGraph *graph = plot->graph(i);
+                if (!graph->property("add_by_script").isValid())
+                    graph->setName(m_stat.removeNodePrefix(graph->name()));
+            }
+        }
+
+        updateWindowTitle();
+        updatePlotTitle();
+    }
+
+    selectionChanged();
+    plot->replot();
 }
 
-QString PlotWindow::evaluateWindowTitle() const
+void PlotWindow::updateWindowTitle()
 {
-    if (m_customTitle.isEmpty()) {
-        int graphCount = m_ui->customPlot->graphCount();
-        if (graphCount > 0) {
-            QStringList names;
-            bool appendEllipsis = false;
-            for (int i = 0; i < graphCount; ++i) {
-                QString tempName = m_ui->customPlot->graph(i)->name();
-                QString rightPart = tempName.mid(tempName.lastIndexOf('.') + 1);
-                if (!names.contains(rightPart)) {
-                    if (names.size() < 3) {
-                        names.append(rightPart);
-                    } else {
-                        appendEllipsis = true;
-                        break;
-                    }
-                }
+    QStringList names;
+    bool appendEllipsis = false;
+    int graphCount = m_ui->customPlot->graphCount();
+    for (int i = 0; i < graphCount; ++i) {
+        QString tempName = m_ui->customPlot->graph(i)->name();
+        QString rightPart = tempName.mid(tempName.lastIndexOf('.') + 1);
+        if (!names.contains(rightPart)) {
+            if (names.size() < 3) {
+                names.append(rightPart);
+            } else {
+                appendEllipsis = true;
+                break;
             }
-
-            QString title = names.join(QLatin1String(", "));
-            if (appendEllipsis) {
-                title.append("...");
-            }
-            return title;
         }
-        return m_stat.getNodesString();
     }
-    return m_customTitle;
+
+    QString title = names.join(QLatin1String(", "));
+    if (appendEllipsis) {
+        title.append("...");
+    }
+    setWindowTitle(title);
 }
 
-QString PlotWindow::evaluatePlotTitle(bool deltaMode) const
+void PlotWindow::updatePlotTitle()
 {
-    QString title = evaluateWindowTitle();
-    if (deltaMode) {
-        title += SUFFIX_DELTA;
+    if (m_ui->actionShowDelta->isChecked()) {
+        m_ui->customPlot->xAxis2->setLabel(windowTitle() + SUFFIX_DELTA);
+    } else {
+        m_ui->customPlot->xAxis2->setLabel(windowTitle());
     }
-    return title;
 }
 
 QString PlotWindow::defaultSaveFileName() const
@@ -557,7 +552,6 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
 
     menu->addAction(plot->legend->visible() ? QStringLiteral("Hide Legend") : QStringLiteral("Show Legend"),
                     this, SLOT(toggleLegendVisibility()));
-    menu->addAction(QStringLiteral("Set Custom Title..."), this, SLOT(setCustomTitle()));
     QMenu *subMenu = menu->addMenu(QStringLiteral("Move Legend to"));
     QMenu *subMenuTop = subMenu->addMenu(QStringLiteral("Top"));
     QMenu *subMenuBottom = subMenu->addMenu(QStringLiteral("Bottom"));
@@ -574,6 +568,7 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     subMenuBottom->addAction(QStringLiteral("Right"), this, SLOT(moveLegend()))->setData(
         static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
 
+    menu->addSeparator();
     QAction *actionCopy = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
     QAction *actionAdd = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
     QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
@@ -609,6 +604,10 @@ void PlotWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *ite
                 m_stat.renameDataMap(node, name, newName))
         {
             plItem->plottable()->setName(m_stat.formatName(node, newName));
+
+            updateWindowTitle();
+            updatePlotTitle();
+
             m_ui->customPlot->replot();
         }
     }
@@ -680,6 +679,9 @@ void PlotWindow::addAggregateGraph()
         calcDelta(aggregateGraph);
     }
 
+    updateWindowTitle();
+    updatePlotTitle();
+
     plot->yAxis->rescale();
     adjustYAxisRange(plot->yAxis);
     plot->replot();
@@ -707,21 +709,6 @@ void PlotWindow::copyGraphName()
         strList << qobject_cast<QCPPlottableLegendItem *>(item)->plottable()->name();
     }
     QApplication::clipboard()->setText(strList.join('\n'));
-}
-
-void PlotWindow::setCustomTitle()
-{
-    bool ok;
-    QString title = QInputDialog::getText(this, QStringLiteral("Set Custom Title"),
-        QStringLiteral("Custom Title:"),
-        QLineEdit::Normal,
-        QString(), &ok);
-    if (ok) {
-        m_customTitle = title;
-        setWindowTitle(evaluateWindowTitle());
-        m_ui->customPlot->xAxis2->setLabel(evaluatePlotTitle(m_ui->actionShowDelta->isChecked()));
-        m_ui->customPlot->replot();
-    }
 }
 
 void PlotWindow::toggleLegendVisibility()
@@ -815,7 +802,6 @@ void PlotWindow::on_actionRestoreScale_triggered()
 void PlotWindow::on_actionShowDelta_toggled(bool checked)
 {
     QCustomPlot *plot = m_ui->customPlot;
-    plot->xAxis2->setLabel(evaluatePlotTitle(checked));
 
     if (checked) {
         // The script added graphs are not show in delta mode
@@ -829,6 +815,9 @@ void PlotWindow::on_actionShowDelta_toggled(bool checked)
             graph->setData(m_stat.getDataMap(graph->name()), true);
         }
     }
+
+    updatePlotTitle();
+
     // Only rescale Y axis
     plot->yAxis->rescale();
     adjustYAxisRange(plot->yAxis);
