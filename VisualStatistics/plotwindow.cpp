@@ -23,6 +23,10 @@ PlotWindow::PlotWindow(Statistics &stat) :
 
     m_sampleInterval = m_stat.getSampleInterval();
 
+    // Show tracer above legend layer
+    // Value tip will use the same layer as tracer
+    m_ui->customPlot->addLayer(QStringLiteral("valuetip"));
+
     // Must be called after setupUi because member customPlot is initialized
     // in it. QCustomPlot takes ownership of tracer.
     m_tracer = new QCPItemTracer(m_ui->customPlot);
@@ -30,7 +34,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_tracer->setStyle(QCPItemTracer::tsCircle);
     m_tracer->setPen(QPen(Qt::red, 2));
     m_tracer->setBrush(Qt::white);
-    m_tracer->setLayer(QStringLiteral("axes"));
+    m_tracer->setLayer(QStringLiteral("valuetip"));
     m_tracer->setVisible(false);
 
     m_animation.setTargetObject(m_tracer);
