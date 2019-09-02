@@ -8,7 +8,7 @@
 static const char *SUFFIX_DELTA = " (DELTA)";
 
 static const double SCATTER_SIZE = 6.0;
-static const double TRACER_SIZE = SCATTER_SIZE + 1.0;
+static const double TRACER_SIZE = SCATTER_SIZE + 4.0;
 
 PlotWindow::PlotWindow(Statistics &stat) :
     QMainWindow(nullptr),
@@ -39,11 +39,10 @@ PlotWindow::PlotWindow(Statistics &stat) :
 
     m_animation.setTargetObject(m_tracer);
     m_animation.setPropertyName("size");
-    m_animation.setDuration(2000);
-    m_animation.setStartValue(TRACER_SIZE * 0.75);
-    m_animation.setEndValue(TRACER_SIZE * 1.5);
-    m_animation.setEasingCurve(QEasingCurve::SineCurve);
-    m_animation.setLoopCount(-1);
+    m_animation.setDuration(300);
+    m_animation.setStartValue(0);
+    m_animation.setEndValue(TRACER_SIZE);
+    m_animation.setEasingCurve(QEasingCurve::OutQuad);
     QObject::connect(&m_animation, &QPropertyAnimation::valueChanged, [this] () {
         this->m_tracer->parentPlot()->replot();
     });
