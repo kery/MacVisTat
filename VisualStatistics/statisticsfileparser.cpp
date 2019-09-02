@@ -710,7 +710,7 @@ static XmlDataResult parseXmlData(const QString &filePath, const std::unordered_
     int len;
     char buf[BUFSIZ];
     while (working && result.errors.isEmpty() && (len = fileReader.read(buf, sizeof(buf))) > 0) {
-        int isFinal = len < sizeof(buf);
+        int isFinal = len < (int)sizeof(buf);
         if (XML_Parse(parser, buf, len, isFinal) == XML_STATUS_ERROR) {
             result.errors.reserve(1);
             result.errors.append(QStringLiteral("failed to parse KPI-KCI file %1: %2, line %3").arg(filePath)
