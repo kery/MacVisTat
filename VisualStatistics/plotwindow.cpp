@@ -294,11 +294,11 @@ void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth)
     }
 }
 
-QCPGraph * PlotWindow::findGraphValueToShow(int index, double yCoord, double &value)
+QCPGraph * PlotWindow::findNearestGraphValue(int index, double yCoord, double &value)
 {
     QCustomPlot *plot = m_ui->customPlot;
-    QCPGraph *retGraph = NULL;
-    double minDistance = std::numeric_limits<double>::max();
+    QCPGraph *retGraph = nullptr;
+    double minDist = std::numeric_limits<double>::max();
 
     for (int i = 0; i < plot->graphCount(); ++i) {
         QCPGraph *graph = plot->graph(i);
@@ -308,13 +308,13 @@ QCPGraph * PlotWindow::findGraphValueToShow(int index, double yCoord, double &va
 
         QCPDataMap *data = graph->data();
         auto iter = data->find(index);
-        if (iter == data->end() || !plot->yAxis->range().contains(iter->value)) {
+        if (iter == data->end()) {
             continue;
         }
 
         double yDistance = qAbs(iter->value - yCoord);
-        if (yDistance < minDistance) {
-            minDistance = yDistance;
+        if (yDistance < minDist) {
+            minDist = yDistance;
             value = iter->value;
             retGraph = graph;
         }
@@ -480,39 +480,47 @@ void PlotWindow::mousePress(QMouseEvent *event)
 
 void PlotWindow::mouseMove(QMouseEvent *event)
 {
-    if (!(event->modifiers() & Qt::ControlModifier)) {
+    const double MAX_DIST = 20;
+
+    QCPGraph *graph = nullptr;
+    double value, dist = MAX_DIST;
+
+    QCustomPlot *plot = m_ui->customPlot;
+    int index = qRound(plot->xAxis->pixelToCoord(event->pos().x()));
+    QCPRange xRange = plot->xAxis->range();
+
+    if (xRange.contains(index)) {
+        double yCoord = plot->yAxis->pixelToCoord(event->pos().y());
+        graph = findNearestGraphValue(index, yCoord, value);
+        dist = qAbs(plot->yAxis->coordToPixel(value) - event->pos().y());
+    }
+
+    if (!(event->modifiers() & Qt::ControlModifier) && dist > MAX_DIST)
+    {
         if (m_tracer->visible()) {
-            m_tracer->setGraph(NULL);
+            m_tracer->setGraph(nullptr);
             m_tracer->setVisible(false);
             m_valueText->setVisible(false);
-
             m_animation.stop();
-            m_ui->customPlot->replot();
+            plot->replot();
         }
         return;
     }
 
-    QCustomPlot *plot = m_ui->customPlot;
-    QCPRange xRange = plot->xAxis->range();
-    int index = qRound(plot->xAxis->pixelToCoord(event->pos().x()));
-    if (index >= 0 && xRange.contains(index)) {
-        double value, yCoord = plot->yAxis->pixelToCoord(event->pos().y());
-        QCPGraph *graph = findGraphValueToShow(index, yCoord, value);
-        if (graph != m_tracer->graph() || (int)m_tracer->graphKey() != index) {
-            m_tracer->setGraph(graph);
-            m_tracer->setGraphKey(index);
-            m_tracer->setVisible(true);
+    if (graph && (graph != m_tracer->graph() || (int)m_tracer->graphKey() != index)) {
+        m_tracer->setGraph(graph);
+        m_tracer->setGraphKey(index);
+        m_tracer->setVisible(true);
 
-            QString text = m_stat.getDateTimeString(index);
-            text += '\n';
-            text += QString::number(value, 'f', 2);
+        QString text = m_stat.getDateTimeString(index);
+        text += '\n';
+        text += QString::number(value, 'f', 2);
 
-            m_valueText->setText(text);
-            m_valueText->setVisible(true);
+        m_valueText->setText(text);
+        m_valueText->setVisible(true);
 
-            m_animation.setCurrentTime(0);
-            m_animation.start();
-        }
+        m_animation.setCurrentTime(0);
+        m_animation.start();
     }
 }
 
