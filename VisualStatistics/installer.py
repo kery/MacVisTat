@@ -181,9 +181,6 @@ if __name__ == "__main__":
         import fileinput
         import time
 
-        print os.getcwd()
-        raise Exception("aa")
-
         ver_info = get_version()
         check_version_existance(ver_info)
         update_version_file(ver_info)
