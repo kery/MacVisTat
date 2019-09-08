@@ -39,12 +39,22 @@ PlotWindow::PlotWindow(Statistics &stat) :
 
     m_animation.setTargetObject(m_tracer);
     m_animation.setPropertyName("size");
-    m_animation.setDuration(300);
+    m_animation.setDuration(250);
     m_animation.setStartValue(0);
     m_animation.setEndValue(TRACER_SIZE);
     m_animation.setEasingCurve(QEasingCurve::OutQuad);
-    QObject::connect(&m_animation, &QPropertyAnimation::valueChanged, [this] () {
+
+    connect(&m_animation, &QPropertyAnimation::valueChanged, [this] () {
         this->m_tracer->parentPlot()->replot();
+    });
+
+    connect(&m_animation, &QPropertyAnimation::finished, [this] () {
+        if (this->m_animation.direction() == QAbstractAnimation::Backward) {
+            m_valueText->setVisible(false);
+            m_tracer->setVisible(false);
+            m_tracer->setGraph(nullptr);
+            this->m_tracer->parentPlot()->replot();
+        }
     });
 
     m_valueText = new ValueText(m_tracer);
@@ -498,16 +508,10 @@ void PlotWindow::mouseMove(QMouseEvent *event)
     if (!(event->modifiers() & Qt::ControlModifier) && dist > MAX_DIST)
     {
         if (m_tracer->visible()) {
-            m_tracer->setGraph(nullptr);
-            m_tracer->setVisible(false);
-            m_valueText->setVisible(false);
-            m_animation.stop();
-            plot->replot();
+            m_animation.setDirection(QAbstractAnimation::Backward);
+            m_animation.start();
         }
-        return;
-    }
-
-    if (graph && (graph != m_tracer->graph() || (int)m_tracer->graphKey() != index)) {
+    } else if (graph && (graph != m_tracer->graph() || (int)m_tracer->graphKey() != index)) {
         m_tracer->setGraph(graph);
         m_tracer->setGraphKey(index);
         m_tracer->setVisible(true);
@@ -519,6 +523,9 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         m_valueText->setText(text);
         m_valueText->setVisible(true);
 
+        if (m_animation.direction() != QAbstractAnimation::Forward) {
+            m_animation.setDirection(QAbstractAnimation::Forward);
+        }
         m_animation.setCurrentTime(0);
         m_animation.start();
     }
