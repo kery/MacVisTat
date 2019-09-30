@@ -42,12 +42,13 @@ MainWindow::MainWindow() :
     QFont font = toolButton->font();
     font.setBold(true);
 
-    toolButton->setStyleSheet(QStringLiteral("color:#999;"));
     toolButton->setFont(font);
+    toolButton->setStyleSheet(QStringLiteral("color:#999;"));
     toolButton->setAutoRaise(true);
     toolButton->setText(QStringLiteral("Aa"));
     toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
     toolButton->setToolTip(QStringLiteral("Case sensitive"));
+    toolButton->installEventFilter(this);
 
     QHBoxLayout *hLayout = new QHBoxLayout(m_ui->cbRegExpFilter);
     hLayout->setContentsMargins(0, 0, 0, 0);
@@ -55,7 +56,6 @@ MainWindow::MainWindow() :
     hLayout->addWidget(toolButton);
     hLayout->addStretch();
 
-    m_ui->cbRegExpFilter->lineEdit()->setTextMargins(20, 0, 0, 0);
     connect(toolButton, SIGNAL(clicked(bool)), this, SLOT(caseSensitiveButtonClicked(bool)));
 
     m_ui->lvStatName->setModel(new StatisticsNameModel(this));
@@ -147,6 +147,11 @@ void MainWindow::installEventFilterForAllToolButton()
 bool MainWindow::isToolTipEventOfToolButton(QObject *obj, QEvent *event)
 {
     return event->type() == QEvent::ToolTip && obj->parent() == m_ui->mainToolBar;
+}
+
+bool MainWindow::isRegexpCaseButtonResizeEvent(QObject *obj, QEvent *event)
+{
+    return event->type() == QEvent::Resize && m_ui->cbRegExpFilter->findChild<QToolButton *>() == obj;
 }
 
 bool MainWindow::statFileAlreadyAdded(const QString &filePath)
@@ -527,6 +532,17 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     if (isToolTipEventOfToolButton(obj, event)) {
         return true;
     }
+
+    if (isRegexpCaseButtonResizeEvent(obj, event)) {
+        // The value is from qlineedit_p.cpp
+        const int horizontalMargin = 2;
+
+        QPoint pos = m_ui->cbRegExpFilter->lineEdit()->pos();
+        const QSize &size = static_cast<QResizeEvent *>(event)->size();
+        const int leftMargin = size.width() - pos.x() - horizontalMargin;
+        m_ui->cbRegExpFilter->lineEdit()->setTextMargins(leftMargin, 0, 0, 0);
+    }
+
     return QMainWindow::eventFilter(obj, event);
 }
 

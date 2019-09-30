@@ -27,6 +27,7 @@ private:
 
     void installEventFilterForAllToolButton();
     bool isToolTipEventOfToolButton(QObject *obj, QEvent *event);
+    bool isRegexpCaseButtonResizeEvent(QObject *obj, QEvent *event);
 
     bool statFileAlreadyAdded(const QString &filePath);
     void addStatFiles(QStringList &filePaths);
