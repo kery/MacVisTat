@@ -1,0 +1,14 @@
+[Unit]
+Description=VisualStatistics Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Restart=on-failure
+RestartSec=5s
+WorkingDirectory=/visualstat
+ExecStart=/visualstat/reposerver
+
+[Install]
+WantedBy=multi-user.target
