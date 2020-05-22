@@ -26,8 +26,9 @@ void DraggablePlot::mouseMoveEvent(QMouseEvent *event)
             event->buttons() & Qt::LeftButton &&
             _dragStartPos.x() >= 0 && _dragStartPos.y() >= 0)
     {
+        QPoint hotSpot;
         QRect rect = legend->outerRect();
-        QPixmap pixmap(rect.width(), calcLegendPixmapHeight());
+        QPixmap pixmap(rect.width(), calcLegendPixmapHeight(hotSpot));
         QCPPainter painter(&pixmap);
         painter.fillRect(pixmap.rect(), QColor(96, 96, 96));
 
@@ -41,7 +42,7 @@ void DraggablePlot::mouseMoveEvent(QMouseEvent *event)
         QDrag *drag = new QDrag(this);
         drag->setMimeData(mimeData);
         drag->setPixmap(pixmap);
-        drag->setHotSpot(_dragStartPos - rect.topLeft());
+        drag->setHotSpot(hotSpot);
         drag->exec();
     } else {
         QCustomPlot::mouseMoveEvent(event);
@@ -109,10 +110,22 @@ void DraggablePlot::dropEvent(QDropEvent *event)
     }
 }
 
-int DraggablePlot::calcLegendPixmapHeight()
+int DraggablePlot::calcLegendPixmapHeight(QPoint &hotSpot)
 {
-    int screenHeight = QApplication::desktop()->screenGeometry(this).height();
-    int offsetYGlobal = mapToGlobal(_dragStartPos).y();
+    const QRect legendRect = legend->outerRect();
+    const int screenHeight = QApplication::desktop()->screenGeometry(this).height();
+    const int hCursorToLegendTop = _dragStartPos.y() - legendRect.top();
+    const int hCursorToLegendBottom = legendRect.bottom() - _dragStartPos.y();
 
-    return qMin(legend->outerRect().height(), screenHeight + offsetYGlobal);
+    hotSpot = _dragStartPos - legendRect.topLeft();
+
+    int h1, h2 = qMin(hCursorToLegendBottom, screenHeight);
+    if (hCursorToLegendTop < screenHeight) {
+        h1 = hCursorToLegendTop;
+    } else {
+        h1 = screenHeight;
+        hotSpot.ry() -= hCursorToLegendTop - screenHeight;
+    }
+
+    return h1 + h2;
 }
