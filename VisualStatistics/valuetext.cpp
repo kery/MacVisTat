@@ -11,6 +11,7 @@ ValueText::ValueText(const QCPItemTracer *tracer) :
     setPositionAlignment(Qt::AlignLeft | Qt::AlignTop);
     setAntialiased(false);
     setVisible(false);
+    setSelectable(false);
 
     position->setParentAnchor(tracer->position);
 }

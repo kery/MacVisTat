@@ -29,11 +29,14 @@ PlotWindow::PlotWindow(Statistics &stat) :
 
     // Must be called after setupUi because member customPlot is initialized
     // in it. QCustomPlot takes ownership of tracer.
+    const QPen tracerPen(Qt::red, 2);
     m_tracer = new QCPItemTracer(m_ui->customPlot);
     m_tracer->setInterpolating(true);
     m_tracer->setStyle(QCPItemTracer::tsCircle);
-    m_tracer->setPen(QPen(Qt::red, 2));
+    m_tracer->setPen(tracerPen);
     m_tracer->setBrush(Qt::white);
+    m_tracer->setSelectedPen(tracerPen);
+    m_tracer->setSelectedBrush(Qt::white);
     m_tracer->setLayer(QStringLiteral("valuetip"));
     m_tracer->setVisible(false);
 
@@ -140,7 +143,8 @@ void PlotWindow::initializePlot()
 
     plot->setNoAntialiasingOnDrag(true);
 
-    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectLegend | QCP::iSelectPlottables);
+    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectLegend |
+                          QCP::iSelectPlottables | QCP::iSelectItems);
 
     connect(plot->xAxis, &QCPAxis::ticksRequest, this, &PlotWindow::adjustTicks);
     connect(plot, &QCustomPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
@@ -447,7 +451,8 @@ void PlotWindow::selectionChanged()
     for (int i = 0; i < plot->graphCount(); ++i) {
         QCPGraph *graph = plot->graph(i);
         QCPPlottableLegendItem *item = plot->legend->itemWithPlottable(graph);
-        if (item->selected() || graph->selected()) {
+        if (item->selected() || graph->selected() || (m_tracer->selected() && m_tracer->graph() == graph))
+        {
             item->setSelected(true);
             graph->setSelected(true);
         }
@@ -516,7 +521,9 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         m_tracer->setGraphKey(index);
         m_tracer->setVisible(true);
 
-        QString text = m_stat.getDateTimeString(index);
+        QString text = graph->name();
+        text += '\n';
+        text += m_stat.getDateTimeString(index);
         text += '\n';
         text += QString::number(value, 'f', 2);
 
