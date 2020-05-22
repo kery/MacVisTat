@@ -510,7 +510,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         dist = qAbs(plot->yAxis->coordToPixel(value) - event->pos().y());
     }
 
-    if (!(event->modifiers() & Qt::ControlModifier) && dist > MAX_DIST)
+    if (dist > MAX_DIST)
     {
         if (m_tracer->visible()) {
             m_animation.setDirection(QAbstractAnimation::Backward);
