@@ -23,9 +23,9 @@ PlotWindow::PlotWindow(Statistics &stat) :
 
     m_sampleInterval = m_stat.getSampleInterval();
 
-    // Show tracer above legend layer
+    // Show tracer below legend layer, above other layers
     // Value tip will use the same layer as tracer
-    m_ui->customPlot->addLayer(QStringLiteral("valuetip"));
+    m_ui->customPlot->addLayer(QStringLiteral("valuetip"), 0, QCustomPlot::limBelow);
 
     // Must be called after setupUi because member customPlot is initialized
     // in it. QCustomPlot takes ownership of tracer.
