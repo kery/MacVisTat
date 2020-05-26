@@ -288,6 +288,7 @@ void Statistics::updateFirstDataKeys(NameDataMap &ndm)
         Q_ASSERT(index != m_dateTimes.end());
         tempData.key = index - m_dateTimes.begin();
         tempData.value = data.value;
+        tempData.valueErrorMinus = data.valueErrorMinus;
         tempDataMap.insert(tempData.key, tempData);
         searchFrom = index;
     }
@@ -314,6 +315,7 @@ void Statistics::updateDataKeys(const QCPDataMap &src, QCPDataMap &dest)
     for (; iterSrc != src.end(); ++iterSrc, ++iterDest) {
         tempData.key = iterSrc.key();
         tempData.value = iterDest.value().value;
+        tempData.valueErrorMinus = iterDest.value().valueErrorMinus;
         tempDataMap.insert(tempData.key, tempData);
     }
     dest.swap(tempDataMap);

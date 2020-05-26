@@ -1,7 +1,6 @@
 #include "plotwindow.h"
 #include "ui_plotwindow.h"
 #include "scriptwindow.h"
-#include "countergraph.h"
 #include "utils.h"
 #include "version.h"
 
@@ -99,9 +98,9 @@ PlotWindow::~PlotWindow()
     delete m_ui;
 }
 
-QCPGraph * PlotWindow::addCounterGraph()
+CounterGraph *PlotWindow::addCounterGraph()
 {
-    QCPGraph *graph = new CounterGraph(m_ui->customPlot->xAxis, m_ui->customPlot->yAxis);
+    CounterGraph *graph = new CounterGraph(m_ui->customPlot->xAxis, m_ui->customPlot->yAxis);
     if (m_ui->customPlot->addPlottable(graph)) {
         return graph;
     } else {
@@ -154,19 +153,30 @@ void PlotWindow::initializePlot()
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
     connect(plot, &QCustomPlot::legendDoubleClick, this, &PlotWindow::legendDoubleClick);
 
+    QSettings settings;
+    bool showSuspectFlag = settings.value(QStringLiteral("showSuspectFlag")).toBool();
+    if (showSuspectFlag) {
+        m_ui->actionShowSuspectFlag->setChecked(true);
+    }
+
     for (const QString &node : m_stat.getNodes()) {
         for (const QString &name : m_stat.getNames(node)) {
-            QCPGraph *graph = addCounterGraph();
+            CounterGraph *graph = addCounterGraph();
             graph->setName(m_stat.formatName(node, name));
             graph->setPen(QPen(m_colorManager.getColor()));
             graph->setSelectedPen(graph->pen());
             // Set copy to true to avoid the data being deleted if show delta function is used
             graph->setData(m_stat.getDataMap(node, name), true);
+            if (showSuspectFlag) {
+                graph->setSuspectFlagScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, SCATTER_SIZE));
+            }
         }
     }
 
-    m_ui->actionMarkRestartTime->setChecked(true);
-    markRestartTime();
+    if (settings.value(QStringLiteral("markRestartTime")).toBool()) {
+        m_ui->actionMarkRestartTime->setChecked(true);
+        markRestartTime();
+    }
 
     plot->rescaleAxes();
     adjustYAxisRange(plot->yAxis);
@@ -825,12 +835,12 @@ void PlotWindow::on_actionRestoreScale_triggered()
     m_ui->customPlot->replot();
 }
 
-void PlotWindow::on_actionShowDelta_toggled(bool checked)
+void PlotWindow::on_actionShowDelta_triggered(bool checked)
 {
     QCustomPlot *plot = m_ui->customPlot;
 
     if (checked) {
-        // The script added graphs are not show in delta mode
+        // Dynamically added graphs are not show in delta mode
         for (int i = 0; i < m_stat.totalNameCount(); ++i) {
             calcDelta(plot->graph(i));
         }
@@ -848,6 +858,26 @@ void PlotWindow::on_actionShowDelta_toggled(bool checked)
     plot->yAxis->rescale();
     adjustYAxisRange(plot->yAxis);
     plot->replot();
+}
+
+void PlotWindow::on_actionShowSuspectFlag_triggered(bool checked)
+{
+    QCustomPlot *plot = m_ui->customPlot;
+
+    // Dynamically added graphs are not affected
+    for (int i = 0; i < m_stat.totalNameCount(); ++i) {
+        CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
+        if (checked) {
+            graph->setSuspectFlagScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, SCATTER_SIZE));
+        } else {
+            graph->setSuspectFlagScatterStyle(QCPScatterStyle());
+        }
+    }
+
+    plot->replot();
+
+    QSettings settings;
+    settings.setValue(QStringLiteral("showSuspectFlag"), checked);
 }
 
 void PlotWindow::on_actionScript_triggered()
@@ -910,6 +940,9 @@ void PlotWindow::on_actionMarkRestartTime_triggered(bool checked)
         m_ui->customPlot->clearItems();
     }
     m_ui->customPlot->replot();
+
+    QSettings settings;
+    settings.setValue(QStringLiteral("markRestartTime"), checked);
 }
 
 void PlotWindow::on_actionSetSampleInterval_triggered()

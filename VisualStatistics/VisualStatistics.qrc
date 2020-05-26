@@ -17,5 +17,6 @@
         <file>resource/image/pencil.png</file>
         <file>resource/image/csv.png</file>
         <file>resource/image/copy.png</file>
+        <file>resource/image/attention.png</file>
     </qresource>
 </RCC>

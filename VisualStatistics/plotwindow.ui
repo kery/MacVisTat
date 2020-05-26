@@ -66,6 +66,7 @@
    <addaction name="separator"/>
    <addaction name="actionRestoreScale"/>
    <addaction name="actionShowDelta"/>
+   <addaction name="actionShowSuspectFlag"/>
    <addaction name="actionRemoveZeroCounters"/>
    <addaction name="actionMarkRestartTime"/>
    <addaction name="separator"/>
@@ -167,6 +168,21 @@
   <action name="actionSetSampleInterval">
    <property name="text">
     <string>Set Sample Interval</string>
+   </property>
+  </action>
+  <action name="actionShowSuspectFlag">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="VisualStatistics.qrc">
+     <normaloff>:/resource/image/attention.png</normaloff>:/resource/image/attention.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Suspect Flag</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Suspect Flag</string>
    </property>
   </action>
  </widget>

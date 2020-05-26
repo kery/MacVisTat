@@ -4,6 +4,7 @@
 #include "statistics.h"
 #include "colormanager.h"
 #include "valuetext.h"
+#include "countergraph.h"
 
 namespace Ui {
 class PlotWindow;
@@ -19,7 +20,7 @@ public:
     PlotWindow& operator=(const PlotWindow &) = delete;
     ~PlotWindow();
 
-    QCPGraph * addCounterGraph();
+    CounterGraph * addCounterGraph();
 
     Statistics& getStat();
     QCustomPlot* getPlot();
@@ -67,7 +68,8 @@ private slots:
 
     void on_actionSaveAsImage_triggered();
     void on_actionRestoreScale_triggered();
-    void on_actionShowDelta_toggled(bool checked);
+    void on_actionShowDelta_triggered(bool checked);
+    void on_actionShowSuspectFlag_triggered(bool checked);
     void on_actionScript_triggered();
     void on_actionRemoveZeroCounters_triggered();
     void on_actionCopyToClipboard_triggered();

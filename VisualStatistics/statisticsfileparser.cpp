@@ -105,10 +105,12 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
                 return result;
             }
         }
+        char *suspectFlag;
         const char *semicolon;
         while ((semicolon = searchr(ptr, len, ';', &newline)) != nullptr) {
             if (index == indexes.at(parsed)) {
-                data.value = strtod(ptr, NULL);
+                data.value = strtod(ptr, &suspectFlag);
+                data.valueErrorMinus = *suspectFlag == 's' ? 1.0 : 0;
                 ndm[inm.value(index)].insert(data.key, data);
                 if (++parsed == indexes.size()) {
                     len -= semicolon - ptr;
@@ -135,7 +137,8 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
         }
         if (newline) {
             if (parsed < indexes.size() && index == indexes.at(parsed)) {
-                data.value = strtod(ptr, NULL);
+                data.value = strtod(ptr, &suspectFlag);
+                data.valueErrorMinus = *suspectFlag == 's' ? 1.0 : 0;
                 ndm[inm.value(index)].insert(data.key, data);
             }
             len -= newline - ptr;
@@ -412,9 +415,16 @@ struct XmlHeaderResult
     QVector<QString> errors;
 };
 
+enum XmlElementName {
+    XEN_notCare,
+    XEN_measType,
+    XEN_r,
+    XEN_suspect
+};
+
 struct XmlHeaderUserData
 {
-    bool isMeasTypeElement;
+    XmlElementName elName;
     std::string character;
     std::vector<std::string> measTypes;
     XML_Parser parser;
@@ -437,7 +447,7 @@ static void headerStartElementHandler(void *ud, const char *name, const char **a
     XmlHeaderUserData *userData = (XmlHeaderUserData *)ud;
 
     if (strcmp(name, "measType") == 0) {
-        userData->isMeasTypeElement = true;
+        userData->elName = XEN_measType;
         return;
     }
 
@@ -476,7 +486,7 @@ static void headerEndElementHandler(void *ud, const char *name)
     XmlHeaderUserData *userData = (XmlHeaderUserData *)ud;
 
     if (strcmp(name, "measType") == 0) {
-        userData->isMeasTypeElement = false;
+        userData->elName = XEN_notCare;
 
         userData->measTypes.push_back(userData->character);
         userData->character.clear();
@@ -489,7 +499,7 @@ static void headerCharacterHandler(void *ud, const char *s, int len)
 {
     XmlHeaderUserData *userData = (XmlHeaderUserData *)ud;
 
-    if (userData->isMeasTypeElement) {
+    if (userData->elName == XEN_measType) {
         userData->character.append(s, len);
     }
 }
@@ -508,7 +518,7 @@ static XmlHeaderResult parseXmlHeader(volatile const bool &working, const QStrin
     XML_Parser parser = XML_ParserCreate(NULL);
 
     XmlHeaderUserData userData;
-    userData.isMeasTypeElement = false;
+    userData.elName = XEN_notCare;
     userData.parser = parser;
     userData.filePath = &filePath;
     userData.result = &result;
@@ -584,12 +594,13 @@ struct XmlDataResult
 
 struct XmlDataUserData
 {
-    bool isMeasTypeElement;
-    bool isRElement;
+    bool suspectFlag;
+    XmlElementName elName;
     QDateTime tempEndTime;
     std::string valueP;
     std::string objLdn;
     std::string character;
+    std::vector<int> tempIndexes;
     std::unordered_map<std::string, std::string> pMeasType;
     const std::unordered_map<std::string, int> *indexes;
     XML_Parser parser;
@@ -602,7 +613,7 @@ static void dataStartElementHandler(void *ud, const char *name, const char **att
     XmlDataUserData *userData = (XmlDataUserData *)ud;
 
     if (strcmp(name, "measType") == 0) {
-        userData->isMeasTypeElement = true;
+        userData->elName = XEN_measType;
 
         const char *attP = expatHelperGetAtt("p", atts);
         if (attP == nullptr) {
@@ -619,7 +630,7 @@ static void dataStartElementHandler(void *ud, const char *name, const char **att
     } else if (strcmp(name, "measValue") == 0) {
         userData->objLdn = expatHelperGetAtt("measObjLdn", atts);
     } else if (strcmp(name, "r") == 0) {
-        userData->isRElement = true;
+        userData->elName = XEN_r;
 
         const char *attP = expatHelperGetAtt("p", atts);
         if (attP == nullptr) {
@@ -633,6 +644,8 @@ static void dataStartElementHandler(void *ud, const char *name, const char **att
         }
 
         userData->valueP = attP;
+    } else if (strcmp(name, "suspect") == 0) {
+        userData->elName = XEN_suspect;
     } else if (strcmp(name, "granPeriod") == 0) {
         const char *endTime = expatHelperGetAtt("endTime", atts);
         QDateTime dateTime = QDateTime::fromString(endTime, Qt::ISODate);
@@ -658,16 +671,34 @@ static void dataEndElementHandler(void *ud, const char *name)
     XmlDataUserData *userData = (XmlDataUserData *)ud;
 
     if (strcmp(name, "measType") == 0) {
-        userData->isMeasTypeElement = false;
+        userData->elName = XEN_notCare;
 
         userData->pMeasType[userData->valueP] = userData->character;
         userData->character.clear();
     } else if (strcmp(name, "r") == 0) {
-        userData->isRElement = false;
+        userData->elName = XEN_notCare;
 
         const std::string &measType = userData->pMeasType[userData->valueP];
         int index = userData->indexes->at(userData->objLdn + ',' + measType);
         userData->result->datas.back().values[index] = userData->character;
+        userData->tempIndexes.push_back(index);
+        userData->character.clear();
+    } else if (strcmp(name, "measValue") == 0) {
+        if (userData->suspectFlag) {
+            userData->suspectFlag = false;
+            for (const int &index : userData->tempIndexes) {
+                userData->result->datas.back().values[index] += 's';
+            }
+        }
+
+        userData->tempIndexes.clear();
+    } else if (strcmp(name, "suspect") == 0) {
+        userData->elName = XEN_notCare;
+
+        if (userData->character == "true") {
+            userData->suspectFlag = true;
+        }
+
         userData->character.clear();
     }
 }
@@ -676,8 +707,14 @@ static void dataCharacterHandler(void *ud, const char *s, int len)
 {
     XmlDataUserData *userData = (XmlDataUserData *)ud;
 
-    if (userData->isMeasTypeElement || userData->isRElement) {
+    switch (userData->elName) {
+    case XEN_measType:
+    case XEN_r:
+    case XEN_suspect:
         userData->character.append(s, len);
+        break;
+    default:
+        break;
     }
 }
 
@@ -696,8 +733,8 @@ static XmlDataResult parseXmlData(const QString &filePath, const std::unordered_
     XML_Parser parser = XML_ParserCreate(NULL);
 
     XmlDataUserData userData;
-    userData.isMeasTypeElement = false;
-    userData.isRElement = false;
+    userData.suspectFlag = false;
+    userData.elName = XEN_notCare;
     userData.indexes = &indexes;
     userData.parser = parser;
     userData.filePath = &filePath;
