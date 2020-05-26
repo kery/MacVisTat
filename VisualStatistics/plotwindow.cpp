@@ -495,12 +495,17 @@ void PlotWindow::mousePress(QMouseEvent *event)
 
 void PlotWindow::mouseMove(QMouseEvent *event)
 {
+    QCustomPlot *plot = m_ui->customPlot;
+
+    if (plot->legend->selectTest(event->pos(), false) >= 0) {
+        return;
+    }
+
     const double MAX_DIST = 20;
 
     QCPGraph *graph = nullptr;
     double value, dist = MAX_DIST;
 
-    QCustomPlot *plot = m_ui->customPlot;
     int index = qRound(plot->xAxis->pixelToCoord(event->pos().x()));
     QCPRange xRange = plot->xAxis->range();
 
