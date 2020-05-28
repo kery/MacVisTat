@@ -34,9 +34,9 @@ MainWindow::MainWindow() :
     m_ui->splitterHor->setSizes(QList<int>() << 280 << width() - 280);
     m_ui->splitterHor->setStretchFactor(0, 0);
     m_ui->splitterHor->setStretchFactor(1, 1);
-    m_ui->splitteVer->setSizes(QList<int>() << height() - 80 << 80);
-    m_ui->splitteVer->setStretchFactor(0, 1);
-    m_ui->splitteVer->setStretchFactor(1, 0);
+    m_ui->splitterVer->setSizes(QList<int>() << height() - 80 << 80);
+    m_ui->splitterVer->setStretchFactor(0, 1);
+    m_ui->splitterVer->setStretchFactor(1, 0);
 
     QToolButton *toolButton = new QToolButton();
     QFont font = toolButton->font();
@@ -72,6 +72,7 @@ MainWindow::MainWindow() :
     connect(m_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::updateFilterPattern);
     connect(m_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::adjustFilterHistoryOrder);
     connect(m_ui->lvStatName, &QListView::doubleClicked, this, &MainWindow::listViewDoubleClicked);
+    connect(m_ui->lwModules, &QListWidget::itemSelectionChanged, this, &MainWindow::updateFilterPattern);
 
     connect(m_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logEditContextMenuRequest);
     connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::listViewContextMenuRequest);
@@ -261,10 +262,12 @@ void MainWindow::parseStatFileHeader(QStringList &filePaths, QStringList &failIn
         statNames.back().erase(statNames.back().length() - 2);
         model->setStatisticsNames(statNames);
 
+        m_ui->lwModules->addItems(model->getModules());
+
         QString filterText = m_ui->cbRegExpFilter->lineEdit()->text();
         if (!filterText.isEmpty()) {
             QStringList errList;
-            model->setFilterPattern(filterText, m_caseSensitive, errList);
+            model->setFilterPattern(QStringList(), filterText, m_caseSensitive, errList);
             for (const QString &err : errList) {
                 appendLogError(err);
             }
@@ -619,9 +622,13 @@ void MainWindow::userReportTaskFinished(QNetworkReply *reply)
 
 void MainWindow::updateFilterPattern()
 {
-    QStringList errList;
+    QStringList modules, errList;
+    for (const QListWidgetItem *item : m_ui->lwModules->selectedItems()) {
+        modules.append(item->text());
+    }
+
     static_cast<StatisticsNameModel*>(m_ui->lvStatName->model())->setFilterPattern(
-                m_ui->cbRegExpFilter->lineEdit()->text(), m_caseSensitive, errList);
+                modules, m_ui->cbRegExpFilter->lineEdit()->text(), m_caseSensitive, errList);
     for (const QString &err : errList) {
         appendLogError(err);
     }
@@ -660,7 +667,6 @@ void MainWindow::listViewContextMenuRequest(const QPoint &pos)
     QMenu *menu = new QMenu();
     menu->setAttribute(Qt::WA_DeleteOnClose);
     menu->addAction(QStringLiteral("Copy"), this, SLOT(copyStatisticsNames()));
-    menu->addAction(QStringLiteral("Clear selection"), m_ui->lvStatName->selectionModel(), SLOT(clearSelection()));
 
     menu->popup(m_ui->lvStatName->mapToGlobal(pos));
 }
@@ -765,6 +771,10 @@ void MainWindow::on_actionCloseAll_triggered()
     static_cast<StatisticsNameModel*>(m_ui->lvStatName->model())->clearStatisticsNames();
     for (int i = m_ui->lwStatFiles->count() - 1; i >= 0; --i) {
         delete m_ui->lwStatFiles->item(i);
+    }
+
+    for (int i = m_ui->lwModules->count() - 1; i >= 0; --i) {
+        delete m_ui->lwModules->item(i);
     }
 }
 

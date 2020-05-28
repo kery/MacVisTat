@@ -1,9 +1,9 @@
 #include "statisticsnamemodel.h"
 #include <set>
+#include <QSet>
 
 StatisticsNameModel::StatisticsNameModel(QObject *parent) :
     QAbstractListModel(parent),
-    m_caseSensitive(true),
     m_fetchedCount(0),
     m_jitStack(pcre_jit_stack_alloc(32 * 1024, 1024 * 1024))
 {
@@ -19,7 +19,6 @@ StatisticsNameModel::~StatisticsNameModel()
 void StatisticsNameModel::setStatisticsNames(StatisticsNames &sns)
 {
     emit beginResetModel();
-    m_pattern = "";
     m_statNames.swap(sns);
     m_indexes.reserve(m_statNames.size());
     for (int i = 0; i < (int)m_statNames.size(); ++i) {
@@ -27,6 +26,18 @@ void StatisticsNameModel::setStatisticsNames(StatisticsNames &sns)
     }
     m_fetchedCount = 0;
     emit endResetModel();
+}
+
+QStringList StatisticsNameModel::getModules() const
+{
+    QSet<QString> modules;
+    for (const std::string &mod : m_statNames) {
+        auto pos = mod.find(',');
+        if (pos != std::string::npos && pos > 0) {
+            modules.insert(mod.substr(0, pos).c_str());
+        }
+    }
+    return modules.toList();
 }
 
 void StatisticsNameModel::clearStatisticsNames()
@@ -38,11 +49,26 @@ void StatisticsNameModel::clearStatisticsNames()
     emit endResetModel();
 }
 
+static bool modulesTest(const std::vector<std::string> &modules, const std::string &name)
+{
+    if (modules.empty()) {
+        return true;
+    }
+
+    for (const std::string &mod : modules) {
+        if (name.compare(0, mod.length(), mod) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // Use pcre for regular expression matching because the QRegExp
 // is much slower in some situations
-bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSensitive, QStringList &errList)
+bool StatisticsNameModel::setFilterPattern(const QStringList &modules, const QString &pattern, bool caseSensitive, QStringList &errList)
 {
-    if ((pattern == m_pattern && m_caseSensitive == caseSensitive) || m_statNames.empty()) {
+    if (m_statNames.empty()) {
         return true;
     }
 
@@ -69,15 +95,21 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSens
     // pcre_assign_jit_stack() does nothing unless the extra argument is non-NULL
     pcre_assign_jit_stack(extra, NULL, m_jitStack);
 
+    std::vector<std::string> modulesStdStr;
+    for (const QString &mod : modules) {
+        modulesStdStr.push_back(mod.toStdString());
+    }
+
     emit beginResetModel();
-    m_pattern = pattern;
-    m_caseSensitive = caseSensitive;
 
     if (patterns.size() == 1) {
         m_indexes.resize(0);
         if (invert) {
             for (int i = 0; i < (int)m_statNames.size(); ++i) {
                 const std::string &statName = m_statNames[i];
+                if (!modulesTest(modulesStdStr, statName)) {
+                    continue;
+                }
                 if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
                                   0, 0, ovector, OVECCOUNT, m_jitStack) == PCRE_ERROR_NOMATCH)
                 {
@@ -87,6 +119,9 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSens
         } else {
             for (int i = 0; i < (int)m_statNames.size(); ++i) {
                 const std::string &statName = m_statNames[i];
+                if (!modulesTest(modulesStdStr, statName)) {
+                    continue;
+                }
                 if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
                                   0, 0, ovector, OVECCOUNT, m_jitStack) != PCRE_ERROR_NOMATCH)
                 {
@@ -103,6 +138,9 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSens
         if (invert) {
             for (int i = 0; i < (int)m_statNames.size(); ++i) {
                 const std::string &statName = m_statNames[i];
+                if (!modulesTest(modulesStdStr, statName)) {
+                    continue;
+                }
                 if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
                                   0, 0, ovector, OVECCOUNT, m_jitStack) == PCRE_ERROR_NOMATCH)
                 {
@@ -112,6 +150,9 @@ bool StatisticsNameModel::setFilterPattern(const QString &pattern, bool caseSens
         } else {
             for (int i = 0; i < (int)m_statNames.size(); ++i) {
                 const std::string &statName = m_statNames[i];
+                if (!modulesTest(modulesStdStr, statName)) {
+                    continue;
+                }
                 if (pcre_jit_exec(re, extra, statName.c_str(), (int)statName.length(),
                                   0, 0, ovector, OVECCOUNT, m_jitStack) != PCRE_ERROR_NOMATCH)
                 {

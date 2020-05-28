@@ -15,10 +15,11 @@ public:
     ~StatisticsNameModel();
 
     void setStatisticsNames(StatisticsNames &sns);
+    QStringList getModules() const;
 
     void clearStatisticsNames();
 
-    bool setFilterPattern(const QString &pattern, bool caseSensitive, QStringList &errList);
+    bool setFilterPattern(const QStringList &modules, const QString &pattern, bool caseSensitive, QStringList &errList);
     int filteredCount() const;
     int totalCount() const;
 
@@ -28,9 +29,7 @@ public:
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
 private:
-    bool m_caseSensitive;
     int m_fetchedCount;
-    QString m_pattern;
     StatisticsNames m_statNames;
     std::vector<int> m_indexes;
     pcre_jit_stack *m_jitStack;
