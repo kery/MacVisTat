@@ -417,6 +417,7 @@ struct XmlHeaderResult
 
 enum XmlElementName {
     XEN_notCare,
+    XEN_measInfo,
     XEN_measType,
     XEN_r,
     XEN_suspect
@@ -425,6 +426,7 @@ enum XmlElementName {
 struct XmlHeaderUserData
 {
     XmlElementName elName;
+    std::string measInfoId;
     std::string character;
     std::vector<std::string> measTypes;
     XML_Parser parser;
@@ -442,12 +444,25 @@ static const char *expatHelperGetAtt(const char *name, const char **atts)
     return nullptr;
 }
 
+static const char *getMeasInfoId(const char **atts) {
+    const char *measInfoId = expatHelperGetAtt("measInfoId", atts);
+    if (measInfoId != nullptr) {
+        return measInfoId;
+    }
+    return "UnknownModule";
+}
+
 static void headerStartElementHandler(void *ud, const char *name, const char **atts)
 {
     XmlHeaderUserData *userData = (XmlHeaderUserData *)ud;
 
     if (strcmp(name, "measType") == 0) {
         userData->elName = XEN_measType;
+        return;
+    }
+
+    if (strcmp(name, "measInfo") == 0) {
+        userData->measInfoId = getMeasInfoId(atts);
         return;
     }
 
@@ -465,15 +480,18 @@ static void headerStartElementHandler(void *ud, const char *name, const char **a
         return;
     }
 
-    const char *comma;
     const kpiKciNameNode *nameNode = &userData->result->root;
+    auto insertResult = nameNode->children.insert(kpiKciNameNode(userData->measInfoId));
+    nameNode = &(*insertResult.first);
+
+    const char *comma;
     while ((comma = strchr(measObjLdn, ',')) != nullptr) {
-        auto insertResult = nameNode->children.insert(kpiKciNameNode(measObjLdn, comma - measObjLdn));
+        insertResult = nameNode->children.insert(kpiKciNameNode(measObjLdn, comma - measObjLdn));
         nameNode = &(*insertResult.first);
         measObjLdn = comma + 1;
     }
 
-    auto insertResult = nameNode->children.insert(kpiKciNameNode(measObjLdn));
+    insertResult = nameNode->children.insert(kpiKciNameNode(measObjLdn));
     nameNode = &(*insertResult.first);
 
     for (const std::string &measType : userData->measTypes) {
@@ -597,6 +615,7 @@ struct XmlDataUserData
     bool suspectFlag;
     XmlElementName elName;
     QDateTime tempEndTime;
+    std::string measInfoId;
     std::string valueP;
     std::string objLdn;
     std::string character;
@@ -646,6 +665,8 @@ static void dataStartElementHandler(void *ud, const char *name, const char **att
         userData->valueP = attP;
     } else if (strcmp(name, "suspect") == 0) {
         userData->elName = XEN_suspect;
+    } else if (strcmp(name, "measInfo") == 0) {
+        userData->measInfoId = getMeasInfoId(atts);
     } else if (strcmp(name, "granPeriod") == 0) {
         const char *endTime = expatHelperGetAtt("endTime", atts);
         QDateTime dateTime = QDateTime::fromString(endTime, Qt::ISODate);
@@ -679,7 +700,8 @@ static void dataEndElementHandler(void *ud, const char *name)
         userData->elName = XEN_notCare;
 
         const std::string &measType = userData->pMeasType[userData->valueP];
-        int index = userData->indexes->at(userData->objLdn + ',' + measType);
+        const std::string counterName = userData->measInfoId + ',' + userData->objLdn + ',' + measType;
+        int index = userData->indexes->at(counterName);
         userData->result->datas.back().values[index] = userData->character;
         userData->tempIndexes.push_back(index);
         userData->character.clear();
