@@ -31,7 +31,7 @@ MainWindow::MainWindow() :
     // used to disable tooltip for tool button
     installEventFilterForAllToolButton();
 
-    m_ui->splitterHor->setSizes(QList<int>() << 280 << width() - 280);
+    m_ui->splitterHor->setSizes(QList<int>() << 330 << width() - 330);
     m_ui->splitterHor->setStretchFactor(0, 0);
     m_ui->splitterHor->setStretchFactor(1, 1);
     m_ui->splitterVer->setSizes(QList<int>() << height() - 80 << 80);
