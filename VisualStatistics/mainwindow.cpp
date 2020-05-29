@@ -24,6 +24,7 @@ MainWindow::MainWindow() :
     m_ui(new Ui::MainWindow),
     m_caseSensitive(true),
     m_lbStatNameInfo(nullptr),
+    m_lbModulesInfo(nullptr),
     m_sepAction(nullptr)
 {
     m_ui->setupUi(this);
@@ -60,6 +61,13 @@ MainWindow::MainWindow() :
 
     m_ui->lvStatName->setModel(new StatisticsNameModel(this));
 
+    m_lbModulesInfo = new QLabel(this);
+    m_lbModulesInfo->setStyleSheet(QStringLiteral("QLabel{color:#888888}"));
+    m_ui->statusBar->addPermanentWidget(m_lbModulesInfo);
+    updateModulesInfo();
+    connect(m_ui->lwModules->model(), SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(updateModulesInfo()));
+    connect(m_ui->lwModules->model(), SIGNAL(rowsRemoved(QModelIndex,int,int)), this, SLOT(updateModulesInfo()));
+
     m_lbStatNameInfo = new QLabel(this);
     m_lbStatNameInfo->setStyleSheet(QStringLiteral("QLabel{color:#888888}"));
     m_ui->statusBar->addPermanentWidget(m_lbStatNameInfo);
@@ -73,6 +81,7 @@ MainWindow::MainWindow() :
     connect(m_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::adjustFilterHistoryOrder);
     connect(m_ui->lvStatName, &QListView::doubleClicked, this, &MainWindow::listViewDoubleClicked);
     connect(m_ui->lwModules, &QListWidget::itemSelectionChanged, this, &MainWindow::updateFilterPattern);
+    connect(m_ui->lwModules, &QListWidget::itemSelectionChanged, this, &MainWindow::updateModulesInfo);
 
     connect(m_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logEditContextMenuRequest);
     connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::lvStatNameCtxMenuRequest);
@@ -707,6 +716,14 @@ void MainWindow::updateStatNameInfo()
     int total = model->totalCount();
 
     m_lbStatNameInfo->setText(QStringLiteral("loaded:%1, filtered:%2, total:%3").arg(loaded).arg(filtered).arg(total));
+}
+
+void MainWindow::updateModulesInfo()
+{
+    int modules = m_ui->lwModules->count();
+    int selected = m_ui->lwModules->selectedItems().size();
+
+    m_lbModulesInfo->setText(QStringLiteral("modules:%1, selected:%2 ").arg(modules).arg(selected));
 }
 
 void MainWindow::addRecentFile()

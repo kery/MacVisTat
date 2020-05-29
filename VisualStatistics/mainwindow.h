@@ -76,6 +76,7 @@ private slots:
     void clearLogEdit();
     void copyLvStatNameSelected();
     void updateStatNameInfo();
+    void updateModulesInfo();
     void addRecentFile();
     void caseSensitiveButtonClicked(bool checked);
 
@@ -99,6 +100,7 @@ private:
     Ui::MainWindow *m_ui;
     bool m_caseSensitive;
     QLabel *m_lbStatNameInfo;
+    QLabel *m_lbModulesInfo;
     QAction *m_sepAction;
     std::array<QAction *, 10> m_recentFileActions;
 };
