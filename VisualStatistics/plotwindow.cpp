@@ -619,13 +619,19 @@ void PlotWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *ite
         QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
         CounterGraph *graph = qobject_cast<CounterGraph *>(plItem->plottable());
 
-        bool ok;
-        QString newName = QInputDialog::getText(this, QStringLiteral("Input graph name"),
-                                                QStringLiteral("New graph name:"),
-                                                QLineEdit::Normal,
-                                                graph->displayName(), &ok);
-        if (ok && !newName.isEmpty() && newName != graph->displayName() && newName.indexOf(':') < 0)
-        {
+        QInputDialog dlg(this);
+        dlg.setWindowTitle(QStringLiteral("Input graph name"));
+        dlg.setWindowFlags(dlg.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+        dlg.setInputMode(QInputDialog::TextInput);
+        dlg.setLabelText(QStringLiteral("New graph name:"));
+        dlg.setTextValue(graph->displayName());
+        dlg.resize(500, 0);
+        if (dlg.exec() != QDialog::Accepted) {
+            return;
+        }
+
+        QString newName = dlg.textValue();
+        if (!newName.isEmpty() && newName != graph->displayName() && newName.indexOf(':') < 0) {
             graph->setDisplayName(newName);
 
             updateWindowTitle();
