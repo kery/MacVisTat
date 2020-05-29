@@ -1,4 +1,5 @@
 #include "statisticsnamemodel.h"
+#include "statistics.h"
 #include <set>
 #include <QSet>
 
@@ -31,10 +32,10 @@ void StatisticsNameModel::setStatisticsNames(StatisticsNames &sns)
 QStringList StatisticsNameModel::getModules() const
 {
     QSet<QString> modules;
-    for (const std::string &mod : m_statNames) {
-        auto pos = mod.find(',');
-        if (pos != std::string::npos && pos > 0) {
-            modules.insert(mod.substr(0, pos).c_str());
+    for (const std::string &statName : m_statNames) {
+        QString mod = Statistics::getModuleFromStatName(statName);
+        if (!mod.isEmpty()) {
+            modules.insert(mod);
         }
     }
     return modules.toList();

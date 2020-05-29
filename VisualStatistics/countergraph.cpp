@@ -1,13 +1,60 @@
 #include "countergraph.h"
+#include "counterlegenditem.h"
 
-CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
+CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &node) :
+    m_showNode(false),
+    m_node(node),
     QCPGraph(keyAxis, valueAxis)
 {
+}
+
+void CounterGraph::setShowNode(bool show)
+{
+    m_showNode = show;
+}
+
+QString CounterGraph::node() const
+{
+    return m_node;
+}
+
+void CounterGraph::setDisplayName(const QString &name)
+{
+    m_displayName = name;
+}
+
+QString CounterGraph::displayName() const
+{
+    return m_displayName;
+}
+
+QString CounterGraph::realDisplayName() const
+{
+    if (m_showNode && !m_node.isEmpty()) {
+        QString realName(m_node);
+        realName += ':';
+        realName += m_displayName;
+        return realName;
+    }
+    return m_displayName;
 }
 
 void CounterGraph::setSuspectFlagScatterStyle(const QCPScatterStyle &ssSuspect)
 {
     m_ssSuspect = ssSuspect;
+}
+
+bool CounterGraph::addToLegend()
+{
+    if (!mParentPlot || !mParentPlot->legend)
+      return false;
+
+    if (!mParentPlot->legend->hasItemWithPlottable(this))
+    {
+      mParentPlot->legend->addItem(new CounterLegendItem(mParentPlot->legend, this));
+      return true;
+    } else
+      return false;
 }
 
 void CounterGraph::draw(QCPPainter *painter)

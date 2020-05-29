@@ -66,7 +66,8 @@ SOURCES += main.cpp\
     countergraph.cpp \
     changelogdialog.cpp \
     draggableplot.cpp \
-    valuetext.cpp
+    valuetext.cpp \
+    counterlegenditem.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -109,7 +110,8 @@ HEADERS  += mainwindow.h \
     countergraph.h \
     changelogdialog.h \
     draggableplot.h \
-    valuetext.h
+    valuetext.h \
+    counterlegenditem.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \

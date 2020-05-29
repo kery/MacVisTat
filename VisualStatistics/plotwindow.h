@@ -20,7 +20,7 @@ public:
     PlotWindow& operator=(const PlotWindow &) = delete;
     ~PlotWindow();
 
-    CounterGraph * addCounterGraph();
+    CounterGraph * addCounterGraph(const QString &node);
 
     Statistics& getStat();
     QCustomPlot* getPlot();
@@ -42,7 +42,7 @@ private:
     QCPGraph * findNearestGraphValue(int index, double yCoord, double &value);
 
     QString genAggregateGraphName() const;
-    void removeGraphs(const QVector<QCPGraph*> &graphs);
+    void removeGraphs(const QVector<CounterGraph*> &graphs);
 
     void updateWindowTitle();
     void updatePlotTitle();

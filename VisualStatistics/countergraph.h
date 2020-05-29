@@ -8,9 +8,17 @@ class CounterGraph : public QCPGraph
     Q_OBJECT
 
 public:
-    CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis);
+    CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &node);
+
+    void setShowNode(bool show);
+    QString node() const;
+    void setDisplayName(const QString &name);
+    QString displayName() const;
+    QString realDisplayName() const;
 
     void setSuspectFlagScatterStyle(const QCPScatterStyle &ssSuspect);
+
+    virtual bool addToLegend();
 
 protected:
     virtual void draw(QCPPainter *painter);
@@ -18,7 +26,12 @@ protected:
     virtual void drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatterData) const;
 
 private:
+    bool m_showNode;
+    QString m_node;
+    QString m_displayName;
     QCPScatterStyle m_ssSuspect; // scatter style for suspect (<suspect>true</suspect>) value
+
+    friend class CounterLegendItem;
 };
 
 #endif // COUNTERGRAPH_H

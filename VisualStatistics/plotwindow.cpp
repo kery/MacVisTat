@@ -98,9 +98,9 @@ PlotWindow::~PlotWindow()
     delete m_ui;
 }
 
-CounterGraph *PlotWindow::addCounterGraph()
+CounterGraph *PlotWindow::addCounterGraph(const QString &node)
 {
-    CounterGraph *graph = new CounterGraph(m_ui->customPlot->xAxis, m_ui->customPlot->yAxis);
+    CounterGraph *graph = new CounterGraph(m_ui->customPlot->xAxis, m_ui->customPlot->yAxis, node);
     if (m_ui->customPlot->addPlottable(graph)) {
         return graph;
     } else {
@@ -161,8 +161,10 @@ void PlotWindow::initializePlot()
 
     for (const QString &node : m_stat.getNodes()) {
         for (const QString &name : m_stat.getNames(node)) {
-            CounterGraph *graph = addCounterGraph();
-            graph->setName(m_stat.formatName(node, name));
+            CounterGraph *graph = addCounterGraph(node);
+            graph->setShowNode(m_stat.getNodeCount() > 1);
+            graph->setName(name);
+            graph->setDisplayName(Statistics::removeModuleFromStatName(name));
             graph->setPen(QPen(m_colorManager.getColor()));
             graph->setSelectedPen(graph->pen());
             // Set copy to true to avoid the data being deleted if show delta function is used
@@ -348,47 +350,33 @@ QCPGraph * PlotWindow::findNearestGraphValue(int index, double yCoord, double &v
 
 QString PlotWindow::genAggregateGraphName() const
 {
-    int aggregateGraphCount = 0;
-
-    QCustomPlot *plot = m_ui->customPlot;
-    for (int i = 0; i < plot->graphCount(); ++i) {
-        if (plot->graph(i)->name().startsWith(QLatin1String("aggregate_graph_"))) {
-            ++aggregateGraphCount;
-        }
-    }
-
-    return QStringLiteral("aggregate_graph_%1").arg(aggregateGraphCount + 1);
+    static int counter = 0;
+    return QStringLiteral("aggregate_graph_%1").arg(++counter);
 }
 
-void PlotWindow::removeGraphs(const QVector<QCPGraph *> &graphs)
+void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
 {
     if (graphs.isEmpty()) {
         return;
     }
 
     QCustomPlot *plot = m_ui->customPlot;
-    bool updateNameAndTitle = false;
-    for (QCPGraph *graph : graphs) {
+    for (CounterGraph *graph : graphs) {
         if (!graph->property("add_by_script").isValid()) {
-            updateNameAndTitle = true;
-            m_stat.removeDataMap(graph->name());
+            m_stat.removeDataMap(graph->node(), graph->name());
         }
         plot->removeGraph(graph);
     }
-    if (updateNameAndTitle) {
-        int preNodeCount = m_stat.getNodeCount();
-        m_stat.trimNodeNameDataMap();
-        if (preNodeCount > 1 && m_stat.getNodeCount() == 1) {
-            for (int i = 0; i < plot->graphCount(); ++i) {
-                QCPGraph *graph = plot->graph(i);
-                if (!graph->property("add_by_script").isValid())
-                    graph->setName(m_stat.removeNodePrefix(graph->name()));
-            }
-        }
 
-        updateWindowTitle();
-        updatePlotTitle();
+    m_stat.removeEmptyNode();
+    int numNode = m_stat.getNodeCount();
+    for (int i = 0; i < plot->graphCount(); ++i) {
+        CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
+        graph->setShowNode(numNode > 1);
     }
+
+    updateWindowTitle();
+    updatePlotTitle();
 
     selectionChanged();
     plot->replot();
@@ -400,7 +388,8 @@ void PlotWindow::updateWindowTitle()
     bool appendEllipsis = false;
     int graphCount = m_ui->customPlot->graphCount();
     for (int i = 0; i < graphCount; ++i) {
-        QString tempName = m_ui->customPlot->graph(i)->name();
+        CounterGraph *graph = qobject_cast<CounterGraph *>(m_ui->customPlot->graph(i));
+        QString tempName = graph->displayName();
         QString rightPart = tempName.mid(tempName.lastIndexOf('.') + 1);
         if (!names.contains(rightPart)) {
             if (names.size() < 3) {
@@ -536,7 +525,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         m_tracer->setGraphKey(index);
         m_tracer->setVisible(true);
 
-        QString text = graph->name();
+        QString text = qobject_cast<CounterGraph *>(graph)->displayName();
         text += '\n';
         text += m_stat.getDateTimeString(index);
         text += '\n';
@@ -627,19 +616,17 @@ void PlotWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *ite
     Q_UNUSED(legend)
 
     if (item) {
-        QString node, name;
         QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
-        m_stat.parseFormattedName(plItem->plottable()->name(), node, name);
+        CounterGraph *graph = qobject_cast<CounterGraph *>(plItem->plottable());
 
         bool ok;
         QString newName = QInputDialog::getText(this, QStringLiteral("Input graph name"),
                                                 QStringLiteral("New graph name:"),
                                                 QLineEdit::Normal,
-                                                name, &ok);
-        if (ok && !newName.isEmpty() && newName.indexOf(':') < 0 &&
-                m_stat.renameDataMap(node, name, newName))
+                                                graph->displayName(), &ok);
+        if (ok && !newName.isEmpty() && newName != graph->displayName() && newName.indexOf(':') < 0)
         {
-            plItem->plottable()->setName(m_stat.formatName(node, newName));
+            graph->setDisplayName(newName);
 
             updateWindowTitle();
             updatePlotTitle();
@@ -670,32 +657,26 @@ void PlotWindow::addAggregateGraph()
     QList<QCPAbstractLegendItem *> selectedLegendItems = plot->legend->selectedItems();
 
     QCPPlottableLegendItem *legendItem = static_cast<QCPPlottableLegendItem *>(selectedLegendItems.first());
-    QCPGraph *graph = static_cast<QCPGraph *>(legendItem->plottable());
-
-    QString node, name;
-    m_stat.parseFormattedName(graph->name(), node, name);
+    CounterGraph *graph = static_cast<CounterGraph *>(legendItem->plottable());
 
     QVector<QCPDataMap *> selectedDataMaps;
     selectedDataMaps.reserve(selectedLegendItems.size());
-    selectedDataMaps.append(m_stat.getDataMap(node, name));
+    selectedDataMaps.append(m_stat.getDataMap(graph->node(), graph->name()));
 
     for (int i = 1; i < selectedLegendItems.size(); ++i) {
         legendItem = static_cast<QCPPlottableLegendItem *>(selectedLegendItems[i]);
-        graph = static_cast<QCPGraph *>(legendItem->plottable());
+        CounterGraph *tempGraph = static_cast<CounterGraph *>(legendItem->plottable());
 
-        QString tempNode;
-        m_stat.parseFormattedName(graph->name(), tempNode, name);
-
-        if (tempNode != node) {
+        if (tempGraph->node() != graph->node()) {
             showErrorMsgBox(this, QStringLiteral("Cannot add aggregate graph because selected graphs belong to multiple nodes."));
             return;
         }
 
-        selectedDataMaps.append(m_stat.getDataMap(node, name));
+        selectedDataMaps.append(m_stat.getDataMap(tempGraph->node(), tempGraph->name()));
     }
 
     QString aggregateGraphName = genAggregateGraphName();
-    QCPDataMap *aggregateDataMap = m_stat.addDataMap(node, aggregateGraphName);
+    QCPDataMap *aggregateDataMap = m_stat.addDataMap(graph->node(), aggregateGraphName);
     *aggregateDataMap = *selectedDataMaps.first();
 
     for (int i = 1; i < selectedDataMaps.size(); ++i) {
@@ -705,8 +686,10 @@ void PlotWindow::addAggregateGraph()
         }
     }
 
-    QCPGraph *aggregateGraph = addCounterGraph();
-    aggregateGraph->setName(m_stat.formatName(node, aggregateGraphName));
+    CounterGraph *aggregateGraph = addCounterGraph(graph->node());
+    aggregateGraph->setShowNode(m_stat.getNodeCount() > 1);
+    aggregateGraph->setName(aggregateGraphName);
+    aggregateGraph->setDisplayName(aggregateGraphName);
     aggregateGraph->setPen(QPen(m_colorManager.getColor()));
     aggregateGraph->setSelectedPen(aggregateGraph->pen());
     aggregateGraph->setData(aggregateDataMap, true);
@@ -725,17 +708,16 @@ void PlotWindow::addAggregateGraph()
 
 void PlotWindow::removeSelectedGraph()
 {
-    QVector<QCPGraph*> graphsToBeRemoved;
+    QVector<CounterGraph*> graphs;
     QCustomPlot *plot = m_ui->customPlot;
-    auto selectedItems = plot->legend->selectedItems();
-    for (int i = 0; i < plot->legend->itemCount(); ++i) {
-        auto item = plot->legend->item(i);
-        if (selectedItems.contains(item)) {
-            graphsToBeRemoved << static_cast<QCPGraph*>(static_cast<QCPPlottableLegendItem*>(item)->plottable());
+    for (int i = 0; i < plot->graphCount(); ++i) {
+        CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
+        if (graph->selected()) {
+            graphs.append(graph);
         }
     }
 
-    removeGraphs(graphsToBeRemoved);
+    removeGraphs(graphs);
 }
 
 void PlotWindow::copyGraphName()
@@ -846,13 +828,15 @@ void PlotWindow::on_actionShowDelta_triggered(bool checked)
         }
     } else {
         for (int i = 0; i < m_stat.totalNameCount(); ++i) {
-            QCPGraph *graph = plot->graph(i);
+            CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
             // Set copy to true to avoid the data being deleted if show delta function is used
-            graph->setData(m_stat.getDataMap(graph->name()), true);
+            graph->setData(m_stat.getDataMap(graph->node(), graph->name()), true);
         }
     }
 
     updatePlotTitle();
+
+    m_valueText->setVisible(false);
 
     // Only rescale Y axis
     plot->yAxis->rescale();
@@ -901,16 +885,16 @@ void PlotWindow::on_actionScript_triggered()
 
 void PlotWindow::on_actionRemoveZeroCounters_triggered()
 {
-    QVector<QCPGraph*> graphsToBeRemoved;
+    QVector<CounterGraph*> graphs;
     QCustomPlot *plot = m_ui->customPlot;
     for (int i = 0; i < plot->graphCount(); ++i) {
-        QCPGraph *graph = plot->graph(i);
+        CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
         QCPDataMap *dataMap;
         if (graph->property("add_by_script").isValid()) {
             dataMap = graph->data();
         } else {
             // Also remove the counters that delta is zero
-            dataMap = m_ui->actionShowDelta->isChecked() ? graph->data() : m_stat.getDataMap(graph->name());
+            dataMap = m_ui->actionShowDelta->isChecked() ? graph->data() : m_stat.getDataMap(graph->node(), graph->name());
         }
         bool isZeroCounter = true;
         for (const QCPData &data : *dataMap) {
@@ -920,11 +904,11 @@ void PlotWindow::on_actionRemoveZeroCounters_triggered()
             }
         }
         if (isZeroCounter) {
-            graphsToBeRemoved << graph;
+            graphs << graph;
         }
     }
 
-    removeGraphs(graphsToBeRemoved);
+    removeGraphs(graphs);
 }
 
 void PlotWindow::on_actionCopyToClipboard_triggered()

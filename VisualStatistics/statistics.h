@@ -19,16 +19,9 @@ public:
     QList<double> getDataKeys(const QString &node) const;
     int totalNameCount() const;
     QCPDataMap* getDataMap(const QString &node, const QString &name);
-    QCPDataMap* getDataMap(const QString &formattedName);
     QCPDataMap* addDataMap(const QString &node, const QString &name);
     bool removeDataMap(const QString &node, const QString &name);
-    bool removeDataMap(const QString &formattedName);
-    bool renameDataMap(const QString &node, const QString &name, const QString &newName);
-    void trimNodeNameDataMap();
-    QString formatName(const QString &node, const QString &name) const;
-    void parseFormattedName(const QString &formattedName,
-                            QString &node, QString &name) const;
-    QString removeNodePrefix(const QString &name) const;
+    void removeEmptyNode();
 
     int dateTimeCount() const;
     DateTimeVector::value_type getDateTime(int index) const;
@@ -41,6 +34,9 @@ public:
 
     static QMap<QString, NodeNameDataMap>
         groupNodeNameDataMapByName(NodeNameDataMap &&nndm);
+
+    static QString getModuleFromStatName(const std::string &statName);
+    static QString removeModuleFromStatName(const QString &statName);
 
     int getSampleInterval() const;
 

@@ -22,6 +22,24 @@ Statistics::groupNodeNameDataMapByName(NodeNameDataMap &&nndm)
     return grouped;
 }
 
+QString Statistics::getModuleFromStatName(const std::string &statName)
+{
+    auto pos = statName.find(',');
+    if (pos > 0) {
+        return QString(statName.substr(0, pos).c_str());
+    }
+    return QString();
+}
+
+QString Statistics::removeModuleFromStatName(const QString &statName)
+{
+    int pos = statName.indexOf(',');
+    if (pos > 0) {
+        return statName.mid(pos + 1);
+    }
+    return statName;
+}
+
 int Statistics::getSampleInterval() const
 {
     std::vector<int> timeDiff;
@@ -104,13 +122,6 @@ QCPDataMap* Statistics::getDataMap(const QString &node, const QString &name)
     return nullptr;
 }
 
-QCPDataMap* Statistics::getDataMap(const QString &formattedName)
-{
-    QString node, name;
-    parseFormattedName(formattedName, node, name);
-    return getDataMap(node, name);
-}
-
 QCPDataMap* Statistics::addDataMap(const QString &node, const QString &name)
 {
     if (!m_nndm.contains(node)) {
@@ -138,38 +149,7 @@ bool Statistics::removeDataMap(const QString &node, const QString &name)
     return false;
 }
 
-bool Statistics::removeDataMap(const QString &formattedName)
-{
-    QString node, name;
-    parseFormattedName(formattedName, node, name);
-    return removeDataMap(node, name);
-}
-
-bool Statistics::renameDataMap(const QString &node, const QString &name, const QString &newName)
-{
-    if (name == newName) {
-        return false;
-    }
-    if (m_nndm.contains(node)) {
-        NameDataMap &ndm = m_nndm[node];
-        auto pos1 = ndm.find(name);
-        if (pos1 == ndm.end()) {
-            return false;
-        }
-        auto pos2 = ndm.find(newName);
-        if (pos2 != ndm.end()) {
-            return false;
-        }
-        QCPDataMap temp;
-        (*pos1).swap(temp);
-        ndm.erase(pos1);
-        ndm.insert(newName, temp);
-        return true;
-    }
-    return false;
-}
-
-void Statistics::trimNodeNameDataMap()
+void Statistics::removeEmptyNode()
 {
     for (auto iter = m_nndm.begin(); iter != m_nndm.end();) {
         if (iter->empty()) {
@@ -178,34 +158,6 @@ void Statistics::trimNodeNameDataMap()
             ++iter;
         }
     }
-}
-
-QString Statistics::formatName(const QString &node, const QString &name) const
-{
-    if (m_nndm.size() > 1) {
-        return (QString(node) += ':') += name;
-    }
-    return name;
-}
-
-void Statistics::parseFormattedName(const QString &formattedName,
-                                    QString &node, QString &name) const
-{
-    if (formattedName.indexOf(':') > -1) {
-        QStringList strList = formattedName.split(':');
-        node = strList[0];
-        name = strList[1];
-    } else {
-        node = m_nndm.firstKey();
-        name = formattedName;
-    }
-}
-
-QString Statistics::removeNodePrefix(const QString &name) const
-{
-    QVector<QStringRef> refs = name.splitRef(':');
-    Q_ASSERT(refs.size() == 2);
-    return refs.at(1).toString();
 }
 
 int Statistics::dateTimeCount() const
