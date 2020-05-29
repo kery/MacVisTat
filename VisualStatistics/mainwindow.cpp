@@ -75,7 +75,8 @@ MainWindow::MainWindow() :
     connect(m_ui->lwModules, &QListWidget::itemSelectionChanged, this, &MainWindow::updateFilterPattern);
 
     connect(m_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logEditContextMenuRequest);
-    connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::listViewContextMenuRequest);
+    connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::lvStatNameCtxMenuRequest);
+    connect(m_ui->lwModules, &QListWidget::customContextMenuRequested, this, &MainWindow::lwModulesCtxMenuRequest);
 
 #ifdef INSTALLER
     startCheckNewVersionTask();
@@ -662,13 +663,23 @@ void MainWindow::logEditContextMenuRequest(const QPoint &pos)
     menu->popup(m_ui->logTextEdit->mapToGlobal(pos));
 }
 
-void MainWindow::listViewContextMenuRequest(const QPoint &pos)
+void MainWindow::lvStatNameCtxMenuRequest(const QPoint &pos)
 {
     QMenu *menu = new QMenu();
     menu->setAttribute(Qt::WA_DeleteOnClose);
-    menu->addAction(QStringLiteral("Copy"), this, SLOT(copyStatisticsNames()));
+    menu->addAction(QStringLiteral("Copy Selected"), this, SLOT(copyLvStatNameSelected()));
+    menu->addAction(QStringLiteral("Clear Selection"), m_ui->lvStatName, SLOT(clearSelection()));
 
     menu->popup(m_ui->lvStatName->mapToGlobal(pos));
+}
+
+void MainWindow::lwModulesCtxMenuRequest(const QPoint &pos)
+{
+    QMenu *menu = new QMenu();
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    menu->addAction(QStringLiteral("Clear Selection"), m_ui->lwModules, SLOT(clearSelection()));
+
+    menu->popup(m_ui->lwModules->mapToGlobal(pos));
 }
 
 void MainWindow::clearLogEdit()
@@ -676,7 +687,7 @@ void MainWindow::clearLogEdit()
     m_ui->logTextEdit->clear();
 }
 
-void MainWindow::copyStatisticsNames()
+void MainWindow::copyLvStatNameSelected()
 {
     QModelIndexList indexList = m_ui->lvStatName->selectionModel()->selectedIndexes();
     if (indexList.size() > 0) {

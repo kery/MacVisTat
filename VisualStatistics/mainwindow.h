@@ -71,9 +71,10 @@ private slots:
     void adjustFilterHistoryOrder();
     void listViewDoubleClicked(const QModelIndex &index);
     void logEditContextMenuRequest(const QPoint &pos);
-    void listViewContextMenuRequest(const QPoint &pos);
+    void lvStatNameCtxMenuRequest(const QPoint &pos);
+    void lwModulesCtxMenuRequest(const QPoint &pos);
     void clearLogEdit();
-    void copyStatisticsNames();
+    void copyLvStatNameSelected();
     void updateStatNameInfo();
     void addRecentFile();
     void caseSensitiveButtonClicked(bool checked);

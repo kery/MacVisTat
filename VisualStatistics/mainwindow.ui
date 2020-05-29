@@ -49,6 +49,9 @@
          </property>
         </widget>
         <widget class="QListWidget" name="lwModules">
+         <property name="contextMenuPolicy">
+          <enum>Qt::CustomContextMenu</enum>
+         </property>
          <property name="selectionMode">
           <enum>QAbstractItemView::ExtendedSelection</enum>
          </property>
