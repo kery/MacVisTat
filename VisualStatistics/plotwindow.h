@@ -21,6 +21,8 @@ public:
     ~PlotWindow();
 
     CounterGraph * addCounterGraph(const QString &node=QString(), const QString &module=QString());
+    void updateWindowTitle();
+    void updatePlotTitle();
 
     Statistics& getStat();
     QCustomPlot* getPlot();
@@ -43,9 +45,6 @@ private:
 
     QString genAggregateGraphName() const;
     void removeGraphs(const QVector<CounterGraph*> &graphs);
-
-    void updateWindowTitle();
-    void updatePlotTitle();
 
     QString defaultSaveFileName() const;
 

@@ -159,6 +159,9 @@ static int add_graph(lua_State *L)
 
         QCustomPlot *plot = plotWnd->getPlot();
         lua_pushinteger(L, plot->graphCount() - 1);
+
+        plotWnd->updateWindowTitle();
+        plotWnd->updatePlotTitle();
     } else {
         luaL_error(L, "add graph failed");
     }

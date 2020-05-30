@@ -4,8 +4,6 @@
 #include "utils.h"
 #include "version.h"
 
-static const char *SUFFIX_DELTA = " (DELTA)";
-
 static const double SCATTER_SIZE = 6.0;
 static const double TRACER_SIZE = SCATTER_SIZE + 4.0;
 
@@ -109,6 +107,44 @@ CounterGraph *PlotWindow::addCounterGraph(const QString &node, const QString &mo
         delete graph;
         return nullptr;
     }
+}
+
+void PlotWindow::updateWindowTitle()
+{
+    QStringList names;
+    bool appendEllipsis = false;
+    int graphCount = m_ui->customPlot->graphCount();
+    for (int i = 0; i < graphCount; ++i) {
+        CounterGraph *graph = qobject_cast<CounterGraph *>(m_ui->customPlot->graph(i));
+        QString tempName = graph->displayName();
+        QString rightPart = tempName.mid(tempName.lastIndexOf('.') + 1);
+        if (!names.contains(rightPart)) {
+            if (names.size() < 3) {
+                names.append(rightPart);
+            } else {
+                appendEllipsis = true;
+                break;
+            }
+        }
+    }
+
+    QString title = names.join(QLatin1String(", "));
+    if (appendEllipsis) {
+        title.append("...");
+    }
+    setWindowTitle(title);
+}
+
+void PlotWindow::updatePlotTitle()
+{
+    QString formatString;
+    QCustomPlot *plot = m_ui->customPlot;
+    if (m_ui->actionShowDelta->isChecked()) {
+        formatString = "%1 (%2, DELTA)";
+    } else {
+        formatString = "%1 (%2)";
+    }
+    plot->xAxis2->setLabel(formatString.arg(windowTitle()).arg(plot->graphCount()));
 }
 
 Statistics& PlotWindow::getStat()
@@ -384,41 +420,6 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
 
     selectionChanged();
     plot->replot();
-}
-
-void PlotWindow::updateWindowTitle()
-{
-    QStringList names;
-    bool appendEllipsis = false;
-    int graphCount = m_ui->customPlot->graphCount();
-    for (int i = 0; i < graphCount; ++i) {
-        CounterGraph *graph = qobject_cast<CounterGraph *>(m_ui->customPlot->graph(i));
-        QString tempName = graph->displayName();
-        QString rightPart = tempName.mid(tempName.lastIndexOf('.') + 1);
-        if (!names.contains(rightPart)) {
-            if (names.size() < 3) {
-                names.append(rightPart);
-            } else {
-                appendEllipsis = true;
-                break;
-            }
-        }
-    }
-
-    QString title = names.join(QLatin1String(", "));
-    if (appendEllipsis) {
-        title.append("...");
-    }
-    setWindowTitle(title);
-}
-
-void PlotWindow::updatePlotTitle()
-{
-    if (m_ui->actionShowDelta->isChecked()) {
-        m_ui->customPlot->xAxis2->setLabel(windowTitle() + SUFFIX_DELTA);
-    } else {
-        m_ui->customPlot->xAxis2->setLabel(windowTitle());
-    }
 }
 
 QString PlotWindow::defaultSaveFileName() const
