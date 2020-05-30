@@ -501,7 +501,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
 {
     QCustomPlot *plot = m_ui->customPlot;
 
-    if (plot->legend->selectTest(event->pos(), false) >= 0) {
+    if (plot->legend->visible() && plot->legend->selectTest(event->pos(), false) >= 0) {
         return;
     }
 
