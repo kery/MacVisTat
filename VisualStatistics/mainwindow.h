@@ -51,6 +51,7 @@ private:
     QString filterHistoryFilePath();
     void loadFilterHistory();
     void saveFilterHistory();
+    void adjustFilterHistoryOrder();
 
     void initializeRecentFileActions();
     void updateRecentFileActions();
@@ -67,8 +68,8 @@ private slots:
     void checkNewVersionTaskError(QProcess::ProcessError error);
     void userReportTaskFinished(QNetworkReply *reply);
 
+    void cbRegExpFilterEditReturnPressed();
     void updateFilterPattern();
-    void adjustFilterHistoryOrder();
     void listViewDoubleClicked(const QModelIndex &index);
     void logEditContextMenuRequest(const QPoint &pos);
     void lvStatNameCtxMenuRequest(const QPoint &pos);

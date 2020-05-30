@@ -77,8 +77,8 @@ MainWindow::MainWindow() :
 
     m_ui->cbRegExpFilter->completer()->setCaseSensitivity(Qt::CaseSensitive);
     m_ui->cbRegExpFilter->lineEdit()->setPlaceholderText(QStringLiteral("regular expression filter"));
-    connect(m_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::updateFilterPattern);
-    connect(m_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::adjustFilterHistoryOrder);
+    connect(m_ui->cbRegExpFilter, SIGNAL(activated(int)), this, SLOT(updateFilterPattern()));
+    connect(m_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::cbRegExpFilterEditReturnPressed);
     connect(m_ui->lvStatName, &QListView::doubleClicked, this, &MainWindow::listViewDoubleClicked);
     connect(m_ui->lwModules, &QListWidget::itemSelectionChanged, this, &MainWindow::updateFilterPattern);
     connect(m_ui->lwModules, &QListWidget::itemSelectionChanged, this, &MainWindow::updateModulesInfo);
@@ -499,6 +499,17 @@ void MainWindow::saveFilterHistory()
     }
 }
 
+void MainWindow::adjustFilterHistoryOrder()
+{
+    QString currentText = m_ui->cbRegExpFilter->lineEdit()->text();
+    int index = m_ui->cbRegExpFilter->findText(currentText);
+    if (index > 0) {
+        m_ui->cbRegExpFilter->removeItem(index);
+        m_ui->cbRegExpFilter->insertItem(0, currentText);
+        m_ui->cbRegExpFilter->setCurrentIndex(0);
+    }
+}
+
 void MainWindow::initializeRecentFileActions()
 {
     m_sepAction = m_ui->menu_File->insertSeparator(m_ui->actionExit);
@@ -630,8 +641,28 @@ void MainWindow::userReportTaskFinished(QNetworkReply *reply)
     reply->deleteLater();
 }
 
+void MainWindow::cbRegExpFilterEditReturnPressed()
+{
+    // If current text of combo box is empty and return key pressed, the "activated" signal
+    // will not be sent. So, we have to call updateFilterPattern manually.
+    if (m_ui->cbRegExpFilter->currentText().isEmpty()) {
+        updateFilterPattern();
+    } else {
+        adjustFilterHistoryOrder();
+    }
+}
+
 void MainWindow::updateFilterPattern()
 {
+//    QByteArray baSig;
+//    if (sender()) {
+//        QMetaMethod metaMethod = sender()->metaObject()->method(senderSignalIndex());
+//        baSig = metaMethod.methodSignature();
+//    }
+
+//    static int c = 0;
+//    qDebug() << "updateFilterPattern" << ++c << m_ui->cbRegExpFilter->currentIndex() << baSig;
+
     QStringList modules, errList;
     for (const QListWidgetItem *item : m_ui->lwModules->selectedItems()) {
         modules.append(item->text());
@@ -641,17 +672,6 @@ void MainWindow::updateFilterPattern()
                 modules, m_ui->cbRegExpFilter->lineEdit()->text(), m_caseSensitive, errList);
     for (const QString &err : errList) {
         appendLogError(err);
-    }
-}
-
-void MainWindow::adjustFilterHistoryOrder()
-{
-    QString currentText = m_ui->cbRegExpFilter->lineEdit()->text();
-    int index = m_ui->cbRegExpFilter->findText(currentText);
-    if (index > 0) {
-        m_ui->cbRegExpFilter->removeItem(index);
-        m_ui->cbRegExpFilter->insertItem(0, currentText);
-        m_ui->cbRegExpFilter->setCurrentIndex(0);
     }
 }
 
