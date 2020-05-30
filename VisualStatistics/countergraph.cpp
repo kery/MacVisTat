@@ -36,13 +36,20 @@ QString CounterGraph::displayName() const
 
 QString CounterGraph::realDisplayName() const
 {
+    QString realName;
+
     if (m_showNode && !m_node.isEmpty()) {
-        QString realName(m_node);
+        realName += m_node;
         realName += ':';
-        realName += m_displayName;
-        return realName;
     }
-    return m_displayName;
+
+    if (m_showModule && !m_module.isEmpty()) {
+        realName += m_module;
+        realName += ',';
+    }
+
+    realName += m_displayName;
+    return realName;
 }
 
 void CounterGraph::setSuspectFlagScatterStyle(const QCPScatterStyle &ssSuspect)

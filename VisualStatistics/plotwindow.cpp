@@ -16,6 +16,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_userEditFlag(true),
     m_userDragFlag(true),
     m_hasScatter(false),
+    m_showModule(false),
     m_stat(std::move(stat))
 {
     m_ui->setupUi(this);
@@ -123,10 +124,6 @@ QCustomPlot* PlotWindow::getPlot()
 void PlotWindow::initializePlot()
 {
     QCustomPlot *plot = m_ui->customPlot;
-
-    QFont font = plot->legend->font();
-    font.setPointSize(7);
-    plot->legend->setFont(font);
 
     plot->axisRect()->setupFullAxesBox();
     plot->xAxis->setAutoTicks(false);
@@ -532,7 +529,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         m_tracer->setGraphKey(index);
         m_tracer->setVisible(true);
 
-        QString text = qobject_cast<CounterGraph *>(graph)->displayName();
+        QString text = qobject_cast<CounterGraph *>(graph)->realDisplayName();
         text += '\n';
         text += m_stat.getDateTimeString(index);
         text += '\n';
@@ -582,8 +579,10 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     QMenu *menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
-    menu->addAction(plot->legend->visible() ? QStringLiteral("Hide Legend") : QStringLiteral("Show Legend"),
-                    this, SLOT(toggleLegendVisibility()));
+    QAction *actionShowLegend = menu->addAction(QStringLiteral("Show Legend"), this, &PlotWindow::showLegendTriggered);
+    actionShowLegend->setCheckable(true);
+    actionShowLegend->setChecked(plot->legend->visible());
+
     QMenu *subMenu = menu->addMenu(QStringLiteral("Move Legend to"));
     QMenu *subMenuTop = subMenu->addMenu(QStringLiteral("Top"));
     QMenu *subMenuBottom = subMenu->addMenu(QStringLiteral("Bottom"));
@@ -601,6 +600,10 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
 
     menu->addSeparator();
+    QAction *actionShowModuleName = menu->addAction(QStringLiteral("Show Module Name"), this, &PlotWindow::showModuleNameTriggered);
+    actionShowModuleName->setCheckable(true);
+    actionShowModuleName->setChecked(m_showModule);
+
     QAction *actionCopy = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
     QAction *actionAdd = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
     QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
@@ -742,10 +745,25 @@ void PlotWindow::copyGraphName()
     QApplication::clipboard()->setText(strList.join('\n'));
 }
 
-void PlotWindow::toggleLegendVisibility()
+void PlotWindow::showLegendTriggered(bool checked)
 {
     QCustomPlot *plot = m_ui->customPlot;
-    plot->legend->setVisible(!plot->legend->visible());
+    plot->legend->setVisible(checked);
+    plot->replot();
+}
+
+void PlotWindow::showModuleNameTriggered(bool checked)
+{
+    m_showModule = checked;
+
+    QCustomPlot *plot = m_ui->customPlot;
+    for (int i = 0; i < plot->graphCount(); ++i) {
+        CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
+        graph->setShowModule(checked);
+    }
+
+    m_valueText->setVisible(false);
+
     plot->replot();
 }
 

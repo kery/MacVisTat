@@ -61,7 +61,8 @@ private slots:
     void addAggregateGraph();
     void removeSelectedGraph();
     void copyGraphName();
-    void toggleLegendVisibility();
+    void showLegendTriggered(bool checked);
+    void showModuleNameTriggered(bool checked);
     void xAxisRangeChanged(const QCPRange &newRange);
     void fromDateTimeChanged(const QDateTime &dateTime);
     void toDateTimeChanged(const QDateTime &dateTime);
@@ -87,6 +88,7 @@ private:
     bool m_userEditFlag;
     bool m_userDragFlag;
     bool m_hasScatter;
+    bool m_showModule;
     ColorManager m_colorManager;
     Statistics m_stat;
 };
