@@ -75,6 +75,8 @@ MainWindow::MainWindow() :
     connect(m_ui->lvStatName->model(), SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(updateStatNameInfo()));
     connect(m_ui->lvStatName->model(), SIGNAL(modelReset()), this, SLOT(updateStatNameInfo()));
 
+    m_ui->cbRegExpFilter->lineEdit()->setClearButtonEnabled(true);
+    connectClearButtonSignal();
     m_ui->cbRegExpFilter->completer()->setCaseSensitivity(Qt::CaseSensitive);
     m_ui->cbRegExpFilter->lineEdit()->setPlaceholderText(QStringLiteral("regular expression filter"));
     connect(m_ui->cbRegExpFilter, SIGNAL(activated(int)), this, SLOT(updateFilterPattern()));
@@ -507,6 +509,19 @@ void MainWindow::adjustFilterHistoryOrder()
         m_ui->cbRegExpFilter->removeItem(index);
         m_ui->cbRegExpFilter->insertItem(0, currentText);
         m_ui->cbRegExpFilter->setCurrentIndex(0);
+    }
+}
+
+void MainWindow::connectClearButtonSignal()
+{
+    QLineEdit *lineEdit = m_ui->cbRegExpFilter->lineEdit();
+    for (QObject *child : lineEdit->children()) {
+        QAction *action = qobject_cast<QAction *>(child);
+        // "_q_qlineeditclearaction" is defined in qlineedit.cpp
+        if (action && action->objectName() == QLatin1String("_q_qlineeditclearaction")) {
+            connect(action, &QAction::triggered, this, &MainWindow::updateFilterPattern, Qt::QueuedConnection);
+            return;
+        }
     }
 }
 

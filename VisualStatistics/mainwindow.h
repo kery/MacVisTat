@@ -52,6 +52,7 @@ private:
     void loadFilterHistory();
     void saveFilterHistory();
     void adjustFilterHistoryOrder();
+    void connectClearButtonSignal();
 
     void initializeRecentFileActions();
     void updateRecentFileActions();
