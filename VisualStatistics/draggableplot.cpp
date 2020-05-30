@@ -8,7 +8,7 @@ DraggablePlot::DraggablePlot(QWidget *parent) :
 
 void DraggablePlot::mousePressEvent(QMouseEvent *event)
 {
-    if (legend->selectTest(event->pos(), false) >= 0 &&
+    if (legend->visible() && legend->selectTest(event->pos(), false) >= 0 &&
             event->button() == Qt::LeftButton)
     {
         _dragStartPos = event->pos();
