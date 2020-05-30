@@ -763,9 +763,10 @@ void PlotWindow::showModuleNameTriggered(bool checked)
         graph->setShowModule(checked);
     }
 
-    m_valueText->setVisible(false);
-
-    plot->replot();
+    if (m_valueText->visible() || plot->legend->visible()) {
+        m_valueText->setVisible(false);
+        plot->replot();
+    }
 }
 
 void PlotWindow::xAxisRangeChanged(const QCPRange &newRange)
