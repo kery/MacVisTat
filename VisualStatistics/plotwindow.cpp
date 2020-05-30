@@ -159,7 +159,7 @@ void PlotWindow::initializePlot()
     connect(plot, &QCustomPlot::legendDoubleClick, this, &PlotWindow::legendDoubleClick);
 
     QSettings settings;
-    bool showSuspectFlag = settings.value(QStringLiteral("showSuspectFlag")).toBool();
+    bool showSuspectFlag = settings.value(QStringLiteral("showSuspectFlag"), true).toBool();
     if (showSuspectFlag) {
         m_ui->actionShowSuspectFlag->setChecked(true);
     }
