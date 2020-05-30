@@ -8,10 +8,11 @@ class CounterGraph : public QCPGraph
     Q_OBJECT
 
 public:
-    CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &node);
+    CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &node, const QString &module);
 
     void setShowNode(bool show);
     QString node() const;
+    void setShowModule(bool show);
     void setDisplayName(const QString &name);
     QString displayName() const;
     QString realDisplayName() const;
@@ -27,7 +28,9 @@ protected:
 
 private:
     bool m_showNode;
+    bool m_showModule;
     QString m_node;
+    QString m_module;
     QString m_displayName;
     QCPScatterStyle m_ssSuspect; // scatter style for suspect (<suspect>true</suspect>) value
 

@@ -1,9 +1,11 @@
 #include "countergraph.h"
 #include "counterlegenditem.h"
 
-CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &node) :
+CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &node, const QString &module) :
     m_showNode(false),
+    m_showModule(false),
     m_node(node),
+    m_module(module),
     QCPGraph(keyAxis, valueAxis)
 {
 }
@@ -16,6 +18,10 @@ void CounterGraph::setShowNode(bool show)
 QString CounterGraph::node() const
 {
     return m_node;
+}
+
+void CounterGraph::setShowModule(bool show) {
+    m_showModule = show;
 }
 
 void CounterGraph::setDisplayName(const QString &name)

@@ -36,7 +36,7 @@ public:
         groupNodeNameDataMapByName(NodeNameDataMap &&nndm);
 
     static QString getModuleFromStatName(const std::string &statName);
-    static QString removeModuleFromStatName(const QString &statName);
+    static QString splitStatNameToModuleAndName(const QString &statName, QString &name);
 
     int getSampleInterval() const;
 

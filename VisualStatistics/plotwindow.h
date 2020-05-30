@@ -20,7 +20,7 @@ public:
     PlotWindow& operator=(const PlotWindow &) = delete;
     ~PlotWindow();
 
-    CounterGraph * addCounterGraph(const QString &node);
+    CounterGraph * addCounterGraph(const QString &node=QString(), const QString &module=QString());
 
     Statistics& getStat();
     QCustomPlot* getPlot();

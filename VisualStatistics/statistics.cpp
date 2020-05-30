@@ -31,13 +31,15 @@ QString Statistics::getModuleFromStatName(const std::string &statName)
     return QString();
 }
 
-QString Statistics::removeModuleFromStatName(const QString &statName)
+QString Statistics::splitStatNameToModuleAndName(const QString &statName, QString &name)
 {
     int pos = statName.indexOf(',');
     if (pos > 0) {
-        return statName.mid(pos + 1);
+        name = statName.mid(pos + 1);
+        return statName.left(pos);
     }
-    return statName;
+    name = statName;
+    return QString();
 }
 
 int Statistics::getSampleInterval() const

@@ -136,7 +136,7 @@ static int add_graph(lua_State *L)
     luaL_checktype(L, 2, LUA_TTABLE);
 
     PlotWindow *plotWnd = plotWindow(L);
-    QCPGraph *graph = plotWnd->addCounterGraph(QString());
+    QCPGraph *graph = plotWnd->addCounterGraph();
     graph->setProperty("add_by_script", true);
     if (graph) {
         QCPData data;

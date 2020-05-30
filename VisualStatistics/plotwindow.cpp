@@ -98,9 +98,10 @@ PlotWindow::~PlotWindow()
     delete m_ui;
 }
 
-CounterGraph *PlotWindow::addCounterGraph(const QString &node)
+CounterGraph *PlotWindow::addCounterGraph(const QString &node, const QString &module)
 {
-    CounterGraph *graph = new CounterGraph(m_ui->customPlot->xAxis, m_ui->customPlot->yAxis, node);
+    CounterGraph *graph = new CounterGraph(m_ui->customPlot->xAxis, m_ui->customPlot->yAxis,
+                                           node, module);
     if (m_ui->customPlot->addPlottable(graph)) {
         return graph;
     } else {
@@ -122,6 +123,10 @@ QCustomPlot* PlotWindow::getPlot()
 void PlotWindow::initializePlot()
 {
     QCustomPlot *plot = m_ui->customPlot;
+
+    QFont font = plot->legend->font();
+    font.setPointSize(7);
+    plot->legend->setFont(font);
 
     plot->axisRect()->setupFullAxesBox();
     plot->xAxis->setAutoTicks(false);
@@ -160,15 +165,17 @@ void PlotWindow::initializePlot()
     }
 
     for (const QString &node : m_stat.getNodes()) {
-        for (const QString &name : m_stat.getNames(node)) {
-            CounterGraph *graph = addCounterGraph(node);
+        for (const QString &statName : m_stat.getNames(node)) {
+            QString name;
+            QString module = Statistics::splitStatNameToModuleAndName(statName, name);
+            CounterGraph *graph = addCounterGraph(node, module);
             graph->setShowNode(m_stat.getNodeCount() > 1);
-            graph->setName(name);
-            graph->setDisplayName(Statistics::removeModuleFromStatName(name));
+            graph->setName(statName);
+            graph->setDisplayName(name);
             graph->setPen(QPen(m_colorManager.getColor()));
             graph->setSelectedPen(graph->pen());
             // Set copy to true to avoid the data being deleted if show delta function is used
-            graph->setData(m_stat.getDataMap(node, name), true);
+            graph->setData(m_stat.getDataMap(node, statName), true);
             if (showSuspectFlag) {
                 graph->setSuspectFlagScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, SCATTER_SIZE));
             }
