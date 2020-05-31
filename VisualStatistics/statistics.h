@@ -44,10 +44,6 @@ private:
     void initDateTimes();
     void updateDataKeys();
 
-    void updateFirstDataKeys(NameDataMap &ndm);
-    void updateOtherDataKeys(NameDataMap &ndm);
-    void updateDataKeys(const QCPDataMap &src, QCPDataMap &dest);
-
 private:
     NodeNameDataMap m_nndm;
     DateTimeVector m_dateTimes;

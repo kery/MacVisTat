@@ -212,65 +212,35 @@ QMap<int, qint32> Statistics::getIndexDateTimeMap(const QString &node) const
 
 void Statistics::initDateTimes()
 {
-    for (NameDataMap &ndm : m_nndm) {
-        QList<double> dateTimesOfNode = ndm.first().keys();
-
-        DateTimeVector temp(m_dateTimes.size() + dateTimesOfNode.size());
-        auto iter = std::set_union(m_dateTimes.begin(), m_dateTimes.end(),
-                                   dateTimesOfNode.begin(), dateTimesOfNode.end(),
-                                   temp.begin());
-        temp.resize(iter - temp.begin());
-        m_dateTimes.swap(temp);
+    for (const NameDataMap &ndm : m_nndm) {
+        for (const QCPDataMap &dm : ndm) {
+            QList<double> dateTimesOfName = dm.keys();
+            DateTimeVector temp(m_dateTimes.size() + dateTimesOfName.size());
+            auto iter = std::set_union(m_dateTimes.begin(), m_dateTimes.end(),
+                                       dateTimesOfName.begin(), dateTimesOfName.end(),
+                                       temp.begin());
+            temp.resize(iter - temp.begin());
+            m_dateTimes.swap(temp);
+        }
     }
 }
 
 void Statistics::updateDataKeys()
 {
     for (NameDataMap &ndm : m_nndm) {
-        updateFirstDataKeys(ndm);
-        updateOtherDataKeys(ndm);
+        for (QCPDataMap &dataMap : ndm) {
+            QCPDataMap tempDataMap;
+            auto searchFrom = m_dateTimes.begin();
+            for (const QCPData &data : dataMap) {
+                QCPData tempData;
+                auto iter = std::lower_bound(searchFrom, m_dateTimes.end(), data.key);
+                tempData.key = iter - m_dateTimes.begin();
+                tempData.value = data.value;
+                tempData.valueErrorMinus = data.valueErrorMinus;
+                tempDataMap.insert(tempData.key, tempData);
+                searchFrom = iter;
+            }
+            dataMap.swap(tempDataMap);
+        }
     }
-}
-
-void Statistics::updateFirstDataKeys(NameDataMap &ndm)
-{
-    QCPData tempData;
-    QCPDataMap tempDataMap, &dataMap = ndm.first();
-    auto searchFrom = m_dateTimes.begin();
-    for (const QCPData &data : dataMap) {
-        auto index = std::lower_bound(searchFrom, m_dateTimes.end(), data.key);
-        Q_ASSERT(index != m_dateTimes.end());
-        tempData.key = index - m_dateTimes.begin();
-        tempData.value = data.value;
-        tempData.valueErrorMinus = data.valueErrorMinus;
-        tempDataMap.insert(tempData.key, tempData);
-        searchFrom = index;
-    }
-    dataMap.swap(tempDataMap);
-}
-
-void Statistics::updateOtherDataKeys(NameDataMap &ndm)
-{
-    const QCPDataMap &first = ndm.first();
-    for (auto iter = ndm.begin() + 1; iter != ndm.end(); ++iter) {
-        QCPDataMap &item = iter.value();
-        updateDataKeys(first, item);
-    }
-}
-
-void Statistics::updateDataKeys(const QCPDataMap &src, QCPDataMap &dest)
-{
-    Q_ASSERT(src.size() == dest.size());
-
-    QCPData tempData;
-    QCPDataMap tempDataMap;
-    auto iterSrc = src.begin();
-    auto iterDest = dest.begin();
-    for (; iterSrc != src.end(); ++iterSrc, ++iterDest) {
-        tempData.key = iterSrc.key();
-        tempData.value = iterDest.value().value;
-        tempData.valueErrorMinus = iterDest.value().valueErrorMinus;
-        tempDataMap.insert(tempData.key, tempData);
-    }
-    dest.swap(tempDataMap);
 }

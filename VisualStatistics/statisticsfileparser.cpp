@@ -109,9 +109,11 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
         const char *semicolon;
         while ((semicolon = searchr(ptr, len, ';', &newline)) != nullptr) {
             if (index == indexes.at(parsed)) {
-                data.value = strtod(ptr, &suspectFlag);
-                data.valueErrorMinus = *suspectFlag == 's' ? 1.0 : 0;
-                ndm[inm.value(index)].insert(data.key, data);
+                if (*ptr != ';') {
+                    data.value = strtod(ptr, &suspectFlag);
+                    data.valueErrorMinus = *suspectFlag == 's' ? 1.0 : 0;
+                    ndm[inm.value(index)].insert(data.key, data);
+                }
                 if (++parsed == indexes.size()) {
                     len -= semicolon - ptr;
                     ptr = semicolon;
@@ -136,7 +138,7 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
             ptr = semicolon + 1;
         }
         if (newline) {
-            if (parsed < indexes.size() && index == indexes.at(parsed)) {
+            if (parsed < indexes.size() && index == indexes.at(parsed) && *ptr != ';') {
                 data.value = strtod(ptr, &suspectFlag);
                 data.valueErrorMinus = *suspectFlag == 's' ? 1.0 : 0;
                 ndm[inm.value(index)].insert(data.key, data);
@@ -601,7 +603,7 @@ struct MeasData {
     std::vector<std::string> values;
 
     MeasData() {}
-    MeasData(size_t size) : values(size, std::string("0")) {}
+    MeasData(size_t size) : values(size) {}
 };
 
 struct XmlDataResult
@@ -693,18 +695,15 @@ static void dataEndElementHandler(void *ud, const char *name)
 
     if (strcmp(name, "measType") == 0) {
         userData->elName = XEN_notCare;
-
-        userData->pMeasType[userData->valueP] = userData->character;
-        userData->character.clear();
+        userData->pMeasType[userData->valueP].swap(userData->character);
     } else if (strcmp(name, "r") == 0) {
         userData->elName = XEN_notCare;
 
         const std::string &measType = userData->pMeasType[userData->valueP];
         const std::string counterName = userData->measInfoId + ',' + userData->objLdn + ',' + measType;
         int index = userData->indexes->at(counterName);
-        userData->result->datas.back().values[index] = userData->character;
         userData->tempIndexes.push_back(index);
-        userData->character.clear();
+        userData->result->datas.back().values[index].swap(userData->character);
     } else if (strcmp(name, "measValue") == 0) {
         if (userData->suspectFlag) {
             userData->suspectFlag = false;
@@ -722,6 +721,8 @@ static void dataEndElementHandler(void *ud, const char *name)
         }
 
         userData->character.clear();
+    } else if (strcmp(name, "measInfo") == 0) {
+        userData->pMeasType.clear();
     }
 }
 
