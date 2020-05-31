@@ -14,8 +14,8 @@ public:
 
     QList<QString> getNodes() const;
     int getNodeCount() const;
-    QString getNodesString() const;
     QList<QString> getNames(const QString &node) const;
+    // TODO: need to remove?
     QList<double> getDataKeys(const QString &node) const;
     int totalNameCount() const;
     QCPDataMap* getDataMap(const QString &node, const QString &name);
@@ -30,6 +30,7 @@ public:
     int getLastDateTime() const;
     int firstGreaterDateTimeIndex(int dateTime) const;
 
+    // TODO: need to remove?
     QMap<int, qint32> getIndexDateTimeMap(const QString &node) const;
 
     static QMap<QString, NodeNameDataMap>
@@ -38,6 +39,7 @@ public:
     static QString getModuleFromStatName(const std::string &statName);
     static QString splitStatNameToModuleAndName(const QString &statName, QString &name);
 
+    // TODO: need change?
     int getSampleInterval() const;
 
 private:

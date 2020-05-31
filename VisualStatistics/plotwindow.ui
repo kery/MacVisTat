@@ -69,7 +69,6 @@
    <addaction name="actionShowSuspectFlag"/>
    <addaction name="actionRemoveZeroCounters"/>
    <addaction name="actionMarkRestartTime"/>
-   <addaction name="separator"/>
    <addaction name="actionScript"/>
   </widget>
   <action name="actionSaveAsImage">

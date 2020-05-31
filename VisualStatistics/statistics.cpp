@@ -84,11 +84,6 @@ int Statistics::getNodeCount() const
     return m_nndm.size();
 }
 
-QString Statistics::getNodesString() const
-{
-    return QStringList(getNodes()).join(',');
-}
-
 QList<QString> Statistics::getNames(const QString &node) const
 {
     return m_nndm.value(node).keys();

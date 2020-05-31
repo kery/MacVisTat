@@ -19,6 +19,9 @@ PlotWindow::PlotWindow(Statistics &stat) :
 {
     m_ui->setupUi(this);
 
+    m_ui->actionMarkRestartTime->setVisible(false);
+    m_ui->actionScript->setVisible(false);
+
     m_sampleInterval = m_stat.getSampleInterval();
 
     // Show tracer below legend layer, above other layers
@@ -215,10 +218,10 @@ void PlotWindow::initializePlot()
         }
     }
 
-    if (settings.value(QStringLiteral("markRestartTime")).toBool()) {
-        m_ui->actionMarkRestartTime->setChecked(true);
-        markRestartTime();
-    }
+//    if (settings.value(QStringLiteral("markRestartTime")).toBool()) {
+//        m_ui->actionMarkRestartTime->setChecked(true);
+//        markRestartTime();
+//    }
 
     plot->rescaleAxes();
     adjustYAxisRange(plot->yAxis);
