@@ -4,11 +4,12 @@
 #include "utils.h"
 #include "version.h"
 
-static const double SCATTER_SIZE = 6.0;
+extern double SCATTER_SIZE;
 static const double TRACER_SIZE = SCATTER_SIZE + 4.0;
 
 PlotWindow::PlotWindow(Statistics &stat) :
     QMainWindow(nullptr),
+    m_agggraph_idx(0),
     m_sampleInterval(60),
     m_ui(new Ui::PlotWindow),
     m_userEditFlag(true),
@@ -213,7 +214,7 @@ void PlotWindow::initializePlot()
             // Set copy to true to avoid the data being deleted if show delta function is used
             graph->setData(m_stat.getDataMap(node, statName), true);
             if (showSuspectFlag) {
-                graph->setSuspectFlagScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, SCATTER_SIZE));
+                graph->enableSuspectFlag(true);
             }
         }
     }
@@ -391,10 +392,9 @@ QCPGraph * PlotWindow::findNearestGraphValue(int index, double yCoord, double &v
     return retGraph;
 }
 
-QString PlotWindow::genAggregateGraphName() const
+QString PlotWindow::genAggregateGraphName()
 {
-    static int counter = 0;
-    return QStringLiteral("aggregate_graph_%1").arg(++counter);
+    return QStringLiteral("aggregate_graph_%1").arg(++m_agggraph_idx);
 }
 
 void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
@@ -697,12 +697,15 @@ void PlotWindow::addAggregateGraph()
 
     QString aggregateGraphName = genAggregateGraphName();
     QCPDataMap *aggregateDataMap = m_stat.addDataMap(graph->node(), aggregateGraphName);
-    *aggregateDataMap = *selectedDataMaps.first();
 
-    for (int i = 1; i < selectedDataMaps.size(); ++i) {
-        const QCPDataMap *dataMap = selectedDataMaps[i];
+    for (const QCPDataMap *dataMap : selectedDataMaps) {
         for (const QCPData &data : *dataMap) {
-            (*aggregateDataMap)[data.key].value += data.value;
+            QCPData &dstData = (*aggregateDataMap)[data.key];
+            dstData.key = data.key;
+            dstData.value += data.value;
+            if (data.valueErrorMinus > 0) {
+                dstData.valueErrorMinus = data.valueErrorMinus;
+            }
         }
     }
 
@@ -713,6 +716,9 @@ void PlotWindow::addAggregateGraph()
     aggregateGraph->setPen(QPen(m_colorManager.getColor()));
     aggregateGraph->setSelectedPen(aggregateGraph->pen());
     aggregateGraph->setData(aggregateDataMap, true);
+    if (m_ui->actionShowSuspectFlag->isChecked()) {
+        aggregateGraph->enableSuspectFlag(true);
+    }
 
     if (m_ui->actionShowDelta->isChecked()) {
         calcDelta(aggregateGraph);
@@ -887,11 +893,7 @@ void PlotWindow::on_actionShowSuspectFlag_triggered(bool checked)
     // Dynamically added graphs are not affected
     for (int i = 0; i < m_stat.totalNameCount(); ++i) {
         CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
-        if (checked) {
-            graph->setSuspectFlagScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCross, SCATTER_SIZE));
-        } else {
-            graph->setSuspectFlagScatterStyle(QCPScatterStyle());
-        }
+        graph->enableSuspectFlag(checked);
     }
 
     plot->replot();

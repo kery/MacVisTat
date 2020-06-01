@@ -17,7 +17,7 @@ public:
     QString displayName() const;
     QString realDisplayName() const;
 
-    void setSuspectFlagScatterStyle(const QCPScatterStyle &ssSuspect);
+    void enableSuspectFlag(bool enable);
 
     virtual bool addToLegend();
 

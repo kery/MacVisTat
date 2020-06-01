@@ -43,7 +43,7 @@ private:
 
     QCPGraph * findNearestGraphValue(int index, double yCoord, double &value);
 
-    QString genAggregateGraphName() const;
+    QString genAggregateGraphName();
     void removeGraphs(const QVector<CounterGraph*> &graphs);
 
     QString defaultSaveFileName() const;
@@ -77,6 +77,7 @@ private slots:
     void on_actionSetSampleInterval_triggered();
 
 private:
+    int m_agggraph_idx;
     int m_sampleInterval;
     Ui::PlotWindow *m_ui;
     QPropertyAnimation m_animation;

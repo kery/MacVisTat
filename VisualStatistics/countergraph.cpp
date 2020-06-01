@@ -1,11 +1,14 @@
 #include "countergraph.h"
 #include "counterlegenditem.h"
 
+double SCATTER_SIZE = 6.0;
+
 CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &node, const QString &module) :
     m_showNode(false),
     m_showModule(false),
     m_node(node),
     m_module(module),
+    m_ssSuspect(QCPScatterStyle::ssNone, SCATTER_SIZE),
     QCPGraph(keyAxis, valueAxis)
 {
 }
@@ -52,9 +55,9 @@ QString CounterGraph::realDisplayName() const
     return realName;
 }
 
-void CounterGraph::setSuspectFlagScatterStyle(const QCPScatterStyle &ssSuspect)
+void CounterGraph::enableSuspectFlag(bool enable)
 {
-    m_ssSuspect = ssSuspect;
+    m_ssSuspect.setShape(enable ? QCPScatterStyle::ssCross : QCPScatterStyle::ssNone);
 }
 
 bool CounterGraph::addToLegend()
