@@ -57,7 +57,10 @@ static bool modulesTest(const std::vector<std::string> &modules, const std::stri
     }
 
     for (const std::string &mod : modules) {
-        if (name.compare(0, mod.length(), mod) == 0) {
+        // Check for ',' in case of one module name is the prefix of another
+        if (name.length() > mod.length() + 1 && name[mod.length()] == ',' &&
+                name.compare(0, mod.length(), mod) == 0)
+        {
             return true;
         }
     }
