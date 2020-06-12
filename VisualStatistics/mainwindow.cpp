@@ -780,6 +780,8 @@ void MainWindow::caseSensitiveButtonClicked(bool checked)
 
     toolButton->setFont(font);
     toolButton->setToolTip(m_caseSensitive ? QStringLiteral("Case sensitive") : QStringLiteral("Case insensitive"));
+
+    updateFilterPattern();
 }
 
 void MainWindow::on_actionAdd_triggered()
