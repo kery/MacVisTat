@@ -98,6 +98,8 @@ MainWindow::MainWindow() :
 
     initializeRecentFileActions();
     updateRecentFileActions();
+
+    toggleCaseSensitive();
 }
 
 MainWindow::~MainWindow()
@@ -525,6 +527,18 @@ void MainWindow::connectClearButtonSignal()
     }
 }
 
+void MainWindow::toggleCaseSensitive()
+{
+    m_caseSensitive = !m_caseSensitive;
+
+    QToolButton *toolButton = m_ui->cbRegExpFilter->findChild<QToolButton *>();
+    QFont font = toolButton->font();
+    font.setStrikeOut(!m_caseSensitive);
+
+    toolButton->setFont(font);
+    toolButton->setToolTip(m_caseSensitive ? QStringLiteral("Case sensitive") : QStringLiteral("Case insensitive"));
+}
+
 void MainWindow::initializeRecentFileActions()
 {
     m_sepAction = m_ui->menu_File->insertSeparator(m_ui->actionExit);
@@ -772,15 +786,7 @@ void MainWindow::caseSensitiveButtonClicked(bool checked)
 {
     Q_UNUSED(checked);
 
-    m_caseSensitive = !m_caseSensitive;
-
-    QToolButton *toolButton = m_ui->cbRegExpFilter->findChild<QToolButton *>();
-    QFont font = toolButton->font();
-    font.setStrikeOut(!m_caseSensitive);
-
-    toolButton->setFont(font);
-    toolButton->setToolTip(m_caseSensitive ? QStringLiteral("Case sensitive") : QStringLiteral("Case insensitive"));
-
+    toggleCaseSensitive();
     updateFilterPattern();
 }
 

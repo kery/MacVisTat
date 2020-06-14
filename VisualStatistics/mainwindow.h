@@ -53,6 +53,7 @@ private:
     void saveFilterHistory();
     void adjustFilterHistoryOrder();
     void connectClearButtonSignal();
+    void toggleCaseSensitive();
 
     void initializeRecentFileActions();
     void updateRecentFileActions();
