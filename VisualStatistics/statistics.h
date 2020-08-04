@@ -17,6 +17,7 @@ public:
     QList<QString> getNames(const QString &node) const;
     // TODO: need to remove?
     QList<double> getDataKeys(const QString &node) const;
+    QList<double> getDataKeys() const;
     int totalNameCount() const;
     QCPDataMap* getDataMap(const QString &node, const QString &name);
     QCPDataMap* addDataMap(const QString &node, const QString &name);

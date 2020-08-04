@@ -100,6 +100,17 @@ QList<double> Statistics::getDataKeys(const QString &node) const
     return QList<double>();
 }
 
+QList<double> Statistics::getDataKeys() const
+{
+    if (!m_nndm.isEmpty()) {
+        const QCPDataMap &dm = m_nndm.first().first();
+        if (!dm.empty()) {
+            return dm.keys();
+        }
+    }
+    return QList<double>();
+}
+
 int Statistics::totalNameCount() const
 {
     int count = 0;

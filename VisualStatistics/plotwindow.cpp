@@ -21,7 +21,6 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_ui->setupUi(this);
 
     m_ui->actionMarkRestartTime->setVisible(false);
-    m_ui->actionScript->setVisible(false);
 
     m_sampleInterval = m_stat.getSampleInterval();
 

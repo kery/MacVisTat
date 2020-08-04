@@ -38,73 +38,32 @@ static int custom_print(lua_State *L)
     return 0;
 }
 
-static int get_nodes(lua_State *L)
-{
-    int index = 0;
-    lua_newtable(L);
-    for (const QString &node : plotWindow(L)->getStat().getNodes()) {
-        lua_pushinteger(L, ++index); // Lua table start from 1
-        lua_pushstring(L, node.toStdString().c_str());
-        lua_settable(L, 1);
-    }
-
-    return 1;
-}
-
-static int get_stat_names(lua_State *L)
-{
-    const char *node = luaL_checkstring(L, 1);
-
-    int index = 0;
-    lua_newtable(L);
-    for (const QString &name : plotWindow(L)->getStat().getNames(node)) {
-        lua_pushinteger(L, ++index);
-        lua_pushstring(L, name.toStdString().c_str());
-        lua_settable(L, 2);
-    }
-
-    return 1;
-}
-
 static int get_keys(lua_State *L)
 {
-    const char *node = luaL_checkstring(L, 1);
-
     int index = 0;
     lua_newtable(L);
-    for (double key : plotWindow(L)->getStat().getDataKeys(node)) {
+    for (double key : plotWindow(L)->getStat().getDataKeys()) {
         lua_pushinteger(L, ++index);
         lua_pushinteger(L, (int)key);
-        lua_rawset(L, 2);
+        lua_rawset(L, 1);
     }
     return 1;
 }
 
 static int get_value(lua_State *L)
 {
-    const char *node = luaL_checkstring(L, 1);
-    const char *name = luaL_checkstring(L, 2);
-
-    QCPDataMap *dm = dataMap(L, node, name);
-
-    int key = luaL_checkint(L, 3);
-    luaL_argcheck(L, dm->contains(key), 3, "invalid key");
-
-    lua_pushinteger(L, dm->value(key).value);
-    return 1;
-}
-
-static int get_graph_value(lua_State *L)
-{
-    int index = luaL_checkint(L, 1);
+    int graphIndex = luaL_checkint(L, 1);
     QCustomPlot *plot = plotWindow(L)->getPlot();
-    luaL_argcheck(L, index >= 0 && index < plot->graphCount(), 1, "graph index out of range");
+    luaL_argcheck(L, graphIndex >= 0 && graphIndex < plot->graphCount(), 1, "graph index out of range");
 
     int key = luaL_checkint(L, 2);
-    QCPDataMap *dm = plot->graph(index)->data();
-    luaL_argcheck(L, dm->contains(key), 2, "invalid key");
+    const QCPDataMap *dm = plot->graph(graphIndex)->data();
 
-    lua_pushinteger(L, dm->value(key).value);
+    if (dm->contains(key)) {
+        lua_pushinteger(L, dm->value(key).value);
+    } else {
+        lua_pushnil(L);
+    }
     return 1;
 }
 
@@ -136,35 +95,40 @@ static int add_graph(lua_State *L)
     luaL_checktype(L, 2, LUA_TTABLE);
 
     PlotWindow *plotWnd = plotWindow(L);
-    QCPGraph *graph = plotWnd->addCounterGraph();
-    graph->setProperty("add_by_script", true);
-    if (graph) {
-        QCPData data;
-        QCPDataMap *dataMap = graph->data();
-        graph->setName(name);
-        graph->setPen(QPen(QColor(luaL_optint(L, 3, 255) % 255,
-                                  luaL_optint(L, 4, 0) % 255,
-                                  luaL_optint(L, 5, 0) % 255)));
-        graph->setSelectedPen(graph->pen());
-
-        lua_pushnil(L);
-        while (lua_next(L, 2) != 0) {
-            if (lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
-                data.key = lua_tonumber(L, -2);
-                data.value = lua_tonumber(L, -1);
-                dataMap->insert(data.key, data);
-            }
-            lua_pop(L, 1);
-        }
-
-        QCustomPlot *plot = plotWnd->getPlot();
-        lua_pushinteger(L, plot->graphCount() - 1);
-
-        plotWnd->updateWindowTitle();
-        plotWnd->updatePlotTitle();
-    } else {
+    CounterGraph *graph = plotWnd->addCounterGraph();
+    if (graph == nullptr) {
         luaL_error(L, "add graph failed");
+        return 1;
     }
+
+    graph->setProperty("add_by_script", true);
+
+    QCPData data;
+    QCPDataMap *dataMap = graph->data();
+    graph->setName(name);
+    graph->setDisplayName(name);
+
+    int r = (luaL_optint(L, 3, 255) - 1) % 255 + 1;
+    int g = (luaL_optint(L, 4, 0) - 1) % 255 + 1;
+    int b = (luaL_optint(L, 5, 0) - 1) % 255 + 1;
+    graph->setPen(QPen(QColor(r, g, b)));
+    graph->setSelectedPen(graph->pen());
+
+    lua_pushnil(L);
+    while (lua_next(L, 2) != 0) {
+        if (lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
+            data.key = lua_tonumber(L, -2);
+            data.value = lua_tonumber(L, -1);
+            dataMap->insert(data.key, data);
+        }
+        lua_pop(L, 1);
+    }
+
+    QCustomPlot *plot = plotWnd->getPlot();
+    lua_pushinteger(L, plot->graphCount() - 1);
+
+    plotWnd->updateWindowTitle();
+    plotWnd->updatePlotTitle();
 
     return 1;
 }
@@ -195,11 +159,8 @@ static int init_cfunc(lua_State *L)
     lua_rawset(L, LUA_REGISTRYINDEX);
 
     const struct luaL_Reg methods[] = {
-        { "get_nodes", get_nodes },
-        { "get_stat_names", get_stat_names },
         { "get_keys", get_keys },
         { "get_value", get_value },
-        { "get_graph_value", get_graph_value },
         { "get_dt", get_dt },
         { "get_dt_str", get_dt_str },
         { "add_graph", add_graph },

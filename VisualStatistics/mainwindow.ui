@@ -30,7 +30,7 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <widget class="QSplitter" name="splitter">
+       <widget class="QSplitter" name="splitterHor2">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
