@@ -563,7 +563,9 @@ void PlotWindow::copyGraphName()
 {
     QStringList strList;
     for (auto item : m_ui->customPlot->legend->selectedItems()) {
-        strList << qobject_cast<QCPPlottableLegendItem *>(item)->plottable()->name();
+        QCPAbstractPlottable *plottable = qobject_cast<QCPPlottableLegendItem *>(item)->plottable();
+        CounterGraph *graph = qobject_cast<CounterGraph *>(plottable);
+        strList << graph->displayName();
     }
     QApplication::clipboard()->setText(strList.join('\n'));
 }

@@ -105,8 +105,10 @@ int Statistics::dateTimeCount() const
 
 Statistics::DateTimeVector::value_type Statistics::getDateTime(int index) const
 {
-    Q_ASSERT(index >= 0 && index < m_dateTimes.size());
-    return m_dateTimes.at(index);
+    if (index >= 0 && index < m_dateTimes.size()) {
+        return m_dateTimes.at(index);
+    }
+    return 0;
 }
 
 QString Statistics::getDateTimeString(int index) const
