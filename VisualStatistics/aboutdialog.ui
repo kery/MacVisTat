@@ -61,7 +61,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>&lt;a href=&quot;mailto:kery.wu@nokia.com?Subject=Visual%20Statistics%20Sugguestion&quot;&gt;Send Suggestion&lt;/a&gt;</string>
+    <string>&lt;a href=&quot;mailto:kery.wu@nokia-sbell.com?Subject=Visual%20Statistics%20Sugguestion&quot;&gt;Send Suggestion&lt;/a&gt;</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
