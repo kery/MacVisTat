@@ -8,7 +8,7 @@ ScriptWindow::ScriptWindow(QWidget *parent) :
 {
     m_ui->setupUi(this);
 
-    m_ui->splitter->setSizes(QList<int>() << height() - 120 << 120);
+    m_ui->splitter->setSizes(QList<int>() << height() - 140 << 140);
     m_ui->splitter->setCollapsible(0, false);
 }
 

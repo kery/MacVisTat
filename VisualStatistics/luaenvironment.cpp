@@ -36,9 +36,14 @@ static int custom_print(lua_State *L)
     return 0;
 }
 
-static int num_of_keys(lua_State *L)
+static int get_lastkey(lua_State *L)
 {
-    lua_pushinteger(L, plotWindow(L)->getStat().dateTimeCount());
+    int n = plotWindow(L)->getStat().dateTimeCount();
+    if (n > 0) {
+        lua_pushinteger(L, n - 1);
+    } else {
+        lua_pushnil(L);
+    }
     return 1;
 }
 
@@ -54,7 +59,8 @@ static int get_value(lua_State *L)
     if (dm->contains(key)) {
         lua_pushinteger(L, dm->value(key).value);
     } else {
-        lua_pushnil(L);
+        // if no value at key, take third parameter as default value
+        lua_pushvalue(L, 3);
     }
     return 1;
 }
@@ -148,7 +154,7 @@ static int init_cfunc(lua_State *L)
     lua_rawset(L, LUA_REGISTRYINDEX);
 
     const struct luaL_Reg methods[] = {
-        { "num_of_keys", num_of_keys },
+        { "get_lastkey", get_lastkey },
         { "get_value", get_value },
         { "get_dt", get_dt },
         { "get_dt_str", get_dt_str },
