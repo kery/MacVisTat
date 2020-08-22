@@ -10,7 +10,6 @@ static const double TRACER_SIZE = SCATTER_SIZE + 4.0;
 PlotWindow::PlotWindow(Statistics &stat) :
     QMainWindow(nullptr),
     m_agggraph_idx(0),
-    m_sampleInterval(60),
     m_ui(new Ui::PlotWindow),
     m_userEditFlag(true),
     m_userDragFlag(true),
@@ -19,10 +18,6 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_stat(std::move(stat))
 {
     m_ui->setupUi(this);
-
-    m_ui->actionMarkRestartTime->setVisible(false);
-
-    m_sampleInterval = m_stat.getSampleInterval();
 
     // Show tracer below legend layer, above other layers
     // Value tip will use the same layer as tracer
@@ -63,13 +58,6 @@ PlotWindow::PlotWindow(Statistics &stat) :
 
     m_valueText = new ValueText(m_tracer);
 
-    QToolButton *markRestartButton = static_cast<QToolButton*>(
-                m_ui->toolBar->widgetForAction(m_ui->actionMarkRestartTime));
-    markRestartButton->setPopupMode(QToolButton::MenuButtonPopup);
-    QMenu *setSampleInterval = new QMenu(this);
-    setSampleInterval->addAction(m_ui->actionSetSampleInterval);
-    markRestartButton->setMenu(setSampleInterval);
-
     QWidget *spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_ui->toolBar->addWidget(spacer);
@@ -100,10 +88,10 @@ PlotWindow::~PlotWindow()
     delete m_ui;
 }
 
-CounterGraph *PlotWindow::addCounterGraph(const QString &node, const QString &module)
+CounterGraph *PlotWindow::addCounterGraph(const QString &name, const QString &module)
 {
     CounterGraph *graph = new CounterGraph(m_ui->customPlot->xAxis, m_ui->customPlot->yAxis,
-                                           node, module);
+                                           module, name);
     if (m_ui->customPlot->addPlottable(graph)) {
         return graph;
     } else {
@@ -192,7 +180,6 @@ void PlotWindow::initializePlot()
     connect(plot, &QCustomPlot::mouseMove, this, &PlotWindow::mouseMove);
     connect(plot, &QCustomPlot::mouseWheel, this, &PlotWindow::mouseWheel);
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
-    connect(plot, &QCustomPlot::legendDoubleClick, this, &PlotWindow::legendDoubleClick);
 
     QSettings settings;
     bool showSuspectFlag = settings.value(QStringLiteral("showSuspectFlag"), true).toBool();
@@ -200,28 +187,19 @@ void PlotWindow::initializePlot()
         m_ui->actionShowSuspectFlag->setChecked(true);
     }
 
-    for (const QString &node : m_stat.getNodes()) {
-        for (const QString &statName : m_stat.getNames(node)) {
-            QString name;
-            QString module = Statistics::splitStatNameToModuleAndName(statName, name);
-            CounterGraph *graph = addCounterGraph(node, module);
-            graph->setShowNode(m_stat.getNodeCount() > 1);
-            graph->setName(statName);
-            graph->setDisplayName(name);
-            graph->setPen(QPen(m_colorManager.getColor()));
-            graph->setSelectedPen(graph->pen());
-            // Set copy to true to avoid the data being deleted if show delta function is used
-            graph->setData(m_stat.getDataMap(node, statName), true);
-            if (showSuspectFlag) {
-                graph->enableSuspectFlag(true);
-            }
+    for (const QString &statName : m_stat.getNames()) {
+        QString name;
+        QString module = Statistics::splitStatNameToModuleAndName(statName, name);
+        CounterGraph *graph = addCounterGraph(name, module);
+        graph->setName(statName);
+        graph->setPen(QPen(m_colorManager.getColor()));
+        graph->setSelectedPen(graph->pen());
+        // Set copy to true to avoid the data being deleted if show delta function is used
+        graph->setData(m_stat.getDataMap(statName), true);
+        if (showSuspectFlag) {
+            graph->enableSuspectFlag(true);
         }
     }
-
-//    if (settings.value(QStringLiteral("markRestartTime")).toBool()) {
-//        m_ui->actionMarkRestartTime->setChecked(true);
-//        markRestartTime();
-//    }
 
     plot->rescaleAxes();
     adjustYAxisRange(plot->yAxis);
@@ -257,62 +235,15 @@ QVector<QString> PlotWindow::calcTickLabelVector(const QVector<double> &ticks)
 void PlotWindow::calcDelta(QCPGraph *graph)
 {
     QCPDataMap *data = graph->data();
-    if (data->size() > 0) {
-        for (auto iter = data->end() - 1; iter != data->begin(); --iter) {
-            if (m_stat.getDateTime(iter.key()) - m_stat.getDateTime((iter - 1).key()) > m_sampleInterval * 2) {
-                // If timestamp difference is larger than 2 minutes then set delta to 0
-                (*iter).value = 0;
-            } else {
-                (*iter).value = iter.value().value - (iter - 1).value().value;
-            }
-        }
-
-        // The first element is always 0 in delta mode
-        (*data->begin()).value = 0;
-    }
-}
-
-QVector<double> PlotWindow::findRestartTimeIndex() const
-{
-    QVector<double> result;
-    for (const QString &node : m_stat.getNodes()) {
-        findRestartTimeIndexForNode(node, result);
+    if (data->isEmpty()) {
+        return;
     }
 
-    // Remove duplicate index if any
-    std::sort(result.begin(), result.end());
-    result.erase(std::unique(result.begin(), result.end()), result.end());
-
-    return result;
-}
-
-void PlotWindow::findRestartTimeIndexForNode(const QString &node, QVector<double> &out) const
-{
-    QMap<int, qint32> map = m_stat.getIndexDateTimeMap(node);
-    if (map.size() > 0) {
-        for (auto iter = map.begin() + 1; iter != map.end(); ++iter) {
-            if (iter.value() - (iter - 1).value() > m_sampleInterval * 2) {
-                out << iter.key();
-            }
-        }
+    for (auto iter = data->end() - 1; iter != data->begin(); --iter) {
+        iter->value = iter->value - (iter - 1)->value;
     }
-}
 
-void PlotWindow::markRestartTime()
-{
-    QVector<double> restartIndex = findRestartTimeIndex();
-    if (restartIndex.size() > 0) {
-        QCustomPlot *plot = m_ui->customPlot;
-        QPen pen(Qt::red, 2);
-        pen.setStyle(Qt::DotLine);
-        for (double index : restartIndex) {
-            QCPItemStraightLine *line = new QCPItemStraightLine(plot);
-            line->point1->setCoords(index, std::numeric_limits<double>::min());
-            line->point2->setCoords(index, std::numeric_limits<double>::max());
-            line->setPen(pen);
-            plot->addItem(line);
-        }
-    }
+    data->begin()->value = 0;
 }
 
 bool PlotWindow::shouldDrawScatter(const QVector<double> &tickVector, int plotWidth) const
@@ -391,11 +322,6 @@ QCPGraph * PlotWindow::findNearestGraphValue(int index, double yCoord, double &v
     return retGraph;
 }
 
-QString PlotWindow::genAggregateGraphName()
-{
-    return QStringLiteral("aggregate_graph_%1").arg(++m_agggraph_idx);
-}
-
 void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
 {
     if (graphs.isEmpty()) {
@@ -404,17 +330,8 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
 
     QCustomPlot *plot = m_ui->customPlot;
     for (CounterGraph *graph : graphs) {
-        if (!graph->property("add_by_script").isValid()) {
-            m_stat.removeDataMap(graph->node(), graph->name());
-        }
+        m_stat.removeDataMap(graph->name());
         plot->removeGraph(graph);
-    }
-
-    m_stat.removeEmptyNode();
-    int numNode = m_stat.getNodeCount();
-    for (int i = 0; i < plot->graphCount(); ++i) {
-        CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
-        graph->setShowNode(numNode > 1);
     }
 
     updateWindowTitle();
@@ -426,17 +343,11 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
 
 QString PlotWindow::defaultSaveFileName() const
 {
-    QString defaultFileName;
-    for (const QString &node : m_stat.getNodes()) {
-        for (const QString &name : m_stat.getNames(node)) {
-            if (defaultFileName.isEmpty()) {
-                defaultFileName = name;
-            } else if (defaultFileName != name) {
-                return QString();
-            }
-        }
+    if (m_ui->customPlot->graphCount() > 0) {
+         CounterGraph *graph = qobject_cast<CounterGraph *>(m_ui->customPlot->graph(0));
+         return graph->displayName().splitRef('.').back().toString();
     }
-    return defaultFileName.splitRef('.').back().toString();
+    return QString();
 }
 
 void PlotWindow::adjustTicks()
@@ -532,7 +443,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         m_tracer->setGraphKey(index);
         m_tracer->setVisible(true);
 
-        QString text = qobject_cast<CounterGraph *>(graph)->realDisplayName();
+        QString text = qobject_cast<CounterGraph *>(graph)->displayName();
         text += '\n';
         text += m_stat.getDateTimeString(index);
         text += '\n';
@@ -608,51 +519,15 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     actionShowModuleName->setChecked(m_showModule);
 
     QAction *actionCopy = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
-    QAction *actionAdd = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
     QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
-
-    actionAdd->setEnabled(false);
 
     auto selectedLegendItems = plot->legend->selectedItems();
     if (selectedLegendItems.isEmpty()) {
         actionCopy->setEnabled(false);
         actionRemove->setEnabled(false);
-    } else if (selectedLegendItems.size() > 1) {
-        actionAdd->setEnabled(true);
     }
 
     menu->popup(plot->mapToGlobal(pos));
-}
-
-void PlotWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *item)
-{
-    Q_UNUSED(legend)
-
-    if (item) {
-        QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
-        CounterGraph *graph = qobject_cast<CounterGraph *>(plItem->plottable());
-
-        QInputDialog dlg(this);
-        dlg.setWindowTitle(QStringLiteral("Input graph name"));
-        dlg.setWindowFlags(dlg.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-        dlg.setInputMode(QInputDialog::TextInput);
-        dlg.setLabelText(QStringLiteral("New graph name:"));
-        dlg.setTextValue(graph->displayName());
-        dlg.resize(500, 0);
-        if (dlg.exec() != QDialog::Accepted) {
-            return;
-        }
-
-        QString newName = dlg.textValue();
-        if (!newName.isEmpty() && newName != graph->displayName() && newName.indexOf(':') < 0) {
-            graph->setDisplayName(newName);
-
-            updateWindowTitle();
-            updatePlotTitle();
-
-            m_ui->customPlot->replot();
-        }
-    }
 }
 
 void PlotWindow::moveLegend()
@@ -668,67 +543,6 @@ void PlotWindow::moveLegend()
             plot->replot();
         }
     }
-}
-
-void PlotWindow::addAggregateGraph()
-{
-    QCustomPlot *plot = m_ui->customPlot;
-    QList<QCPAbstractLegendItem *> selectedLegendItems = plot->legend->selectedItems();
-
-    QCPPlottableLegendItem *legendItem = static_cast<QCPPlottableLegendItem *>(selectedLegendItems.first());
-    CounterGraph *graph = static_cast<CounterGraph *>(legendItem->plottable());
-
-    QVector<QCPDataMap *> selectedDataMaps;
-    selectedDataMaps.reserve(selectedLegendItems.size());
-    selectedDataMaps.append(m_stat.getDataMap(graph->node(), graph->name()));
-
-    for (int i = 1; i < selectedLegendItems.size(); ++i) {
-        legendItem = static_cast<QCPPlottableLegendItem *>(selectedLegendItems[i]);
-        CounterGraph *tempGraph = static_cast<CounterGraph *>(legendItem->plottable());
-
-        if (tempGraph->node() != graph->node()) {
-            showErrorMsgBox(this, QStringLiteral("Cannot add aggregate graph because selected graphs belong to multiple nodes."));
-            return;
-        }
-
-        selectedDataMaps.append(m_stat.getDataMap(tempGraph->node(), tempGraph->name()));
-    }
-
-    QString aggregateGraphName = genAggregateGraphName();
-    QCPDataMap *aggregateDataMap = m_stat.addDataMap(graph->node(), aggregateGraphName);
-
-    for (const QCPDataMap *dataMap : selectedDataMaps) {
-        for (const QCPData &data : *dataMap) {
-            QCPData &dstData = (*aggregateDataMap)[data.key];
-            dstData.key = data.key;
-            dstData.value += data.value;
-            if (data.valueErrorMinus > 0) {
-                dstData.valueErrorMinus = data.valueErrorMinus;
-            }
-        }
-    }
-
-    CounterGraph *aggregateGraph = addCounterGraph(graph->node());
-    aggregateGraph->setShowNode(m_stat.getNodeCount() > 1);
-    aggregateGraph->setName(aggregateGraphName);
-    aggregateGraph->setDisplayName(aggregateGraphName);
-    aggregateGraph->setPen(QPen(m_colorManager.getColor()));
-    aggregateGraph->setSelectedPen(aggregateGraph->pen());
-    aggregateGraph->setData(aggregateDataMap, true);
-    if (m_ui->actionShowSuspectFlag->isChecked()) {
-        aggregateGraph->enableSuspectFlag(true);
-    }
-
-    if (m_ui->actionShowDelta->isChecked()) {
-        calcDelta(aggregateGraph);
-    }
-
-    updateWindowTitle();
-    updatePlotTitle();
-
-    plot->yAxis->rescale();
-    adjustYAxisRange(plot->yAxis);
-    plot->replot();
 }
 
 void PlotWindow::removeSelectedGraph()
@@ -863,15 +677,13 @@ void PlotWindow::on_actionShowDelta_triggered(bool checked)
     QCustomPlot *plot = m_ui->customPlot;
 
     if (checked) {
-        // Dynamically added graphs are not show in delta mode
-        for (int i = 0; i < m_stat.totalNameCount(); ++i) {
+        for (int i = 0; i < plot->graphCount(); ++i) {
             calcDelta(plot->graph(i));
         }
     } else {
-        for (int i = 0; i < m_stat.totalNameCount(); ++i) {
+        for (int i = 0; i < plot->graphCount(); ++i) {
             CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
-            // Set copy to true to avoid the data being deleted if show delta function is used
-            graph->setData(m_stat.getDataMap(graph->node(), graph->name()), true);
+            graph->setData(m_stat.getDataMap(graph->name()), true);
         }
     }
 
@@ -889,8 +701,7 @@ void PlotWindow::on_actionShowSuspectFlag_triggered(bool checked)
 {
     QCustomPlot *plot = m_ui->customPlot;
 
-    // Dynamically added graphs are not affected
-    for (int i = 0; i < m_stat.totalNameCount(); ++i) {
+    for (int i = 0; i < plot->graphCount(); ++i) {
         CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
         graph->enableSuspectFlag(checked);
     }
@@ -926,16 +737,12 @@ void PlotWindow::on_actionRemoveZeroCounters_triggered()
     QCustomPlot *plot = m_ui->customPlot;
     for (int i = 0; i < plot->graphCount(); ++i) {
         CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
-        QCPDataMap *dataMap;
-        if (graph->property("add_by_script").isValid()) {
-            dataMap = graph->data();
-        } else {
-            // Also remove the counters that delta is zero
-            dataMap = m_ui->actionShowDelta->isChecked() ? graph->data() : m_stat.getDataMap(graph->node(), graph->name());
-        }
+        QCPDataMap *dataMap = graph->data();
+
         bool isZeroCounter = true;
         for (const QCPData &data : *dataMap) {
-            if (static_cast<int>(data.value) != 0) {
+            // compare with 2 decimal places precision
+            if (qint64(data.value * 100) != 0) {
                 isZeroCounter = false;
                 break;
             }
@@ -951,31 +758,4 @@ void PlotWindow::on_actionRemoveZeroCounters_triggered()
 void PlotWindow::on_actionCopyToClipboard_triggered()
 {
     QApplication::clipboard()->setPixmap(m_ui->customPlot->toPixmap());
-}
-
-void PlotWindow::on_actionMarkRestartTime_triggered(bool checked)
-{
-    if (checked) {
-        markRestartTime();
-    } else {
-        m_ui->customPlot->clearItems();
-    }
-    m_ui->customPlot->replot();
-
-    QSettings settings;
-    settings.setValue(QStringLiteral("markRestartTime"), checked);
-}
-
-void PlotWindow::on_actionSetSampleInterval_triggered()
-{
-    bool ok;
-    int interval = QInputDialog::getInt(this, QStringLiteral("Set Sample Interval"),
-                                        QStringLiteral("Sample Interval (secs):"),
-                                        m_sampleInterval, 60, 3600, 60, &ok);
-    if (ok) {
-        m_sampleInterval = interval;
-        m_ui->customPlot->clearItems();
-        markRestartTime();
-        m_ui->customPlot->replot();
-    }
 }

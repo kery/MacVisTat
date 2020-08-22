@@ -35,36 +35,34 @@ static inline const char * searchr(const char *ptr, unsigned int len, char ch, c
 
 struct FileDataResult
 {
-    Statistics::NodeNameDataMap nndm;
-    QVector<QString> errors;
+    Statistics::NameDataMap ndm;
+    QString error;
 };
 
 static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &inm,
                       ProgressDialog &dialog,
                       volatile bool &working,
-                      const QString &fileName)
+                      const QString &path)
 {
     FileDataResult result;
     std::string line;
     GzipFile reader;
 
-    // Read the header
-    if (!reader.open(fileName)) {
-        result.errors.reserve(1);
-        result.errors.append("failed to open " + fileName);
+    if (!reader.open(path)) {
+        result.error = "failed to open ";
+        result.error += path;
         return result;
     }
 
+    // Read the header
     if (!reader.readLine(line)) {
-        result.errors.reserve(1);
-        result.errors.append("failed to read header of " + fileName);
+        result.error = "failed to read header of ";
+        result.error += path;
         return result;
     }
 
     QCPData data;
     int progress = 0;
-    Statistics::NameDataMap &ndm = result.nndm[
-            StatisticsFileParser::getNodeFromFileName(QFileInfo(fileName).fileName())];
     QList<int> indexes = inm.keys();
 
     const int BUFFER_SIZE = 4096;
@@ -76,18 +74,18 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
 
     int bytes = reader.read(buffer.get(), BUFFER_SIZE);
     if (bytes <= 0) {
-        result.errors.reserve(1);
-        result.errors.append("failed to read data from " + fileName);
+        result.error = "failed to read data from ";
+        result.error += path;
         return result;
     }
 
     int len = bytes;
     const char *newline = buffer.get();
     while (working) {
-        int newProgress = reader.progress() / 10;
+        int newProgress = reader.progress();
         if (newProgress > progress) {
-            QMetaObject::invokeMethod(&dialog, "increaseValue", Qt::QueuedConnection,
-                Q_ARG(int, newProgress - progress));
+            QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection,
+                Q_ARG(int, newProgress));
             progress = newProgress;
         }
         if (newline) {
@@ -100,8 +98,8 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
                 len -= DT_FORMAT_IN_FILE.length() + 1;
                 ptr = newline + DT_FORMAT_IN_FILE.length() + 1;
             } else {
-                result.errors.reserve(1);
-                result.errors.append("invalid date time format in " + fileName);
+                result.error = "invalid date time format in ";
+                result.error += path;
                 return result;
             }
         }
@@ -112,7 +110,7 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
                 if (*ptr != ';') {
                     data.value = strtod(ptr, &suspectFlag);
                     data.valueErrorMinus = *suspectFlag == 's' ? 1.0 : 0;
-                    ndm[inm.value(index)].insert(data.key, data);
+                    result.ndm[inm.value(index)].insert(data.key, data);
                 }
                 if (++parsed == indexes.size()) {
                     len -= semicolon - ptr;
@@ -121,10 +119,10 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
                         if ((bytes = reader.read(buffer.get(), BUFFER_SIZE)) <= 0) {
                             return result;
                         }
-                        newProgress = reader.progress() / 10;
+                        newProgress = reader.progress();
                         if (newProgress > progress) {
-                            QMetaObject::invokeMethod(&dialog, "increaseValue", Qt::QueuedConnection,
-                                Q_ARG(int, newProgress - progress));
+                            QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection,
+                                Q_ARG(int, newProgress));
                             progress = newProgress;
                         }
                         len = bytes;
@@ -141,7 +139,7 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
             if (parsed < indexes.size() && index == indexes.at(parsed) && *ptr != ';') {
                 data.value = strtod(ptr, &suspectFlag);
                 data.valueErrorMinus = *suspectFlag == 's' ? 1.0 : 0;
-                ndm[inm.value(index)].insert(data.key, data);
+                result.ndm[inm.value(index)].insert(data.key, data);
             }
             len -= newline - ptr;
             ptr = newline;
@@ -167,173 +165,68 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
     return result;
 }
 
-static void doMergeFileData(FileDataResult &finalResult, const FileDataResult &intermediaResult)
-{
-    if (intermediaResult.errors.isEmpty()) {
-        const QString &node = intermediaResult.nndm.firstKey();
-        const Statistics::NameDataMap &ndm = intermediaResult.nndm.first();
-        Statistics::NameDataMap &finalNdm = finalResult.nndm[node];
-
-        for (auto iter = ndm.begin(); iter != ndm.end(); ++iter) {
-            const QCPDataMap &src = iter.value();
-            QCPDataMap &dest = finalNdm[iter.key()];
-            for (auto innerIter = src.begin(); innerIter != src.end(); ++innerIter) {
-                dest.insert(innerIter.key(), innerIter.value());
-            }
-        }
-    } else {
-        finalResult.errors.append(intermediaResult.errors);
-    }
-}
-
-bool StatisticsFileParser::parseFileData(const IndexNameMap &inm, const QVector<QString> &fileNames,
-    Statistics::NodeNameDataMap &nndm, QVector<QString> &errors)
+bool StatisticsFileParser::parseFileData(const IndexNameMap &inm, const QString &path,
+    Statistics::NameDataMap &ndm, QString &error)
 {
     volatile bool working = true;
-    // A lambda capture variable must be from an enclosing function scope
-    ProgressDialog &dialog = m_dialog;
-    auto mappedFunction = std::bind(doParseFileData,
-                                    std::cref(inm),
-                                    std::ref(dialog),
-                                    std::ref(working),
-                                    std::placeholders::_1);
+    auto parseRunner = std::bind(doParseFileData, std::cref(inm), std::ref(m_dialog), std::ref(working), std::cref(path));
 
-    dialog.setRange(0, fileNames.size() * 10);
-    dialog.setValue(0);
-
-    // We don't use wathcer to monitor progress because it base on item count in the container, this
-    // is not accurate. Instead, we calculate the progress ourselves
-    QFutureWatcher<FileDataResult> watcher;
-    QObject::connect(&watcher, SIGNAL(finished()), &dialog, SLOT(accept()));
-    QObject::connect(&dialog, &ProgressDialog::canceling, [&working, &watcher] () {
+    m_dialog.setRange(0, 100);
+    m_dialog.setValue(0);
+    QObject::connect(&m_dialog, &ProgressDialog::canceling, [&working] () {
         working = false;
-        watcher.cancel();
     });
-    watcher.setFuture(QtConcurrent::mappedReduced<FileDataResult>(fileNames, mappedFunction, doMergeFileData));
-    dialog.exec();
+    QFutureWatcher<FileDataResult> watcher;
+    QObject::connect(&watcher, SIGNAL(finished()), &m_dialog, SLOT(accept()));
+    watcher.setFuture(QtConcurrent::run(parseRunner));
+    m_dialog.exec();
+    watcher.waitForFinished();
 
-    if (watcher.isCanceled()) {
-        return false;
-    } else {
+    if (working) {
         FileDataResult result = watcher.result();
-        nndm.swap(result.nndm);
-        errors.swap(result.errors);
+        ndm.swap(result.ndm);
+        error.swap(result.error);
         return true;
     }
+    return false;
 }
 
-std::string parseHeader(QStringList &filePaths, QStringList &failInfo, ProgressDialog &dialog)
+std::string parseHeader(const QString &path, QString &error)
 {
-    std::string result;
-    int progress = 0;
-
-    auto iter = filePaths.begin();
-    for (; iter != filePaths.end(); ++iter) {
-        QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
-
-        GzipFile reader;
-        if (reader.open(*iter) && reader.readLine(result)) {
-            if (strncmp(result.c_str(), "##date;time;", 12) == 0 &&
-                strcmp(result.c_str() + result.length() - 2, "##") == 0)
-            {
-                break;
-            } else {
-                result.clear();
-                failInfo.append("invalid header format of " + *iter);
-            }
-        } else {
-            failInfo.append("failed to read header from " + *iter);
-        }
-        iter->clear(); // Clear the file path so that we can remove it from filePaths later
+    GzipFile reader;
+    if (!reader.open(path)) {
+        error = "failed to open ";
+        error += path;
+        return std::string();
     }
-
-    if (iter != filePaths.end()) {
-        // Parse the rest files' header
-        std::string header;
-        while (++iter != filePaths.end()) {
-            QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
-
-            GzipFile reader;
-            if (reader.open(*iter) && reader.readLine(header)) {
-                if (header != result) {
-                    failInfo.append("incompatible header of " + *iter);
-                    iter->clear();
-                }
-            } else {
-                failInfo.append("failed to read header from " + *iter);
-                iter->clear();
-            }
-        }
-    }
-
-    // Remove the failed file
-    auto newEnd = std::remove_if(filePaths.begin(), filePaths.end(), [] (const QString &filePath) {
-        return filePath.isEmpty();
-    });
-    filePaths.erase(newEnd, filePaths.end());
-
-    QMetaObject::invokeMethod(&dialog, "accept", Qt::QueuedConnection);
-    return result;
-}
-
-std::string StatisticsFileParser::parseFileHeader(QStringList &filePaths, QStringList &failInfo)
-{
-    m_dialog.setRange(0, filePaths.size());
-    m_dialog.setValue(0);
-    QFuture<std::string> future = QtConcurrent::run(
-                std::bind(parseHeader, std::ref(filePaths), std::ref(failInfo), std::ref(m_dialog)));
-
-    m_dialog.exec();
-    return future.result();
-}
-
-static void checkHeader(QStringList &filePaths, QStringList &failInfo, ProgressDialog &dialog)
-{
-    int progress = 0;
-
-    QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
 
     std::string header;
-    GzipFile reader;
-    if (reader.open(filePaths.at(0)) && reader.readLine(header)) {
-        std::string tempHeader;
-        for (auto iter = filePaths.begin() + 1; iter != filePaths.end(); ++iter) {
-            QMetaObject::invokeMethod(&dialog, "setValue", Qt::QueuedConnection, Q_ARG(int, ++progress));
-
-            GzipFile reader;
-            if (reader.open(*iter) && reader.readLine(tempHeader)) {
-                if (tempHeader != header) {
-                    failInfo.append("incompatible header of " + *iter);
-                    iter->clear();
-                }
-            } else {
-                failInfo.append("failed to read header from " + *iter);
-                iter->clear();
-            }
-        }
-    } else {
-        failInfo.append("failed to read header from " + filePaths[0]);
-        filePaths.erase(filePaths.begin() + 1, filePaths.end());
+    if (!reader.readLine(header)) {
+        error = "failed to read from ";
+        error += path;
+        return std::string();
     }
 
-    // Remove the failed file
-    auto newEnd = std::remove_if(filePaths.begin() + 1, filePaths.end(), [] (const QString &filePath) {
-        return filePath.isEmpty();
-    });
-    filePaths.erase(newEnd, filePaths.end());
-
-    QMetaObject::invokeMethod(&dialog, "accept", Qt::QueuedConnection);
+    if (strncmp(header.c_str(), "##date;time;", 12) ||
+        strcmp(header.c_str() + header.length() - 2, "##"))
+    {
+        error = "header format of ";
+        error += path;
+        error += "is invalid";
+        return std::string();
+    }
+    return header;
 }
 
-void StatisticsFileParser::checkFileHeader(QStringList &filePaths, QStringList &failInfo)
+std::string StatisticsFileParser::parseFileHeader(const QString &path, QString &error)
 {
-    m_dialog.setRange(0, filePaths.size());
-    m_dialog.setValue(0);
-    QFuture<void> future = QtConcurrent::run(
-                std::bind(checkHeader, std::ref(filePaths), std::ref(failInfo), std::ref(m_dialog)));
-
+    auto parseRunner = std::bind(parseHeader, std::ref(path), std::ref(error));
+    QFutureWatcher<std::string> watcher;
+    QObject::connect(&watcher, SIGNAL(finished()), &m_dialog, SLOT(accept()));
+    watcher.setFuture(QtConcurrent::run(parseRunner));
     m_dialog.exec();
-    future.waitForFinished();
+    watcher.waitForFinished();
+    return watcher.result();
 }
 
 struct kpiKciNameNode
@@ -1020,11 +913,4 @@ QString StatisticsFileParser::kpiKciToCsvFormat(QStringList &filePaths, QString 
     }
 
     return destFilePath;
-}
-
-QString StatisticsFileParser::getNodeFromFileName(const QString &fileName)
-{
-    int pos = fileName.indexOf(QStringLiteral("__"));
-    Q_ASSERT(pos > 0);
-    return fileName.left(pos);
 }

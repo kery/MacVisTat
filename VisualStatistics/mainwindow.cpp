@@ -17,8 +17,6 @@
 #include <QNetworkAccessManager>
 #include <QNetworkProxyQuery>
 
-#define STAT_FILE_PATTERN QStringLiteral("^(.+)__.+\\.csv\\.gz$")
-
 MainWindow::MainWindow() :
     QMainWindow(nullptr),
     m_ui(new Ui::MainWindow),
@@ -38,6 +36,11 @@ MainWindow::MainWindow() :
     m_ui->splitterVer->setSizes(QList<int>() << height() - 80 << 80);
     m_ui->splitterVer->setStretchFactor(0, 1);
     m_ui->splitterVer->setStretchFactor(1, 0);
+    // a value smaller than the minimal size hint of the respective widget will
+    // be replaced by the value of the hint.
+    m_ui->splitterVer2->setSizes(QList<int>() << 1 << 10);
+    m_ui->splitterVer2->setStretchFactor(0, 0);
+    m_ui->splitterVer2->setStretchFactor(1, 1);
 
     QToolButton *toolButton = new QToolButton();
     QFont font = toolButton->font();
@@ -169,60 +172,39 @@ bool MainWindow::isRegexpCaseButtonResizeEvent(QObject *obj, QEvent *event)
     return event->type() == QEvent::Resize && m_ui->cbRegExpFilter->findChild<QToolButton *>() == obj;
 }
 
-bool MainWindow::statFileAlreadyAdded(const QString &filePath)
+void MainWindow::openStatFile(QString &path)
 {
-    for (int i = 0; i < m_ui->lwStatFiles->count(); ++i) {
-        QListWidgetItem *item = m_ui->lwStatFiles->item(i);
+    translateToLocalPath(path);
+
+    if (m_ui->lwStatFiles->count() > 0) {
+        QListWidgetItem *item = m_ui->lwStatFiles->item(0);
 #if defined(Q_OS_WIN)
         Qt::CaseSensitivity cs = Qt::CaseInsensitive;
 #else
         Qt::CaseSensitivity cs = Qt::CaseSensitive;
 #endif
-        if (item->toolTip().compare(filePath, cs) == 0) {
-            return true;
+        if (item->toolTip().compare(path, cs)) {
+            on_actionClose_triggered();
+        } else {
+            return;
         }
     }
-    return false;
-}
 
-void MainWindow::addStatFiles(QStringList &filePaths)
-{
-    translateToLocalPath(filePaths);
-    filterOutAlreadyAddedFiles(filePaths);
-    QStringList invalidFileNames = filterOutInvalidFileNames(filePaths);
-    for (const QString &fileName : invalidFileNames) {
-        appendLogWarn("ignored invalid file name " + fileName);
-    }
-
-    if (filePaths.isEmpty()) {
+    QString error;
+    parseStatFileHeader(path, error);
+    if (!error.isEmpty()) {
+        appendLogError(error);
         return;
     }
 
-    QStringList failInfo;
-    if (m_ui->lwStatFiles->count() == 0) {
-        parseStatFileHeader(filePaths, failInfo);
-    } else {
-        // Prepend a file to be compared to its header
-        filePaths.prepend(m_ui->lwStatFiles->item(0)->toolTip());
-        checkStatFileHeader(filePaths, failInfo);
-        // Remove the prepended file
-        filePaths.erase(filePaths.begin());
-    }
-
-    addStatFilesToListWidget(filePaths);
-
-    for (const QString &info : failInfo) {
-        appendLogError(info);
-    }
+    addStatFileToListWidget(path);
 
     m_ui->cbRegExpFilter->lineEdit()->setFocus();
 
     QSettings settings;
     QStringList files = settings.value(QStringLiteral("recentFileList")).toStringList();
-    for (const QString &path : filePaths) {
-        files.removeOne(path);
-        files.prepend(path);
-    }
+    files.removeOne(path);
+    files.prepend(path);
 
     while (files.size() > (int)m_recentFileActions.size()) {
         files.removeLast();
@@ -233,46 +215,20 @@ void MainWindow::addStatFiles(QStringList &filePaths)
     updateRecentFileActions();
 }
 
-void MainWindow::filterOutAlreadyAddedFiles(QStringList &filePaths)
-{
-    auto newEnd = std::remove_if(filePaths.begin(), filePaths.end(),
-                                 std::bind(&MainWindow::statFileAlreadyAdded,
-                                           this, std::placeholders::_1));
-    filePaths.erase(newEnd, filePaths.end());
-}
-
-QStringList MainWindow::filterOutInvalidFileNames(QStringList &filePaths)
-{
-    QStringList invalidFileNames;
-    auto newEnd = std::remove_if(filePaths.begin(), filePaths.end(),
-                                 [&invalidFileNames] (const QString &filePath)
-    {
-        QRegExp regExp(STAT_FILE_PATTERN);
-        const QString fileName = QFileInfo(filePath).fileName();
-        if (regExp.exactMatch(fileName)) {
-            return false;
-        } else {
-            invalidFileNames << fileName;
-            return true;
-        }
-    });
-    filePaths.erase(newEnd, filePaths.end());
-    return invalidFileNames;
-}
-
-void MainWindow::parseStatFileHeader(QStringList &filePaths, QStringList &failInfo)
+void MainWindow::parseStatFileHeader(const QString &path, QString &error)
 {
     ProgressDialog dialog(this);
     dialog.setWindowTitle(QStringLiteral("Please Wait"));
-    dialog.setLabelText(QStringLiteral("Parsing statistics files' header..."));
+    dialog.setLabelText(QStringLiteral("Parsing statistics file header..."));
+    dialog.busyIndicatorMode();
     dialog.enableCancelButton(false);
 
     StatisticsFileParser fileParser(dialog);
-    std::string result = fileParser.parseFileHeader(filePaths, failInfo);
-    if (result.size() > 0) {
+    std::string header = fileParser.parseFileHeader(path, error);
+    if (error.isEmpty() && header.length() > 0) {
         StatisticsNameModel *model = static_cast<StatisticsNameModel*>(m_ui->lvStatName->model());
         StatisticsNameModel::StatisticsNames statNames;
-        splitString(result.c_str() + sizeof("##date;time;") - 1, ';', statNames);
+        splitString(header.c_str() + sizeof("##date;time;") - 1, ';', statNames);
         statNames.back().erase(statNames.back().length() - 2);
         model->setStatisticsNames(statNames);
 
@@ -280,78 +236,48 @@ void MainWindow::parseStatFileHeader(QStringList &filePaths, QStringList &failIn
 
         QString filterText = m_ui->cbRegExpFilter->lineEdit()->text();
         if (!filterText.isEmpty()) {
-            QStringList errList;
-            model->setFilterPattern(QStringList(), filterText, m_caseSensitive, errList);
-            for (const QString &err : errList) {
-                appendLogError(err);
+            QString error;
+            model->setFilterPattern(QStringList(), filterText, m_caseSensitive, error);
+            if (!error.isEmpty()) {
+                appendLogError(error);
             }
         }
     }
 }
 
-void MainWindow::checkStatFileHeader(QStringList &filePaths, QStringList &failInfo)
+void MainWindow::addStatFileToListWidget(const QString &path)
 {
-    ProgressDialog dialog(this);
-    dialog.setWindowTitle(QStringLiteral("Please Wait"));
-    dialog.setLabelText(QStringLiteral("Parsing statistics files' header..."));
-    dialog.enableCancelButton(false);
-
-    StatisticsFileParser fileParser(dialog);
-    fileParser.checkFileHeader(filePaths, failInfo);
-}
-
-void MainWindow::addStatFilesToListWidget(const QStringList &filePaths)
-{
+    QFileInfo fileInfo(path);
     QIcon icon(QStringLiteral(":/resource/image/archive.png"));
-    for (const QString &filePath : filePaths) {
-        QFileInfo fileInfo(filePath);
-        QListWidgetItem *item = new QListWidgetItem(icon, fileInfo.fileName());
-        item->setCheckState(Qt::Checked);
+    QListWidgetItem *item = new QListWidgetItem(icon, fileInfo.fileName());
 
-        item->setToolTip(filePath);
-        m_ui->lwStatFiles->addItem(item);
-    }
+    item->setToolTip(path);
+    m_ui->lwStatFiles->addItem(item);
 }
 
-void MainWindow::translateToLocalPath(QStringList &filePaths)
+void MainWindow::translateToLocalPath(QString &path)
 {
-    std::for_each(filePaths.begin(), filePaths.end(), [] (QString &filePath) {
-        filePath = QDir::toNativeSeparators(filePath);
-    });
+    path = QDir::toNativeSeparators(path);
 }
 
 void MainWindow::parseStatFileData(bool multipleWindows)
-{
-    QVector<QListWidgetItem*> checkedItems;
-    for (int i = 0; i < m_ui->lwStatFiles->count(); ++i) {
-        QListWidgetItem *item = m_ui->lwStatFiles->item(i);
-        if (item->checkState() == Qt::Checked) {
-            checkedItems << item;
-        }
-    }
-
-    if (checkedItems.isEmpty()) {
-        showInfoMsgBox(this,
-                       QStringLiteral("Please check the statistics file(s) with which you want to plot!"),
-                       QStringLiteral("No statistics file checked."));
-        return;
-    }
-
-    StatisticsNameModel *model = static_cast<StatisticsNameModel*>(m_ui->lvStatName->model());
-    Q_ASSERT(model != NULL);
-    if (model->rowCount() == 0) {
-        showInfoMsgBox(this,
-                       QStringLiteral("Please specify at lease one statistics name which you want to plot!"),
-                       QStringLiteral("No statistics name found."));
+{   
+    if (m_ui->lwStatFiles->count() <= 0) {
         return;
     }
 
     int statCountToPlot;
+    StatisticsNameModel *model = static_cast<StatisticsNameModel*>(m_ui->lvStatName->model());
     QModelIndexList selectedIndexes = m_ui->lvStatName->selectionModel()->selectedIndexes();
+
     if (selectedIndexes.isEmpty()) {
         statCountToPlot = model->rowCount();
     } else {
         statCountToPlot = selectedIndexes.size();
+    }
+
+    if (statCountToPlot <= 0) {
+        return;
     }
 
     if (multipleWindows && statCountToPlot > 16) {
@@ -379,57 +305,46 @@ void MainWindow::parseStatFileData(bool multipleWindows)
 
     ProgressDialog dialog(this);
     dialog.setWindowTitle(QStringLiteral("Please Wait"));
-    dialog.setLabelText(QStringLiteral("Parsing statistics files..."));
-
-    QVector<QString> checkedFiles;
-    for (QListWidgetItem *item : checkedItems) {
-        checkedFiles << item->toolTip();
-    }
+    dialog.setLabelText(QStringLiteral("Parsing statistics file..."));
 
     StatisticsFileParser fileParser(dialog);
-    Statistics::NodeNameDataMap nndm;
-    QVector<QString> errors;
-    if (fileParser.parseFileData(indexNameMap, checkedFiles, nndm, errors)) {
-        for (const QString &error : errors) {
+    QString path = m_ui->lwStatFiles->item(0)->toolTip();
+    Statistics::NameDataMap ndm;
+    QString error;
+    if (fileParser.parseFileData(indexNameMap, path, ndm, error)) {
+        if (!error.isEmpty()) {
             appendLogError(error);
-        }
-        if (!nndm.isEmpty()) {
-            handleParsedStat(nndm, multipleWindows);
+        } else if (!ndm.isEmpty()) {
+            handleParsedStat(ndm, multipleWindows);
         }
     }
 }
 
-bool MainWindow::allDataUnchanged(const Statistics::NodeNameDataMap &nndm)
+bool MainWindow::checkFileName(const QString &path)
 {
-    for (const Statistics::NameDataMap &ndm : nndm) {
-        const QCPDataMap &dataMap = ndm.first();
-        qint64 firstValue = (qint64)dataMap.first().value;
-        for (const QCPData &data : dataMap) {
-            if (firstValue != (qint64)data.value) {
-                return false;
-            }
-        }
-    }
-    return true;
+    QRegExp regExp("^(.+)__.+\\.csv\\.gz$");
+    QFileInfo fileInfo(path);
+    return regExp.exactMatch(fileInfo.fileName());
 }
 
-void MainWindow::handleParsedStat(Statistics::NodeNameDataMap &nndm, bool multipleWindows)
+void MainWindow::handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWindows)
 {
     if (multipleWindows) {
-        QMap<QString, Statistics::NodeNameDataMap> nndms(
-                    Statistics::groupNodeNameDataMapByName(std::move(nndm)));
-        for (Statistics::NodeNameDataMap &nndm : nndms) {
-            if ((QApplication::keyboardModifiers() & Qt::ControlModifier) && allDataUnchanged(nndm)) {
+        QVector<Statistics::NameDataMap> ndms = Statistics::divideNameDataMap(ndm);
+        for (Statistics::NameDataMap &tempNdm : ndms) {
+            if ((QApplication::keyboardModifiers() & Qt::ControlModifier) &&
+                    Statistics::isConstantDataMap(tempNdm.first()))
+            {
                 continue;
             }
-            Statistics stat(nndm);
+            Statistics stat(tempNdm);
             PlotWindow *plotWindow = new PlotWindow(stat);
             plotWindow->setAttribute(Qt::WA_DeleteOnClose);
             connect(this, SIGNAL(aboutToBeClosed()), plotWindow, SLOT(close()));
             plotWindow->showMaximized();
         }
     } else {
-        Statistics stat(nndm);
+        Statistics stat(ndm);
         PlotWindow *plotWindow = new PlotWindow(stat);
         plotWindow->setAttribute(Qt::WA_DeleteOnClose);
         connect(this, SIGNAL(aboutToBeClosed()), plotWindow, SLOT(close()));
@@ -601,24 +516,22 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
-    QRegExp regExp(STAT_FILE_PATTERN);
-    for (const QUrl &url : event->mimeData()->urls()) {
-        QFileInfo fileInfo(url.toLocalFile());
-        if (regExp.exactMatch(fileInfo.fileName())) {
-            event->acceptProposedAction();
-            return;
-        }
+    QList<QUrl> urls = event->mimeData()->urls();
+    if (urls.size() != 1) {
+        return;
+    }
+
+    if (checkFileName(urls.first().toLocalFile())) {
+        event->acceptProposedAction();
     }
 }
 
 void MainWindow::dropEvent(QDropEvent *event)
-{
-    QStringList fileNames;
+{   
     for (const QUrl &url : event->mimeData()->urls()) {
-        fileNames.append(url.toLocalFile());
-    }
-    if (fileNames.size() > 0) {
-        addStatFiles(fileNames);
+        QString path = url.toLocalFile();
+        openStatFile(path);
+        return;
     }
 }
 
@@ -692,15 +605,16 @@ void MainWindow::updateFilterPattern()
 //    static int c = 0;
 //    qDebug() << "updateFilterPattern" << ++c << m_ui->cbRegExpFilter->currentIndex() << baSig;
 
-    QStringList modules, errList;
+    QStringList modules;
     for (const QListWidgetItem *item : m_ui->lwModules->selectedItems()) {
         modules.append(item->text());
     }
 
+    QString error;
     static_cast<StatisticsNameModel*>(m_ui->lvStatName->model())->setFilterPattern(
-                modules, m_ui->cbRegExpFilter->lineEdit()->text(), m_caseSensitive, errList);
-    for (const QString &err : errList) {
-        appendLogError(err);
+                modules, m_ui->cbRegExpFilter->lineEdit()->text(), m_caseSensitive, error);
+    if (!error.isEmpty()) {
+        appendLogError(error);
     }
 }
 
@@ -778,8 +692,8 @@ void MainWindow::updateModulesInfo()
 void MainWindow::addRecentFile()
 {
     QAction *action = qobject_cast<QAction *>(sender());
-    QStringList recentFile = action->data().toStringList();
-    addStatFiles(recentFile);
+    QString path = action->data().toString();
+    openStatFile(path);
 }
 
 void MainWindow::caseSensitiveButtonClicked(bool checked)
@@ -790,15 +704,15 @@ void MainWindow::caseSensitiveButtonClicked(bool checked)
     updateFilterPattern();
 }
 
-void MainWindow::on_actionAdd_triggered()
+void MainWindow::on_actionOpen_triggered()
 {
     QFileDialog fileDialog(this);
-    fileDialog.setFileMode(QFileDialog::ExistingFiles);
+    fileDialog.setFileMode(QFileDialog::ExistingFile);
     fileDialog.setNameFilter(QStringLiteral("Statistics File (*.csv.gz)"));
 
     if (fileDialog.exec() == QDialog::Accepted) {
         QStringList strList = fileDialog.selectedFiles();
-        addStatFiles(strList);
+        openStatFile(strList.first());
     }
 }
 
@@ -826,10 +740,8 @@ void MainWindow::on_actionXmlToCSV_triggered()
 
             int answer = showQuestionMsgBox(this, info, QStringLiteral("Do you want to open it?"));
             if (answer == QMessageBox::Yes) {
-                on_actionCloseAll_triggered();
-
-                QStringList filePaths(convertedPath);
-                addStatFiles(filePaths);
+                on_actionClose_triggered();
+                openStatFile(convertedPath);
             }
         }
     } else {
@@ -837,16 +749,11 @@ void MainWindow::on_actionXmlToCSV_triggered()
     }
 }
 
-void MainWindow::on_actionCloseAll_triggered()
+void MainWindow::on_actionClose_triggered()
 {
     static_cast<StatisticsNameModel*>(m_ui->lvStatName->model())->clearStatisticsNames();
-    for (int i = m_ui->lwStatFiles->count() - 1; i >= 0; --i) {
-        delete m_ui->lwStatFiles->item(i);
-    }
-
-    for (int i = m_ui->lwModules->count() - 1; i >= 0; --i) {
-        delete m_ui->lwModules->item(i);
-    }
+    m_ui->lwModules->clear();
+    m_ui->lwStatFiles->clear();
 }
 
 void MainWindow::on_actionPlot_triggered()
@@ -862,43 +769,6 @@ void MainWindow::on_actionPlotSeparately_triggered()
 void MainWindow::on_actionClearFilterHistory_triggered()
 {
     m_ui->cbRegExpFilter->clear();
-}
-
-void MainWindow::on_actionSelectAll_triggered()
-{
-    for (int i = 0; i < m_ui->lwStatFiles->count(); ++i) {
-        QListWidgetItem *item = m_ui->lwStatFiles->item(i);
-        if (item->checkState() != Qt::Checked) {
-            item->setCheckState(Qt::Checked);
-        }
-    }
-}
-
-void MainWindow::on_actionClearSelection_triggered()
-{
-    for (int i = 0; i < m_ui->lwStatFiles->count(); ++i) {
-        QListWidgetItem *item = m_ui->lwStatFiles->item(i);
-        if (item->checkState() != Qt::Unchecked) {
-            item->setCheckState(Qt::Unchecked);
-        }
-    }
-}
-
-void MainWindow::on_actionInvertSelection_triggered()
-{
-    for (int i = 0; i < m_ui->lwStatFiles->count(); ++i) {
-        QListWidgetItem *item = m_ui->lwStatFiles->item(i);
-        switch (item->checkState()) {
-        case Qt::Checked:
-            item->setCheckState(Qt::Unchecked);
-            break;
-        case Qt::Unchecked:
-            item->setCheckState(Qt::Checked);
-            break;
-        default:
-            break;
-        }
-    }
 }
 
 void MainWindow::on_actionViewHelp_triggered()

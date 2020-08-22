@@ -30,7 +30,7 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <widget class="QSplitter" name="splitterHor2">
+       <widget class="QSplitter" name="splitterVer2">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
@@ -44,8 +44,8 @@
          <property name="dragDropMode">
           <enum>QAbstractItemView::DropOnly</enum>
          </property>
-         <property name="sortingEnabled">
-          <bool>true</bool>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::NoSelection</enum>
          </property>
         </widget>
         <widget class="QListWidget" name="lwModules">
@@ -131,19 +131,11 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionAdd"/>
-    <addaction name="actionCloseAll"/>
+    <addaction name="actionOpen"/>
+    <addaction name="actionClose"/>
     <addaction name="actionXmlToCSV"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
-   </widget>
-   <widget class="QMenu" name="menu_Selection">
-    <property name="title">
-     <string>Selection</string>
-    </property>
-    <addaction name="actionSelectAll"/>
-    <addaction name="actionClearSelection"/>
-    <addaction name="actionInvertSelection"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -163,7 +155,6 @@
     <addaction name="actionClearFilterHistory"/>
    </widget>
    <addaction name="menu_File"/>
-   <addaction name="menu_Selection"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -177,8 +168,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionAdd"/>
-   <addaction name="actionCloseAll"/>
+   <addaction name="actionOpen"/>
+   <addaction name="actionClose"/>
    <addaction name="actionXmlToCSV"/>
    <addaction name="separator"/>
    <addaction name="actionPlot"/>
@@ -187,31 +178,31 @@
    <addaction name="actionViewHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionAdd">
+  <action name="actionOpen">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
      <normaloff>:/resource/image/plus.png</normaloff>:/resource/image/plus.png</iconset>
    </property>
    <property name="text">
-    <string>Add...</string>
+    <string>Open...</string>
    </property>
    <property name="toolTip">
-    <string>Add</string>
+    <string>Open</string>
    </property>
    <property name="statusTip">
-    <string>Add CSV format files</string>
+    <string>Open CSV format file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="actionCloseAll">
+  <action name="actionClose">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
      <normaloff>:/resource/image/delete.png</normaloff>:/resource/image/delete.png</iconset>
    </property>
    <property name="text">
-    <string>Close All</string>
+    <string>Close</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>

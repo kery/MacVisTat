@@ -19,11 +19,9 @@ static PlotWindow* plotWindow(lua_State *L)
     return qobject_cast<PlotWindow*>(scriptWindow(L)->parent());
 }
 
-static QCPDataMap* dataMap(lua_State *L,
-                           const char *node,
-                           const char *name)
+static QCPDataMap* dataMap(lua_State *L, const char *name)
 {
-    QCPDataMap *dataMap = plotWindow(L)->getStat().getDataMap(node, name);
+    QCPDataMap *dataMap = plotWindow(L)->getStat().getDataMap(name);
     if (dataMap == nullptr) {
         luaL_error(L, "invalid node or statistics name");
     }
@@ -38,15 +36,9 @@ static int custom_print(lua_State *L)
     return 0;
 }
 
-static int get_keys(lua_State *L)
+static int num_of_keys(lua_State *L)
 {
-    int index = 0;
-    lua_newtable(L);
-    for (double key : plotWindow(L)->getStat().getDataKeys()) {
-        lua_pushinteger(L, ++index);
-        lua_pushinteger(L, (int)key);
-        lua_rawset(L, 1);
-    }
+    lua_pushinteger(L, plotWindow(L)->getStat().dateTimeCount());
     return 1;
 }
 
@@ -72,7 +64,7 @@ static int get_dt(lua_State *L)
     int key = luaL_checkint(L, 1);
 
     Statistics &stat = plotWindow(L)->getStat();
-    luaL_argcheck(L, key >= 0 && key < stat.dateTimeCount(), 1, "invalid key");
+    luaL_argcheck(L, key >= 0 && key < stat.dateTimeCount(), 1, "key out of range");
 
     lua_pushinteger(L, stat.getDateTime(key));
     return 1;
@@ -83,7 +75,7 @@ static int get_dt_str(lua_State *L)
     int key = luaL_checkint(L, 1);
 
     Statistics &stat = plotWindow(L)->getStat();
-    luaL_argcheck(L, key >= 0 && key < stat.dateTimeCount(), 1, "invalid key");
+    luaL_argcheck(L, key >= 0 && key < stat.dateTimeCount(), 1, "key out of range");
 
     lua_pushstring(L, stat.getDateTimeString(key).toStdString().c_str());
     return 1;
@@ -91,28 +83,27 @@ static int get_dt_str(lua_State *L)
 
 static int add_graph(lua_State *L)
 {
+    PlotWindow *plotWnd = plotWindow(L);
+    Statistics &stat = plotWnd->getStat();
+
     const char *name = luaL_checkstring(L, 1);
+    luaL_argcheck(L, stat.getDataMap(name) == nullptr, 1, "graph name already exists");
     luaL_checktype(L, 2, LUA_TTABLE);
 
-    PlotWindow *plotWnd = plotWindow(L);
-    CounterGraph *graph = plotWnd->addCounterGraph();
+    CounterGraph *graph = plotWnd->addCounterGraph(name);
     if (graph == nullptr) {
         luaL_error(L, "add graph failed");
         return 1;
     }
-
-    graph->setProperty("add_by_script", true);
-
-    QCPData data;
-    QCPDataMap *dataMap = graph->data();
     graph->setName(name);
-    graph->setDisplayName(name);
-
     int r = (luaL_optint(L, 3, 255) - 1) % 255 + 1;
     int g = (luaL_optint(L, 4, 0) - 1) % 255 + 1;
     int b = (luaL_optint(L, 5, 0) - 1) % 255 + 1;
     graph->setPen(QPen(QColor(r, g, b)));
     graph->setSelectedPen(graph->pen());
+
+    QCPData data;
+    QCPDataMap *dataMap = stat.addDataMap(name);
 
     lua_pushnil(L);
     while (lua_next(L, 2) != 0) {
@@ -124,13 +115,11 @@ static int add_graph(lua_State *L)
         lua_pop(L, 1);
     }
 
-    QCustomPlot *plot = plotWnd->getPlot();
-    lua_pushinteger(L, plot->graphCount() - 1);
-
+    graph->setData(dataMap, true);
     plotWnd->updateWindowTitle();
     plotWnd->updatePlotTitle();
 
-    return 1;
+    return 0;
 }
 
 static int update(lua_State *L)
@@ -159,7 +148,7 @@ static int init_cfunc(lua_State *L)
     lua_rawset(L, LUA_REGISTRYINDEX);
 
     const struct luaL_Reg methods[] = {
-        { "get_keys", get_keys },
+        { "num_of_keys", num_of_keys },
         { "get_value", get_value },
         { "get_dt", get_dt },
         { "get_dt_str", get_dt_str },

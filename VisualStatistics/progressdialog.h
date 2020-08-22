@@ -32,13 +32,11 @@ public:
 
     void setLabelText(const QString &text);
     void enableCancelButton(bool enabled);
+    void busyIndicatorMode();
 
 public slots:
     void setRange(int minimum, int maximum);
     void setValue(int progress);
-    // In order to called by QMetaObject::invokeMethod, method must
-    // be slots or decorate by Q_INVOKABLE
-    void increaseValue(int val);
 
 signals:
     void canceling();

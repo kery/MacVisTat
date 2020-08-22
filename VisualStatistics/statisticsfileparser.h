@@ -14,14 +14,12 @@ public:
     StatisticsFileParser(const StatisticsFileParser &) = delete;
     StatisticsFileParser& operator=(const StatisticsFileParser &) = delete;
 
-    bool parseFileData(const IndexNameMap &inm, const QVector<QString> &fileNames,
-        Statistics::NodeNameDataMap &nndm, QVector<QString> &errors);
-    std::string parseFileHeader(QStringList &filePaths, QStringList &failInfo);
-    void checkFileHeader(QStringList &filePaths, QStringList &failInfo);
+    std::string parseFileHeader(const QString &path, QString &error);
+
+    bool parseFileData(const IndexNameMap &inm, const QString &path,
+        Statistics::NameDataMap &ndm, QString &error);
 
     QString kpiKciToCsvFormat(QStringList &filePaths, QString &error);
-
-    static QString getNodeFromFileName(const QString &fileName);
 
 private:
     ProgressDialog &m_dialog;

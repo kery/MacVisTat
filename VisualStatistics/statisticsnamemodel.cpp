@@ -70,10 +70,10 @@ static bool modulesTest(const std::vector<std::string> &modules, const std::stri
 
 // Use pcre for regular expression matching because the QRegExp
 // is much slower in some situations
-bool StatisticsNameModel::setFilterPattern(const QStringList &modules, const QString &pattern, bool caseSensitive, QStringList &errList)
+void StatisticsNameModel::setFilterPattern(const QStringList &modules, const QString &pattern, bool caseSensitive, QString &error)
 {
     if (m_statNames.empty()) {
-        return true;
+        return;
     }
 
     QStringList patterns = pattern.split('#');
@@ -87,8 +87,9 @@ bool StatisticsNameModel::setFilterPattern(const QStringList &modules, const QSt
     int errOffset;
     pcre *re = pcre_compile(firstPattern.toStdString().c_str(), caseSensitive ? 0 : PCRE_CASELESS, &err, &errOffset, NULL);
     if (!re) {
-        errList << "invalid regular expression: " + firstPattern;
-        return false;
+        error = "invalid regular expression: ";
+        error += firstPattern;
+        return;
     }
 
     const int OVECCOUNT = 30;
@@ -176,7 +177,8 @@ bool StatisticsNameModel::setFilterPattern(const QStringList &modules, const QSt
             }
             re = pcre_compile((*iter).toStdString().c_str(), caseSensitive ? 0 : PCRE_CASELESS, &err, &errOffset, NULL);
             if (!re) {
-                errList << "invalid regular expression: " + *iter;
+                error = "invalid regular expression: ";
+                error += *iter;
                 break;
             }
 
@@ -218,8 +220,6 @@ bool StatisticsNameModel::setFilterPattern(const QStringList &modules, const QSt
     }
     m_fetchedCount = 0;
     emit endResetModel();
-
-    return true;
 }
 
 int StatisticsNameModel::filteredCount() const

@@ -3,56 +3,25 @@
 
 double SCATTER_SIZE = 6.0;
 
-CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &node, const QString &module) :
-    m_showNode(false),
+CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &module, const QString &name) :
     m_showModule(false),
-    m_node(node),
     m_module(module),
+    m_name(name),
     m_ssSuspect(QCPScatterStyle::ssNone, SCATTER_SIZE),
     QCPGraph(keyAxis, valueAxis)
 {
-}
-
-void CounterGraph::setShowNode(bool show)
-{
-    m_showNode = show;
-}
-
-QString CounterGraph::node() const
-{
-    return m_node;
 }
 
 void CounterGraph::setShowModule(bool show) {
     m_showModule = show;
 }
 
-void CounterGraph::setDisplayName(const QString &name)
-{
-    m_displayName = name;
-}
-
 QString CounterGraph::displayName() const
 {
-    return m_displayName;
-}
-
-QString CounterGraph::realDisplayName() const
-{
-    QString realName;
-
-    if (m_showNode && !m_node.isEmpty()) {
-        realName += m_node;
-        realName += ':';
-    }
-
     if (m_showModule && !m_module.isEmpty()) {
-        realName += m_module;
-        realName += ',';
+        return m_module + ',' + m_name;
     }
-
-    realName += m_displayName;
-    return realName;
+    return m_name;
 }
 
 void CounterGraph::enableSuspectFlag(bool enable)
@@ -123,7 +92,7 @@ void CounterGraph::draw(QCPPainter *painter)
 void CounterGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
     QSizeF iconSize = parentPlot()->legend->iconSize();
-    QRectF textRect = painter->fontMetrics().boundingRect(0, 0, 0, iconSize.height(), Qt::TextDontClip, name());
+    QRectF textRect = painter->fontMetrics().boundingRect(0, 0, 0, iconSize.height(), Qt::TextDontClip, displayName());
     if (textRect.height() > iconSize.height()) {
         const_cast<QRectF &>(rect).translate(0, ((textRect.height() - iconSize.height()) / 2 + 1));
         painter->setClipRect(rect);
@@ -141,22 +110,6 @@ void CounterGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatte
 
     // ignore the error bars, and the valueErrorMinus member of QCPData is used to determin whether to draw
     // a special scatter for suspect value (<suspect>true</suspect>)
-
-//    // draw error bars:
-//    if (mErrorType != etNone)
-//    {
-//      applyErrorBarsAntialiasingHint(painter);
-//      painter->setPen(mErrorPen);
-//      if (keyAxis->orientation() == Qt::Vertical)
-//      {
-//        for (int i=0; i<scatterData->size(); ++i)
-//          drawError(painter, valueAxis->coordToPixel(scatterData->at(i).value), keyAxis->coordToPixel(scatterData->at(i).key), scatterData->at(i));
-//      } else
-//      {
-//        for (int i=0; i<scatterData->size(); ++i)
-//          drawError(painter, keyAxis->coordToPixel(scatterData->at(i).key), valueAxis->coordToPixel(scatterData->at(i).value), scatterData->at(i));
-//      }
-//    }
 
     // draw scatter point symbols:
     applyScattersAntialiasingHint(painter);

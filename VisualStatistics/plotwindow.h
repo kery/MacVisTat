@@ -20,7 +20,7 @@ public:
     PlotWindow& operator=(const PlotWindow &) = delete;
     ~PlotWindow();
 
-    CounterGraph * addCounterGraph(const QString &node=QString(), const QString &module=QString());
+    CounterGraph * addCounterGraph(const QString &name, const QString &module=QString());
     void updateWindowTitle();
     void updatePlotTitle();
 
@@ -35,15 +35,11 @@ private:
 
     void calcDelta(QCPGraph *graph);
 
-    QVector<double> findRestartTimeIndex() const;
-    void findRestartTimeIndexForNode(const QString &node, QVector<double> &out) const;
-    void markRestartTime();
     bool shouldDrawScatter(const QVector<double> &tickVector, int plotWidth) const;
     void updateScatter(const QVector<double> &tickVector, int plotWidth);
 
     QCPGraph * findNearestGraphValue(int index, double yCoord, double &value);
 
-    QString genAggregateGraphName();
     void removeGraphs(const QVector<CounterGraph*> &graphs);
 
     QString defaultSaveFileName() const;
@@ -55,9 +51,7 @@ private slots:
     void mouseMove(QMouseEvent *event);
     void mouseWheel(QWheelEvent *event);
     void contextMenuRequest(const QPoint &pos);
-    void legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *item);
     void moveLegend();
-    void addAggregateGraph();
     void removeSelectedGraph();
     void copyGraphName();
     void showLegendTriggered(bool checked);
@@ -73,12 +67,9 @@ private slots:
     void on_actionScript_triggered();
     void on_actionRemoveZeroCounters_triggered();
     void on_actionCopyToClipboard_triggered();
-    void on_actionMarkRestartTime_triggered(bool checked);
-    void on_actionSetSampleInterval_triggered();
 
 private:
     int m_agggraph_idx;
-    int m_sampleInterval;
     Ui::PlotWindow *m_ui;
     QPropertyAnimation m_animation;
     QCPItemTracer *m_tracer;

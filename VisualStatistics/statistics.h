@@ -7,22 +7,15 @@ class Statistics
 {
 public:
     typedef QMap<QString, QCPDataMap> NameDataMap;
-    typedef QMap<QString, NameDataMap> NodeNameDataMap;
     typedef QVector<qint32> DateTimeVector;
 
-    Statistics(NodeNameDataMap &nndm);
+    Statistics(NameDataMap &ndm);
 
-    QList<QString> getNodes() const;
-    int getNodeCount() const;
-    QList<QString> getNames(const QString &node) const;
-    // TODO: need to remove?
-    QList<double> getDataKeys(const QString &node) const;
-    QList<double> getDataKeys() const;
-    int totalNameCount() const;
-    QCPDataMap* getDataMap(const QString &node, const QString &name);
-    QCPDataMap* addDataMap(const QString &node, const QString &name);
-    bool removeDataMap(const QString &node, const QString &name);
-    void removeEmptyNode();
+    QList<QString> getNames() const;
+    int nameCount() const;
+    QCPDataMap* getDataMap(const QString &name);
+    QCPDataMap* addDataMap(const QString &name);
+    bool removeDataMap(const QString &name);
 
     int dateTimeCount() const;
     DateTimeVector::value_type getDateTime(int index) const;
@@ -31,24 +24,17 @@ public:
     int getLastDateTime() const;
     int firstGreaterDateTimeIndex(int dateTime) const;
 
-    // TODO: need to remove?
-    QMap<int, qint32> getIndexDateTimeMap(const QString &node) const;
-
-    static QMap<QString, NodeNameDataMap>
-        groupNodeNameDataMapByName(NodeNameDataMap &&nndm);
-
+    static QVector<NameDataMap> divideNameDataMap(NameDataMap &ndm);
+    static bool isConstantDataMap(const QCPDataMap &dm);
     static QString getModuleFromStatName(const std::string &statName);
     static QString splitStatNameToModuleAndName(const QString &statName, QString &name);
 
-    // TODO: need change?
-    int getSampleInterval() const;
-
 private:
     void initDateTimes();
-    void updateDataKeys();
+    void translateKeys();
 
 private:
-    NodeNameDataMap m_nndm;
+    NameDataMap m_ndm;
     DateTimeVector m_dateTimes;
 };
 

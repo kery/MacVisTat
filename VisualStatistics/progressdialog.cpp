@@ -35,6 +35,14 @@ void ProgressDialog::enableCancelButton(bool enabled)
     m_ui->pushButton->setEnabled(enabled);
 }
 
+void ProgressDialog::busyIndicatorMode()
+{
+    m_ui->progressBar->setRange(0, 0);
+#if defined(Q_OS_WIN)
+    m_taskbarProgress->setRange(0, 0);
+#endif
+}
+
 void ProgressDialog::setRange(int minimum, int maximum)
 {
     m_ui->progressBar->setRange(minimum, maximum);
@@ -51,11 +59,6 @@ void ProgressDialog::setValue(int progress)
 #if defined(Q_OS_WIN)
     m_taskbarProgress->setValue(progress);
 #endif
-}
-
-void ProgressDialog::increaseValue(int val)
-{
-    setValue(m_ui->progressBar->value() + val);
 }
 
 void ProgressDialog::on_pushButton_clicked()

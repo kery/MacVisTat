@@ -19,7 +19,7 @@ public:
 
     void clearStatisticsNames();
 
-    bool setFilterPattern(const QStringList &modules, const QString &pattern, bool caseSensitive, QStringList &errList);
+    void setFilterPattern(const QStringList &modules, const QString &pattern, bool caseSensitive, QString &error);
     int filteredCount() const;
     int totalCount() const;
 

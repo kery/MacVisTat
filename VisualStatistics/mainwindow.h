@@ -29,19 +29,12 @@ private:
     bool isToolTipEventOfToolButton(QObject *obj, QEvent *event);
     bool isRegexpCaseButtonResizeEvent(QObject *obj, QEvent *event);
 
-    bool statFileAlreadyAdded(const QString &filePath);
-    void addStatFiles(QStringList &filePaths);
-    void filterOutAlreadyAddedFiles(QStringList &filePaths);
-    QStringList filterOutInvalidFileNames(QStringList &filePaths);
-    void parseStatFileHeader(QStringList &filePaths, QStringList &failInfo);
-    void checkStatFileHeader(QStringList &filePaths, QStringList &failInfo);
-    void addStatFilesToListWidget(const QStringList &filePaths);
-    void translateToLocalPath(QStringList &filePaths);
-    // multipleWindows indicates that if the parsed data will be shown in
-    // multiple windows when it is ready
-    // When parsed result is ready the slot handleParsedResult will be called
+    void openStatFile(QString &path);
+    void parseStatFileHeader(const QString &path, QString &error);
+    void addStatFileToListWidget(const QString &path);
+    void translateToLocalPath(QString &path);
     void parseStatFileData(bool multipleWindows);
-    void handleParsedStat(Statistics::NodeNameDataMap &nndm, bool multipleWindows);
+    void handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWindows);
     QString getMaintenanceToolPath();
 
     void appendLogInfo(const QString &text);
@@ -58,7 +51,7 @@ private:
     void initializeRecentFileActions();
     void updateRecentFileActions();
 
-    static bool allDataUnchanged(const Statistics::NodeNameDataMap &nndm);
+    static bool checkFileName(const QString &path);
 
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
     virtual void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
@@ -83,15 +76,12 @@ private slots:
     void addRecentFile();
     void caseSensitiveButtonClicked(bool checked);
 
-    void on_actionAdd_triggered();
+    void on_actionOpen_triggered();
     void on_actionXmlToCSV_triggered();
-    void on_actionCloseAll_triggered();
+    void on_actionClose_triggered();
     void on_actionPlot_triggered();
     void on_actionPlotSeparately_triggered();
     void on_actionClearFilterHistory_triggered();
-    void on_actionSelectAll_triggered();
-    void on_actionClearSelection_triggered();
-    void on_actionInvertSelection_triggered();
     void on_actionViewHelp_triggered();
     void on_actionChangeLog_triggered();
     void on_actionAbout_triggered();
