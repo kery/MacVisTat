@@ -1,6 +1,8 @@
 #include "progressdialog.h"
 #include "ui_progressdialog.h"
 
+#include <QKeyEvent>
+
 ProgressDialog::ProgressDialog(QWidget *parent) :
     QDialog(parent),
     m_ui(new Ui::ProgressDialog)
@@ -66,4 +68,9 @@ void ProgressDialog::on_pushButton_clicked()
     setLabelText(QStringLiteral("Canceling..."));
     enableCancelButton(false);
     emit canceling();
+}
+
+void ProgressDialog::keyPressEvent(QKeyEvent *e)
+{
+    e->ignore();
 }

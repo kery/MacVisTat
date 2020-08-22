@@ -44,6 +44,9 @@ signals:
 private slots:
     void on_pushButton_clicked();
 
+protected:
+    virtual void keyPressEvent(QKeyEvent *e);
+
 private:
 #if defined(Q_OS_WIN)
     QWinTaskbarButton m_taskbarButton;
