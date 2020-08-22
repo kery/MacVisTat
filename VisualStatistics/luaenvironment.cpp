@@ -76,7 +76,7 @@ static int get_dt(lua_State *L)
     return 1;
 }
 
-static int get_dt_str(lua_State *L)
+static int get_dtstr(lua_State *L)
 {
     int key = luaL_checkint(L, 1);
 
@@ -157,7 +157,7 @@ static int init_cfunc(lua_State *L)
         { "get_lastkey", get_lastkey },
         { "get_value", get_value },
         { "get_dt", get_dt },
-        { "get_dt_str", get_dt_str },
+        { "get_dtstr", get_dtstr },
         { "add_graph", add_graph },
         { "update", update },
         {NULL, NULL}

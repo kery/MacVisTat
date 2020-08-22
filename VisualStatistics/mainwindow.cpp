@@ -329,7 +329,7 @@ bool MainWindow::checkFileName(const QString &path)
 
 void MainWindow::handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWindows)
 {
-    if (multipleWindows) {
+    if (multipleWindows && ndm.size() > 1) {
         QVector<Statistics::NameDataMap> ndms = Statistics::divideNameDataMap(ndm);
         for (Statistics::NameDataMap &tempNdm : ndms) {
             if ((QApplication::keyboardModifiers() & Qt::ControlModifier) &&
