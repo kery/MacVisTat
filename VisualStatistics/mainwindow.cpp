@@ -773,7 +773,7 @@ void MainWindow::on_actionClearFilterHistory_triggered()
 
 void MainWindow::on_actionViewHelp_triggered()
 {
-    QUrl url(QStringLiteral("http://viini.dev.cic.nsn-rdnet.net/twiki/bin/view/SA/VisualStatistics"));
+    QUrl url(QStringLiteral("http://sdu.int.nokia-sbell.com:4099/help.html"));
     QDesktopServices::openUrl(url);
 }
 
