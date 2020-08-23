@@ -2,16 +2,12 @@
 #include "progressdialog.h"
 #include "gzipfile.h"
 #include "utils.h"
-#include <pcre.h>
 #include <expat.h>
 #include <QtConcurrent>
 #include <functional>
 #include <set>
 #include <memory>
 #include <unordered_map>
-
-#define KPIKCI_A_FILE_PATTERN "^A\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{4}[+-]\\d{4}(_-.+?)?(_.+?)?(_-_.+?)?\\.xml(\\.gz)?$"
-#define KPIKCI_C_FILE_PATTERN "^C\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{8}\\.\\d{4}[+-]\\d{4}(_-.+?)?(_.+?)?(_-_.+?)?\\.xml(\\.gz)?$"
 
 StatisticsFileParser::StatisticsFileParser(ProgressDialog &dialog) :
     m_dialog(dialog)
@@ -698,136 +694,152 @@ static void writeXmlData(GzipFile &fileWriter, XmlDataResult &finalResult, const
     }
 }
 
-static QString getGwNameFromFileName(const QString &fileName)
-{
-    const char *err;
-    int errOffset;
-    pcre *re;
-    QString gwName("MG");
-
-    if (fileName.startsWith('A', Qt::CaseInsensitive)) {
-        re = pcre_compile(KPIKCI_A_FILE_PATTERN, PCRE_CASELESS, &err, &errOffset, NULL);
-    } else {
-        re = pcre_compile(KPIKCI_C_FILE_PATTERN, PCRE_CASELESS, &err, &errOffset, NULL);
-    }
-
-    if (re) {
-        const int OVECCOUNT = 30;
-        int ovector[OVECCOUNT];
-        std::string fname = fileName.toStdString();
-        int ret = pcre_exec(re, NULL, fname.c_str(), (int)fname.length(), 0, 0, ovector, OVECCOUNT);
-        if (ret != PCRE_ERROR_NOMATCH) {
-            const char *subStr;
-            if (pcre_get_substring(fname.c_str(), ovector, ret, 2, &subStr) > 0) {
-                gwName = subStr + 1; // exclude the leading '_'
-                pcre_free_substring(subStr);
-            }
-        }
-        pcre_free(re);
-    }
-
-    return gwName;
-}
-
-static QString getFirstEndTimeFromFile(const QString &path)
+static QString getAttributeFromKpiKciFile(const QString &path, XML_StartElementHandler handler)
 {
     GzipFile fileReader;
-    if (fileReader.open(path)) {
-        QXmlStreamReader xmlReader(&fileReader);
-
-        while (!xmlReader.atEnd()) {
-            QXmlStreamReader::TokenType tokenType = xmlReader.readNext();
-            if (tokenType == QXmlStreamReader::StartElement && xmlReader.name() == "granPeriod") {
-                QXmlStreamAttributes attributes = xmlReader.attributes();
-                QString endTimeText = attributes.value(QLatin1String("endTime")).toString();
-                QDateTime endTime = QDateTime::fromString(endTimeText, Qt::ISODate);
-                return endTime.toString(DT_FORMAT_IN_FILE_NAME);
-            }
-        }
-    }
-    return QString();
-}
-
-static QString getEndTimeFromFileName(const QString &fileName)
-{
-    if (fileName.startsWith('A')) {
-        QString endTime = fileName.mid(1, 8);
-        endTime.append(".");
-
-        QStringRef timeRef = fileName.midRef(20, 4);
-        endTime.append(timeRef);
-        return endTime;
-    } else if(fileName.startsWith('C')) {
-        return fileName.mid(20, 13);
-    } else {
+    if (!fileReader.open(path)) {
         return QString();
     }
+
+    QString attr;
+    XML_Parser parser = XML_ParserCreate(NULL);
+    XML_SetUserData(parser, &attr);
+    XML_SetStartElementHandler(parser, handler);
+
+    int len;
+    char buf[BUFSIZ];
+    while (attr.isNull() && (len = fileReader.read(buf, sizeof(buf))) > 0) {
+        int isFinal = len < (int)sizeof(buf);
+        if (XML_Parse(parser, buf, len, isFinal) == XML_STATUS_ERROR) {
+            break;
+        }
+    }
+    XML_ParserFree(parser);
+    return attr;
+}
+
+static void getBeginTime_StartElementHandler(void *ud, const char *name, const char **atts)
+{
+    if (strcmp(name, "measCollec")) {
+        return;
+    }
+
+    const char *beginTime = expatHelperGetAtt("beginTime", atts);
+    if (beginTime != nullptr) {
+        *(QString *)ud = beginTime;
+    }
+}
+
+static QString getBeginTimeFromKpiKciFile(const QString &path)
+{
+    return getAttributeFromKpiKciFile(path, getBeginTime_StartElementHandler);
+}
+
+static void getEndTime_StartElementHandler(void *ud, const char *name, const char **atts)
+{
+    if (strcmp(name, "measCollec")) {
+        return;
+    }
+
+    const char *endTime = expatHelperGetAtt("endTime", atts);
+    if (endTime != nullptr) {
+        *(QString *)ud = endTime;
+    }
+}
+
+static QString getEndTimeFromKpiKciFile(const QString &path)
+{
+    return getAttributeFromKpiKciFile(path, getEndTime_StartElementHandler);
+}
+
+static void getFirstGranPeriodEndTime_StartElementHandler(void *ud, const char *name, const char **atts)
+{
+    if (strcmp(name, "granPeriod")) {
+        return;
+    }
+
+    const char *endTime = expatHelperGetAtt("endTime", atts);
+    if (endTime != nullptr) {
+        *(QString *)ud = endTime;
+    }
+}
+
+static QString getFirstGranPeriodEndTimeFromKpiKciFile(const QString &path)
+{
+    return getAttributeFromKpiKciFile(path, getFirstGranPeriodEndTime_StartElementHandler);
+}
+
+static void getManagedElement_StartElementHandler(void *ud, const char *name, const char **atts)
+{
+    if (strcmp(name, "fileSender")) {
+        return;
+    }
+
+    const char *localDn = expatHelperGetAtt("localDn", atts);
+    if (localDn != nullptr) {
+        const char *me = "ManagedElement=";
+        const char *pos = strstr(localDn, me);
+        if (pos != NULL) {
+            *(QString *)ud = pos + strlen(me);
+            return;
+        }
+    }
+
+    // stop parsing
+    *(QString *)ud = "";
+}
+
+static QString getManagedElementFromKpiKciFile(const QString &path)
+{
+    return getAttributeFromKpiKciFile(path, getManagedElement_StartElementHandler);
 }
 
 static QString getOutputFilePath(const QStringList &filePaths)
 {
+    QString managedElement = getManagedElementFromKpiKciFile(filePaths.first());
+    QString firstEndTime = getFirstGranPeriodEndTimeFromKpiKciFile(filePaths.first());
+    QString endTime = getEndTimeFromKpiKciFile(filePaths.last());
+
+    QDateTime dtFirstEndTime = QDateTime::fromString(firstEndTime, Qt::ISODate);
+    QDateTime dtEndTime = QDateTime::fromString(endTime, Qt::ISODate);
+
+    QString fileName = QString("%1__%2-%3.csv.gz").arg(managedElement,
+                                                       dtFirstEndTime.toString(DT_FORMAT_IN_FILE_NAME),
+                                                       dtEndTime.toString(DT_FORMAT_IN_FILE_NAME));
     QFileInfo fileInfo(filePaths.first());
-    QString outputFileName = getGwNameFromFileName(fileInfo.fileName());
-    outputFileName += "__";
-    outputFileName += getFirstEndTimeFromFile(filePaths.first());
-
-    if (filePaths.size() > 1) {
-        outputFileName += "-";
-        outputFileName += getEndTimeFromFileName(QFileInfo(filePaths.last()).fileName());
-    }
-
-    outputFileName += ".csv.gz";
-
-    return fileInfo.absoluteDir().absoluteFilePath(outputFileName);
+    return fileInfo.absoluteDir().absoluteFilePath(fileName);
 }
 
-static bool checkkpiKciFileNames(const QStringList &filePaths, QString &error)
+static void sortKpiKciFileNames(QStringList &filePaths, QString &error)
 {
-    const char *err;
-    int errOffset;
-    pcre *re;
-
-    if (QFileInfo(filePaths.first()).fileName().startsWith('A', Qt::CaseInsensitive)) {
-        re = pcre_compile(KPIKCI_A_FILE_PATTERN, PCRE_CASELESS, &err, &errOffset, NULL);
-    } else {
-        re = pcre_compile(KPIKCI_C_FILE_PATTERN, PCRE_CASELESS, &err, &errOffset, NULL);
-    }
-
-    if (!re) {
-        error = QStringLiteral("failed to compile regular expression: %1, offset %2").arg(err).arg(errOffset);
-        return false;
-    }
-
-    const int OVECCOUNT = 30;
-    int ovector[OVECCOUNT];
-
-    for (const QString &filePath : filePaths) {
-        std::string fileName = QFileInfo(filePath).fileName().toStdString();
-        int ret = pcre_exec(re, NULL, fileName.c_str(), (int)fileName.length(), 0, 0, ovector, OVECCOUNT);
-        if (ret == PCRE_ERROR_NOMATCH) {
-            error = "invalid KPI-KCI file name " + QFileInfo(filePath).fileName();
-            pcre_free(re);
-            return false;
+    std::sort(filePaths.begin(), filePaths.end(), [&error](const QString &path1, const QString &path2) -> bool {
+        // if error happens, skip the comparsion and return the dummy result, i.e. true.
+        if (!error.isEmpty()) {
+            return true;
         }
-    }
+        QString beginTime = getBeginTimeFromKpiKciFile(path1);
+        QDateTime time1 = QDateTime::fromString(beginTime, Qt::ISODate);
+        if (!time1.isValid()) {
+            error = "failed to get beginTime from ";
+            error += path1;
+            return true;
+        }
 
-    pcre_free(re);
-
-    return true;
+        beginTime = getBeginTimeFromKpiKciFile(path2);
+        QDateTime time2 = QDateTime::fromString(beginTime, Qt::ISODate);
+        if (!time2.isValid()) {
+            error = "failed to get beginTime from ";
+            error += path2;
+            return true;
+        }
+        return time1 < time2;
+    });
 }
 
 QString StatisticsFileParser::kpiKciToCsvFormat(QStringList &filePaths, QString &error)
 {
-    if (!checkkpiKciFileNames(filePaths, error)) {
-        return QString();
-    }
-
-    std::sort(filePaths.begin(), filePaths.end());
-
-    if (filePaths.size() > 1 &&
-            QFileInfo(filePaths.first()).fileName().at(0) != QFileInfo(filePaths.last()).fileName().at(0))
-    {
-        error = "multiple KPI-KCI file types are not allowed in conversion";
+    sortKpiKciFileNames(filePaths, error);
+    if (!error.isEmpty()) {
         return QString();
     }
 

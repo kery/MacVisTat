@@ -735,7 +735,7 @@ void MainWindow::on_actionXmlToCSV_triggered()
     QString convertedPath = fileParser.kpiKciToCsvFormat(selectedFiles, error);
     if (error.isEmpty()) {
         if (!convertedPath.isEmpty()) {
-            QString info = "KPI-KCI files have been converted to " + convertedPath;
+            QString info = "KPI-KCI files have been converted to " + QDir::toNativeSeparators(convertedPath);
             appendLogInfo(info);
 
             int answer = showQuestionMsgBox(this, info, QStringLiteral("Do you want to open it?"));
