@@ -57,8 +57,8 @@ def check_version_existance(ver_info):
 
     proc = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
-    if err:
-        raise Exception("check version existance failed: " + err)
+    if proc.returncode < 0:
+        raise Exception("check version existance failed (%d): %s" % (proc.returncode, err))
     if proc.returncode == 0:
         raise Exception("version %s.%s.%s.%s already exists on remote" % ver_info)
 
@@ -114,7 +114,7 @@ def update_repository():
     path = os.path.join(proj_root_dir(), "installer", "installer")
     os.chdir(path)
 
-    proc = subprocess.Popen(["repogen", "--update-new-components", "-p", "packages", "repository"],
+    proc = subprocess.Popen(["/cygdrive/c/Qt/QtIFW-3.1.1/bin/repogen", "--update-new-components", "-p", "packages", "repository"],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
@@ -171,10 +171,10 @@ def restore_files():
 
 def copy_pdb_file():
     ver_info = get_version()
-    dest = os.path.join(r"D:\VisualStatisticsPDB", "v" + ".".join(ver_info))
+    dest = os.path.join("/cygdrive/d/VisualStatisticsPDB", "v" + ".".join(ver_info))
     if not os.path.exists(dest):
         os.makedirs(dest)
-    shutil.copy(r"..\build-VisualStatistics-Release\visualstatistics.pdb", dest)
+    shutil.copy("../build-VisualStatistics-Release/visualstatistics.pdb", dest)
 
 if __name__ == "__main__":
     if sys.argv[1] == "prebuild":
