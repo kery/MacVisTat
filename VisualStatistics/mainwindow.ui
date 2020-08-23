@@ -204,6 +204,9 @@
    <property name="text">
     <string>Close</string>
    </property>
+   <property name="statusTip">
+    <string>Close file</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
    </property>
