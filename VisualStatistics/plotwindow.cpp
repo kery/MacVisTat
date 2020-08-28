@@ -322,6 +322,11 @@ QCPGraph * PlotWindow::findNearestGraphValue(int index, double yCoord, double &v
     return retGraph;
 }
 
+QString PlotWindow::genAggregateGraphName()
+{
+    return QStringLiteral("aggregate_graph_%1").arg(++m_agggraph_idx);
+}
+
 void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
 {
     if (graphs.isEmpty()) {
@@ -519,12 +524,17 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     actionShowModuleName->setChecked(m_showModule);
 
     QAction *actionCopy = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
+    QAction *actionAdd = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
     QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
+
+    actionAdd->setEnabled(false);
 
     auto selectedLegendItems = plot->legend->selectedItems();
     if (selectedLegendItems.isEmpty()) {
         actionCopy->setEnabled(false);
         actionRemove->setEnabled(false);
+    } else if (selectedLegendItems.size() > 1) {
+        actionAdd->setEnabled(true);
     }
 
     menu->popup(plot->mapToGlobal(pos));
@@ -543,6 +553,69 @@ void PlotWindow::moveLegend()
             plot->replot();
         }
     }
+}
+
+void PlotWindow::addAggregateGraph()
+{
+    QInputDialog dlg(this);
+    dlg.setWindowTitle(QStringLiteral("Input graph name"));
+    dlg.setWindowFlags(dlg.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    dlg.setInputMode(QInputDialog::TextInput);
+    dlg.setLabelText(QStringLiteral("Graph name:"));
+    dlg.setTextValue(genAggregateGraphName());
+    dlg.resize(500, 0);
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    QString aggregateGraphName = dlg.textValue();
+    if (aggregateGraphName.isEmpty()) {
+        return;
+    }
+
+    QCustomPlot *plot = m_ui->customPlot;
+    QList<QCPAbstractLegendItem *> selectedLegendItems = plot->legend->selectedItems();
+
+    QVector<QCPDataMap *> selectedDataMaps;
+    selectedDataMaps.reserve(selectedLegendItems.size());
+
+    for (QCPAbstractLegendItem *item : selectedLegendItems) {
+        QCPPlottableLegendItem *legendItem = qobject_cast<QCPPlottableLegendItem *>(item);
+        CounterGraph *graph = qobject_cast<CounterGraph *>(legendItem->plottable());
+        selectedDataMaps.append(graph->data());
+    }
+
+    QCPDataMap *aggregateDataMap = m_stat.addDataMap(aggregateGraphName);
+    if (aggregateDataMap == nullptr) {
+        showErrorMsgBox(this, QStringLiteral("Graph name \"%1\" already exists!").arg(aggregateGraphName));
+        return;
+    }
+
+    for (const QCPDataMap *dataMap : selectedDataMaps) {
+        for (const QCPData &data: *dataMap) {
+            QCPData &dstData = (*aggregateDataMap)[data.key];
+            dstData.key = data.key;
+            dstData.value += data.value;
+            if (data.valueErrorMinus > 0) {
+                dstData.valueErrorMinus = data.valueErrorMinus;
+            }
+        }
+    }
+
+    CounterGraph *aggregateGraph = addCounterGraph(aggregateGraphName);
+    aggregateGraph->setName(aggregateGraphName);
+    aggregateGraph->setPen(QPen(m_colorManager.getColor()));
+    aggregateGraph->setSelectedPen(aggregateGraph->pen());
+    aggregateGraph->setData(aggregateDataMap, true);
+    if (m_ui->actionShowSuspectFlag->isChecked()) {
+        aggregateGraph->enableSuspectFlag(true);
+    }
+
+    updateWindowTitle();
+    updatePlotTitle();
+    plot->yAxis->rescale();
+    adjustYAxisRange(plot->yAxis);
+    plot->replot();
 }
 
 void PlotWindow::removeSelectedGraph()
