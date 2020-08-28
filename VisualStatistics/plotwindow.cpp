@@ -10,6 +10,7 @@ static const double TRACER_SIZE = SCATTER_SIZE + 4.0;
 PlotWindow::PlotWindow(Statistics &stat) :
     QMainWindow(nullptr),
     m_agggraph_idx(0),
+    m_lastSelLegitemIndex(-1),
     m_ui(new Ui::PlotWindow),
     m_userEditFlag(true),
     m_userDragFlag(true),
@@ -355,6 +356,17 @@ QString PlotWindow::defaultSaveFileName() const
     return QString();
 }
 
+int PlotWindow::getLegendItemIndex(QCPAbstractLegendItem *item) const
+{
+    QCustomPlot *plot = m_ui->customPlot;
+    for (int i = 0; i < plot->legend->itemCount(); ++i) {
+        if (item == plot->legend->item(i)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void PlotWindow::adjustTicks()
 {
     QCustomPlot *plot = m_ui->customPlot;
@@ -372,7 +384,7 @@ void PlotWindow::selectionChanged()
 
     for (int i = 0; i < plot->graphCount(); ++i) {
         QCPGraph *graph = plot->graph(i);
-        QCPPlottableLegendItem *item = plot->legend->itemWithPlottable(graph);
+        QCPAbstractLegendItem *item = plot->legend->item(i);
         if (item->selected() || graph->selected() || (m_tracer->selected() && m_tracer->graph() == graph))
         {
             item->setSelected(true);
@@ -380,7 +392,29 @@ void PlotWindow::selectionChanged()
         }
     }
 
+    QList<QCPAbstractLegendItem *> selectedLegendItems = plot->legend->selectedItems();
+    if (selectedLegendItems.size() == 1) {
+        if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) && m_lastSelLegitemIndex >= 0) {
+            int curSelLegitemIndex = getLegendItemIndex(selectedLegendItems.first());
+            int min = 0, max = 0;
+            if (curSelLegitemIndex < m_lastSelLegitemIndex) {
+                min = curSelLegitemIndex + 1;
+                max = qMin(m_lastSelLegitemIndex + 1, plot->graphCount());
+            } else if (curSelLegitemIndex > m_lastSelLegitemIndex) {
+                min = m_lastSelLegitemIndex;
+                max = curSelLegitemIndex;
+            }
+            for (int i = min; i < max; ++i) {
+                plot->legend->item(i)->setSelected(true);
+                plot->graph(i)->setSelected(true);
+            }
+        } else {
+            m_lastSelLegitemIndex = getLegendItemIndex(selectedLegendItems.first());
+        }
+    }
+
     if (plot->legend->selectedItems().isEmpty()) {
+        m_lastSelLegitemIndex = -1;
         for (int i = 0; i < plot->graphCount(); ++i) {
             QCPGraph *graph = plot->graph(i);
             graph->setVisible(true);

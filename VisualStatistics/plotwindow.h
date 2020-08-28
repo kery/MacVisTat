@@ -45,6 +45,8 @@ private:
 
     QString defaultSaveFileName() const;
 
+    int getLegendItemIndex(QCPAbstractLegendItem *item) const;
+
 private slots:
     void adjustTicks();
     void selectionChanged();
@@ -72,6 +74,7 @@ private slots:
 
 private:
     int m_agggraph_idx;
+    int m_lastSelLegitemIndex;
     Ui::PlotWindow *m_ui;
     QPropertyAnimation m_animation;
     QCPItemTracer *m_tracer;
