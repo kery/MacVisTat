@@ -3,8 +3,6 @@
 #include <QApplication>
 #include <memory>
 
-#if defined(Q_OS_WIN)
-
 #include <exception_handler.h>
 
 static wchar_t* getCrashReporterPath()
@@ -33,7 +31,7 @@ static bool minidumpCallback(const wchar_t* dump_path,
             wcscat_s(param, L"\\");
         }
         wcscat_s(param, minidump_id);
-        wcscat_s(param, L".dmp\" --ftpdir ftp://sdu.int.nokia-sbell.com/VisualStatCoreDump/ --ftpuser sdu --ftppwd chengdusdu123");
+        wcscat_s(param, L".dmp\" --ftpdir ftp://sdu.int.nokia-sbell.com/home/visualstat/coredump/ --ftpuser visualstat --ftppwd vtcore");
 
         wchar_t *crPath = static_cast<wchar_t*>(context);
         ShellExecuteW(NULL, NULL, crPath, param, NULL, SW_SHOW);
@@ -41,8 +39,6 @@ static bool minidumpCallback(const wchar_t* dump_path,
 
     return succeeded;
 }
-
-#endif
 
 int main(int argc, char *argv[])
 {
@@ -54,16 +50,14 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Nokia");
     QCoreApplication::setApplicationName("VisualStatistics");
 
-    if (QDir().mkpath(getAppDataDir())) {
-#if defined(Q_OS_WIN)
-        std::unique_ptr<google_breakpad::ExceptionHandler> exceptionHandler;
+    std::unique_ptr<google_breakpad::ExceptionHandler> exceptionHandler;
 
+    if (QDir().mkpath(getAppDataDir())) {
         exceptionHandler.reset(new google_breakpad::ExceptionHandler(
                     QDir::toNativeSeparators(getAppDataDir()).toStdWString(),
                     NULL, minidumpCallback, getCrashReporterPath(),
                     google_breakpad::ExceptionHandler::HANDLER_ALL,
                     MiniDumpNormal, (wchar_t*)NULL, NULL));
-#endif
     } else {
         showInfoMsgBox(NULL, QStringLiteral("Create application data directory failed!"));
     }
