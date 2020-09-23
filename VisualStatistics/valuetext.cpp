@@ -16,6 +16,42 @@ ValueText::ValueText(const QCPItemTracer *tracer) :
     position->setParentAnchor(tracer->position);
 }
 
+void ValueText::setGraphName(const QString &name)
+{
+    m_graphName = name;
+}
+
+void ValueText::setDateTime(const QString &dt)
+{
+    m_dateTime = dt;
+}
+
+void ValueText::setGraphValue(const QString &value)
+{
+    m_graphValue = value;
+}
+
+QString ValueText::graphName() const
+{
+    return m_graphName;
+}
+
+QString ValueText::graphValue() const
+{
+    return m_graphValue;
+}
+
+void ValueText::updateText()
+{
+    QString text = m_graphName;
+    text += '\n';
+    text += m_dateTime;
+    text += '\n';
+    text += m_graphValue;
+
+    setText(text);
+}
+
 void ValueText::draw(QCPPainter *painter)
 {
     const double OFFSET = 5;

@@ -482,13 +482,10 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         m_tracer->setGraphKey(index);
         m_tracer->setVisible(true);
 
-        QString text = qobject_cast<CounterGraph *>(graph)->displayName();
-        text += '\n';
-        text += m_stat.getDateTimeString(index);
-        text += '\n';
-        text += QString::number(value, 'f', 2);
-
-        m_valueText->setText(text);
+        m_valueText->setGraphName(qobject_cast<CounterGraph *>(graph)->displayName());
+        m_valueText->setDateTime(m_stat.getDateTimeString(index));
+        m_valueText->setGraphValue(QString::number(value, 'f', 2));
+        m_valueText->updateText();
         m_valueText->setVisible(true);
 
         if (m_animation.direction() != QAbstractAnimation::Forward) {
@@ -557,18 +554,24 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     actionShowModuleName->setCheckable(true);
     actionShowModuleName->setChecked(m_showModule);
 
-    QAction *actionCopy = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
+    QAction *actionCopyName = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
+    QAction *actionCopyValue = menu->addAction(QStringLiteral("Copy Graph Value"), this, SLOT(copyGraphValue()));
     QAction *actionAdd = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
     QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
 
-    actionAdd->setEnabled(false);
-
     auto selectedLegendItems = plot->legend->selectedItems();
     if (selectedLegendItems.isEmpty()) {
-        actionCopy->setEnabled(false);
+        if (!m_valueText->visible()) {
+            actionCopyName->setEnabled(false);
+        }
+        actionAdd->setEnabled(false);
         actionRemove->setEnabled(false);
-    } else if (selectedLegendItems.size() > 1) {
-        actionAdd->setEnabled(true);
+    } else if (selectedLegendItems.size() < 2) {
+        actionAdd->setEnabled(false);
+    }
+
+    if (!m_valueText->visible()) {
+        actionCopyValue->setEnabled(false);
     }
 
     menu->popup(plot->mapToGlobal(pos));
@@ -668,13 +671,22 @@ void PlotWindow::removeSelectedGraph()
 
 void PlotWindow::copyGraphName()
 {
-    QStringList strList;
-    for (auto item : m_ui->customPlot->legend->selectedItems()) {
-        QCPAbstractPlottable *plottable = qobject_cast<QCPPlottableLegendItem *>(item)->plottable();
-        CounterGraph *graph = qobject_cast<CounterGraph *>(plottable);
-        strList << graph->displayName();
+    if (m_valueText->visible()) {
+        QApplication::clipboard()->setText(m_valueText->graphName());
+    } else {
+        QStringList strList;
+        for (auto item : m_ui->customPlot->legend->selectedItems()) {
+            QCPAbstractPlottable *plottable = qobject_cast<QCPPlottableLegendItem *>(item)->plottable();
+            CounterGraph *graph = qobject_cast<CounterGraph *>(plottable);
+            strList << graph->displayName();
+        }
+        QApplication::clipboard()->setText(strList.join('\n'));
     }
-    QApplication::clipboard()->setText(strList.join('\n'));
+}
+
+void PlotWindow::copyGraphValue()
+{
+    QGuiApplication::clipboard()->setText(m_valueText->graphValue());
 }
 
 void PlotWindow::showLegendTriggered(bool checked)

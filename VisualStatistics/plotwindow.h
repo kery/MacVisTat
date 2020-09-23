@@ -58,6 +58,7 @@ private slots:
     void addAggregateGraph();
     void removeSelectedGraph();
     void copyGraphName();
+    void copyGraphValue();
     void showLegendTriggered(bool checked);
     void showModuleNameTriggered(bool checked);
     void xAxisRangeChanged(const QCPRange &newRange);
