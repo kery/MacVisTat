@@ -346,6 +346,19 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
     plot->replot();
 }
 
+QVector<CounterGraph *> PlotWindow::selectedGraphs(bool selected) const
+{
+    QVector<CounterGraph*> graphs;
+    QCustomPlot *plot = m_ui->customPlot;
+    for (int i = 0; i < plot->graphCount(); ++i) {
+        CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
+        if (graph->selected() == selected) {
+            graphs.append(graph);
+        }
+    }
+    return graphs;
+}
+
 QString PlotWindow::defaultSaveFileName() const
 {
     if (m_ui->customPlot->graphCount() > 0) {
@@ -536,15 +549,20 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     subMenuBottom->addAction(QStringLiteral("Right"), this, SLOT(moveLegend()))->setData(
         static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
 
-    menu->addSeparator();
     QAction *actionShowModuleName = menu->addAction(QStringLiteral("Show Module Name"), this, &PlotWindow::showModuleNameTriggered);
     actionShowModuleName->setCheckable(true);
     actionShowModuleName->setChecked(m_showModule);
 
+    menu->addSeparator();
+
+    QAction *actionAdd = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
     QAction *actionCopyName = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
     QAction *actionCopyValue = menu->addAction(QStringLiteral("Copy Graph Value"), this, SLOT(copyGraphValue()));
-    QAction *actionAdd = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
-    QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraph()));
+
+    menu->addSeparator();
+
+    QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraphs()));
+    QAction *actionRemoveUnsel = menu->addAction(QStringLiteral("Remove Unselected Graphs"), this, SLOT(removeUnselectedGraphs()));
 
     auto selectedLegendItems = plot->legend->selectedItems();
     if (selectedLegendItems.isEmpty()) {
@@ -553,6 +571,7 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         }
         actionAdd->setEnabled(false);
         actionRemove->setEnabled(false);
+        actionRemoveUnsel->setEnabled(false);
     } else if (selectedLegendItems.size() < 2) {
         actionAdd->setEnabled(false);
     }
@@ -642,18 +661,14 @@ void PlotWindow::addAggregateGraph()
     plot->replot();
 }
 
-void PlotWindow::removeSelectedGraph()
+void PlotWindow::removeSelectedGraphs()
 {
-    QVector<CounterGraph*> graphs;
-    QCustomPlot *plot = m_ui->customPlot;
-    for (int i = 0; i < plot->graphCount(); ++i) {
-        CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
-        if (graph->selected()) {
-            graphs.append(graph);
-        }
-    }
+    removeGraphs(selectedGraphs(true));
+}
 
-    removeGraphs(graphs);
+void PlotWindow::removeUnselectedGraphs()
+{
+    removeGraphs(selectedGraphs(false));
 }
 
 void PlotWindow::copyGraphName()

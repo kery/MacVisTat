@@ -41,7 +41,8 @@ private:
     QCPGraph * findNearestGraphValue(int index, double yCoord, double &value);
 
     QString genAggregateGraphName();
-    void removeGraphs(const QVector<CounterGraph*> &graphs);
+    void removeGraphs(const QVector<CounterGraph *> &graphs);
+    QVector<CounterGraph *> selectedGraphs(bool selected) const;
 
     QString defaultSaveFileName() const;
 
@@ -56,7 +57,8 @@ private slots:
     void contextMenuRequest(const QPoint &pos);
     void moveLegend();
     void addAggregateGraph();
-    void removeSelectedGraph();
+    void removeSelectedGraphs();
+    void removeUnselectedGraphs();
     void copyGraphName();
     void copyGraphValue();
     void showLegendTriggered(bool checked);
