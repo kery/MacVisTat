@@ -32,8 +32,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_tracer->setStyle(QCPItemTracer::tsCircle);
     m_tracer->setPen(tracerPen);
     m_tracer->setBrush(Qt::white);
-    m_tracer->setSelectedPen(tracerPen);
-    m_tracer->setSelectedBrush(Qt::white);
+    m_tracer->setSelectable(false);
     m_tracer->setLayer(QStringLiteral("valuetip"));
     m_tracer->setVisible(false);
 
@@ -382,16 +381,6 @@ void PlotWindow::selectionChanged()
 {
     QCustomPlot *plot = m_ui->customPlot;
 
-    for (int i = 0; i < plot->graphCount(); ++i) {
-        QCPGraph *graph = plot->graph(i);
-        QCPAbstractLegendItem *item = plot->legend->item(i);
-        if (item->selected() || graph->selected() || (m_tracer->selected() && m_tracer->graph() == graph))
-        {
-            item->setSelected(true);
-            graph->setSelected(true);
-        }
-    }
-
     QList<QCPAbstractLegendItem *> selectedLegendItems = plot->legend->selectedItems();
     if (selectedLegendItems.size() == 1) {
         if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) && m_lastSelLegitemIndex >= 0) {
@@ -405,7 +394,6 @@ void PlotWindow::selectionChanged()
                 max = curSelLegitemIndex;
             }
             for (int i = min; i < max; ++i) {
-                plot->legend->item(i)->setSelected(true);
                 plot->graph(i)->setSelected(true);
             }
         } else {
@@ -422,8 +410,7 @@ void PlotWindow::selectionChanged()
     } else {
         for (int i = 0; i < plot->graphCount(); ++i) {
             QCPGraph *graph = plot->graph(i);
-            QCPPlottableLegendItem *item = plot->legend->itemWithPlottable(graph);
-            graph->setVisible(item->selected());
+            graph->setVisible(graph->selected());
         }
 
         if (QApplication::keyboardModifiers() & Qt::AltModifier) {

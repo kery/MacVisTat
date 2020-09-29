@@ -36,10 +36,13 @@ bool CounterGraph::addToLegend()
 
     if (!mParentPlot->legend->hasItemWithPlottable(this))
     {
-      mParentPlot->legend->addItem(new CounterLegendItem(mParentPlot->legend, this));
-      return true;
-    } else
-      return false;
+        CounterLegendItem *item = new CounterLegendItem(mParentPlot->legend, this);
+        mParentPlot->legend->addItem(item);
+        connect(item, &CounterLegendItem::selectionChanged, this, &CounterGraph::setSelected);
+        connect(this, &CounterGraph::selectionChanged, item, &CounterLegendItem::setSelected);
+        return true;
+    }
+    return false;
 }
 
 void CounterGraph::draw(QCPPainter *painter)
