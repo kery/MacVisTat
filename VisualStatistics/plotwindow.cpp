@@ -180,6 +180,7 @@ void PlotWindow::initializePlot()
     connect(plot, &QCustomPlot::mouseMove, this, &PlotWindow::mouseMove);
     connect(plot, &QCustomPlot::mouseWheel, this, &PlotWindow::mouseWheel);
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
+    connect(plot, &QCustomPlot::legendDoubleClick, this, &PlotWindow::legendDoubleClick);
 
     QSettings settings;
     bool showSuspectFlag = settings.value(QStringLiteral("showSuspectFlag"), true).toBool();
@@ -581,6 +582,30 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     }
 
     menu->popup(plot->mapToGlobal(pos));
+}
+
+void PlotWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *item)
+{
+    Q_UNUSED(legend)
+
+    if (item) {
+        QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
+        CounterGraph *graph = qobject_cast<CounterGraph *>(plItem->plottable());
+
+        QColor color = QColorDialog::getColor(graph->pen().color(), this);
+        if (color.isValid()) {
+            graph->setPen(color);
+            graph->setSelectedPen(graph->pen());
+
+            QCPScatterStyle scatterStyle = graph->scatterStyle();
+            if (scatterStyle.shape() != QCPScatterStyle::ssNone) {
+                scatterStyle.setPen(color);
+                graph->setScatterStyle(scatterStyle);
+            }
+
+            m_ui->customPlot->replot();
+        }
+    }
 }
 
 void PlotWindow::moveLegend()
