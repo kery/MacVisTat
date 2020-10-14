@@ -42,10 +42,12 @@ void CounterLegendItem::draw(QCPPainter *painter)
     graph->drawLegendIcon(painter, iconRect);
     painter->restore();
     // draw icon border:
-    if (getIconBorderPen().style() != Qt::NoPen)
+    QPen iconBorderPen = getIconBorderPen();
+    if (iconBorderPen.style() != Qt::NoPen)
     {
-      painter->setPen(getIconBorderPen());
-      painter->setBrush(Qt::NoBrush);
-      painter->drawRect(iconRect);
+        iconBorderPen.setColor(graph->pen().color());
+        painter->setPen(iconBorderPen);
+        painter->setBrush(Qt::NoBrush);
+        painter->drawRect(iconRect);
     }
 }
