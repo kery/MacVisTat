@@ -26,12 +26,9 @@ PlotWindow::PlotWindow(Statistics &stat) :
 
     // Must be called after setupUi because member customPlot is initialized
     // in it. QCustomPlot takes ownership of tracer.
-    const QPen tracerPen(Qt::red, 2);
     m_tracer = new QCPItemTracer(m_ui->customPlot);
     m_tracer->setInterpolating(true);
     m_tracer->setStyle(QCPItemTracer::tsCircle);
-    m_tracer->setPen(tracerPen);
-    m_tracer->setBrush(Qt::white);
     m_tracer->setSelectable(false);
     m_tracer->setLayer(QStringLiteral("valuetip"));
     m_tracer->setVisible(false);
@@ -301,7 +298,7 @@ QCPGraph * PlotWindow::findNearestGraphValue(int index, double yCoord, double &v
     QCPGraph *retGraph = nullptr;
     double minDist = std::numeric_limits<double>::max();
 
-    for (int i = 0; i < plot->graphCount(); ++i) {
+    for (int i = plot->graphCount() - 1; i >= 0; --i) {
         QCPGraph *graph = plot->graph(i);
         if (!graph->visible()) {
             continue;
@@ -479,6 +476,12 @@ void PlotWindow::mouseMove(QMouseEvent *event)
             m_animation.start();
         }
     } else if (graph && (graph != m_tracer->graph() || (int)m_tracer->graphKey() != index)) {
+        QColor color = graph->pen().color();
+        QPen pen(color.darker(128));
+        pen.setWidth(2);
+
+        m_tracer->setPen(pen);
+        m_tracer->setBrush(color);
         m_tracer->setGraph(graph);
         m_tracer->setGraphKey(index);
         m_tracer->setVisible(true);
