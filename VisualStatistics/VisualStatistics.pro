@@ -69,7 +69,8 @@ SOURCES += main.cpp\
     valuetext.cpp \
     counterlegenditem.cpp \
     luacodeedit.cpp \
-    linenumberarea.cpp
+    linenumberarea.cpp \
+    luasyntaxhighlighter.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -115,7 +116,8 @@ HEADERS  += mainwindow.h \
     valuetext.h \
     counterlegenditem.h \
     luacodeedit.h \
-    linenumberarea.h
+    linenumberarea.h \
+    luasyntaxhighlighter.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \

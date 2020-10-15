@@ -1,5 +1,6 @@
 #include "luacodeedit.h"
 #include "linenumberarea.h"
+#include "luasyntaxhighlighter.h"
 
 #include <QPainter>
 #include <QTextBlock>
@@ -13,6 +14,8 @@ LuaCodeEdit::LuaCodeEdit(QWidget *parent) :
 
     connect(this, &LuaCodeEdit::blockCountChanged, this, &LuaCodeEdit::updateLineNumberAreaWidth);
     connect(this, &LuaCodeEdit::updateRequest, this, &LuaCodeEdit::updateLineNumberArea);
+
+    new LuaSyntaxHighlighter(document());
 
     updateLineNumberAreaWidth(0);
 }

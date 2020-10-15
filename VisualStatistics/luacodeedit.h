@@ -3,6 +3,10 @@
 
 #include <QPlainTextEdit>
 
+// References:
+// Code Editor Example
+// Syntax Highlighter Example
+
 class LuaCodeEdit : public QPlainTextEdit
 {
     Q_OBJECT
