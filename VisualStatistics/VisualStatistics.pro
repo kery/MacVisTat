@@ -67,7 +67,9 @@ SOURCES += main.cpp\
     changelogdialog.cpp \
     draggableplot.cpp \
     valuetext.cpp \
-    counterlegenditem.cpp
+    counterlegenditem.cpp \
+    luacodeedit.cpp \
+    linenumberarea.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -111,7 +113,9 @@ HEADERS  += mainwindow.h \
     changelogdialog.h \
     draggableplot.h \
     valuetext.h \
-    counterlegenditem.h
+    counterlegenditem.h \
+    luacodeedit.h \
+    linenumberarea.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \

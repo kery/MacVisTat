@@ -24,7 +24,13 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QPlainTextEdit" name="scriptTextEdit">
+      <widget class="LuaCodeEdit" name="scriptTextEdit">
+       <property name="font">
+        <font>
+         <family>Courier New</family>
+         <pointsize>11</pointsize>
+        </font>
+       </property>
        <property name="placeholderText">
         <string>keep here empty to run the opened file, or the code in this editor will be run</string>
        </property>
@@ -98,6 +104,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LuaCodeEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header>luacodeedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="VisualStatistics.qrc"/>
  </resources>
