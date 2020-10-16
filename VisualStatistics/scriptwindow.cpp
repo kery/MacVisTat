@@ -54,6 +54,10 @@ void ScriptWindow::setupEditor(QsciScintilla *editor)
     editor->setMarginLineNumbers(0, true);
     editor->setTabWidth(4);
     editor->setWrapMode(QsciScintilla::WrapWord);
+    editor->setIndentationsUseTabs(false);
+    editor->setBraceMatching(QsciScintilla::StrictBraceMatch);
+    // Set the matching braces' font weight to bold.
+    editor->SendScintilla(QsciScintilla::SCI_STYLESETBOLD, QsciScintilla::STYLE_BRACELIGHT, true);
     // Set the left margin of editor's text.
     editor->SendScintilla(QsciScintilla::SCI_SETMARGINLEFT, 0, 16);
 
