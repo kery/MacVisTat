@@ -24,15 +24,12 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="LuaCodeEdit" name="scriptTextEdit">
-       <property name="font">
-        <font>
-         <family>Courier New</family>
-         <pointsize>11</pointsize>
-        </font>
+      <widget class="QsciScintilla" name="scriptTextEdit">
+       <property name="toolTip">
+        <string/>
        </property>
-       <property name="placeholderText">
-        <string>keep here empty to run the opened file, or the code in this editor will be run</string>
+       <property name="whatsThis">
+        <string/>
        </property>
       </widget>
       <widget class="QPlainTextEdit" name="logTextEdit">
@@ -106,9 +103,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LuaCodeEdit</class>
-   <extends>QPlainTextEdit</extends>
-   <header>luacodeedit.h</header>
+   <class>QsciScintilla</class>
+   <extends>QFrame</extends>
+   <header>Qsci/qsciscintilla.h</header>
   </customwidget>
  </customwidgets>
  <resources>

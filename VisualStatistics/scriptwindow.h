@@ -2,6 +2,8 @@
 #define SCRIPTWINDOW_H
 
 #include <QMainWindow>
+#include <Qsci/qsciscintilla.h>
+
 #include "luaenvironment.h"
 
 namespace Ui {
@@ -21,11 +23,14 @@ public:
     bool initialize(QString &err);
     void appendLog(const QString &text);
 
+private:
+    void setupEditor(QsciScintilla *editor);
+
 private slots:
+    void updateLineNumberMarginWidth();
+
     void on_actionRun_triggered();
-
     void on_actionClearLog_triggered();
-
     void on_actionOpen_triggered();
 
 private:

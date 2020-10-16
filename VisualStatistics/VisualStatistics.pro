@@ -8,7 +8,7 @@ QT       += core gui concurrent network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
-CONFIG += c++11
+CONFIG += c++11 qscintilla2
 
 TEMPLATE = app
 
@@ -67,10 +67,7 @@ SOURCES += main.cpp\
     changelogdialog.cpp \
     draggableplot.cpp \
     valuetext.cpp \
-    counterlegenditem.cpp \
-    luacodeedit.cpp \
-    linenumberarea.cpp \
-    luasyntaxhighlighter.cpp
+    counterlegenditem.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -114,10 +111,7 @@ HEADERS  += mainwindow.h \
     changelogdialog.h \
     draggableplot.h \
     valuetext.h \
-    counterlegenditem.h \
-    luacodeedit.h \
-    linenumberarea.h \
-    luasyntaxhighlighter.h
+    counterlegenditem.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \
