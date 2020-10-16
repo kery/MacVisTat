@@ -37,6 +37,7 @@ private:
 
     bool shouldDrawScatter(const QVector<double> &tickVector, int plotWidth) const;
     void updateScatter(const QVector<double> &tickVector, int plotWidth);
+    void enableGraphScatter(QCPGraph *graph, bool enable);
 
     QCPGraph * findNearestGraphValue(int index, double yCoord, double &value);
 

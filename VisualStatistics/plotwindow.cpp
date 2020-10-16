@@ -85,11 +85,17 @@ PlotWindow::~PlotWindow()
     delete m_ui;
 }
 
-CounterGraph *PlotWindow::addCounterGraph(const QString &name, const QString &module)
+CounterGraph * PlotWindow::addCounterGraph(const QString &name, const QString &module)
 {
     CounterGraph *graph = new CounterGraph(m_ui->customPlot->xAxis, m_ui->customPlot->yAxis,
                                            module, name);
     if (m_ui->customPlot->addPlottable(graph)) {
+        graph->setPen(QPen(m_colorManager.getColor()));
+        graph->setSelectedPen(graph->pen());
+
+        if (m_hasScatter) {
+            enableGraphScatter(graph, true);
+        }
         return graph;
     } else {
         delete graph;
@@ -190,8 +196,6 @@ void PlotWindow::initializePlot()
         QString module = Statistics::splitStatNameToModuleAndName(statName, name);
         CounterGraph *graph = addCounterGraph(name, module);
         graph->setName(statName);
-        graph->setPen(QPen(m_colorManager.getColor()));
-        graph->setSelectedPen(graph->pen());
         // Set copy to true to avoid the data being deleted if show delta function is used
         graph->setData(m_stat.getDataMap(statName), true);
         if (showSuspectFlag) {
@@ -277,18 +281,25 @@ void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth)
         if (!m_hasScatter) {
             m_hasScatter = true;
             for (int i = 0; i < plot->graphCount(); ++i) {
-                QCPGraph *graph = plot->graph(i);
-                graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, graph->pen().color(), SCATTER_SIZE));
+                enableGraphScatter(plot->graph(i), true);
             }
         }
     } else {
         if (m_hasScatter) {
             m_hasScatter = false;
             for (int i = 0; i < plot->graphCount(); ++i) {
-                QCPGraph *graph = plot->graph(i);
-                graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone));
+                enableGraphScatter(plot->graph(i), false);
             }
         }
+    }
+}
+
+void PlotWindow::enableGraphScatter(QCPGraph *graph, bool enable)
+{
+    if (enable) {
+        graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, graph->pen().color(), SCATTER_SIZE));
+    } else {
+        graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone));
     }
 }
 
@@ -675,8 +686,6 @@ void PlotWindow::addAggregateGraph()
 
     CounterGraph *aggregateGraph = addCounterGraph(aggregateGraphName);
     aggregateGraph->setName(aggregateGraphName);
-    aggregateGraph->setPen(QPen(m_colorManager.getColor()));
-    aggregateGraph->setSelectedPen(aggregateGraph->pen());
     aggregateGraph->setData(aggregateDataMap, true);
     if (m_ui->actionShowSuspectFlag->isChecked()) {
         aggregateGraph->enableSuspectFlag(true);
