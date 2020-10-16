@@ -47,6 +47,25 @@ static int get_lastkey(lua_State *L)
     return 1;
 }
 
+static int graph_count(lua_State *L)
+{
+    QCustomPlot *plot = plotWindow(L)->getPlot();
+
+    lua_pushinteger(L, plot->graphCount());
+    return 1;
+}
+
+static int graph_name(lua_State *L)
+{
+    int graphIndex = luaL_checkint(L, 1);
+    QCustomPlot *plot = plotWindow(L)->getPlot();
+    luaL_argcheck(L, graphIndex >= 0 && graphIndex < plot->graphCount(), 1, "graph index out of range");
+
+    QString name = qobject_cast<CounterGraph *>(plot->graph(graphIndex))->displayName();
+    lua_pushstring(L, name.toStdString().c_str());
+    return 1;
+}
+
 static int get_value(lua_State *L)
 {
     int graphIndex = luaL_checkint(L, 1);
@@ -154,6 +173,8 @@ static int init_cfunc(lua_State *L)
     lua_rawset(L, LUA_REGISTRYINDEX);
 
     const struct luaL_Reg methods[] = {
+        { "graph_count", graph_count },
+        { "graph_name", graph_name },
         { "get_lastkey", get_lastkey },
         { "get_value", get_value },
         { "get_dt", get_dt },

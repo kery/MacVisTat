@@ -35,6 +35,18 @@ The legend box is draggable and can be dragged at any place in the axis rectangl
 Click the button <img src="images/tool-button-script.png"/> in tool bar of plot window to open the script window. Below is the description of the exposed functions.
 
 ```lua
+function plot.graph_count()
+```
+
+Returns the total number of graphs in a plot window.
+
+```lua
+function plot.graph_name(graph)
+```
+
+Returns the name of a graph. The first parameter *graph* is the index of the graph in legend box, the index starts from 0.
+
+```lua
 function plot.get_lastkey()
 ```
 
