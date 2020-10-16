@@ -46,7 +46,7 @@ QString getUserName()
 void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info)
 {
     QMessageBox msgBox(parent);
-    msgBox.setWindowTitle(QStringLiteral("Information"));
+    msgBox.setWindowTitle(QStringLiteral("VisualStatistics"));
     msgBox.setIcon(QMessageBox::Information);
     msgBox.setText(text);
     if (!info.isEmpty()) {
@@ -58,7 +58,7 @@ void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info)
 void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info)
 {
     QMessageBox msgBox(parent);
-    msgBox.setWindowTitle(QStringLiteral("Error"));
+    msgBox.setWindowTitle(QStringLiteral("VisualStatistics"));
     msgBox.setIcon(QMessageBox::Critical);
     msgBox.setText(text);
     if (!info.isEmpty()) {
@@ -70,7 +70,7 @@ void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info)
 int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info, bool defaultYes)
 {
     QMessageBox msgBox(parent);
-    msgBox.setWindowTitle(QStringLiteral("Question"));
+    msgBox.setWindowTitle(QStringLiteral("VisualStatistics"));
     msgBox.setIcon(QMessageBox::Question);
     msgBox.setText(text);
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);

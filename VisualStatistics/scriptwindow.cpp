@@ -71,7 +71,7 @@ bool ScriptWindow::maybeSave()
 {
     if (m_ui->scriptTextEdit->isModified()) {
         int answer = QMessageBox::question(
-                    this, QStringLiteral("Save"),
+                    this, QStringLiteral("VisualStatistics"),
                     QStringLiteral("The script has been modified. Do you want to save your changes?"),
                     QMessageBox::Yes | QMessageBox::Default,
                     QMessageBox::No,
