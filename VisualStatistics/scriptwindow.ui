@@ -58,13 +58,14 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
+   <addaction name="actionSave"/>
    <addaction name="actionClearLog"/>
    <addaction name="actionRun"/>
   </widget>
   <action name="actionOpen">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/document.png</normaloff>:/resource/image/document.png</iconset>
+     <normaloff>:/resource/image/open.png</normaloff>:/resource/image/open.png</iconset>
    </property>
    <property name="text">
     <string>Open</string>
@@ -98,6 +99,18 @@
    </property>
    <property name="text">
     <string>Clear Log</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset resource="VisualStatistics.qrc">
+     <normaloff>:/resource/image/save.png</normaloff>:/resource/image/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>

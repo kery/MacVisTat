@@ -23,15 +23,24 @@ public:
     bool initialize(QString &err);
     void appendLog(const QString &text);
 
-private:
+protected:
+    virtual void closeEvent(QCloseEvent *event);
+
     void setupEditor(QsciScintilla *editor);
+    bool maybeSave();
+    void loadFile(const QString &path);
+    bool saveFile(const QString &path);
+    bool saveAs();
+    void setCurrentFile(const QString &path);
 
 private slots:
     void updateLineNumberMarginWidth();
+    void updateModificationIndicator(bool m);
 
     void on_actionRun_triggered();
     void on_actionClearLog_triggered();
     void on_actionOpen_triggered();
+    void on_actionSave_triggered();
 
 private:
     Ui::ScriptWindow *m_ui;

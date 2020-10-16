@@ -9,11 +9,12 @@ ScriptWindow::ScriptWindow(QWidget *parent) :
     m_ui(new Ui::ScriptWindow)
 {
     m_ui->setupUi(this);
+    m_ui->splitter->setSizes(QList<int>() << height() - 140 << 140);
+    m_ui->splitter->setCollapsible(0, false);
 
     setupEditor(m_ui->scriptTextEdit);
 
-    m_ui->splitter->setSizes(QList<int>() << height() - 140 << 140);
-    m_ui->splitter->setCollapsible(0, false);
+    setWindowTitle(QStringLiteral("Script Window - new.lua[*]"));
 }
 
 ScriptWindow::~ScriptWindow()
@@ -29,6 +30,15 @@ bool ScriptWindow::initialize(QString &err)
 void ScriptWindow::appendLog(const QString &text)
 {
     m_ui->logTextEdit->appendPlainText(text);
+}
+
+void ScriptWindow::closeEvent(QCloseEvent *event)
+{
+    if (maybeSave()) {
+        event->accept();
+    } else {
+        event->ignore();
+    }
 }
 
 void ScriptWindow::setupEditor(QsciScintilla *editor)
@@ -48,8 +58,85 @@ void ScriptWindow::setupEditor(QsciScintilla *editor)
     editor->SendScintilla(QsciScintilla::SCI_SETMARGINLEFT, 0, 16);
 
     connect(editor, &QsciScintilla::linesChanged, this, &ScriptWindow::updateLineNumberMarginWidth);
+    connect(editor, &QsciScintilla::modificationChanged, this, &ScriptWindow::updateModificationIndicator);
 
     updateLineNumberMarginWidth();
+}
+
+bool ScriptWindow::maybeSave()
+{
+    if (m_ui->scriptTextEdit->isModified()) {
+        int answer = QMessageBox::question(
+                    this, QStringLiteral("Save"),
+                    QStringLiteral("The script has been modified. Do you want to save your changes?"),
+                    QMessageBox::Yes | QMessageBox::Default,
+                    QMessageBox::No,
+                    QMessageBox::Cancel | QMessageBox::Escape);
+        if (answer == QMessageBox::Yes) {
+            if (m_scriptFile.isEmpty()) {
+                return saveAs();
+            } else {
+                return saveFile(m_scriptFile);
+            }
+        } else if (answer == QMessageBox::Cancel) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void ScriptWindow::loadFile(const QString &path)
+{
+    QFile file(path);
+    if (!file.open(QFile::ReadOnly)) {
+        showErrorMsgBox(this, QString("Cannot read file: %1").arg(file.errorString()));
+        return;
+    }
+
+    QTextStream in(&file);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    m_ui->scriptTextEdit->setText(in.readAll());
+    QApplication::restoreOverrideCursor();
+
+    setCurrentFile(path);
+    m_ui->scriptTextEdit->setModified(false);
+}
+
+bool ScriptWindow::saveFile(const QString &path)
+{
+    QFile file(path);
+    if (!file.open(QFile::WriteOnly)) {
+        showErrorMsgBox(this, QString("Cannot write file: %1").arg(file.errorString()));
+        return false;
+    }
+
+    QTextStream out(&file);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    out << m_ui->scriptTextEdit->text();
+    QApplication::restoreOverrideCursor();
+    m_ui->scriptTextEdit->setModified(false);
+
+    return true;
+}
+
+bool ScriptWindow::saveAs()
+{
+    QString path = QFileDialog::getSaveFileName(this);
+    if (path.isEmpty()) {
+        return false;
+    }
+
+    bool ret = saveFile(path);
+    if (ret) {
+        setCurrentFile(path);
+    }
+    return ret;
+}
+
+void ScriptWindow::setCurrentFile(const QString &path)
+{
+    m_scriptFile = path;
+    setWindowTitle(QString("Script Window - %1[*]").arg(QDir::toNativeSeparators(path)));
 }
 
 void ScriptWindow::updateLineNumberMarginWidth()
@@ -66,17 +153,16 @@ void ScriptWindow::updateLineNumberMarginWidth()
     editor->setMarginWidth(0, QString(digits + 1, QLatin1Char('9')));
 }
 
+void ScriptWindow::updateModificationIndicator(bool m)
+{
+    setWindowModified(m);
+}
+
 void ScriptWindow::on_actionRun_triggered()
 {
     QString err;
     QString scriptStr = m_ui->scriptTextEdit->text();
-    if (scriptStr.isEmpty()) {
-        if (!m_scriptFile.isEmpty()) {
-            if (!m_luaEnv.doFile(m_scriptFile, err)) {
-                m_ui->logTextEdit->appendPlainText(err);
-            }
-        }
-    } else {
+    if (!scriptStr.isEmpty()) {
         if (!m_luaEnv.doString(scriptStr, err)) {
             m_ui->logTextEdit->appendPlainText(err);
         }
@@ -90,14 +176,28 @@ void ScriptWindow::on_actionClearLog_triggered()
 
 void ScriptWindow::on_actionOpen_triggered()
 {
-    QFileDialog fileDialog(this);
-    fileDialog.setFileMode(QFileDialog::ExistingFile);
-    fileDialog.setNameFilter(QStringLiteral("Lua File (*.lua)"));
+    if (!maybeSave()) {
+        return;
+    }
 
-    if (fileDialog.exec() == QDialog::Accepted) {
-        if (fileDialog.selectedFiles().size() > 0) {
-            m_scriptFile = QDir::toNativeSeparators(fileDialog.selectedFiles().at(0));
-            setWindowTitle(QStringLiteral("Script Window - ") + m_scriptFile);
-        }
+    QString path = QFileDialog::getOpenFileName(
+                this, QStringLiteral("Open File"), QString(), QStringLiteral("Lua File (*.lua)"));
+    if (path.isEmpty()) {
+        return;
+    }
+
+    loadFile(path);
+}
+
+void ScriptWindow::on_actionSave_triggered()
+{
+    if (!m_ui->scriptTextEdit->isModified()) {
+        return;
+    }
+
+    if (m_scriptFile.isEmpty()) {
+        saveAs();
+    } else {
+        saveFile(m_scriptFile);
     }
 }
