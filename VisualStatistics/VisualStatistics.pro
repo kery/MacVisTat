@@ -68,7 +68,8 @@ SOURCES += main.cpp\
     draggableplot.cpp \
     valuetext.cpp \
     counterlegenditem.cpp \
-    autocompletionsrcplotapis.cpp
+    autocompletionsrcplotapis.cpp \
+    scilexerlua5_2.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -113,7 +114,8 @@ HEADERS  += mainwindow.h \
     draggableplot.h \
     valuetext.h \
     counterlegenditem.h \
-    autocompletionsrcplotapis.h
+    autocompletionsrcplotapis.h \
+    scilexerlua5_2.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \

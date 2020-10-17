@@ -2,8 +2,7 @@
 #include "ui_scriptwindow.h"
 #include "utils.h"
 #include "autocompletionsrcplotapis.h"
-
-#include <Qsci/qscilexerlua.h>
+#include "scilexerlua5_2.h"
 
 ScriptWindow::ScriptWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -44,8 +43,13 @@ void ScriptWindow::closeEvent(QCloseEvent *event)
 
 void ScriptWindow::setupEditor(QsciScintilla *editor)
 {
-    QsciLexerLua *lexer = new QsciLexerLua(editor);
-    lexer->setColor(Qt::blue, QsciLexerLua::Keyword);
+    QsciLexer *lexer = new SciLexerLua5_2(editor);
+    lexer->setColor(Qt::blue, SciLexerLua5_2::Keyword);
+    lexer->setColor(QColor(170, 85, 255), SciLexerLua5_2::BasicFunctions);
+    lexer->setColor(lexer->color(SciLexerLua5_2::BasicFunctions), SciLexerLua5_2::StringTableMathsFunctions);
+    lexer->setColor(lexer->color(SciLexerLua5_2::BasicFunctions), SciLexerLua5_2::CoroutinesIOSystemFacilities);
+    lexer->setColor(lexer->color(SciLexerLua5_2::BasicFunctions), SciLexerLua5_2::Bit32DebugPackageFunctions);
+    lexer->setColor(Qt::darkMagenta, SciLexerLua5_2::PlotFunctions);
 
     editor->setLexer(lexer);
     editor->setMargins(1);
