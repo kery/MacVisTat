@@ -570,7 +570,7 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
 
     menu->addSeparator();
 
-    QAction *actionAdd = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
+    menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
     QAction *actionCopyName = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
     QAction *actionCopyValue = menu->addAction(QStringLiteral("Copy Graph Value"), this, SLOT(copyGraphValue()));
 
@@ -584,11 +584,8 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         if (!m_valueText->visible()) {
             actionCopyName->setEnabled(false);
         }
-        actionAdd->setEnabled(false);
         actionRemove->setEnabled(false);
         actionRemoveUnsel->setEnabled(false);
-    } else if (selectedLegendItems.size() < 2) {
-        actionAdd->setEnabled(false);
     }
 
     if (!m_valueText->visible()) {
@@ -658,13 +655,19 @@ void PlotWindow::addAggregateGraph()
     QCustomPlot *plot = m_ui->customPlot;
     QList<QCPAbstractLegendItem *> selectedLegendItems = plot->legend->selectedItems();
 
-    QVector<QCPDataMap *> selectedDataMaps;
-    selectedDataMaps.reserve(selectedLegendItems.size());
+    QVector<QCPDataMap *> dataMaps;
+    dataMaps.reserve(selectedLegendItems.size() > 1 ? selectedLegendItems.size() : plot->graphCount());
 
-    for (QCPAbstractLegendItem *item : selectedLegendItems) {
-        QCPPlottableLegendItem *legendItem = qobject_cast<QCPPlottableLegendItem *>(item);
-        CounterGraph *graph = qobject_cast<CounterGraph *>(legendItem->plottable());
-        selectedDataMaps.append(graph->data());
+    if (selectedLegendItems.size() > 1) {
+        for (QCPAbstractLegendItem *item : selectedLegendItems) {
+            QCPPlottableLegendItem *legendItem = qobject_cast<QCPPlottableLegendItem *>(item);
+            CounterGraph *graph = qobject_cast<CounterGraph *>(legendItem->plottable());
+            dataMaps.append(graph->data());
+        }
+    } else {
+        for (int i = 0; i < plot->graphCount(); ++i) {
+            dataMaps.append(plot->graph(i)->data());
+        }
     }
 
     QCPDataMap *aggregateDataMap = m_stat.addDataMap(aggregateGraphName);
@@ -673,7 +676,7 @@ void PlotWindow::addAggregateGraph()
         return;
     }
 
-    for (const QCPDataMap *dataMap : selectedDataMaps) {
+    for (const QCPDataMap *dataMap : dataMaps) {
         for (const QCPData &data: *dataMap) {
             QCPData &dstData = (*aggregateDataMap)[data.key];
             dstData.key = data.key;
