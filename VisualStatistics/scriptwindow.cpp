@@ -1,9 +1,9 @@
 #include "scriptwindow.h"
 #include "ui_scriptwindow.h"
 #include "utils.h"
+#include "autocompletionsrcplotapis.h"
 
 #include <Qsci/qscilexerlua.h>
-#include <Qsci/qsciapis.h>
 
 ScriptWindow::ScriptWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -75,49 +75,7 @@ void ScriptWindow::setupEditor(QsciScintilla *editor)
 
 void ScriptWindow::setupAutoCompletion(QsciScintilla *editor)
 {
-    QsciAPIs *apis = new QsciAPIs(editor->lexer());
-    QString funcInfos[] = {
-        "graph_count()\n"
-        "Returns the total number of graphs in a plot window.",
-
-        "graph_name(graph)\n"
-        "Returns the name of a graph. The first parameter graph is the index of the\n"
-        "graph in legend box, the index starts from 0.",
-
-        "get_lastkey()\n"
-        "Returns the last key of the plot, i.e. the last coordinate of the x axis.\n"
-        "The first key of a plot is 0, the second key is 1, and so on.",
-
-        "get_value(graph, key, default)\n"
-        "Returns the value of a graph at key. The first parameter graph is the index\n"
-        "of the graph in legend box, the index starts from 0.  If the key of graph\n"
-        "does not exist, the third optional parameter default will be returned. If the\n"
-        "default is not given, a nil will be returned.",
-
-        "get_dt(key)\n"
-        "Returns the date time at key as the number of seconds that have passed since\n"
-        "1970-01-01T00:00:00.",
-
-        "get_dtstr(key)\n"
-        "Returns the date time at key as a string, e.g. 2020-08-22 20:07:12.",
-
-        "add_graph(name, data, r, g, b)\n"
-        "Adds a new graph in plot window with name. The parameter data is an array, the\n"
-        "elements' index is represented as the key of the graph. The optional parameters\n"
-        "r, g, b will be used as the color of the graph.",
-
-        "update(rescaleY)\n"
-        "Refreshes the plot area. It is necessary to call this function after adding one or\n"
-        "more new graphs. If the optional parameter rescaleY is set to true then the y axis\n"
-        "will be rescaled if necessary.",
-
-        "print(text)\n"
-        "Prints out the text to the log pane of the script window."
-    };
-    for (const QString &fInfo : funcInfos) {
-        apis->add(fInfo);
-    }
-    apis->prepare();
+    new AutoCompletionSrcPlotAPIs(editor->lexer());
 
     editor->setAutoCompletionSource(QsciScintilla::AcsAll);
     editor->setAutoCompletionThreshold(1);

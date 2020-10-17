@@ -67,7 +67,8 @@ SOURCES += main.cpp\
     changelogdialog.cpp \
     draggableplot.cpp \
     valuetext.cpp \
-    counterlegenditem.cpp
+    counterlegenditem.cpp \
+    autocompletionsrcplotapis.cpp
 
 HEADERS  += mainwindow.h \
     plotwindow.h \
@@ -111,7 +112,8 @@ HEADERS  += mainwindow.h \
     changelogdialog.h \
     draggableplot.h \
     valuetext.h \
-    counterlegenditem.h
+    counterlegenditem.h \
+    autocompletionsrcplotapis.h
 
 FORMS    += mainwindow.ui \
     plotwindow.ui \
