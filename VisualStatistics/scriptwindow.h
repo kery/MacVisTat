@@ -27,6 +27,7 @@ protected:
     virtual void closeEvent(QCloseEvent *event);
 
     void setupEditor(QsciScintilla *editor);
+    void setupAutoCompletion(QsciScintilla *editor);
     bool maybeSave();
     void loadFile(const QString &path);
     bool saveFile(const QString &path);
