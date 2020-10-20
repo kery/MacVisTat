@@ -587,7 +587,7 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
 
     menu->addSeparator();
 
-    menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
+    QAction *actionAddGraph = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
     QAction *actionCopyName = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
     QAction *actionCopyValue = menu->addAction(QStringLiteral("Copy Graph Value"), this, SLOT(copyGraphValue()));
 
@@ -603,6 +603,10 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         }
         actionRemove->setEnabled(false);
         actionRemoveUnsel->setEnabled(false);
+    }
+
+    if (plot->graphCount() < 2) {
+        actionAddGraph->setEnabled(false);
     }
 
     if (!m_valueText->visible()) {
