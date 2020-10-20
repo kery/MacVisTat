@@ -41,7 +41,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_animation.setEasingCurve(QEasingCurve::OutQuad);
 
     connect(&m_animation, &QPropertyAnimation::valueChanged, [this] () {
-        this->m_tracer->parentPlot()->replot();
+        this->m_ui->customPlot->replot();
     });
 
     connect(&m_animation, &QPropertyAnimation::finished, [this] () {
@@ -49,7 +49,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
             m_valueText->setVisible(false);
             m_tracer->setVisible(false);
             m_tracer->setGraph(nullptr);
-            this->m_tracer->parentPlot()->replot();
+            this->m_ui->customPlot->replot();
         }
     });
 
@@ -480,19 +480,22 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         dist = qAbs(plot->yAxis->coordToPixel(value) - event->pos().y());
     }
 
-    if (dist > MAX_DIST)
+    if (dist >= MAX_DIST)
     {
-        if (m_tracer->visible()) {
+        if (m_tracer->visible() && m_animation.state() != QAbstractAnimation::Running) {
             m_animation.setDirection(QAbstractAnimation::Backward);
             m_animation.start();
         }
     } else if (graph && (graph != m_tracer->graph() || (int)m_tracer->graphKey() != index)) {
-        QColor color = graph->pen().color();
-        QPen pen(color.darker(128));
-        pen.setWidth(2);
+        if (graph != m_tracer->graph()) {
+            QColor color = graph->pen().color();
+            QPen pen(color.darker(128));
+            pen.setWidth(2);
 
-        m_tracer->setPen(pen);
-        m_tracer->setBrush(color);
+            m_tracer->setPen(pen);
+            m_tracer->setBrush(color);
+        }
+
         m_tracer->setGraph(graph);
         m_tracer->setGraphKey(index);
         m_tracer->setVisible(true);
@@ -503,10 +506,10 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         m_valueText->updateText();
         m_valueText->setVisible(true);
 
-        if (m_animation.direction() != QAbstractAnimation::Forward) {
-            m_animation.setDirection(QAbstractAnimation::Forward);
+        if (m_animation.state() == QAbstractAnimation::Running) {
+            m_animation.stop();
         }
-        m_animation.setCurrentTime(0);
+        m_animation.setDirection(QAbstractAnimation::Forward);
         m_animation.start();
     }
 }
