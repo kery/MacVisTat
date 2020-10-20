@@ -6,6 +6,7 @@
 
 extern double SCATTER_SIZE;
 static const double TRACER_SIZE = SCATTER_SIZE + 4.0;
+static const int ANIMATION_MAX_GRAPHS = 100;
 
 PlotWindow::PlotWindow(Statistics &stat) :
     QMainWindow(nullptr),
@@ -482,9 +483,17 @@ void PlotWindow::mouseMove(QMouseEvent *event)
 
     if (dist >= MAX_DIST)
     {
-        if (m_tracer->visible() && m_animation.state() != QAbstractAnimation::Running) {
-            m_animation.setDirection(QAbstractAnimation::Backward);
-            m_animation.start();
+        if (m_tracer->visible()) {
+            if (plot->graphCount() <= ANIMATION_MAX_GRAPHS) {
+                if (m_animation.state() != QAbstractAnimation::Running) {
+                    m_animation.setDirection(QAbstractAnimation::Backward);
+                    m_animation.start();
+                }
+            } else {
+                m_tracer->setVisible(false);
+                m_valueText->setVisible(false);
+                plot->replot();
+            }
         }
     } else if (graph && (graph != m_tracer->graph() || (int)m_tracer->graphKey() != index)) {
         if (graph != m_tracer->graph()) {
@@ -506,11 +515,16 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         m_valueText->updateText();
         m_valueText->setVisible(true);
 
-        if (m_animation.state() == QAbstractAnimation::Running) {
-            m_animation.stop();
+        if (plot->graphCount() <= ANIMATION_MAX_GRAPHS) {
+            if (m_animation.state() == QAbstractAnimation::Running) {
+                m_animation.stop();
+            }
+            m_animation.setDirection(QAbstractAnimation::Forward);
+            m_animation.start();
+        } else {
+            m_tracer->setSize(TRACER_SIZE);
+            plot->replot();
         }
-        m_animation.setDirection(QAbstractAnimation::Forward);
-        m_animation.start();
     }
 }
 
