@@ -50,6 +50,10 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Nokia");
     QCoreApplication::setApplicationName("VisualStatistics");
 
+    // Close stdin so that calling lua functions, which reads stdin, from
+    // script window will not hang UI thread.
+    fclose(stdin);
+
     std::unique_ptr<google_breakpad::ExceptionHandler> exceptionHandler;
 
     if (QDir().mkpath(getAppDataDir())) {

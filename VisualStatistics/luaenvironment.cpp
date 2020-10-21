@@ -166,19 +166,9 @@ static int dummy_debug(lua_State *L)
     return 0;
 }
 
-static void replaceDebug(lua_State *L)
-{
-    lua_getglobal(L, "debug");
-    lua_pushstring(L, "debug");
-    lua_pushcfunction(L, dummy_debug);
-    lua_rawset(L, -3);
-    lua_pop(L, 1);
-}
-
 static int init_cfunc(lua_State *L)
 {
     luaL_openlibs(L);
-    replaceDebug(L);
 
     // replace default print function
     lua_pushcfunction(L, custom_print);
