@@ -563,19 +563,18 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     actionShowLegend->setChecked(plot->legend->visible());
 
     QMenu *subMenu = menu->addMenu(QStringLiteral("Move Legend to"));
-    QMenu *subMenuTop = subMenu->addMenu(QStringLiteral("Top"));
-    QMenu *subMenuBottom = subMenu->addMenu(QStringLiteral("Bottom"));
-    subMenuTop->addAction(QStringLiteral("Left"), this, SLOT(moveLegend()))->setData(
+    subMenu->addAction(QStringLiteral("Top Left"), this, SLOT(moveLegend()))->setData(
         static_cast<int>(Qt::AlignTop | Qt::AlignLeft));
-    subMenuTop->addAction(QStringLiteral("Center"), this, SLOT(moveLegend()))->setData(
+    subMenu->addAction(QStringLiteral("Top Center"), this, SLOT(moveLegend()))->setData(
         static_cast<int>(Qt::AlignTop | Qt::AlignCenter));
-    subMenuTop->addAction(QStringLiteral("Right"), this, SLOT(moveLegend()))->setData(
+    subMenu->addAction(QStringLiteral("Top Right"), this, SLOT(moveLegend()))->setData(
         static_cast<int>(Qt::AlignTop | Qt::AlignRight));
-    subMenuBottom->addAction(QStringLiteral("Left"), this, SLOT(moveLegend()))->setData(
+    subMenu->addSeparator();
+    subMenu->addAction(QStringLiteral("Bottom Left"), this, SLOT(moveLegend()))->setData(
         static_cast<int>(Qt::AlignBottom | Qt::AlignLeft));
-    subMenuBottom->addAction(QStringLiteral("Center"), this, SLOT(moveLegend()))->setData(
+    subMenu->addAction(QStringLiteral("Bottom Center"), this, SLOT(moveLegend()))->setData(
         static_cast<int>(Qt::AlignBottom | Qt::AlignCenter));
-    subMenuBottom->addAction(QStringLiteral("Right"), this, SLOT(moveLegend()))->setData(
+    subMenu->addAction(QStringLiteral("Bottom Right"), this, SLOT(moveLegend()))->setData(
         static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
 
     QAction *actionShowModuleName = menu->addAction(QStringLiteral("Show Module Name"), this, &PlotWindow::showModuleNameTriggered);
