@@ -431,6 +431,13 @@ void PlotWindow::selectionChanged()
             adjustYAxisRange(plot->yAxis);
         }
     }
+
+    if ((m_tracer->visible() || m_valueText->visible()) &&
+            m_tracer->graph() != nullptr && !m_tracer->graph()->visible())
+    {
+        m_tracer->setVisible(false);
+        m_valueText->setVisible(false);
+    }
 }
 
 void PlotWindow::mousePress(QMouseEvent *event)
