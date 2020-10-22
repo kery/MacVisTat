@@ -676,12 +676,11 @@ void PlotWindow::moveLegend()
 
         QVariantAnimation *anim = new QVariantAnimation();
         anim->setDuration(250);
-        anim->setStartValue(originRect);
-        anim->setEndValue(newRect);
+        anim->setStartValue(translateToInsetRect(layout, originRect));
+        anim->setEndValue(translateToInsetRect(layout, newRect));
         anim->setEasingCurve(QEasingCurve::OutQuad);
         connect(anim, &QVariantAnimation::valueChanged, [layout, plot] (const QVariant &value) {
-            QRectF rect = translateToInsetRect(layout, value.toRect());
-            layout->setInsetRect(0, rect);
+            layout->setInsetRect(0, value.toRectF());
             plot->replot();
         });
         connect(anim, &QVariantAnimation::finished, [layout, plot] () {
