@@ -25,6 +25,8 @@ private:
     QString m_graphName;
     QString m_dateTime;
     QString m_graphValue;
+
+    static const double PosOffset;
 };
 
 #endif // VALUETEXT_H

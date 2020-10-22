@@ -76,6 +76,9 @@ private slots:
     void on_actionRemoveZeroCounters_triggered();
     void on_actionCopyToClipboard_triggered();
 
+public:
+    static const double TracerSize;
+
 private:
     int m_agggraph_idx;
     int m_lastSelLegitemIndex;
@@ -92,7 +95,6 @@ private:
     ColorManager m_colorManager;
     Statistics m_stat;
 
-    static const double TracerSize;
     static const int AnimationMaxGraphs;
 };
 

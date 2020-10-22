@@ -638,8 +638,8 @@ void PlotWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *ite
 
 static QRectF translateToInsetRect(QCPLayoutInset *layout, const QRectF &rect)
 {
-    return QRectF(rect.x() / (layout->rect().width()),
-                  rect.y() / (layout->rect().height()),
+    return QRectF(rect.x()/(layout->rect().width()),
+                  rect.y()/(layout->rect().height()),
                   0, 0);
 }
 

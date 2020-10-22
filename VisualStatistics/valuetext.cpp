@@ -1,4 +1,7 @@
 #include "valuetext.h"
+#include "plotwindow.h"
+
+const double ValueText::PosOffset = PlotWindow::TracerSize/2 + 1;
 
 ValueText::ValueText(const QCPItemTracer *tracer) :
     QCPItemText(tracer->parentPlot())
@@ -54,21 +57,19 @@ void ValueText::updateText()
 
 void ValueText::draw(QCPPainter *painter)
 {
-    const double OFFSET = 5;
-
-    QPointF coords(OFFSET, OFFSET);
+    QPointF coords(PosOffset, PosOffset);
     QPointF tracerPos = position->parentAnchor()->pixelPoint();
     double width = right->pixelPoint().x() - left->pixelPoint().x();
     double height = bottom->pixelPoint().y() - top->pixelPoint().y();
 
-    double widthOutside = (tracerPos.x() + OFFSET + width) - clipRect().right();
+    double widthOutside = (tracerPos.x() + PosOffset + width) - clipRect().right();
     if (widthOutside > 0) {
         coords.rx() -= widthOutside;
     }
 
-    double heightOutside = (tracerPos.y() + OFFSET + height) - clipRect().bottom();
+    double heightOutside = (tracerPos.y() + PosOffset + height) - clipRect().bottom();
     if (heightOutside > 0) {
-        coords.ry() -= heightOutside;
+        widthOutside > 0 ? coords.ry() = -PosOffset - height : coords.ry() -= heightOutside;
     }
 
     position->setCoords(coords);
