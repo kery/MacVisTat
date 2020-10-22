@@ -636,7 +636,7 @@ void PlotWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *ite
     }
 }
 
-QRectF translateToInsetRect(QCPLayoutInset *layout, const QRectF &rect)
+static QRectF translateToInsetRect(QCPLayoutInset *layout, const QRectF &rect)
 {
     return QRectF(rect.x() / (layout->rect().width()),
                   rect.y() / (layout->rect().height()),
@@ -660,6 +660,10 @@ void PlotWindow::moveLegend()
     QCPLayoutInset *layout = plot->axisRect()->insetLayout();
     layout->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
     layout->setInsetAlignment(0, (Qt::Alignment)align);
+
+    if (!plot->legend->visible()) {
+        return;
+    }
 
     if (plot->graphCount() <= AnimationMaxGraphs) {
         QRect originRect = plot->legend->outerRect();
