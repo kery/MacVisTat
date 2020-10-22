@@ -155,7 +155,7 @@ static int update(lua_State *L)
         plot->yAxis->rescale();
         adjustYAxisRange(plot->yAxis);
     }
-    plot->replot();
+    plot->replot(QCustomPlot::rpQueued);
     return 0;
 }
 

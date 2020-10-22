@@ -50,7 +50,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
             m_valueText->setVisible(false);
             m_tracer->setVisible(false);
             m_tracer->setGraph(nullptr);
-            this->m_ui->customPlot->replot();
+            this->m_ui->customPlot->replot(QCustomPlot::rpQueued);
         }
     });
 
@@ -206,7 +206,7 @@ void PlotWindow::initializePlot()
 
     plot->rescaleAxes();
     adjustYAxisRange(plot->yAxis);
-    plot->replot();
+    plot->replot(QCustomPlot::rpQueued);
 }
 
 QVector<double> PlotWindow::calcTickVector(int plotWidth, int fontHeight, const QCPRange &range)
@@ -353,7 +353,7 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
     updatePlotTitle();
 
     selectionChanged();
-    plot->replot();
+    plot->replot(QCustomPlot::rpQueued);
 }
 
 QVector<CounterGraph *> PlotWindow::selectedGraphs(bool selected) const
@@ -492,7 +492,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
             } else {
                 m_tracer->setVisible(false);
                 m_valueText->setVisible(false);
-                plot->replot();
+                plot->replot(QCustomPlot::rpQueued);
             }
         }
     } else if (graph && (graph != m_tracer->graph() || (int)m_tracer->graphKey() != index)) {
@@ -523,7 +523,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
             m_animation.start();
         } else {
             m_tracer->setSize(TRACER_SIZE);
-            plot->replot();
+            plot->replot(QCustomPlot::rpQueued);
         }
     }
 }
@@ -551,7 +551,7 @@ void PlotWindow::mouseWheel(QWheelEvent *event)
             color.setAlpha(qMin(color.alpha() + STEP, 255));
         }
         plot->legend->setBrush(QBrush(color));
-        plot->replot();
+        plot->replot(QCustomPlot::rpQueued);
     }
 }
 
@@ -635,7 +635,7 @@ void PlotWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *ite
                 graph->setScatterStyle(scatterStyle);
             }
 
-            m_ui->customPlot->replot();
+            m_ui->customPlot->replot(QCustomPlot::rpQueued);
         }
     }
 }
@@ -650,7 +650,7 @@ void PlotWindow::moveLegend()
             QCPLayoutInset *layout = plot->axisRect()->insetLayout();
             layout->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
             layout->setInsetAlignment(0, (Qt::Alignment)align);
-            plot->replot();
+            plot->replot(QCustomPlot::rpQueued);
         }
     }
 }
@@ -719,7 +719,7 @@ void PlotWindow::addAggregateGraph()
     updatePlotTitle();
     plot->yAxis->rescale();
     adjustYAxisRange(plot->yAxis);
-    plot->replot();
+    plot->replot(QCustomPlot::rpQueued);
 }
 
 void PlotWindow::removeSelectedGraphs()
@@ -756,7 +756,7 @@ void PlotWindow::showLegendTriggered(bool checked)
 {
     QCustomPlot *plot = m_ui->customPlot;
     plot->legend->setVisible(checked);
-    plot->replot();
+    plot->replot(QCustomPlot::rpQueued);
 }
 
 void PlotWindow::showModuleNameTriggered(bool checked)
@@ -771,7 +771,7 @@ void PlotWindow::showModuleNameTriggered(bool checked)
 
     if (m_valueText->visible() || plot->legend->visible()) {
         m_valueText->setVisible(false);
-        plot->replot();
+        plot->replot(QCustomPlot::rpQueued);
     }
 }
 
@@ -820,7 +820,7 @@ void PlotWindow::fromDateTimeChanged(const QDateTime &dateTime)
                 m_ui->customPlot->xAxis->setRangeLower(0);
             }
             m_userDragFlag = true;
-            m_ui->customPlot->replot();
+            m_ui->customPlot->replot(QCustomPlot::rpQueued);
         }
     }
 }
@@ -834,7 +834,7 @@ void PlotWindow::toDateTimeChanged(const QDateTime &dateTime)
             m_userDragFlag = false;
             m_ui->customPlot->xAxis->setRangeUpper(index);
             m_userDragFlag = true;
-            m_ui->customPlot->replot();
+            m_ui->customPlot->replot(QCustomPlot::rpQueued);
         }
     }
 }
@@ -853,7 +853,7 @@ void PlotWindow::on_actionRestoreScale_triggered()
 {
     m_ui->customPlot->rescaleAxes();
     adjustYAxisRange(m_ui->customPlot->yAxis);
-    m_ui->customPlot->replot();
+    m_ui->customPlot->replot(QCustomPlot::rpQueued);
 }
 
 void PlotWindow::on_actionShowDelta_triggered(bool checked)
@@ -878,7 +878,7 @@ void PlotWindow::on_actionShowDelta_triggered(bool checked)
     // Only rescale Y axis
     plot->yAxis->rescale();
     adjustYAxisRange(plot->yAxis);
-    plot->replot();
+    plot->replot(QCustomPlot::rpQueued);
 }
 
 void PlotWindow::on_actionShowSuspectFlag_triggered(bool checked)
@@ -890,7 +890,7 @@ void PlotWindow::on_actionShowSuspectFlag_triggered(bool checked)
         graph->enableSuspectFlag(checked);
     }
 
-    plot->replot();
+    plot->replot(QCustomPlot::rpQueued);
 
     QSettings settings;
     settings.setValue(QStringLiteral("showSuspectFlag"), checked);
