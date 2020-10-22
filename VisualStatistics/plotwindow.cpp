@@ -637,18 +637,58 @@ void PlotWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *ite
     }
 }
 
+QRectF translateToInsetRect(QCPLayoutInset *layout, const QRectF &rect)
+{
+    return QRectF(rect.x() / (layout->rect().width()),
+                  rect.y() / (layout->rect().height()),
+                  0, 0);
+}
+
 void PlotWindow::moveLegend()
 {
-    if (QAction *action = qobject_cast<QAction*>(sender())) {
-        bool ok;
-        int align = action->data().toInt(&ok);
-        if (ok) {
-            QCustomPlot *plot = m_ui->customPlot;
-            QCPLayoutInset *layout = plot->axisRect()->insetLayout();
+    QAction *action = qobject_cast<QAction*>(sender());
+    if (!action) {
+        return;
+    }
+
+    bool ok;
+    int align = action->data().toInt(&ok);
+    if (!ok) {
+        return;
+    }
+
+    QCustomPlot *plot = m_ui->customPlot;
+    QCPLayoutInset *layout = plot->axisRect()->insetLayout();
+    layout->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
+    layout->setInsetAlignment(0, (Qt::Alignment)align);
+
+    if (plot->graphCount() <= AnimationMaxGraphs) {
+        QRect originRect = plot->legend->outerRect();
+        originRect.translate(-layout->rect().x(), -layout->rect().y());
+
+        layout->updateLayout();
+
+        QRect newRect = plot->legend->outerRect();
+        newRect.translate(-layout->rect().x(), -layout->rect().y());
+
+        QVariantAnimation *anim = new QVariantAnimation();
+        anim->setDuration(250);
+        anim->setStartValue(originRect);
+        anim->setEndValue(newRect);
+        anim->setEasingCurve(QEasingCurve::OutQuad);
+        connect(anim, &QVariantAnimation::valueChanged, [layout, plot] (const QVariant &value) {
+            QRectF rect = translateToInsetRect(layout, value.toRect());
+            layout->setInsetRect(0, rect);
+            plot->replot();
+        });
+        connect(anim, &QVariantAnimation::finished, [layout, plot] () {
             layout->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
-            layout->setInsetAlignment(0, (Qt::Alignment)align);
             plot->replot(QCustomPlot::rpQueued);
-        }
+        });
+        layout->setInsetPlacement(0, QCPLayoutInset::ipFree);
+        anim->start(QAbstractAnimation::DeleteWhenStopped);
+    } else {
+        plot->replot(QCustomPlot::rpQueued);
     }
 }
 
