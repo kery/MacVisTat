@@ -37,7 +37,6 @@ private:
 
     bool shouldDrawScatter(const QVector<double> &tickVector, int plotWidth) const;
     void updateScatter(const QVector<double> &tickVector, int plotWidth);
-    void enableGraphScatter(QCPGraph *graph, bool enable);
 
     QCPGraph * findNearestGraphValue(int index, double yCoord, double &value);
 
@@ -92,6 +91,9 @@ private:
     bool m_showModule;
     ColorManager m_colorManager;
     Statistics m_stat;
+
+    static const double TracerSize;
+    static const int AnimationMaxGraphs;
 };
 
 #endif // PLOTWINDOW_H

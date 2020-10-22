@@ -13,6 +13,7 @@ public:
     void setShowModule(bool show);
     QString displayName() const;
 
+    void enableScatter(bool enable);
     void enableSuspectFlag(bool enable);
 
     virtual bool addToLegend();
@@ -21,6 +22,9 @@ protected:
     virtual void draw(QCPPainter *painter);
     virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
     virtual void drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatterData) const;
+
+public:
+    static const double ScatterSize;
 
 private:
     bool m_showModule;

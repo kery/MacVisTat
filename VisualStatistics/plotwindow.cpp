@@ -4,9 +4,8 @@
 #include "utils.h"
 #include "version.h"
 
-extern double SCATTER_SIZE;
-static const double TRACER_SIZE = SCATTER_SIZE + 4.0;
-static const int ANIMATION_MAX_GRAPHS = 100;
+const double PlotWindow::TracerSize = CounterGraph::ScatterSize + 4.0;
+const int PlotWindow::AnimationMaxGraphs = 100;
 
 PlotWindow::PlotWindow(Statistics &stat) :
     QMainWindow(nullptr),
@@ -38,7 +37,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_animation.setPropertyName("size");
     m_animation.setDuration(250);
     m_animation.setStartValue(0);
-    m_animation.setEndValue(TRACER_SIZE);
+    m_animation.setEndValue(TracerSize);
     m_animation.setEasingCurve(QEasingCurve::OutQuad);
 
     connect(&m_animation, &QPropertyAnimation::valueChanged, [this] () {
@@ -95,7 +94,7 @@ CounterGraph * PlotWindow::addCounterGraph(const QString &name, const QString &m
         graph->setSelectedPen(graph->pen());
 
         if (m_hasScatter) {
-            enableGraphScatter(graph, true);
+            graph->enableScatter(true);
         }
         return graph;
     } else {
@@ -282,25 +281,16 @@ void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth)
         if (!m_hasScatter) {
             m_hasScatter = true;
             for (int i = 0; i < plot->graphCount(); ++i) {
-                enableGraphScatter(plot->graph(i), true);
+                qobject_cast<CounterGraph *>(plot->graph(i))->enableScatter(true);
             }
         }
     } else {
         if (m_hasScatter) {
             m_hasScatter = false;
             for (int i = 0; i < plot->graphCount(); ++i) {
-                enableGraphScatter(plot->graph(i), false);
+                qobject_cast<CounterGraph *>(plot->graph(i))->enableScatter(false);
             }
         }
-    }
-}
-
-void PlotWindow::enableGraphScatter(QCPGraph *graph, bool enable)
-{
-    if (enable) {
-        graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, graph->pen().color(), SCATTER_SIZE));
-    } else {
-        graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone));
     }
 }
 
@@ -484,7 +474,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
     if (dist >= MAX_DIST)
     {
         if (m_tracer->visible()) {
-            if (plot->graphCount() <= ANIMATION_MAX_GRAPHS) {
+            if (plot->graphCount() <= AnimationMaxGraphs) {
                 if (m_animation.state() != QAbstractAnimation::Running) {
                     m_animation.setDirection(QAbstractAnimation::Backward);
                     m_animation.start();
@@ -515,14 +505,14 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         m_valueText->updateText();
         m_valueText->setVisible(true);
 
-        if (plot->graphCount() <= ANIMATION_MAX_GRAPHS) {
+        if (plot->graphCount() <= AnimationMaxGraphs) {
             if (m_animation.state() == QAbstractAnimation::Running) {
                 m_animation.stop();
             }
             m_animation.setDirection(QAbstractAnimation::Forward);
             m_animation.start();
         } else {
-            m_tracer->setSize(TRACER_SIZE);
+            m_tracer->setSize(TracerSize);
             plot->replot(QCustomPlot::rpQueued);
         }
     }

@@ -1,13 +1,13 @@
 #include "countergraph.h"
 #include "counterlegenditem.h"
 
-double SCATTER_SIZE = 6.0;
+const double CounterGraph::ScatterSize = 6.0;
 
 CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &module, const QString &name) :
     m_showModule(false),
     m_module(module),
     m_name(name),
-    m_ssSuspect(QCPScatterStyle::ssNone, SCATTER_SIZE),
+    m_ssSuspect(QCPScatterStyle::ssNone, ScatterSize),
     QCPGraph(keyAxis, valueAxis)
 {
 }
@@ -22,6 +22,15 @@ QString CounterGraph::displayName() const
         return m_module + ',' + m_name;
     }
     return m_name;
+}
+
+void CounterGraph::enableScatter(bool enable)
+{
+    if (enable) {
+        setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, pen().color(), ScatterSize));
+    } else {
+        setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone));
+    }
 }
 
 void CounterGraph::enableSuspectFlag(bool enable)
