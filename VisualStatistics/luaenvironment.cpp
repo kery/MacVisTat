@@ -121,11 +121,22 @@ static int add_graph(lua_State *L)
         return 1;
     }
     graph->setName(name);
-    int r = (luaL_optint(L, 3, 255) - 1) % 255 + 1;
-    int g = (luaL_optint(L, 4, 0) - 1) % 255 + 1;
-    int b = (luaL_optint(L, 5, 0) - 1) % 255 + 1;
-    graph->setPen(QPen(QColor(r, g, b)));
-    graph->setSelectedPen(graph->pen());
+
+    // Check if color parameters are given
+    if (lua_gettop(L) > 2) {
+        int r = (luaL_optint(L, 3, 255) - 1) % 255 + 1;
+        int g = (luaL_optint(L, 4, 0) - 1) % 255 + 1;
+        int b = (luaL_optint(L, 5, 0) - 1) % 255 + 1;
+
+        graph->setPen(QPen(QColor(r, g, b)));
+        graph->setSelectedPen(graph->pen());
+
+        QCPScatterStyle style = graph->scatterStyle();
+        if (style.shape() != QCPScatterStyle::ssNone) {
+            style.setPen(graph->pen());
+            graph->setScatterStyle(style);
+        }
+    }
 
     QCPData data;
     QCPDataMap *dataMap = stat.addDataMap(name);
