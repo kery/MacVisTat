@@ -106,6 +106,17 @@ static int get_dtstr(lua_State *L)
     return 1;
 }
 
+static int set_selected(lua_State *L)
+{
+    int graphIndex = luaL_checkint(L, 1);
+    QCustomPlot *plot = plotWindow(L)->getPlot();
+    luaL_argcheck(L, graphIndex >= 0 && graphIndex < plot->graphCount(), 1, "graph index out of range");
+
+    int selected = lua_toboolean(L, 2);
+    plot->graph(graphIndex)->setSelected(selected != 0);
+    return 0;
+}
+
 static int add_graph(lua_State *L)
 {
     PlotWindow *plotWnd = plotWindow(L);
@@ -197,6 +208,7 @@ static int init_cfunc(lua_State *L)
         { "get_value", get_value },
         { "get_dt", get_dt },
         { "get_dtstr", get_dtstr },
+        { "set_selected", set_selected },
         { "add_graph", add_graph },
         { "update", update },
         {NULL, NULL}

@@ -56,7 +56,7 @@ int GzipFile::write(const char *data, int len)
 
 int GzipFile::write(const std::string &data)
 {
-    return write(data.c_str(), data.length());
+    return write(data.c_str(), (int)data.length());
 }
 
 bool GzipFile::readLine(std::string &line)

@@ -29,6 +29,11 @@ AutoCompletionSrcPlotAPIs::AutoCompletionSrcPlotAPIs(QsciLexer *lexer) :
         "get_dtstr(key)\n"
         "Returns the date time at key as a string, e.g. 2020-08-22 20:07:12.",
 
+        "set_selected(graph, sel)\n"
+        "Set the selection state of a graph. The first parameter graph is the index of the\n"
+        "graph in legend box, the index starts from 0. The second parameter is the selection\n"
+        "state, true indicates selected.",
+
         "add_graph(name, data, r, g, b)\n"
         "Adds a new graph in plot window with name. The parameter data is an array, the\n"
         "elements' index is represented as the key of the graph. The optional parameters\n"

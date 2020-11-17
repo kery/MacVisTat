@@ -71,6 +71,12 @@ function plot.get_dtstr(key)
 Returns the date time at *key* as a string, e.g. 2020-08-22 20:07:12.
 
 ```lua
+function plot.set_selected(graph, sel)
+```
+
+Set the selection state of a graph. The first parameter *graph* is the index of the graph in legend box, the index starts from 0. The second parameter is the selection state, `true` indicates selected.
+
+```lua
 function plot.add_graph(name, data, r, g, b)
 ```
 
@@ -80,7 +86,7 @@ Adds a new graph in plot window with *name*. The parameter *data* is an array, t
 function plot.update(rescaleY)
 ```
 
-Refreshes the plot area. It is necessary to call this function after adding one or more new graphs. If the optional parameter *rescaleY* is set to `true` then the *y* axis will be rescaled if necessary.
+Refreshes the plot area. It is necessary to call this function after adding one or more new graphs or after calling `plot.set_selected`. If the optional parameter *rescaleY* is set to `true` then the *y* axis will be rescaled if necessary.
 
 ```lua
 function print(text)
