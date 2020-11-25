@@ -43,6 +43,13 @@ QString getUserName()
 #endif
 }
 
+bool isValieOffsetFromUtc(int offset)
+{
+    // https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
+    // >= -12:00 <= +14:00
+    return offset >= -(12 * 3600) && offset <= (14 * 3600);
+}
+
 void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info)
 {
     QMessageBox msgBox(parent);

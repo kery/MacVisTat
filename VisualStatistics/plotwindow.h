@@ -30,6 +30,12 @@ public:
 private:
     void initializePlot();
 
+    void connectXAxisRangeChanged();
+    void disconnectXAxisRangeChanged();
+    void connectDateTimeEditChange();
+    void disconnectDateTimeEditChange();
+
+    uint localTime_t(const QDateTime &dt) const;
     QVector<double> calcTickVector(int plotWidth, int fontHeight, const QCPRange &range);
     QVector<QString> calcTickLabelVector(const QVector<double> &ticks);
 
@@ -64,7 +70,8 @@ private slots:
     void copyGraphValue();
     void showLegendTriggered(bool checked);
     void showModuleNameTriggered(bool checked);
-    void xAxisRangeChanged(const QCPRange &newRange);
+    void displayUtcTimeTriggered(bool checked);
+    void updateDateTimeEdit(const QCPRange &newRange);
     void fromDateTimeChanged(const QDateTime &dateTime);
     void toDateTimeChanged(const QDateTime &dateTime);
 
@@ -88,8 +95,6 @@ private:
     ValueText *m_valueText;
     QDateTimeEdit *m_dtEditFrom;
     QDateTimeEdit *m_dtEditTo;
-    bool m_userEditFlag;
-    bool m_userDragFlag;
     bool m_hasScatter;
     bool m_showModule;
     ColorManager m_colorManager;

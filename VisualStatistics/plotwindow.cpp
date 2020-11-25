@@ -12,8 +12,6 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_agggraph_idx(0),
     m_lastSelLegitemIndex(-1),
     m_ui(new Ui::PlotWindow),
-    m_userEditFlag(true),
-    m_userDragFlag(true),
     m_hasScatter(false),
     m_showModule(false),
     m_stat(std::move(stat))
@@ -69,9 +67,8 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_dtEditTo->setDisplayFormat(DT_FORMAT);
     m_ui->toolBar->addWidget(m_dtEditTo);
 
-    connect(m_ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), SLOT(xAxisRangeChanged(QCPRange)));
-    connect(m_dtEditFrom, SIGNAL(dateTimeChanged(QDateTime)), SLOT(fromDateTimeChanged(QDateTime)));
-    connect(m_dtEditTo, SIGNAL(dateTimeChanged(QDateTime)), SLOT(toDateTimeChanged(QDateTime)));
+    connectXAxisRangeChanged();
+    connectDateTimeEditChange();
 
     setFocus();
     initializePlot();
@@ -131,14 +128,22 @@ void PlotWindow::updateWindowTitle()
 
 void PlotWindow::updatePlotTitle()
 {
-    QString formatString;
     QCustomPlot *plot = m_ui->customPlot;
+    QString title(windowTitle());
+    title += " (";
+    title += QString::number(plot->graphCount());
+
     if (m_ui->actionShowDelta->isChecked()) {
-        formatString = "%1 (%2, DELTA)";
-    } else {
-        formatString = "%1 (%2)";
+        title += ", DELTA";
     }
-    plot->xAxis2->setLabel(formatString.arg(windowTitle()).arg(plot->graphCount()));
+
+    if (m_stat.utcMode()) {
+        title += ", UTC";
+    }
+
+    title += ')';
+
+    plot->xAxis2->setLabel(title);
 }
 
 Statistics& PlotWindow::getStat()
@@ -206,6 +211,38 @@ void PlotWindow::initializePlot()
     plot->rescaleAxes();
     adjustYAxisRange(plot->yAxis);
     plot->replot(QCustomPlot::rpQueued);
+}
+
+void PlotWindow::connectXAxisRangeChanged()
+{
+    connect(m_ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(updateDateTimeEdit(QCPRange)));
+}
+
+void PlotWindow::disconnectXAxisRangeChanged()
+{
+    disconnect(m_ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(updateDateTimeEdit(QCPRange)));
+}
+
+void PlotWindow::connectDateTimeEditChange()
+{
+    connect(m_dtEditFrom, &QDateTimeEdit::dateTimeChanged, this, &PlotWindow::fromDateTimeChanged);
+    connect(m_dtEditTo, &QDateTimeEdit::dateTimeChanged, this, &PlotWindow::toDateTimeChanged);
+}
+
+void PlotWindow::disconnectDateTimeEditChange()
+{
+    disconnect(m_dtEditFrom, &QDateTimeEdit::dateTimeChanged, this, &PlotWindow::fromDateTimeChanged);
+    disconnect(m_dtEditTo, &QDateTimeEdit::dateTimeChanged, this, &PlotWindow::toDateTimeChanged);
+}
+
+uint PlotWindow::localTime_t(const QDateTime &dt) const
+{
+    if (m_stat.utcMode()) {
+        QDateTime tempDt = dt.toOffsetFromUtc(m_stat.offsetFromUtc());
+        tempDt.setOffsetFromUtc(QDateTime::currentDateTime().offsetFromUtc());
+        return tempDt.toTime_t();
+    }
+    return dt.toTime_t();
 }
 
 QVector<double> PlotWindow::calcTickVector(int plotWidth, int fontHeight, const QCPRange &range)
@@ -581,6 +618,13 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     actionShowModuleName->setCheckable(true);
     actionShowModuleName->setChecked(m_showModule);
 
+    QAction *actionDisplayUtc = menu->addAction(QStringLiteral("Display UTC time"), this, &PlotWindow::displayUtcTimeTriggered);
+    actionDisplayUtc->setCheckable(true);
+    actionDisplayUtc->setChecked(m_stat.utcMode());
+    if (!isValieOffsetFromUtc(m_stat.offsetFromUtc())) {
+        actionDisplayUtc->setEnabled(false);
+    }
+
     menu->addSeparator();
 
     QAction *actionAddGraph = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
@@ -814,67 +858,85 @@ void PlotWindow::showModuleNameTriggered(bool checked)
     }
 }
 
-void PlotWindow::xAxisRangeChanged(const QCPRange &newRange)
+void PlotWindow::displayUtcTimeTriggered(bool checked)
 {
-    if (m_userDragFlag) {
-        int dtFrom, dtTo;
-        int lower = (int)newRange.lower;
-        int upper = (int)newRange.upper;
-        if (lower >= m_stat.dateTimeCount()) {
-            dtFrom = m_stat.getLastDateTime();
-            dtTo = dtFrom;
-        } else if (upper < 0) {
-            dtFrom = m_stat.getFirstDateTime();
-            dtTo = dtFrom;
-        } else {
-            if (lower < 0) {
-                dtFrom = m_stat.getFirstDateTime();
-            } else {
-                dtFrom = m_stat.getDateTime(lower);
-            }
-            if (upper >= m_stat.dateTimeCount()) {
-                dtTo = m_stat.getLastDateTime();
-            } else {
-                dtTo = m_stat.getDateTime(upper);
-            }
-        }
+    if (m_stat.setUtcMode(checked)) {
+        QCustomPlot *plot = m_ui->customPlot;
+        updateDateTimeEdit(plot->xAxis->range());
+        updatePlotTitle();
+        plot->replot(QCustomPlot::rpQueued);
+    }
+}
 
-        m_userEditFlag = false;
+void PlotWindow::updateDateTimeEdit(const QCPRange &newRange)
+{
+    uint dtFrom, dtTo;
+    int lower = (int)newRange.lower;
+    int upper = (int)newRange.upper;
+    if (lower >= m_stat.dateTimeCount()) {
+        dtFrom = m_stat.getLastDateTime();
+        dtTo = dtFrom;
+    } else if (upper < 0) {
+        dtFrom = m_stat.getFirstDateTime();
+        dtTo = dtFrom;
+    } else {
+        if (lower < 0) {
+            dtFrom = m_stat.getFirstDateTime();
+        } else {
+            dtFrom = m_stat.getDateTime(lower);
+        }
+        if (upper >= m_stat.dateTimeCount()) {
+            dtTo = m_stat.getLastDateTime();
+        } else {
+            dtTo = m_stat.getDateTime(upper);
+        }
+    }
+
+    disconnectDateTimeEditChange();
+
+    if (m_stat.utcMode()) {
+        m_dtEditFrom->setTimeSpec(Qt::UTC);
+        m_dtEditTo->setTimeSpec(Qt::UTC);
+
+        QDateTime dt = QDateTime::fromTime_t(dtFrom);
+        dt.setOffsetFromUtc(m_stat.offsetFromUtc());
+        m_dtEditFrom->setDateTime(dt.toUTC());
+
+        dt = QDateTime::fromTime_t(dtTo);
+        dt.setOffsetFromUtc(m_stat.offsetFromUtc());
+        m_dtEditTo->setDateTime(dt.toUTC());
+    } else {
+        m_dtEditFrom->setTimeSpec(Qt::LocalTime);
+        m_dtEditTo->setTimeSpec(Qt::LocalTime);
+
         m_dtEditFrom->setDateTime(QDateTime::fromTime_t(dtFrom));
         m_dtEditTo->setDateTime(QDateTime::fromTime_t(dtTo));
-        m_userEditFlag = true;
     }
+
+    connectDateTimeEditChange();
 }
 
 void PlotWindow::fromDateTimeChanged(const QDateTime &dateTime)
 {
-    if (m_userEditFlag) {
-        int dt = (int)dateTime.toTime_t();
-        int index = m_stat.firstGreaterDateTimeIndex(dt);
-        if (index >= 0) {
-            m_userDragFlag = false;
-            if (index != 0) {
-                m_ui->customPlot->xAxis->setRangeLower(index - 1);
-            } else {
-                m_ui->customPlot->xAxis->setRangeLower(0);
-            }
-            m_userDragFlag = true;
-            m_ui->customPlot->replot(QCustomPlot::rpQueued);
-        }
+    uint dt = localTime_t(dateTime);
+    int index = m_stat.firstIndexAfterTime_t(dt);
+    if (index >= 0) {
+        disconnectXAxisRangeChanged();
+        m_ui->customPlot->xAxis->setRangeLower(std::max(0, index - 1));
+        m_ui->customPlot->replot(QCustomPlot::rpQueued);
+        connectXAxisRangeChanged();
     }
 }
 
 void PlotWindow::toDateTimeChanged(const QDateTime &dateTime)
 {
-    if (m_userEditFlag) {
-        int dt = (int)dateTime.toTime_t();
-        int index = m_stat.firstGreaterDateTimeIndex(dt);
-        if (index >= 0) {
-            m_userDragFlag = false;
-            m_ui->customPlot->xAxis->setRangeUpper(index);
-            m_userDragFlag = true;
-            m_ui->customPlot->replot(QCustomPlot::rpQueued);
-        }
+    uint dt = localTime_t(dateTime);
+    int index = m_stat.firstIndexAfterTime_t(dt);
+    if (index >= 0) {
+        disconnectXAxisRangeChanged();
+        m_ui->customPlot->xAxis->setRangeUpper(std::max(0, index - 1));
+        m_ui->customPlot->replot(QCustomPlot::rpQueued);
+        connectXAxisRangeChanged();
     }
 }
 

@@ -54,7 +54,9 @@ QString Statistics::splitStatNameToModuleAndName(const QString &statName, QStrin
     return QString();
 }
 
-Statistics::Statistics(NameDataMap &ndm) :
+Statistics::Statistics(NameDataMap &ndm, int offsetFromUtc) :
+    m_offsetFromUtc(offsetFromUtc),
+    m_utcMode(false),
     m_ndm(std::move(ndm))
 {
     initDateTimes();
@@ -98,12 +100,31 @@ bool Statistics::removeDataMap(const QString &name)
     return false;
 }
 
+int Statistics::offsetFromUtc() const
+{
+    return m_offsetFromUtc;
+}
+
+bool Statistics::utcMode() const
+{
+    return m_utcMode;
+}
+
+bool Statistics::setUtcMode(bool utcMode)
+{
+    if (isValieOffsetFromUtc(m_offsetFromUtc)) {
+        m_utcMode = utcMode;
+        return true;
+    }
+    return false;
+}
+
 int Statistics::dateTimeCount() const
 {
     return m_dateTimes.size();
 }
 
-Statistics::DateTimeVector::value_type Statistics::getDateTime(int index) const
+uint Statistics::getDateTime(int index) const
 {
     if (index >= 0 && index < m_dateTimes.size()) {
         return m_dateTimes.at(index);
@@ -113,22 +134,27 @@ Statistics::DateTimeVector::value_type Statistics::getDateTime(int index) const
 
 QString Statistics::getDateTimeString(int index) const
 {
-    return QDateTime::fromTime_t((uint)getDateTime(index)).toString(DT_FORMAT);
+    QDateTime dt = QDateTime::fromTime_t(getDateTime(index));
+    if (m_utcMode) {
+        dt.setOffsetFromUtc(m_offsetFromUtc);
+        dt = dt.toUTC();
+    }
+    return dt.toString(DT_FORMAT);
 }
 
-int Statistics::getFirstDateTime() const
+uint Statistics::getFirstDateTime() const
 {
     return m_dateTimes.first();
 }
 
-int Statistics::getLastDateTime() const
+uint Statistics::getLastDateTime() const
 {
     return m_dateTimes.last();
 }
 
-int Statistics::firstGreaterDateTimeIndex(int dateTime) const
+int Statistics::firstIndexAfterTime_t(uint time) const
 {
-    auto iter = std::upper_bound(m_dateTimes.begin(), m_dateTimes.end(), dateTime);
+    auto iter = std::upper_bound(m_dateTimes.begin(), m_dateTimes.end(), time);
     if (iter != m_dateTimes.end()) {
         return iter - m_dateTimes.begin();
     } else {
@@ -140,7 +166,7 @@ void Statistics::initDateTimes()
 {
     for (const QCPDataMap &dm : m_ndm) {
         QList<double> dateTimes = dm.keys();
-        DateTimeVector temp(m_dateTimes.size() + dateTimes.size());
+        QVector<uint> temp(m_dateTimes.size() + dateTimes.size());
         auto iter = std::set_union(m_dateTimes.begin(), m_dateTimes.end(),
                                    dateTimes.begin(), dateTimes.end(),
                                    temp.begin());

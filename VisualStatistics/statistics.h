@@ -7,9 +7,8 @@ class Statistics
 {
 public:
     typedef QMap<QString, QCPDataMap> NameDataMap;
-    typedef QVector<qint32> DateTimeVector;
 
-    Statistics(NameDataMap &ndm);
+    Statistics(NameDataMap &ndm, int offsetFromUtc);
 
     QList<QString> getNames() const;
     int nameCount() const;
@@ -17,12 +16,15 @@ public:
     QCPDataMap* addDataMap(const QString &name);
     bool removeDataMap(const QString &name);
 
+    int offsetFromUtc() const;
+    bool utcMode() const;
+    bool setUtcMode(bool utcMode);
     int dateTimeCount() const;
-    DateTimeVector::value_type getDateTime(int index) const;
+    uint getDateTime(int index) const;
     QString getDateTimeString(int index) const;
-    int getFirstDateTime() const;
-    int getLastDateTime() const;
-    int firstGreaterDateTimeIndex(int dateTime) const;
+    uint getFirstDateTime() const;
+    uint getLastDateTime() const;
+    int firstIndexAfterTime_t(uint time) const;
 
     static QVector<NameDataMap> divideNameDataMap(NameDataMap &ndm);
     static bool isConstantDataMap(const QCPDataMap &dm);
@@ -34,8 +36,10 @@ private:
     void translateKeys();
 
 private:
+    int m_offsetFromUtc;
+    bool m_utcMode;
     NameDataMap m_ndm;
-    DateTimeVector m_dateTimes;
+    QVector<uint> m_dateTimes;
 };
 
 #endif // STATISTICS_H

@@ -187,7 +187,7 @@ bool StatisticsFileParser::parseFileData(const IndexNameMap &inm, const QString 
     return false;
 }
 
-std::string parseHeader(const QString &path, QString &error)
+std::string parseHeader(const QString &path, int &offsetFromUtc, QString &error)
 {
     GzipFile reader;
     if (!reader.open(path)) {
@@ -203,20 +203,30 @@ std::string parseHeader(const QString &path, QString &error)
         return std::string();
     }
 
-    if (strncmp(header.c_str(), "##date;time;", 12) ||
+    if (strncmp(header.c_str(), "##date;time", 11) ||
         strcmp(header.c_str() + header.length() - 2, "##"))
     {
         error = "header format of ";
         error += path;
-        error += "is invalid";
+        error += " is invalid";
         return std::string();
     }
+
+    if (header[11] != ';') {
+        offsetFromUtc = atoi(header.c_str() + 11);
+        if (!isValieOffsetFromUtc(offsetFromUtc)) {
+            offsetFromUtc = std::numeric_limits<int>::max();
+        }
+    } else {
+        offsetFromUtc = std::numeric_limits<int>::max();
+    }
+
     return header;
 }
 
-std::string StatisticsFileParser::parseFileHeader(const QString &path, QString &error)
+std::string StatisticsFileParser::parseFileHeader(const QString &path, int &offsetFromUtc, QString &error)
 {
-    auto parseRunner = std::bind(parseHeader, std::ref(path), std::ref(error));
+    auto parseRunner = std::bind(parseHeader, std::ref(path), std::ref(offsetFromUtc), std::ref(error));
     QFutureWatcher<std::string> watcher;
     QObject::connect(&watcher, SIGNAL(finished()), &m_dialog, SLOT(accept()));
     watcher.setFuture(QtConcurrent::run(parseRunner));
@@ -464,12 +474,13 @@ static void mergeXmlHeader(XmlHeaderResult &finalResult, const XmlHeaderResult &
 }
 
 static void writeXmlHeader(ProgressDialog &dialog, volatile const bool &working,
-    GzipFile &fileWriter, const kpiKciNameNode &root, std::unordered_map<std::string, int> &indexes)
+    GzipFile &fileWriter, const std::string &offset, const kpiKciNameNode &root, std::unordered_map<std::string, int> &indexes)
 {
     int progress = 0;
     std::vector<std::string> fullNames = genFullkpiKciNames(root);
 
     fileWriter.write("##date;time", 11);
+    fileWriter.write(offset);
 
     for (int index = 0; working && index < (int)fullNames.size(); ++index) {
         const std::string &fullName = fullNames[index];
@@ -836,6 +847,15 @@ static void sortKpiKciFileNames(QStringList &filePaths, QString &error)
     });
 }
 
+static std::string getOffsetFromUtc(const QString &path)
+{
+    QDateTime beginTime = QDateTime::fromString(getBeginTimeFromKpiKciFile(path), Qt::ISODate);
+    if (beginTime.isValid()) {
+        return std::to_string(beginTime.offsetFromUtc());
+    }
+    return std::string();
+}
+
 QString StatisticsFileParser::kpiKciToCsvFormat(QStringList &filePaths, QString &error)
 {
     sortKpiKciFileNames(filePaths, error);
@@ -888,9 +908,11 @@ QString StatisticsFileParser::kpiKciToCsvFormat(QStringList &filePaths, QString 
     m_dialog.setRange(0, 100);
     m_dialog.setLabelText(QStringLiteral("Writing statistics names to file..."));
 
+    std::string offsetFromUtc = getOffsetFromUtc(filePaths.first());
+
     writeXmlHeaderWatcher.setFuture(QtConcurrent::run(
         std::bind(writeXmlHeader, std::ref(m_dialog), std::cref(working), std::ref(fileWriter),
-            std::cref(headerResult.root), std::ref(indexes))));
+            std::cref(offsetFromUtc), std::cref(headerResult.root), std::ref(indexes))));
     m_dialog.exec();
 
     if (!working) {

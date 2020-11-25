@@ -14,7 +14,7 @@ public:
     StatisticsFileParser(const StatisticsFileParser &) = delete;
     StatisticsFileParser& operator=(const StatisticsFileParser &) = delete;
 
-    std::string parseFileHeader(const QString &path, QString &error);
+    std::string parseFileHeader(const QString &path, int &offsetFromUtc, QString &error);
 
     bool parseFileData(const IndexNameMap &inm, const QString &path,
         Statistics::NameDataMap &ndm, QString &error);

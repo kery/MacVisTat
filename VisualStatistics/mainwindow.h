@@ -91,6 +91,7 @@ signals:
 
 private:
     Ui::MainWindow *m_ui;
+    int m_offsetFromUtc;
     bool m_caseSensitive;
     QLabel *m_lbStatNameInfo;
     QLabel *m_lbModulesInfo;

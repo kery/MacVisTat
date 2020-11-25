@@ -224,11 +224,14 @@ void MainWindow::parseStatFileHeader(const QString &path, QString &error)
     dialog.enableCancelButton(false);
 
     StatisticsFileParser fileParser(dialog);
-    std::string header = fileParser.parseFileHeader(path, error);
+    std::string header = fileParser.parseFileHeader(path, m_offsetFromUtc, error);
     if (error.isEmpty() && header.length() > 0) {
         StatisticsNameModel *model = static_cast<StatisticsNameModel*>(m_ui->lvStatName->model());
         StatisticsNameModel::StatisticsNames statNames;
-        splitString(header.c_str() + sizeof("##date;time;") - 1, ';', statNames);
+
+        const char *ptr = strchr(header.c_str(), ';');
+        ptr = strchr(ptr + 1, ';');
+        splitString(ptr + 1, ';', statNames);
         statNames.back().erase(statNames.back().length() - 2);
         model->setStatisticsNames(statNames);
 
@@ -337,14 +340,14 @@ void MainWindow::handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWin
             {
                 continue;
             }
-            Statistics stat(tempNdm);
+            Statistics stat(tempNdm, m_offsetFromUtc);
             PlotWindow *plotWindow = new PlotWindow(stat);
             plotWindow->setAttribute(Qt::WA_DeleteOnClose);
             connect(this, SIGNAL(aboutToBeClosed()), plotWindow, SLOT(close()));
             plotWindow->showMaximized();
         }
     } else {
-        Statistics stat(ndm);
+        Statistics stat(ndm, m_offsetFromUtc);
         PlotWindow *plotWindow = new PlotWindow(stat);
         plotWindow->setAttribute(Qt::WA_DeleteOnClose);
         connect(this, SIGNAL(aboutToBeClosed()), plotWindow, SLOT(close()));
