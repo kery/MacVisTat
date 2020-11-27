@@ -325,9 +325,8 @@ void MainWindow::parseStatFileData(bool multipleWindows)
 
 bool MainWindow::checkFileName(const QString &path)
 {
-    QRegExp regExp("^(.+)__.+\\.csv\\.gz$");
-    QFileInfo fileInfo(path);
-    return regExp.exactMatch(fileInfo.fileName());
+    return path.endsWith(QLatin1String(".csv"), Qt::CaseInsensitive) ||
+            path.endsWith(QLatin1String(".csv.gz"), Qt::CaseInsensitive);
 }
 
 void MainWindow::handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWindows)
@@ -711,7 +710,7 @@ void MainWindow::on_actionOpen_triggered()
 {
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::ExistingFile);
-    fileDialog.setNameFilter(QStringLiteral("Statistics File (*.csv.gz)"));
+    fileDialog.setNameFilter(QStringLiteral("Statistics File (*.csv *.csv.gz)"));
 
     if (fileDialog.exec() == QDialog::Accepted) {
         QStringList strList = fileDialog.selectedFiles();
