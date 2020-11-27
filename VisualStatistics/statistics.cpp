@@ -36,8 +36,8 @@ bool Statistics::isConstantDataMap(const QCPDataMap &dm)
 
 QString Statistics::getModuleFromStatName(const std::string &statName)
 {
-    auto pos = statName.find(',');
-    if (pos > 0) {
+    std::string::size_type pos = statName.find(',');
+    if (pos != std::string::npos && pos != 0) {
         return QString(statName.substr(0, pos).c_str());
     }
     return QString();
@@ -92,9 +92,9 @@ QCPDataMap* Statistics::addDataMap(const QString &name)
 
 bool Statistics::removeDataMap(const QString &name)
 {
-    auto pos = m_ndm.find(name);
-    if (pos != m_ndm.end()) {
-        m_ndm.erase(pos);
+    auto iter = m_ndm.find(name);
+    if (iter != m_ndm.end()) {
+        m_ndm.erase(iter);
         return true;
     }
     return false;
