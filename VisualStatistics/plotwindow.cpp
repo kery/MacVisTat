@@ -27,7 +27,6 @@ PlotWindow::PlotWindow(Statistics &stat) :
     m_tracer = new QCPItemTracer(m_ui->customPlot);
     m_tracer->setInterpolating(true);
     m_tracer->setStyle(QCPItemTracer::tsCircle);
-    m_tracer->setSelectable(false);
     m_tracer->setLayer(QStringLiteral("valuetip"));
     m_tracer->setVisible(false);
 
@@ -46,7 +45,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
         if (this->m_animation.direction() == QAbstractAnimation::Backward) {
             m_valueText->setVisible(false);
             m_tracer->setVisible(false);
-            m_tracer->setGraph(nullptr);
+            setTracerGraph(nullptr);
             this->m_ui->customPlot->replot(QCustomPlot::rpQueued);
         }
     });
@@ -416,6 +415,20 @@ int PlotWindow::getLegendItemIndex(QCPAbstractLegendItem *item) const
     return -1;
 }
 
+void PlotWindow::setTracerGraph(QCPGraph *graph)
+{
+    if (m_tracer->graph() != nullptr) {
+        disconnect(m_tracer, &QCPItemTracer::selectionChanged, m_tracer->graph(), &QCPGraph::setSelected);
+        disconnect(m_tracer->graph(), &QCPGraph::selectionChanged, m_tracer, &QCPItemTracer::setSelected);
+    }
+
+    m_tracer->setGraph(graph);
+    if (graph != nullptr) {
+        connect(m_tracer, &QCPItemTracer::selectionChanged, graph, &QCPGraph::setSelected);
+        connect(graph, &QCPGraph::selectionChanged, m_tracer, &QCPItemTracer::setSelected);
+    }
+}
+
 void PlotWindow::adjustTicks()
 {
     QCustomPlot *plot = m_ui->customPlot;
@@ -536,10 +549,12 @@ void PlotWindow::mouseMove(QMouseEvent *event)
             pen.setWidth(2);
 
             m_tracer->setPen(pen);
+            m_tracer->setSelectedPen(pen);
             m_tracer->setBrush(color);
+            m_tracer->setSelectedBrush(color);
         }
 
-        m_tracer->setGraph(graph);
+        setTracerGraph(graph);
         m_tracer->setGraphKey(index);
         m_tracer->setVisible(true);
 

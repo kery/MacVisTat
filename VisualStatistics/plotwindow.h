@@ -54,6 +54,8 @@ private:
 
     int getLegendItemIndex(QCPAbstractLegendItem *item) const;
 
+    void setTracerGraph(QCPGraph *graph);
+
 private slots:
     void adjustTicks();
     void selectionChanged();
