@@ -100,6 +100,18 @@ bool Statistics::removeDataMap(const QString &name)
     return false;
 }
 
+uint Statistics::getSampleInterval() const
+{
+    uint interval = std::numeric_limits<uint>::max();
+    for (int i = 1; i < m_dateTimes.size(); ++i) {
+        uint diff = m_dateTimes[i] - m_dateTimes[i - 1];
+        if (diff < interval) {
+            interval = diff;
+        }
+    }
+    return interval;
+}
+
 int Statistics::offsetFromUtc() const
 {
     return m_offsetFromUtc;

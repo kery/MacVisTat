@@ -71,6 +71,7 @@ PlotWindow::PlotWindow(Statistics &stat) :
 
     setFocus();
     initializePlot();
+    markDiscontinuousTime();
 
     updateWindowTitle();
     updatePlotTitle();
@@ -210,6 +211,25 @@ void PlotWindow::initializePlot()
     plot->rescaleAxes();
     adjustYAxisRange(plot->yAxis);
     plot->replot(QCustomPlot::rpQueued);
+}
+
+void PlotWindow::markDiscontinuousTime()
+{
+    QPen pen(Qt::red);
+    pen.setStyle(Qt::DotLine);
+
+    uint interval = m_stat.getSampleInterval();
+
+    for (int i = 1; i < m_stat.dateTimeCount(); ++i) {
+        double diff = m_stat.getDateTime(i) - m_stat.getDateTime(i - 1);
+        if (diff > double(interval * 1.5)) {
+            QCPItemStraightLine *line = new QCPItemStraightLine(m_ui->customPlot);
+            line->setPen(pen);
+            line->point1->setCoords(i, -1.0);
+            line->point2->setCoords(i, 1.0);
+            m_ui->customPlot->addItem(line);
+        }
+    }
 }
 
 void PlotWindow::connectXAxisRangeChanged()

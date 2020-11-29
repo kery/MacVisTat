@@ -29,6 +29,7 @@ public:
 
 private:
     void initializePlot();
+    void markDiscontinuousTime();
 
     void connectXAxisRangeChanged();
     void disconnectXAxisRangeChanged();

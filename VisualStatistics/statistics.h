@@ -16,6 +16,8 @@ public:
     QCPDataMap* addDataMap(const QString &name);
     bool removeDataMap(const QString &name);
 
+    uint getSampleInterval() const;
+
     int offsetFromUtc() const;
     bool utcMode() const;
     bool setUtcMode(bool utcMode);
