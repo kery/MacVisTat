@@ -275,7 +275,7 @@ QVector<double> PlotWindow::calcTickVector(int plotWidth, int fontHeight, const 
         }
     }
 
-    updateScatter(result, plotWidth);
+    updateScatter(result, plotWidth, fontHeight);
 
     return result;
 }
@@ -303,7 +303,7 @@ void PlotWindow::calcDelta(QCPGraph *graph)
     data->begin()->value = 0;
 }
 
-bool PlotWindow::shouldDrawScatter(const QVector<double> &tickVector, int plotWidth) const
+bool PlotWindow::shouldDrawScatter(const QVector<double> &tickVector, int plotWidth, int fontHeight) const
 {
     if (tickVector.size() < 2) {
         return false;
@@ -323,16 +323,14 @@ bool PlotWindow::shouldDrawScatter(const QVector<double> &tickVector, int plotWi
         tickCount += range.upper - tickVector.last();
     }
 
-    const int MIN_SPACE = 20;
-
-    return (plotWidth / tickCount) > MIN_SPACE;
+    return (plotWidth / tickCount) >= fontHeight;
 }
 
-void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth)
+void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth, int fontHeight)
 {
     QCustomPlot *plot = m_ui->customPlot;
 
-    if (shouldDrawScatter(tickVector, plotWidth)) {
+    if (shouldDrawScatter(tickVector, plotWidth, fontHeight)) {
         if (!m_hasScatter) {
             m_hasScatter = true;
             for (int i = 0; i < plot->graphCount(); ++i) {

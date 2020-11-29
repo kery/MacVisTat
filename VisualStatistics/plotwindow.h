@@ -42,8 +42,8 @@ private:
 
     void calcDelta(QCPGraph *graph);
 
-    bool shouldDrawScatter(const QVector<double> &tickVector, int plotWidth) const;
-    void updateScatter(const QVector<double> &tickVector, int plotWidth);
+    bool shouldDrawScatter(const QVector<double> &tickVector, int plotWidth, int fontHeight) const;
+    void updateScatter(const QVector<double> &tickVector, int plotWidth, int fontHeight);
 
     QCPGraph * findNearestGraphValue(int index, double yCoord, double &value);
 
