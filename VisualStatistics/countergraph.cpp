@@ -152,3 +152,8 @@ void CounterGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatte
       }
     }
 }
+
+QCPRange CounterGraph::getValueRange(bool &foundRange, SignDomain inSignDomain) const
+{
+    return QCPGraph::getValueRange(foundRange, inSignDomain, false);
+}
