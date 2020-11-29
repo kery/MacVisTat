@@ -210,7 +210,6 @@ void PlotWindow::initializePlot()
 
     plot->rescaleAxes();
     adjustYAxisRange(plot->yAxis);
-    plot->replot(QCustomPlot::rpQueued);
 }
 
 void PlotWindow::markDiscontinuousTime()
