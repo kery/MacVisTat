@@ -206,6 +206,7 @@ void PlotWindow::initializePlot()
         if (showSuspectFlag) {
             graph->enableSuspectFlag(true);
         }
+        graph->enableDiscontinuousFlag(true);
     }
 
     plot->rescaleAxes();

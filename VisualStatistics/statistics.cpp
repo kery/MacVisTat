@@ -191,13 +191,19 @@ void Statistics::translateKeys()
 {
     for (QCPDataMap &dataMap : m_ndm) {
         QCPDataMap tempDataMap;
+        QVector<uint>::difference_type curKey, lastKey = -1;
         auto searchFrom = m_dateTimes.begin();
         for (const QCPData &data : dataMap) {
             QCPData tempData;
             auto iter = std::lower_bound(searchFrom, m_dateTimes.end(), data.key);
-            tempData.key = iter - m_dateTimes.begin();
+            curKey = iter - m_dateTimes.begin();
+            tempData.key = curKey;
             tempData.value = data.value;
             tempData.valueErrorMinus = data.valueErrorMinus;
+            if (lastKey != -1 && curKey - lastKey > 1) {
+                tempData.valueErrorPlus = 1.0;
+            }
+            lastKey = curKey;
             tempDataMap.insert(tempData.key, tempData);
             searchFrom = iter;
         }
