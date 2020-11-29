@@ -81,6 +81,7 @@ MainWindow::MainWindow() :
     m_ui->cbRegExpFilter->lineEdit()->setClearButtonEnabled(true);
     connectClearButtonSignal();
     m_ui->cbRegExpFilter->completer()->setCaseSensitivity(Qt::CaseSensitive);
+    m_ui->cbRegExpFilter->completer()->setCompletionMode(QCompleter::PopupCompletion);
     m_ui->cbRegExpFilter->lineEdit()->setPlaceholderText(QStringLiteral("regular expression filter"));
     connect(m_ui->cbRegExpFilter, SIGNAL(activated(int)), this, SLOT(updateFilterPattern()));
     connect(m_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::cbRegExpFilterEditReturnPressed);
