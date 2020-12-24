@@ -74,6 +74,7 @@ private slots:
     void showLegendTriggered(bool checked);
     void showModuleNameTriggered(bool checked);
     void displayUtcTimeTriggered(bool checked);
+    void removeBackgroundTriggered(bool checked);
     void updateDateTimeEdit(const QCPRange &newRange);
     void fromDateTimeChanged(const QDateTime &dateTime);
     void toDateTimeChanged(const QDateTime &dateTime);

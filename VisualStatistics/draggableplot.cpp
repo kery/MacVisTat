@@ -15,6 +15,25 @@ void DraggablePlot::mousePressEvent(QMouseEvent *event)
     } else {
         _dragStartPos.setX(-1);
         _dragStartPos.setY(-1);
+
+        if (event->button() == Qt::RightButton && QGuiApplication::keyboardModifiers() & Qt::ControlModifier) {
+            QPixmap bgImg = toPixmap();
+            QByteArray bgData;
+            QDataStream stream(&bgData, QIODevice::WriteOnly);
+            stream << bgImg << window()->size() << axisRect()->margins();
+
+            QMimeData *mimeData = new QMimeData();
+            mimeData->setData(QStringLiteral("application/visualstat-bg"), bgData);
+
+            QDrag *drag = new QDrag(this);
+            drag->setMimeData(mimeData);
+            drag->setPixmap(bgImg.scaledToWidth(160, Qt::SmoothTransformation));
+
+            double scaleRatio = double(160)/bgImg.width();
+            QPoint pos = event->pos();
+            drag->setHotSpot(QPoint(pos.x()*scaleRatio, pos.y()*scaleRatio));
+            drag->exec(Qt::CopyAction);
+        }
     }
 
     QCustomPlot::mousePressEvent(event);
@@ -86,6 +105,9 @@ void DraggablePlot::dragEnterEvent(QDragEnterEvent *event)
             event->source() == this)
     {
         event->acceptProposedAction();
+    } else if (event->mimeData()->hasFormat(QStringLiteral("application/visualstat-bg")) &&
+               event->source() != this) {
+        event->acceptProposedAction();
     }
 }
 
@@ -106,7 +128,21 @@ void DraggablePlot::dropEvent(QDropEvent *event)
         layout->setInsetRect(0, QRectF((newPos.x() - insetLayoutRect.left())/insetLayoutRect.width(),
                                        (newPos.y() - insetLayoutRect.top())/insetLayoutRect.height(),
                                        0, 0));
-        replot();
+        replot(rpQueued);
+    } else if (event->mimeData()->hasFormat(QStringLiteral("application/visualstat-bg"))) {
+        QByteArray bgData = event->mimeData()->data(QStringLiteral("application/visualstat-bg"));
+        QDataStream stream(&bgData, QIODevice::ReadOnly);
+
+        QPixmap pixmap;
+        QSize wndSize;
+        QMargins margins;
+        stream >> pixmap >> wndSize >> margins;
+
+        setBackground(pixmap);
+        axisRect()->setAutoMargins(QCP::msTop|QCP::msRight|QCP::msBottom);
+        axisRect()->setMargins(margins);
+        window()->resize(wndSize);
+        replot(rpQueued);
     }
 }
 

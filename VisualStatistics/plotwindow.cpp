@@ -658,6 +658,11 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         actionDisplayUtc->setEnabled(false);
     }
 
+    QAction *actionRemoveBg = menu->addAction(QStringLiteral("Remove Background"), this, &PlotWindow::removeBackgroundTriggered);
+    if (plot->background().isNull()) {
+        actionRemoveBg->setEnabled(false);
+    }
+
     menu->addSeparator();
 
     QAction *actionAddGraph = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
@@ -899,6 +904,16 @@ void PlotWindow::displayUtcTimeTriggered(bool checked)
         updatePlotTitle();
         plot->replot(QCustomPlot::rpQueued);
     }
+}
+
+void PlotWindow::removeBackgroundTriggered(bool checked)
+{
+    Q_UNUSED(checked)
+
+    QCustomPlot *plot = m_ui->customPlot;
+    plot->setBackground(QPixmap());
+    plot->axisRect()->setAutoMargins(QCP::msAll);
+    plot->replot(QCustomPlot::rpQueued);
 }
 
 void PlotWindow::updateDateTimeEdit(const QCPRange &newRange)
