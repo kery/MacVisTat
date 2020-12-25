@@ -683,7 +683,7 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         actionRemoveUnsel->setEnabled(false);
     }
 
-    if (plot->graphCount() < 2) {
+    if (plot->graphCount() < 2 || plot->legend->selectedItems().size() == 1) {
         actionAddGraph->setEnabled(false);
     }
 

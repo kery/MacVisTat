@@ -138,7 +138,7 @@ void DraggablePlot::dropEvent(QDropEvent *event)
         QMargins margins;
         stream >> pixmap >> wndSize >> margins;
 
-        setBackground(pixmap);
+        setBackground(pixmap, false);
         axisRect()->setAutoMargins(QCP::msTop|QCP::msRight|QCP::msBottom);
         axisRect()->setMargins(margins);
         window()->resize(wndSize);
