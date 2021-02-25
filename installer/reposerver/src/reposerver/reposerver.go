@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"sync"
 	"text/tabwriter"
 )
@@ -41,8 +42,15 @@ func fileStatHandler(w http.ResponseWriter, r *http.Request) {
 	tw := tabwriter.NewWriter(w, 0, 0, 4, ' ', 0)
 
 	mutex.Lock()
-	for name, count := range fileStat {
-		fmt.Fprintf(tw, "%s: \t%d\n", name, count)
+	if n := len(fileStat); n > 0 {
+		keys := make([]string, 0, n)
+		for name := range fileStat {
+			keys = append(keys, name)
+		}
+		sort.Strings(keys)
+		for _, name := range keys {
+			fmt.Fprintf(tw, "%s \t%d\n", name, fileStat[name])
+		}
 	}
 	mutex.Unlock()
 
