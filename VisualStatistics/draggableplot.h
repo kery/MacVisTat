@@ -18,6 +18,7 @@ protected:
     virtual void dropEvent(QDropEvent *event);
 
 private:
+    QPixmap toBackgroundPixmap();
     int calcLegendPixmapHeight(QPoint &hotSpot);
 
 private:

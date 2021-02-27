@@ -17,7 +17,7 @@ void DraggablePlot::mousePressEvent(QMouseEvent *event)
         _dragStartPos.setY(-1);
 
         if (event->button() == Qt::RightButton && QGuiApplication::keyboardModifiers() & Qt::ControlModifier) {
-            QPixmap bgImg = toPixmap();
+            QPixmap bgImg = toBackgroundPixmap();
             QByteArray bgData;
             QDataStream stream(&bgData, QIODevice::WriteOnly);
             stream << bgImg << window()->size() << axisRect()->margins();
@@ -144,6 +144,22 @@ void DraggablePlot::dropEvent(QDropEvent *event)
         window()->resize(wndSize);
         replot(rpQueued);
     }
+}
+
+QPixmap DraggablePlot::toBackgroundPixmap()
+{
+    QString label = xAxis2->label();
+    QColor labelColor = xAxis->tickLabelColor();
+
+    xAxis2->setLabel(" ");
+    xAxis->setTickLabelColor(mBackgroundBrush.color());
+    yAxis->setTickLabelColor(Qt::darkGray);
+    QPixmap result = toPixmap();
+    yAxis->setTickLabelColor(labelColor);
+    xAxis->setTickLabelColor(labelColor);
+    xAxis2->setLabel(label);
+
+    return result;
 }
 
 int DraggablePlot::calcLegendPixmapHeight(QPoint &hotSpot)
