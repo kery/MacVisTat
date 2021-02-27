@@ -188,7 +188,7 @@ void PlotWindow::initializePlot()
     connect(plot, &QCustomPlot::mouseMove, this, &PlotWindow::mouseMove);
     connect(plot, &QCustomPlot::mouseWheel, this, &PlotWindow::mouseWheel);
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
-    connect(plot, &QCustomPlot::legendDoubleClick, this, &PlotWindow::legendDoubleClick);
+    connect(plot, &QCustomPlot::mouseDoubleClick, this, &PlotWindow::plotDoubleClick);
 
     QSettings settings;
     bool showSuspectFlag = settings.value(QStringLiteral("showSuspectFlag"), true).toBool();
@@ -694,28 +694,40 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     menu->popup(plot->mapToGlobal(pos));
 }
 
-void PlotWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *item)
+void PlotWindow::plotDoubleClick(QMouseEvent *event)
 {
-    Q_UNUSED(legend)
+    QVector<QCPGraph *> graphs;
+    DraggablePlot *plot = m_ui->customPlot;
 
-    if (item) {
-        QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
-        CounterGraph *graph = qobject_cast<CounterGraph *>(plItem->plottable());
-
-        QColor color = QColorDialog::getColor(graph->pen().color(), this);
-        if (color.isValid()) {
-            graph->setPen(color);
-            graph->setSelectedPen(graph->pen());
-
-            QCPScatterStyle scatterStyle = graph->scatterStyle();
-            if (scatterStyle.shape() != QCPScatterStyle::ssNone) {
-                scatterStyle.setPen(color);
-                graph->setScatterStyle(scatterStyle);
-            }
-
-            m_ui->customPlot->replot(QCustomPlot::rpQueued);
+    if (m_ui->customPlot->legend->outerRect().contains(event->pos())) {
+        if (QCPGraph *graph = plot->graphAtPosInLegend(event->pos())) {
+            graphs.append(graph);
+        }
+    } else {
+        for (int i = 0; i < plot->graphCount(); ++i) {
+            graphs.append(plot->graph(i));
         }
     }
+    if (graphs.isEmpty()) {
+        return;
+    }
+
+    QColor color = QColorDialog::getColor(graphs.first()->pen().color(), this);
+    if (!color.isValid()) {
+        return;
+    }
+
+    for (QCPGraph *graph : graphs) {
+        graph->setPen(color);
+        graph->setSelectedPen(graph->pen());
+
+        QCPScatterStyle scatterStyle = graph->scatterStyle();
+        if (scatterStyle.shape() != QCPScatterStyle::ssNone) {
+            scatterStyle.setPen(color);
+            graph->setScatterStyle(scatterStyle);
+        }
+    }
+    m_ui->customPlot->replot(QCustomPlot::rpQueued);
 }
 
 static QRectF translateToInsetRect(QCPLayoutInset *layout, const QRectF &rect)

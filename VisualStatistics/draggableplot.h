@@ -10,6 +10,8 @@ class DraggablePlot : public QCustomPlot
 public:
     DraggablePlot(QWidget *parent);
 
+    QCPGraph * graphAtPosInLegend(const QPoint &pos);
+
 protected:
     virtual void mousePressEvent(QMouseEvent *event);
     virtual void mouseMoveEvent(QMouseEvent *event);

@@ -6,6 +6,16 @@ DraggablePlot::DraggablePlot(QWidget *parent) :
     setAcceptDrops(true);
 }
 
+QCPGraph * DraggablePlot::graphAtPosInLegend(const QPoint &pos)
+{
+    QCPLayerable *clickedLayerable = layerableAt(pos, false, nullptr);
+    if (QCPAbstractLegendItem *li = qobject_cast<QCPAbstractLegendItem*>(clickedLayerable)) {
+        QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(li);
+        return qobject_cast<QCPGraph *>(plItem->plottable());
+    }
+    return nullptr;
+}
+
 void DraggablePlot::mousePressEvent(QMouseEvent *event)
 {
     if (legend->visible() && legend->selectTest(event->pos(), false) >= 0 &&
