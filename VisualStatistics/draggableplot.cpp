@@ -163,7 +163,7 @@ QPixmap DraggablePlot::toBackgroundPixmap()
 
     xAxis2->setLabel(" ");
     xAxis->setTickLabelColor(mBackgroundBrush.color());
-    yAxis->setTickLabelColor(Qt::darkGray);
+    yAxis->setTickLabelColor(graphCount() > 0 ? graph(graphCount() - 1)->pen().color() : Qt::darkGray);
     QPixmap result = toPixmap();
     yAxis->setTickLabelColor(labelColor);
     xAxis->setTickLabelColor(labelColor);
