@@ -57,6 +57,12 @@ private:
 
     void setTracerGraph(QCPGraph *graph);
 
+    int graphIndex(QCPGraph *graph) const;
+    QCPGraph * prevGraph(QCPGraph *graph) const;
+    QCPGraph * nextGraph(QCPGraph *graph) const;
+
+    virtual void keyPressEvent(QKeyEvent *event);
+
 private slots:
     void adjustTicks();
     void selectionChanged();

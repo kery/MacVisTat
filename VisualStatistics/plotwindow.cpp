@@ -444,6 +444,45 @@ void PlotWindow::setTracerGraph(QCPGraph *graph)
     }
 }
 
+int PlotWindow::graphIndex(QCPGraph *graph) const
+{
+    for (int i = 0; i < m_ui->customPlot->graphCount(); ++i) {
+        if (graph == m_ui->customPlot->graph(i)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+QCPGraph * PlotWindow::prevGraph(QCPGraph *graph) const
+{
+    int index = graphIndex(graph);
+    return index <= 0 ? nullptr : m_ui->customPlot->graph(index - 1);
+}
+
+QCPGraph * PlotWindow::nextGraph(QCPGraph *graph) const
+{
+    int nextIndex = graphIndex(graph) + 1;
+    return nextIndex == 0 || nextIndex >= m_ui->customPlot->graphCount() ? nullptr : m_ui->customPlot->graph(nextIndex);
+}
+
+void PlotWindow::keyPressEvent(QKeyEvent *event)
+{
+    QList<QCPGraph *> graphs = m_ui->customPlot->selectedGraphs();
+    if (graphs.size() != 1 || (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down)) {
+        QMainWindow::keyPressEvent(event);
+        return;
+    }
+
+    QCPGraph *selGraph = event->key() == Qt::Key_Down ? nextGraph(graphs.first()) : prevGraph(graphs.first());
+    if (selGraph) {
+        graphs.first()->setSelected(false);
+        selGraph->setSelected(true);
+        selectionChanged();
+        m_ui->customPlot->replot(QCustomPlot::rpQueued);
+    }
+}
+
 void PlotWindow::adjustTicks()
 {
     QCustomPlot *plot = m_ui->customPlot;
