@@ -36,11 +36,6 @@ MainWindow::MainWindow() :
     m_ui->splitterVer->setSizes(QList<int>() << height() - 80 << 80);
     m_ui->splitterVer->setStretchFactor(0, 1);
     m_ui->splitterVer->setStretchFactor(1, 0);
-    // a value smaller than the minimal size hint of the respective widget will
-    // be replaced by the value of the hint.
-    m_ui->splitterVer2->setSizes(QList<int>() << 1 << 10);
-    m_ui->splitterVer2->setStretchFactor(0, 0);
-    m_ui->splitterVer2->setStretchFactor(1, 1);
 
     QToolButton *toolButton = new QToolButton();
     QFont font = toolButton->font();
@@ -177,14 +172,13 @@ void MainWindow::openStatFile(QString &path)
 {
     translateToLocalPath(path);
 
-    if (m_ui->lwStatFiles->count() > 0) {
-        QListWidgetItem *item = m_ui->lwStatFiles->item(0);
+    if (!m_statFilePath.isEmpty()) {
 #if defined(Q_OS_WIN)
         Qt::CaseSensitivity cs = Qt::CaseInsensitive;
 #else
         Qt::CaseSensitivity cs = Qt::CaseSensitive;
 #endif
-        if (item->toolTip().compare(path, cs)) {
+        if (m_statFilePath.compare(path, cs)) {
             on_actionClose_triggered();
         } else {
             return;
@@ -198,7 +192,8 @@ void MainWindow::openStatFile(QString &path)
         return;
     }
 
-    addStatFileToListWidget(path);
+    m_statFilePath = path;
+    setWindowTitle("Visual Statistics - " + path);
 
     m_ui->cbRegExpFilter->lineEdit()->setFocus();
 
@@ -249,16 +244,6 @@ void MainWindow::parseStatFileHeader(const QString &path, QString &error)
     }
 }
 
-void MainWindow::addStatFileToListWidget(const QString &path)
-{
-    QFileInfo fileInfo(path);
-    QIcon icon(QStringLiteral(":/resource/image/archive.png"));
-    QListWidgetItem *item = new QListWidgetItem(icon, fileInfo.fileName());
-
-    item->setToolTip(path);
-    m_ui->lwStatFiles->addItem(item);
-}
-
 void MainWindow::translateToLocalPath(QString &path)
 {
     path = QDir::toNativeSeparators(path);
@@ -266,7 +251,7 @@ void MainWindow::translateToLocalPath(QString &path)
 
 void MainWindow::parseStatFileData(bool multipleWindows)
 {   
-    if (m_ui->lwStatFiles->count() <= 0) {
+    if (m_statFilePath.isEmpty()) {
         return;
     }
 
@@ -312,10 +297,9 @@ void MainWindow::parseStatFileData(bool multipleWindows)
     dialog.setLabelText(QStringLiteral("Parsing statistics file..."));
 
     StatisticsFileParser fileParser(dialog);
-    QString path = m_ui->lwStatFiles->item(0)->toolTip();
     Statistics::NameDataMap ndm;
     QString error;
-    if (fileParser.parseFileData(indexNameMap, path, ndm, error)) {
+    if (fileParser.parseFileData(indexNameMap, m_statFilePath, ndm, error)) {
         if (!error.isEmpty()) {
             appendLogError(error);
         } else if (!ndm.isEmpty()) {
@@ -756,7 +740,8 @@ void MainWindow::on_actionClose_triggered()
 {
     static_cast<StatisticsNameModel*>(m_ui->lvStatName->model())->clearStatisticsNames();
     m_ui->lwModules->clear();
-    m_ui->lwStatFiles->clear();
+    m_statFilePath.clear();
+    setWindowTitle(QStringLiteral("Visual Statistics"));
 }
 
 void MainWindow::on_actionPlot_triggered()

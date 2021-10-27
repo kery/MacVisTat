@@ -31,7 +31,6 @@ private:
 
     void openStatFile(QString &path);
     void parseStatFileHeader(const QString &path, QString &error);
-    void addStatFileToListWidget(const QString &path);
     void translateToLocalPath(QString &path);
     void parseStatFileData(bool multipleWindows);
     void handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWindows);
@@ -93,6 +92,7 @@ private:
     Ui::MainWindow *m_ui;
     int m_offsetFromUtc;
     bool m_caseSensitive;
+    QString m_statFilePath;
     QLabel *m_lbStatNameInfo;
     QLabel *m_lbModulesInfo;
     QAction *m_sepAction;
