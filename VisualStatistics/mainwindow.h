@@ -66,10 +66,8 @@ private slots:
     void updateFilterPattern();
     void listViewDoubleClicked(const QModelIndex &index);
     void logEditContextMenuRequest(const QPoint &pos);
-    void lvStatNameCtxMenuRequest(const QPoint &pos);
-    void lwModulesCtxMenuRequest(const QPoint &pos);
+    void listViewCtxMenuRequest(const QPoint &pos);
     void clearLogEdit();
-    void copyLvStatNameSelected();
     void updateStatNameInfo();
     void updateModulesInfo();
     void addRecentFile();

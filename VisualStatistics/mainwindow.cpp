@@ -85,8 +85,8 @@ MainWindow::MainWindow() :
     connect(m_ui->lwModules, &QListWidget::itemSelectionChanged, this, &MainWindow::updateModulesInfo);
 
     connect(m_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logEditContextMenuRequest);
-    connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::lvStatNameCtxMenuRequest);
-    connect(m_ui->lwModules, &QListWidget::customContextMenuRequested, this, &MainWindow::lwModulesCtxMenuRequest);
+    connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::listViewCtxMenuRequest);
+    connect(m_ui->lwModules, &QListWidget::customContextMenuRequested, this, &MainWindow::listViewCtxMenuRequest);
 
 #ifdef INSTALLER
     startCheckNewVersionTask();
@@ -622,40 +622,29 @@ void MainWindow::logEditContextMenuRequest(const QPoint &pos)
     menu->popup(m_ui->logTextEdit->mapToGlobal(pos));
 }
 
-void MainWindow::lvStatNameCtxMenuRequest(const QPoint &pos)
+void MainWindow::listViewCtxMenuRequest(const QPoint &pos)
 {
+    QListView *view = qobject_cast<QListView *>(sender());
     QMenu *menu = new QMenu();
+
     menu->setAttribute(Qt::WA_DeleteOnClose);
-    menu->addAction(QStringLiteral("Copy Selected"), this, SLOT(copyLvStatNameSelected()));
-    menu->addAction(QStringLiteral("Clear Selection"), m_ui->lvStatName, SLOT(clearSelection()));
-
-    menu->popup(m_ui->lvStatName->mapToGlobal(pos));
-}
-
-void MainWindow::lwModulesCtxMenuRequest(const QPoint &pos)
-{
-    QMenu *menu = new QMenu();
-    menu->setAttribute(Qt::WA_DeleteOnClose);
-    menu->addAction(QStringLiteral("Clear Selection"), m_ui->lwModules, SLOT(clearSelection()));
-
-    menu->popup(m_ui->lwModules->mapToGlobal(pos));
+    menu->addAction(QStringLiteral("Copy Selected"), [view](){
+        QModelIndexList indexList = view->selectionModel()->selectedIndexes();
+        if (indexList.size() > 0) {
+            QStringList stringList;
+            for (const QModelIndex &index : indexList) {
+                stringList << view->model()->data(index).toString();
+            }
+            QApplication::clipboard()->setText(stringList.join(QStringLiteral("\n")));
+        }
+    });
+    menu->addAction(QStringLiteral("Clear Selection"), view, SLOT(clearSelection()));
+    menu->popup(view->mapToGlobal(pos));
 }
 
 void MainWindow::clearLogEdit()
 {
     m_ui->logTextEdit->clear();
-}
-
-void MainWindow::copyLvStatNameSelected()
-{
-    QModelIndexList indexList = m_ui->lvStatName->selectionModel()->selectedIndexes();
-    if (indexList.size() > 0) {
-        QStringList stringList;
-        for (const QModelIndex &index : indexList) {
-            stringList << m_ui->lvStatName->model()->data(index).toString();
-        }
-        QApplication::clipboard()->setText(stringList.join(QStringLiteral("\n")));
-    }
 }
 
 void MainWindow::updateStatNameInfo()

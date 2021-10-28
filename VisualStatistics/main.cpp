@@ -50,6 +50,11 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Nokia");
     QCoreApplication::setApplicationName("VisualStatistics");
 
+    QSettings settings;
+    if (settings.value(QStringLiteral("fusionStyle"), true).toBool()) {
+        app.setStyle(QStyleFactory::create("fusion"));
+    }
+
     // Close stdin so that calling lua functions, which reads stdin, from
     // script window will not hang UI thread.
     fclose(stdin);

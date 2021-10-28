@@ -26,9 +26,15 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
+      <property name="childrenCollapsible">
+       <bool>false</bool>
+      </property>
       <widget class="QSplitter" name="splitterHor">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="childrenCollapsible">
+        <bool>false</bool>
        </property>
        <widget class="QListWidget" name="lwModules">
         <property name="contextMenuPolicy">
