@@ -1,5 +1,5 @@
-#include "changelogdialog.h"
-#include "ui_changelogdialog.h"
+#include "ChangeLogDialog.h"
+#include "ui_ChangeLogDialog.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkProxyQuery>

@@ -3,8 +3,8 @@
 #pragma warning(disable: 4244)
 #endif
 
-#include "statistics.h"
-#include "utils.h"
+#include "Statistics.h"
+#include "Utils.h"
 
 QVector<Statistics::NameDataMap> Statistics::divideNameDataMap(NameDataMap &ndm)
 {

@@ -1,10 +1,10 @@
 #ifndef PLOTWINDOW_H
 #define PLOTWINDOW_H
 
-#include "statistics.h"
-#include "colormanager.h"
-#include "valuetext.h"
-#include "countergraph.h"
+#include "Statistics.h"
+#include "ColorManager.h"
+#include "ValueText.h"
+#include "CounterGraph.h"
 
 namespace Ui {
 class PlotWindow;

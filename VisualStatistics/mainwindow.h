@@ -5,7 +5,7 @@
 #include <QLabel>
 #include <QNetworkReply>
 #include <array>
-#include "statistics.h"
+#include "Statistics.h"
 
 namespace Ui {
 class MainWindow;

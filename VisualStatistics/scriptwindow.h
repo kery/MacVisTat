@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <Qsci/qsciscintilla.h>
 
-#include "luaenvironment.h"
+#include "LuaEnvironment.h"
 
 namespace Ui {
 class ScriptWindow;

@@ -1,5 +1,5 @@
-#include "statisticsnamemodel.h"
-#include "statistics.h"
+#include "StatisticsNameModel.h"
+#include "Statistics.h"
 #include <set>
 #include <QSet>
 

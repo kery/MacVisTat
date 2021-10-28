@@ -1,5 +1,5 @@
-#include "progressdialog.h"
-#include "ui_progressdialog.h"
+#include "ProgressDialog.h"
+#include "ui_ProgressDialog.h"
 
 #include <QKeyEvent>
 

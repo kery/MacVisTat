@@ -1,5 +1,5 @@
-#include "countergraph.h"
-#include "counterlegenditem.h"
+#include "CounterGraph.h"
+#include "CounterLegendItem.h"
 
 const double CounterGraph::ScatterSize = 6.0;
 

@@ -1,4 +1,4 @@
-#include "scilexerlua5_2.h"
+#include "SciLexerLua5_2.h"
 
 SciLexerLua5_2::SciLexerLua5_2(QObject *parent) :
     QsciLexerLua(parent)

@@ -1,5 +1,5 @@
-#include "valuetext.h"
-#include "plotwindow.h"
+#include "ValueText.h"
+#include "PlotWindow.h"
 
 const double ValueText::PosOffset = PlotWindow::TracerSize/2 + 1;
 

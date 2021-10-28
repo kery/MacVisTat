@@ -1,4 +1,4 @@
-#include "gzipfile.h"
+#include "GzipFile.h"
 
 #include <QFileInfo>
 

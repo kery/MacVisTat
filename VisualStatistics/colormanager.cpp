@@ -1,4 +1,4 @@
-#include "colormanager.h"
+#include "ColorManager.h"
 
 const std::array<QColor, 8> ColorManager::s_predefinedColors = {
     QColor(0, 0, 255),

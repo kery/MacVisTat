@@ -1,4 +1,4 @@
-#include "draggableplot.h"
+#include "DraggablePlot.h"
 
 DraggablePlot::DraggablePlot(QWidget *parent) :
     QCustomPlot(parent)

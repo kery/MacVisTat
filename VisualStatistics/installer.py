@@ -31,7 +31,7 @@ def get_version():
 
 def get_version_file():
     path = os.path.dirname(os.path.realpath(__file__))
-    return os.path.join(path, "version.h")
+    return os.path.join(path, "Version.h")
 
 def get_rc_file():
     path = os.path.dirname(os.path.realpath(__file__))
@@ -160,7 +160,7 @@ def restore_files():
     cwd = os.getcwd()
     os.chdir(proj_root_dir())
 
-    proc = subprocess.Popen(["git", "checkout", "--", "VisualStatistics/version.h",
+    proc = subprocess.Popen(["git", "checkout", "--", "VisualStatistics/Version.h",
         "installer/installer/packages/visualstatistics/meta/package.xml"],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()

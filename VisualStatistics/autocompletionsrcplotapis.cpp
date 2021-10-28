@@ -1,6 +1,4 @@
-#include "autocompletionsrcplotapis.h"
-
-#include <qdebug.h>
+#include "AutoCompletionSrcPlotAPIs.h"
 
 AutoCompletionSrcPlotAPIs::AutoCompletionSrcPlotAPIs(QsciLexer *lexer) :
     QsciAbstractAPIs(lexer),

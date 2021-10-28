@@ -1,7 +1,7 @@
-#include "statisticsfileparser.h"
-#include "progressdialog.h"
-#include "gzipfile.h"
-#include "utils.h"
+#include "StatisticsFileParser.h"
+#include "ProgressDialog.h"
+#include "GzipFile.h"
+#include "Utils.h"
 #include <expat.h>
 #include <QtConcurrent>
 #include <functional>

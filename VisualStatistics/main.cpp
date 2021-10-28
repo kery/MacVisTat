@@ -1,5 +1,5 @@
-#include "mainwindow.h"
-#include "utils.h"
+#include "MainWindow.h"
+#include "Utils.h"
 #include <QApplication>
 #include <memory>
 

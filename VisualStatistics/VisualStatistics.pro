@@ -18,14 +18,7 @@ RCC_DIR = rcc
 UI_DIR = ui
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    plotwindow.cpp \
     third_party/qcustomplot/qcustomplot.cpp \
-    gzipfile.cpp \
-    utils.cpp \
-    statisticsnamemodel.cpp \
-    aboutdialog.cpp \
-    progressdialog.cpp \
     third_party/lua/lapi.cpp \
     third_party/lua/lauxlib.cpp \
     third_party/lua/lbaselib.cpp \
@@ -58,28 +51,28 @@ SOURCES += main.cpp\
     third_party/lua/lundump.cpp \
     third_party/lua/lvm.cpp \
     third_party/lua/lzio.cpp \
-    colormanager.cpp \
-    luaenvironment.cpp \
-    scriptwindow.cpp \
-    statisticsfileparser.cpp \
-    statistics.cpp \
-    countergraph.cpp \
-    changelogdialog.cpp \
-    draggableplot.cpp \
-    valuetext.cpp \
-    counterlegenditem.cpp \
-    autocompletionsrcplotapis.cpp \
-    scilexerlua5_2.cpp
+    AboutDialog.cpp \
+    AutoCompletionSrcPlotAPIs.cpp \
+    ChangeLogDialog.cpp \
+    ColorManager.cpp \
+    CounterGraph.cpp \
+    CounterLegendItem.cpp \
+    DraggablePlot.cpp \
+    GzipFile.cpp \
+    LuaEnvironment.cpp \
+    MainWindow.cpp \
+    PlotWindow.cpp \
+    ProgressDialog.cpp \
+    SciLexerLua5_2.cpp \
+    ScriptWindow.cpp \
+    Statistics.cpp \
+    StatisticsFileParser.cpp \
+    StatisticsNameModel.cpp \
+    Utils.cpp \
+    ValueText.cpp
 
-HEADERS  += mainwindow.h \
-    plotwindow.h \
+HEADERS  += \
     third_party/qcustomplot/qcustomplot.h \
-    gzipfile.h \
-    utils.h \
-    statisticsnamemodel.h \
-    aboutdialog.h \
-    version.h \
-    progressdialog.h \
     third_party/lua/lapi.h \
     third_party/lua/lauxlib.h \
     third_party/lua/lcode.h \
@@ -104,25 +97,34 @@ HEADERS  += mainwindow.h \
     third_party/lua/lundump.h \
     third_party/lua/lvm.h \
     third_party/lua/lzio.h \
-    colormanager.h \
-    luaenvironment.h \
-    scriptwindow.h \
-    statisticsfileparser.h \
-    statistics.h \
-    countergraph.h \
-    changelogdialog.h \
-    draggableplot.h \
-    valuetext.h \
-    counterlegenditem.h \
-    autocompletionsrcplotapis.h \
-    scilexerlua5_2.h
+    AboutDialog.h \
+    AutoCompletionSrcPlotAPIs.h \
+    ChangeLogDialog.h \
+    ColorManager.h \
+    CounterGraph.h \
+    CounterLegendItem.h \
+    DraggablePlot.h \
+    GzipFile.h \
+    LuaEnvironment.h \
+    MainWindow.h \
+    PlotWindow.h \
+    ProgressDialog.h \
+    SciLexerLua5_2.h \
+    ScriptWindow.h \
+    Statistics.h \
+    StatisticsFileParser.h \
+    StatisticsNameModel.h \
+    Utils.h \
+    ValueText.h \
+    Version.h
 
-FORMS    += mainwindow.ui \
-    plotwindow.ui \
-    aboutdialog.ui \
-    scriptwindow.ui \
-    progressdialog.ui \
-    changelogdialog.ui
+FORMS    += \
+    AboutDialog.ui \
+    ChangeLogDialog.ui \
+    MainWindow.ui \
+    PlotWindow.ui \
+    ProgressDialog.ui \
+    ScriptWindow.ui
 
 RESOURCES += \
     VisualStatistics.qrc

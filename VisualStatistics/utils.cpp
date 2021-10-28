@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "Utils.h"
 #include <cstring>
 
 int versionStringToNumber(const QString &version)

@@ -1,7 +1,7 @@
-#include "luaenvironment.h"
-#include "utils.h"
-#include "scriptwindow.h"
-#include "plotwindow.h"
+#include "LuaEnvironment.h"
+#include "Utils.h"
+#include "ScriptWindow.h"
+#include "PlotWindow.h"
 
 static char kScriptWindow;
 

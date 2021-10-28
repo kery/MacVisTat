@@ -1,5 +1,5 @@
-#include "counterlegenditem.h"
-#include "countergraph.h"
+#include "CounterLegendItem.h"
+#include "CounterGraph.h"
 
 CounterLegendItem::CounterLegendItem(QCPLegend *parent, QCPAbstractPlottable *plottable) :
     QCPPlottableLegendItem(parent, plottable)

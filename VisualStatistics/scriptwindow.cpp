@@ -1,8 +1,8 @@
-#include "scriptwindow.h"
-#include "ui_scriptwindow.h"
-#include "utils.h"
-#include "autocompletionsrcplotapis.h"
-#include "scilexerlua5_2.h"
+#include "ScriptWindow.h"
+#include "ui_ScriptWindow.h"
+#include "Utils.h"
+#include "AutoCompletionSrcPlotAPIs.h"
+#include "SciLexerLua5_2.h"
 
 ScriptWindow::ScriptWindow(QWidget *parent) :
     QMainWindow(parent),

@@ -1,7 +1,7 @@
 #ifndef STATISTICSFILEPARSER_H
 #define STATISTICSFILEPARSER_H
 
-#include "statistics.h"
+#include "Statistics.h"
 
 class ProgressDialog;
 

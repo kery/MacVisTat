@@ -1,8 +1,8 @@
-#include "plotwindow.h"
-#include "ui_plotwindow.h"
-#include "scriptwindow.h"
-#include "utils.h"
-#include "version.h"
+#include "PlotWindow.h"
+#include "ui_PlotWindow.h"
+#include "ScriptWindow.h"
+#include "Utils.h"
+#include "Version.h"
 
 const double PlotWindow::TracerSize = CounterGraph::ScatterSize + 4.0;
 const int PlotWindow::AnimationMaxGraphs = 100;
