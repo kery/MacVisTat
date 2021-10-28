@@ -222,7 +222,7 @@ void StatisticsNameModel::setFilterPattern(const QStringList &modules, const QSt
     emit endResetModel();
 }
 
-int StatisticsNameModel::filteredCount() const
+int StatisticsNameModel::matchedCount() const
 {
     return (int)m_indexes.size();
 }

@@ -20,7 +20,7 @@ public:
     void clearStatisticsNames();
 
     void setFilterPattern(const QStringList &modules, const QString &pattern, bool caseSensitive, QString &error);
-    int filteredCount() const;
+    int matchedCount() const;
     int totalCount() const;
 
     virtual bool canFetchMore(const QModelIndex &parent) const Q_DECL_OVERRIDE;

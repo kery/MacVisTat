@@ -650,11 +650,11 @@ void MainWindow::clearLogEdit()
 void MainWindow::updateStatNameInfo()
 {
     StatisticsNameModel *model = static_cast<StatisticsNameModel*>(m_ui->lvStatName->model());
-    int loaded = model->rowCount();
-    int filtered = model->filteredCount();
+    int displayed = model->rowCount();
+    int matched = model->matchedCount();
     int total = model->totalCount();
 
-    m_lbStatNameInfo->setText(QStringLiteral("loaded:%1, filtered:%2, total:%3").arg(loaded).arg(filtered).arg(total));
+    m_lbStatNameInfo->setText(QStringLiteral("Stat:%1, Matched:%2, Displayed:%3; ").arg(total).arg(matched).arg(displayed));
 }
 
 void MainWindow::updateModulesInfo()
@@ -662,7 +662,7 @@ void MainWindow::updateModulesInfo()
     int modules = m_ui->lwModules->count();
     int selected = m_ui->lwModules->selectedItems().size();
 
-    m_lbModulesInfo->setText(QStringLiteral("modules:%1, selected:%2 ").arg(modules).arg(selected));
+    m_lbModulesInfo->setText(QStringLiteral("Module:%1, Selected:%2; ").arg(modules).arg(selected));
 }
 
 void MainWindow::addRecentFile()
