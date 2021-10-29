@@ -18,11 +18,11 @@ RCC_DIR = rcc
 UI_DIR = ui
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        MainWindow.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += MainWindow.h
 
-FORMS    += mainwindow.ui
+FORMS    += MainWindow.ui
 
 win32 {
     TARGET = ../CrashReporter
