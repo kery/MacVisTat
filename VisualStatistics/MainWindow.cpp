@@ -700,7 +700,11 @@ void MainWindow::on_actionXmlToCSV_triggered()
             int answer = showQuestionMsgBox(this, info, QStringLiteral("Do you want to delete the original XML files?"), false);
             if (answer == QMessageBox::Yes) {
                 for (const QString &path : qAsConst(selectedFiles)) {
-                    QFile::remove(path);
+                    if (QFile::remove(path)) {
+                        appendLogInfo(QStringLiteral("delete %1 successfully").arg(QDir::toNativeSeparators(path)));
+                    } else {
+                        appendLogWarn(QStringLiteral("delete %1 unsuccessfully").arg(QDir::toNativeSeparators(path)));
+                    }
                 }
             }
 
