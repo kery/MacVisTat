@@ -697,11 +697,15 @@ void MainWindow::on_actionXmlToCSV_triggered()
             QString info = "KPI-KCI files have been converted to " + QDir::toNativeSeparators(convertedPath);
             appendLogInfo(info);
 
-            int answer = showQuestionMsgBox(this, info, QStringLiteral("Do you want to open it?"));
+            int answer = showQuestionMsgBox(this, info, QStringLiteral("Do you want to delete the original XML files?"), false);
             if (answer == QMessageBox::Yes) {
-                on_actionClose_triggered();
-                openStatFile(convertedPath);
+                for (const QString &path : qAsConst(selectedFiles)) {
+                    QFile::remove(path);
+                }
             }
+
+            on_actionClose_triggered();
+            openStatFile(convertedPath);
         }
     } else {
         showErrorMsgBox(this, error);
