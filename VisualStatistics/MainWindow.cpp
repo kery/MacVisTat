@@ -20,6 +20,7 @@
 MainWindow::MainWindow() :
     QMainWindow(nullptr),
     m_ui(new Ui::MainWindow),
+    m_lastScale(0.0),
     m_lbStatNameInfo(nullptr),
     m_lbModulesInfo(nullptr),
     m_sepAction(nullptr)
@@ -27,10 +28,8 @@ MainWindow::MainWindow() :
     m_ui->setupUi(this);
     disableToolTipOfToolButton();
 
-    m_ui->splitterHor->setSizes(QList<int>() << 330 << width() - 330);
     m_ui->splitterHor->setStretchFactor(0, 0);
     m_ui->splitterHor->setStretchFactor(1, 1);
-    m_ui->splitterVer->setSizes(QList<int>() << height() - 80 << 80);
     m_ui->splitterVer->setStretchFactor(0, 1);
     m_ui->splitterVer->setStretchFactor(1, 0);
 
@@ -470,6 +469,13 @@ void MainWindow::updateRecentFileActions()
     m_sepAction->setVisible(numRecentFiles > 0);
 }
 
+qreal MainWindow::getCurrentScreenScale()
+{
+    int screenNum = QApplication::desktop()->screenNumber(this);
+    QScreen *screen = QApplication::screens().at(screenNum);
+    return screen->logicalDotsPerInch()/96;
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (isRegexpCaseButtonResizeEvent(obj, event)) {
@@ -515,6 +521,67 @@ void MainWindow::closeEvent(QCloseEvent *)
 
     QSettings settings;
     settings.setValue(QStringLiteral("caseSensitive"), m_caseSensitive);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *)
+{
+    qreal scale = getCurrentScreenScale();
+    if (qFuzzyCompare(scale, m_lastScale)) {
+        return;
+    }
+
+    if (!qFuzzyIsNull(m_lastScale)) {
+        qreal factor = scale/m_lastScale;
+        auto sizesHor = m_ui->splitterHor->sizes();
+        auto sizesVer = m_ui->splitterVer->sizes();
+
+        int leftWidth = qRound(sizesHor[0] * factor);
+        int rightWidth = sizesHor[0] + sizesHor[1] - leftWidth;
+        m_ui->splitterHor->setSizes(QList<int>() << leftWidth << rightWidth);
+
+        int bottomHeight = qRound(sizesVer[1] * factor);
+        int topHeight = sizesVer[0] + sizesVer[1] - bottomHeight;
+        m_ui->splitterVer->setSizes(QList<int>() << topHeight << bottomHeight);
+    }
+
+    m_lastScale = scale;
+}
+
+bool MainWindow::event(QEvent *event)
+{
+    // Get the screen scale value in which this window is shown initially.
+    // Please note that we cannot do this in showEvent because at that point
+    // this window's position is on primary screen which may be different
+    // from the position after it is shown. It seems that the position is
+    // changed in show_sys() call.
+    //
+    // QShowEvent showEvent;
+    // QCoreApplication::sendEvent(q, &showEvent);
+    //
+    // show_sys();
+    //
+    // This event is sent by QCoreApplication::sendEvent(q, &showToParentEvent)
+    // in QWidgetPrivate::setVisible(bool visible).
+    if (event->type() == QEvent::ShowToParent) {
+        static bool scaleInitialized = false;
+        if (!scaleInitialized) {
+            scaleInitialized = true;
+            m_lastScale = getCurrentScreenScale();
+
+            int leftWidth = 320, bottomHeight = 100;
+            if (!qFuzzyCompare(m_lastScale, 1.0)) {
+                QSize newSize = size() * m_lastScale;
+                resize(newSize);
+
+                leftWidth *= m_lastScale;
+                bottomHeight *= m_lastScale;
+            }
+
+            m_ui->splitterHor->setSizes(QList<int>() << leftWidth << width() - leftWidth);
+            m_ui->splitterVer->setSizes(QList<int>() << height() - bottomHeight << bottomHeight);
+        }
+    }
+    return QMainWindow::event(event);
 }
 
 void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus exitStatus)

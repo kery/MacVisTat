@@ -48,6 +48,7 @@ private:
 
     void initializeRecentFileActions();
     void updateRecentFileActions();
+    qreal getCurrentScreenScale();
 
     static bool checkFileName(const QString &path);
 
@@ -55,6 +56,8 @@ private:
     virtual void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
     virtual void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
     virtual void closeEvent(QCloseEvent *) Q_DECL_OVERRIDE;
+    virtual void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
     void checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus exitStatus);
@@ -89,6 +92,7 @@ private:
     Ui::MainWindow *m_ui;
     int m_offsetFromUtc;
     bool m_caseSensitive;
+    qreal m_lastScale;
     QString m_statFilePath;
     QLabel *m_lbStatNameInfo;
     QLabel *m_lbModulesInfo;
