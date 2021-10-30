@@ -27,7 +27,7 @@ private slots:
     void uploadFinished(QNetworkReply *reply);
     void uploadProgress(qint64 bytesSent, qint64 bytesTotal);
 
-    void on_buttonBox_accepted();
+    void buttonBoxAccepted();
 
 private:
     Ui::MainWindow *_ui;

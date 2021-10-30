@@ -18,6 +18,8 @@ MainWindow::MainWindow(const QString &path, const QString &version,
     _ui->setupUi(this);
     setFixedSize(size());
 
+    connect(_ui->buttonBox, &QDialogButtonBox::accepted, this, &MainWindow::buttonBoxAccepted);
+
     QPushButton *yesButton = _ui->buttonBox->button(QDialogButtonBox::Yes);
     yesButton->setAutoDefault(true);
     yesButton->setDefault(true);
@@ -65,7 +67,7 @@ void MainWindow::uploadProgress(qint64 /*bytesSent*/, qint64 /*bytesTotal*/)
     _timer.start();
 }
 
-void MainWindow::on_buttonBox_accepted()
+void MainWindow::buttonBoxAccepted()
 {
     if (_dumpFile.open(QFile::ReadOnly)) {
         QUrl url(_ftpDir + getUploadFileName());
