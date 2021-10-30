@@ -18,6 +18,14 @@ PlotWindow::PlotWindow(Statistics &stat) :
 {
     m_ui->setupUi(this);
 
+    connect(m_ui->actionSaveAsImage, &QAction::triggered, this, &PlotWindow::actionSaveAsImageTriggered);
+    connect(m_ui->actionRestoreScale, &QAction::triggered, this, &PlotWindow::actionRestoreScaleTriggered);
+    connect(m_ui->actionShowDelta, &QAction::triggered, this, &PlotWindow::actionShowDeltaTriggered);
+    connect(m_ui->actionShowSuspectFlag, &QAction::triggered, this, &PlotWindow::actionShowSuspectFlagTriggered);
+    connect(m_ui->actionScript, &QAction::triggered, this, &PlotWindow::actionScriptTriggered);
+    connect(m_ui->actionRemoveZeroCounters, &QAction::triggered, this, &PlotWindow::actionRemoveZeroCountersTriggered);
+    connect(m_ui->actionCopyToClipboard, &QAction::triggered, this, &PlotWindow::actionCopyToClipboardTriggered);
+
     // Show tracer below legend layer, above other layers
     // Value tip will use the same layer as tracer
     m_ui->customPlot->addLayer(QStringLiteral("valuetip"), 0, QCustomPlot::limBelow);
@@ -1038,7 +1046,7 @@ void PlotWindow::toDateTimeChanged(const QDateTime &dateTime)
     }
 }
 
-void PlotWindow::on_actionSaveAsImage_triggered()
+void PlotWindow::actionSaveAsImageTriggered()
 {
     QString path = QFileDialog::getSaveFileName(this, QStringLiteral("Save As Image"),
                                                     defaultSaveFileName(),
@@ -1048,14 +1056,14 @@ void PlotWindow::on_actionSaveAsImage_triggered()
     }
 }
 
-void PlotWindow::on_actionRestoreScale_triggered()
+void PlotWindow::actionRestoreScaleTriggered()
 {
     m_ui->customPlot->rescaleAxes();
     adjustYAxisRange(m_ui->customPlot->yAxis);
     m_ui->customPlot->replot(QCustomPlot::rpQueued);
 }
 
-void PlotWindow::on_actionShowDelta_triggered(bool checked)
+void PlotWindow::actionShowDeltaTriggered(bool checked)
 {
     QCustomPlot *plot = m_ui->customPlot;
 
@@ -1080,7 +1088,7 @@ void PlotWindow::on_actionShowDelta_triggered(bool checked)
     plot->replot(QCustomPlot::rpQueued);
 }
 
-void PlotWindow::on_actionShowSuspectFlag_triggered(bool checked)
+void PlotWindow::actionShowSuspectFlagTriggered(bool checked)
 {
     QCustomPlot *plot = m_ui->customPlot;
 
@@ -1095,7 +1103,7 @@ void PlotWindow::on_actionShowSuspectFlag_triggered(bool checked)
     settings.setValue(QStringLiteral("showSuspectFlag"), checked);
 }
 
-void PlotWindow::on_actionScript_triggered()
+void PlotWindow::actionScriptTriggered()
 {
     ScriptWindow *scriptWindow = findChild<ScriptWindow*>(QStringLiteral("ScriptWindow"), Qt::FindDirectChildrenOnly);
     if (scriptWindow) {
@@ -1115,7 +1123,7 @@ void PlotWindow::on_actionScript_triggered()
     }
 }
 
-void PlotWindow::on_actionRemoveZeroCounters_triggered()
+void PlotWindow::actionRemoveZeroCountersTriggered()
 {
     QVector<CounterGraph*> graphs;
     QCustomPlot *plot = m_ui->customPlot;
@@ -1139,7 +1147,7 @@ void PlotWindow::on_actionRemoveZeroCounters_triggered()
     removeGraphs(graphs);
 }
 
-void PlotWindow::on_actionCopyToClipboard_triggered()
+void PlotWindow::actionCopyToClipboardTriggered()
 {
     QApplication::clipboard()->setPixmap(m_ui->customPlot->toPixmap());
 }

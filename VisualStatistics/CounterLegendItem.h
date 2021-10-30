@@ -11,8 +11,6 @@ public:
     CounterLegendItem(QCPLegend *parent, QCPAbstractPlottable *plottable);
 
 protected:
-
-
     virtual QSize minimumSizeHint() const;
     virtual void draw(QCPPainter *painter);
 };

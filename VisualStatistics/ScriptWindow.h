@@ -38,10 +38,10 @@ private slots:
     void updateLineNumberMarginWidth();
     void updateModificationIndicator(bool m);
 
-    void on_actionRun_triggered();
-    void on_actionClearLog_triggered();
-    void on_actionOpen_triggered();
-    void on_actionSave_triggered();
+    void actionRunTriggered();
+    void actionClearLogTriggered();
+    void actionOpenTriggered();
+    void actionSaveTriggered();
 
 private:
     Ui::ScriptWindow *m_ui;

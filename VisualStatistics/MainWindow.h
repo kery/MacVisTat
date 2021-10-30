@@ -75,15 +75,15 @@ private slots:
     void addRecentFile();
     void caseSensitiveButtonClicked(bool checked);
 
-    void on_actionOpen_triggered();
-    void on_actionXmlToCSV_triggered();
-    void on_actionClose_triggered();
-    void on_actionPlot_triggered();
-    void on_actionPlotSeparately_triggered();
-    void on_actionClearFilterHistory_triggered();
-    void on_actionViewHelp_triggered();
-    void on_actionChangeLog_triggered();
-    void on_actionAbout_triggered();
+    void actionOpenTriggered();
+    void actionXmlToCSVTriggered();
+    void actionCloseTriggered();
+    void actionPlotTriggered();
+    void actionPlotSeparatelyTriggered();
+    void actionClearFilterHistoryTriggered();
+    void actionViewHelpTriggered();
+    void actionChangeLogTriggered();
+    void actionAboutTriggered();
 
 signals:
     void aboutToBeClosed();

@@ -43,7 +43,7 @@ signals:
     void canceling();
 
 private slots:
-    void on_pushButton_clicked();
+    void cancelButtonClicked();
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e);

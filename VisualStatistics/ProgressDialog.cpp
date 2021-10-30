@@ -9,6 +9,8 @@ ProgressDialog::ProgressDialog(QWidget *parent) :
 {
     m_ui->setupUi(this);
 
+    connect(m_ui->cancelButton, &QPushButton::clicked, this, &ProgressDialog::cancelButtonClicked);
+
     setFixedSize(size());
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
@@ -68,7 +70,7 @@ void ProgressDialog::setValue(int progress)
 #endif
 }
 
-void ProgressDialog::on_pushButton_clicked()
+void ProgressDialog::cancelButtonClicked()
 {
     setLabelText(QStringLiteral("Canceling..."));
     enableCancelButton(false);

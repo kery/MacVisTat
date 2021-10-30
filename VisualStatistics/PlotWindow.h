@@ -85,13 +85,13 @@ private slots:
     void fromDateTimeChanged(const QDateTime &dateTime);
     void toDateTimeChanged(const QDateTime &dateTime);
 
-    void on_actionSaveAsImage_triggered();
-    void on_actionRestoreScale_triggered();
-    void on_actionShowDelta_triggered(bool checked);
-    void on_actionShowSuspectFlag_triggered(bool checked);
-    void on_actionScript_triggered();
-    void on_actionRemoveZeroCounters_triggered();
-    void on_actionCopyToClipboard_triggered();
+    void actionSaveAsImageTriggered();
+    void actionRestoreScaleTriggered();
+    void actionShowDeltaTriggered(bool checked);
+    void actionShowSuspectFlagTriggered(bool checked);
+    void actionScriptTriggered();
+    void actionRemoveZeroCountersTriggered();
+    void actionCopyToClipboardTriggered();
 
 public:
     static const double TracerSize;

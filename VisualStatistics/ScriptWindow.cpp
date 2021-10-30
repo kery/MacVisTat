@@ -9,6 +9,12 @@ ScriptWindow::ScriptWindow(QWidget *parent) :
     m_ui(new Ui::ScriptWindow)
 {
     m_ui->setupUi(this);
+
+    connect(m_ui->actionRun, &QAction::triggered, this, &ScriptWindow::actionRunTriggered);
+    connect(m_ui->actionClearLog, &QAction::triggered, this, &ScriptWindow::actionClearLogTriggered);
+    connect(m_ui->actionOpen, &QAction::triggered, this, &ScriptWindow::actionOpenTriggered);
+    connect(m_ui->actionSave, &QAction::triggered, this, &ScriptWindow::actionSaveTriggered);
+
     m_ui->splitter->setSizes(QList<int>() << height() - 140 << 140);
     m_ui->splitter->setCollapsible(0, false);
 
@@ -180,7 +186,7 @@ void ScriptWindow::updateModificationIndicator(bool m)
     setWindowModified(m);
 }
 
-void ScriptWindow::on_actionRun_triggered()
+void ScriptWindow::actionRunTriggered()
 {
     QString err;
     QString scriptStr = m_ui->scriptTextEdit->text();
@@ -191,12 +197,12 @@ void ScriptWindow::on_actionRun_triggered()
     }
 }
 
-void ScriptWindow::on_actionClearLog_triggered()
+void ScriptWindow::actionClearLogTriggered()
 {
     m_ui->logTextEdit->clear();
 }
 
-void ScriptWindow::on_actionOpen_triggered()
+void ScriptWindow::actionOpenTriggered()
 {
     if (!maybeSave()) {
         return;
@@ -211,7 +217,7 @@ void ScriptWindow::on_actionOpen_triggered()
     loadFile(path);
 }
 
-void ScriptWindow::on_actionSave_triggered()
+void ScriptWindow::actionSaveTriggered()
 {
     if (!m_ui->scriptTextEdit->isModified()) {
         return;

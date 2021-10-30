@@ -87,6 +87,16 @@ MainWindow::MainWindow() :
     connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::listViewCtxMenuRequest);
     connect(m_ui->lwModules, &QListWidget::customContextMenuRequested, this, &MainWindow::listViewCtxMenuRequest);
 
+    connect(m_ui->actionOpen, &QAction::triggered, this, &MainWindow::actionOpenTriggered);
+    connect(m_ui->actionXmlToCSV, &QAction::triggered, this, &MainWindow::actionXmlToCSVTriggered);
+    connect(m_ui->actionClose, &QAction::triggered, this, &MainWindow::actionCloseTriggered);
+    connect(m_ui->actionPlot, &QAction::triggered, this, &MainWindow::actionPlotTriggered);
+    connect(m_ui->actionPlotSeparately, &QAction::triggered, this, &MainWindow::actionPlotSeparatelyTriggered);
+    connect(m_ui->actionClearFilterHistory, &QAction::triggered, this, &MainWindow::actionClearFilterHistoryTriggered);
+    connect(m_ui->actionViewHelp, &QAction::triggered, this, &MainWindow::actionViewHelpTriggered);
+    connect(m_ui->actionChangeLog, &QAction::triggered, this, &MainWindow::actionChangeLogTriggered);
+    connect(m_ui->actionAbout, &QAction::triggered, this, &MainWindow::actionAboutTriggered);
+
 #ifdef INSTALLER
     startCheckNewVersionTask();
     startUserReportTask();
@@ -172,7 +182,7 @@ void MainWindow::openStatFile(QString &path)
         Qt::CaseSensitivity cs = Qt::CaseSensitive;
 #endif
         if (m_statFilePath.compare(path, cs)) {
-            on_actionClose_triggered();
+            actionCloseTriggered();
         } else {
             return;
         }
@@ -728,7 +738,7 @@ void MainWindow::caseSensitiveButtonClicked(bool checked)
     updateFilterPattern();
 }
 
-void MainWindow::on_actionOpen_triggered()
+void MainWindow::actionOpenTriggered()
 {
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::ExistingFile);
@@ -740,7 +750,7 @@ void MainWindow::on_actionOpen_triggered()
     }
 }
 
-void MainWindow::on_actionXmlToCSV_triggered()
+void MainWindow::actionXmlToCSVTriggered()
 {
     QFileDialog fileDialog(this);
     fileDialog.setFileMode(QFileDialog::ExistingFiles);
@@ -772,7 +782,7 @@ void MainWindow::on_actionXmlToCSV_triggered()
                 }
             }
 
-            on_actionClose_triggered();
+            actionCloseTriggered();
             openStatFile(convertedPath);
         }
     } else {
@@ -780,7 +790,7 @@ void MainWindow::on_actionXmlToCSV_triggered()
     }
 }
 
-void MainWindow::on_actionClose_triggered()
+void MainWindow::actionCloseTriggered()
 {
     static_cast<StatisticsNameModel*>(m_ui->lvStatName->model())->clearStatisticsNames();
     m_ui->lwModules->clear();
@@ -788,34 +798,34 @@ void MainWindow::on_actionClose_triggered()
     setWindowTitle(QStringLiteral("Visual Statistics"));
 }
 
-void MainWindow::on_actionPlot_triggered()
+void MainWindow::actionPlotTriggered()
 {
     parseStatFileData(false);
 }
 
-void MainWindow::on_actionPlotSeparately_triggered()
+void MainWindow::actionPlotSeparatelyTriggered()
 {
     parseStatFileData(true);
 }
 
-void MainWindow::on_actionClearFilterHistory_triggered()
+void MainWindow::actionClearFilterHistoryTriggered()
 {
     m_ui->cbRegExpFilter->clear();
 }
 
-void MainWindow::on_actionViewHelp_triggered()
+void MainWindow::actionViewHelpTriggered()
 {
     QUrl url(QStringLiteral("http://sdu.int.nokia-sbell.com:4099/help.html"));
     QDesktopServices::openUrl(url);
 }
 
-void MainWindow::on_actionChangeLog_triggered()
+void MainWindow::actionChangeLogTriggered()
 {
     ChangeLogDialog dlg(this);
     dlg.exec();
 }
 
-void MainWindow::on_actionAbout_triggered()
+void MainWindow::actionAboutTriggered()
 {
     AboutDialog dialog(this);
     dialog.exec();
