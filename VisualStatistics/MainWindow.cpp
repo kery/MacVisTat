@@ -208,10 +208,9 @@ void MainWindow::openStatFile(QString &path)
 void MainWindow::parseStatFileHeader(const QString &path, QString &error)
 {
     ProgressDialog dialog(this);
-    dialog.setWindowTitle(QStringLiteral("Please Wait"));
-    dialog.setLabelText(QStringLiteral("Parsing statistics file header..."));
+    dialog.setLabelText(QStringLiteral("Parsing statistics file header, please wait!"));
     dialog.busyIndicatorMode();
-    dialog.enableCancelButton(false);
+    dialog.setCancelButtonVisible(false);
 
     StatisticsFileParser fileParser(dialog);
     std::string header = fileParser.parseFileHeader(path, m_offsetFromUtc, error);
@@ -287,8 +286,7 @@ void MainWindow::parseStatFileData(bool multipleWindows)
     }
 
     ProgressDialog dialog(this);
-    dialog.setWindowTitle(QStringLiteral("Please Wait"));
-    dialog.setLabelText(QStringLiteral("Parsing statistics file..."));
+    dialog.setLabelText(QStringLiteral("Parsing statistics file data, please wait!"));
 
     StatisticsFileParser fileParser(dialog);
     Statistics::NameDataMap ndm;
@@ -348,19 +346,19 @@ QString MainWindow::getMaintenanceToolPath()
 
 void MainWindow::appendLogInfo(const QString &text)
 {
-    m_ui->logTextEdit->appendHtml(QStringLiteral("[%1] INFO: %2").arg(
+    m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='#808080'>[%1]</font>  <font color='#13a10e'>INFO</font>: %2").arg(
         QDateTime::currentDateTime().toString(DT_FORMAT), text));
 }
 
 void MainWindow::appendLogWarn(const QString &text)
 {
-    m_ui->logTextEdit->appendHtml(QStringLiteral("[%1] WARN: <font color='#CC9900'>%2</font>").arg(
+    m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='#808080'>[%1]</font>  <font color='#c19c00'>WARN</font>: %2").arg(
         QDateTime::currentDateTime().toString(DT_FORMAT), text));
 }
 
 void MainWindow::appendLogError(const QString &text)
 {
-    m_ui->logTextEdit->appendHtml(QStringLiteral("[%1] ERR: <font color='red'>%2</font>").arg(
+    m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='#808080'>[%1]</font> <font color='#c50f1f'>ERROR</font>: %2").arg(
         QDateTime::currentDateTime().toString(DT_FORMAT), text));
 }
 
@@ -686,7 +684,6 @@ void MainWindow::on_actionXmlToCSV_triggered()
     }
 
     ProgressDialog dialog(this);
-    dialog.setWindowTitle(QStringLiteral("Please Wait"));
 
     StatisticsFileParser fileParser(dialog);
     QString error;

@@ -858,13 +858,22 @@ static std::string getOffsetFromUtc(const QString &path)
 
 QString StatisticsFileParser::kpiKciToCsvFormat(QStringList &filePaths, QString &error)
 {
-    sortKpiKciFileNames(filePaths, error);
+    m_dialog.setLabelText(QStringLiteral("Sorting selected statistics files, please wait!"));
+    m_dialog.setCancelButtonVisible(false);
+    m_dialog.busyIndicatorMode();
+
+    QFutureWatcher<void> sortWatcher;
+    QObject::connect(&sortWatcher, SIGNAL(finished()), &m_dialog, SLOT(accept()));
+    sortWatcher.setFuture(QtConcurrent::run(std::bind(sortKpiKciFileNames, std::ref(filePaths), std::ref(error))));
+    m_dialog.exec();
+
     if (!error.isEmpty()) {
         return QString();
     }
 
     volatile bool working = true;
-    m_dialog.setLabelText(QStringLiteral("Parsing statistics names from the selected files..."));
+    m_dialog.setLabelText(QStringLiteral("Parsing statistics names, please wait!"));
+    m_dialog.setCancelButtonVisible(true);
 
     QFutureWatcher<XmlHeaderResult> watcher;
     QObject::connect(&m_dialog, &ProgressDialog::canceling, [&working, &watcher]() {
@@ -906,7 +915,7 @@ QString StatisticsFileParser::kpiKciToCsvFormat(QStringList &filePaths, QString 
 
     m_dialog.setValue(0);
     m_dialog.setRange(0, 100);
-    m_dialog.setLabelText(QStringLiteral("Writing statistics names to file..."));
+    m_dialog.setLabelText(QStringLiteral("Writing statistics names to CSV file, please wait!"));
 
     std::string offsetFromUtc = getOffsetFromUtc(filePaths.first());
 
@@ -928,7 +937,7 @@ QString StatisticsFileParser::kpiKciToCsvFormat(QStringList &filePaths, QString 
     QObject::connect(&xmlDataWatcher, SIGNAL(progressValueChanged(int)), &m_dialog, SLOT(setValue(int)));
     QObject::connect(&xmlDataWatcher, SIGNAL(finished()), &m_dialog, SLOT(accept()));
 
-    m_dialog.setLabelText(QStringLiteral("Writing statistics data to file..."));
+    m_dialog.setLabelText(QStringLiteral("Writing statistics data to CSV file, please wait!"));
 
     xmlDataWatcher.setFuture(QtConcurrent::mappedReduced<XmlDataResult>(filePaths,
         std::bind(parseXmlData, std::placeholders::_1, std::cref(indexes), std::cref(working)),

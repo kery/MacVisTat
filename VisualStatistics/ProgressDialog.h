@@ -32,6 +32,7 @@ public:
 
     void setLabelText(const QString &text);
     void enableCancelButton(bool enabled);
+    void setCancelButtonVisible(bool visible);
     void busyIndicatorMode();
 
 public slots:

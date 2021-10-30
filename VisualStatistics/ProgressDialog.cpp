@@ -34,7 +34,12 @@ void ProgressDialog::setLabelText(const QString &text)
 
 void ProgressDialog::enableCancelButton(bool enabled)
 {
-    m_ui->pushButton->setEnabled(enabled);
+    m_ui->cancelButton->setEnabled(enabled);
+}
+
+void ProgressDialog::setCancelButtonVisible(bool visible)
+{
+    m_ui->cancelButton->setVisible(visible);
 }
 
 void ProgressDialog::busyIndicatorMode()
