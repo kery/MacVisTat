@@ -20,15 +20,12 @@
 MainWindow::MainWindow() :
     QMainWindow(nullptr),
     m_ui(new Ui::MainWindow),
-    m_caseSensitive(true),
     m_lbStatNameInfo(nullptr),
     m_lbModulesInfo(nullptr),
     m_sepAction(nullptr)
 {
     m_ui->setupUi(this);
-
-    // used to disable tooltip for tool button
-    installEventFilterForAllToolButton();
+    disableToolTipOfToolButton();
 
     m_ui->splitterHor->setSizes(QList<int>() << 330 << width() - 330);
     m_ui->splitterHor->setStretchFactor(0, 0);
@@ -37,16 +34,19 @@ MainWindow::MainWindow() :
     m_ui->splitterVer->setStretchFactor(0, 1);
     m_ui->splitterVer->setStretchFactor(1, 0);
 
+    QSettings settings;
+    m_caseSensitive = settings.value(QStringLiteral("caseSensitive"), true).toBool();
+
     QToolButton *toolButton = new QToolButton();
     QFont font = toolButton->font();
     font.setBold(true);
+    font.setStrikeOut(!m_caseSensitive);
 
     toolButton->setFont(font);
     toolButton->setStyleSheet(QStringLiteral("color:#999;"));
     toolButton->setAutoRaise(true);
     toolButton->setText(QStringLiteral("Aa"));
     toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    toolButton->setToolTip(QStringLiteral("Case sensitive"));
     toolButton->installEventFilter(this);
 
     QHBoxLayout *hLayout = new QHBoxLayout(m_ui->cbRegExpFilter);
@@ -97,8 +97,6 @@ MainWindow::MainWindow() :
 
     initializeRecentFileActions();
     updateRecentFileActions();
-
-    toggleCaseSensitive();
 }
 
 MainWindow::~MainWindow()
@@ -151,16 +149,11 @@ void MainWindow::startUserReportTask()
     manager->post(request, postData.toLatin1());
 }
 
-void MainWindow::installEventFilterForAllToolButton()
+void MainWindow::disableToolTipOfToolButton()
 {
-    for (QObject *btn : m_ui->mainToolBar->findChildren<QObject*>()) {
-        btn->installEventFilter(this);
+    for (QToolButton *btn : m_ui->mainToolBar->findChildren<QToolButton*>()) {
+        btn->setToolTip(QString());
     }
-}
-
-bool MainWindow::isToolTipEventOfToolButton(QObject *obj, QEvent *event)
-{
-    return event->type() == QEvent::ToolTip && obj->parent() == m_ui->mainToolBar;
 }
 
 bool MainWindow::isRegexpCaseButtonResizeEvent(QObject *obj, QEvent *event)
@@ -429,16 +422,12 @@ void MainWindow::connectClearButtonSignal()
     }
 }
 
-void MainWindow::toggleCaseSensitive()
+void MainWindow::updateCaseSensitiveButtonFont()
 {
-    m_caseSensitive = !m_caseSensitive;
-
     QToolButton *toolButton = m_ui->cbRegExpFilter->findChild<QToolButton *>();
     QFont font = toolButton->font();
     font.setStrikeOut(!m_caseSensitive);
-
     toolButton->setFont(font);
-    toolButton->setToolTip(m_caseSensitive ? QStringLiteral("Case sensitive") : QStringLiteral("Case insensitive"));
 }
 
 void MainWindow::initializeRecentFileActions()
@@ -484,10 +473,6 @@ void MainWindow::updateRecentFileActions()
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
-    if (isToolTipEventOfToolButton(obj, event)) {
-        return true;
-    }
-
     if (isRegexpCaseButtonResizeEvent(obj, event)) {
         // The value is from qlineedit_p.cpp
         const int horizontalMargin = 2;
@@ -527,6 +512,9 @@ void MainWindow::closeEvent(QCloseEvent *)
     emit aboutToBeClosed();
 
     saveFilterHistory();
+
+    QSettings settings;
+    settings.setValue(QStringLiteral("caseSensitive"), m_caseSensitive);
 }
 
 void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus exitStatus)
@@ -676,7 +664,8 @@ void MainWindow::caseSensitiveButtonClicked(bool checked)
 {
     Q_UNUSED(checked);
 
-    toggleCaseSensitive();
+    m_caseSensitive = !m_caseSensitive;
+    updateCaseSensitiveButtonFont();
     updateFilterPattern();
 }
 

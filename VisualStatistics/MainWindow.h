@@ -25,8 +25,7 @@ private:
     void startCheckNewVersionTask();
     void startUserReportTask();
 
-    void installEventFilterForAllToolButton();
-    bool isToolTipEventOfToolButton(QObject *obj, QEvent *event);
+    void disableToolTipOfToolButton();
     bool isRegexpCaseButtonResizeEvent(QObject *obj, QEvent *event);
 
     void openStatFile(QString &path);
@@ -45,7 +44,7 @@ private:
     void saveFilterHistory();
     void adjustFilterHistoryOrder();
     void connectClearButtonSignal();
-    void toggleCaseSensitive();
+    void updateCaseSensitiveButtonFont();
 
     void initializeRecentFileActions();
     void updateRecentFileActions();
