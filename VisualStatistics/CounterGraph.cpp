@@ -4,12 +4,12 @@
 const double CounterGraph::ScatterSize = 6.0;
 
 CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &module, const QString &name) :
+    QCPGraph(keyAxis, valueAxis),
     m_showModule(false),
     m_module(module),
     m_name(name),
     m_ssSuspectFlag(QCPScatterStyle::ssNone, ScatterSize),
-    m_ssDiscontinuousFlag(QCPScatterStyle::ssNone, ScatterSize),
-    QCPGraph(keyAxis, valueAxis)
+    m_ssDiscontinuousFlag(QCPScatterStyle::ssNone, ScatterSize)
 {
 }
 

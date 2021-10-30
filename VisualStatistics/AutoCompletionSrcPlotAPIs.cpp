@@ -43,7 +43,7 @@ AutoCompletionSrcPlotAPIs::AutoCompletionSrcPlotAPIs(QsciLexer *lexer) :
         "will be rescaled if necessary."
     }
 {
-    for (const QString &apiInfo : m_apiInfos) {
+    for (const QString &apiInfo : qAsConst(m_apiInfos)) {
         m_apiNames.append(apiInfo.left(apiInfo.indexOf(QLatin1Char('('))));
     }
 }
@@ -58,7 +58,7 @@ void AutoCompletionSrcPlotAPIs::updateAutoCompletionList(const QStringList &cont
         return;
     }
 
-    for (const QString &apiName : m_apiNames) {
+    for (const QString &apiName : qAsConst(m_apiNames)) {
         if (apiName.startsWith(context.last())) {
             list.append(apiName);
         }

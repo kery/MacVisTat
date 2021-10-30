@@ -193,7 +193,8 @@ void PlotWindow::initializePlot()
         m_ui->actionShowSuspectFlag->setChecked(true);
     }
 
-    for (const QString &statName : m_stat.getNames()) {
+    const auto statNames = m_stat.getNames();
+    for (const QString &statName : statNames) {
         QString name;
         QString module = Statistics::splitStatNameToModuleAndName(statName, name);
         CounterGraph *graph = addCounterGraph(name, module);
@@ -571,7 +572,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
     const double MAX_DIST = 20;
 
     QCPGraph *graph = nullptr;
-    double value, dist = MAX_DIST;
+    double value = 0, dist = MAX_DIST;
 
     int index = qRound(plot->xAxis->pixelToCoord(event->pos().x()));
     QCPRange xRange = plot->xAxis->range();
@@ -843,7 +844,7 @@ void PlotWindow::addAggregateGraph()
     }
 
     QCustomPlot *plot = m_ui->customPlot;
-    QList<QCPAbstractLegendItem *> selectedLegendItems = plot->legend->selectedItems();
+    const QList<QCPAbstractLegendItem *> selectedLegendItems = plot->legend->selectedItems();
 
     QVector<QCPDataMap *> dataMaps;
     dataMaps.reserve(selectedLegendItems.size() > 1 ? selectedLegendItems.size() : plot->graphCount());
@@ -907,7 +908,8 @@ void PlotWindow::copyGraphName()
         QApplication::clipboard()->setText(m_valueText->graphName());
     } else {
         QStringList strList;
-        for (auto item : m_ui->customPlot->legend->selectedItems()) {
+        const auto selectedItems = m_ui->customPlot->legend->selectedItems();
+        for (auto item : selectedItems) {
             QCPAbstractPlottable *plottable = qobject_cast<QCPPlottableLegendItem *>(item)->plottable();
             CounterGraph *graph = qobject_cast<CounterGraph *>(plottable);
             strList << graph->displayName();
@@ -1103,12 +1105,13 @@ void PlotWindow::on_actionScript_triggered()
     } else {
         scriptWindow = new ScriptWindow(this);
         QString err;
-        if (!scriptWindow->initialize(err)) {
+        if (scriptWindow->initialize(err)) {
+            scriptWindow->setAttribute(Qt::WA_DeleteOnClose);
+            scriptWindow->showNormal();
+        } else {
             showInfoMsgBox(this, QStringLiteral("Initialize script window failed."), err);
             delete scriptWindow;
         }
-        scriptWindow->setAttribute(Qt::WA_DeleteOnClose);
-        scriptWindow->showNormal();
     }
 }
 
@@ -1118,7 +1121,7 @@ void PlotWindow::on_actionRemoveZeroCounters_triggered()
     QCustomPlot *plot = m_ui->customPlot;
     for (int i = 0; i < plot->graphCount(); ++i) {
         CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
-        QCPDataMap *dataMap = graph->data();
+        const QCPDataMap *dataMap = graph->data();
 
         bool isZeroCounter = true;
         for (const QCPData &data : *dataMap) {

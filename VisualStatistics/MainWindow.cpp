@@ -151,7 +151,8 @@ void MainWindow::startUserReportTask()
 
 void MainWindow::disableToolTipOfToolButton()
 {
-    for (QToolButton *btn : m_ui->mainToolBar->findChildren<QToolButton*>()) {
+    const auto toolButtons = m_ui->mainToolBar->findChildren<QToolButton*>();
+    for (QToolButton *btn : toolButtons) {
         btn->setToolTip(QString());
     }
 }
@@ -250,7 +251,7 @@ void MainWindow::parseStatFileData(bool multipleWindows)
 
     int statCountToPlot;
     StatisticsNameModel *model = static_cast<StatisticsNameModel*>(m_ui->lvStatName->model());
-    QModelIndexList selectedIndexes = m_ui->lvStatName->selectionModel()->selectedIndexes();
+    const QModelIndexList selectedIndexes = m_ui->lvStatName->selectionModel()->selectedIndexes();
 
     if (selectedIndexes.isEmpty()) {
         statCountToPlot = model->rowCount();
@@ -450,7 +451,7 @@ void MainWindow::updateRecentFileActions()
 
     files.erase(std::remove_if(files.begin(), files.end(),
                                [](const QString &path) {
-        return !QFileInfo(path).exists();
+        return !QFileInfo::exists(path);
     }), files.end());
 
     int numRecentFiles = qMin(files.size(), (int)m_recentFileActions.size());
@@ -499,8 +500,9 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 }
 
 void MainWindow::dropEvent(QDropEvent *event)
-{   
-    for (const QUrl &url : event->mimeData()->urls()) {
+{
+    const auto urls = event->mimeData()->urls();
+    for (const QUrl &url : urls) {
         QString path = url.toLocalFile();
         openStatFile(path);
         return;
@@ -571,17 +573,9 @@ void MainWindow::cbRegExpFilterEditReturnPressed()
 
 void MainWindow::updateFilterPattern()
 {
-//    QByteArray baSig;
-//    if (sender()) {
-//        QMetaMethod metaMethod = sender()->metaObject()->method(senderSignalIndex());
-//        baSig = metaMethod.methodSignature();
-//    }
-
-//    static int c = 0;
-//    qDebug() << "updateFilterPattern" << ++c << m_ui->cbRegExpFilter->currentIndex() << baSig;
-
     QStringList modules;
-    for (const QListWidgetItem *item : m_ui->lwModules->selectedItems()) {
+    const auto selectedModules = m_ui->lwModules->selectedItems();
+    for (const QListWidgetItem *item : selectedModules) {
         modules.append(item->text());
     }
 
@@ -617,7 +611,7 @@ void MainWindow::listViewCtxMenuRequest(const QPoint &pos)
 
     menu->setAttribute(Qt::WA_DeleteOnClose);
     menu->addAction(QStringLiteral("Copy Selected"), [view](){
-        QModelIndexList indexList = view->selectionModel()->selectedIndexes();
+        const QModelIndexList indexList = view->selectionModel()->selectedIndexes();
         if (indexList.size() > 0) {
             QStringList stringList;
             for (const QModelIndex &index : indexList) {

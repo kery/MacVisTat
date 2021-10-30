@@ -176,7 +176,7 @@ int Statistics::firstIndexAfterTime_t(uint time) const
 
 void Statistics::initDateTimes()
 {
-    for (const QCPDataMap &dm : m_ndm) {
+    for (const QCPDataMap &dm : qAsConst(m_ndm)) {
         QList<double> dateTimes = dm.keys();
         QVector<uint> temp(m_dateTimes.size() + dateTimes.size());
         auto iter = std::set_union(m_dateTimes.begin(), m_dateTimes.end(),

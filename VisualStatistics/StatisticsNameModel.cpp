@@ -19,14 +19,14 @@ StatisticsNameModel::~StatisticsNameModel()
 
 void StatisticsNameModel::setStatisticsNames(StatisticsNames &sns)
 {
-    emit beginResetModel();
+    beginResetModel();
     m_statNames.swap(sns);
     m_indexes.reserve(m_statNames.size());
     for (int i = 0; i < (int)m_statNames.size(); ++i) {
         m_indexes.push_back(i);
     }
     m_fetchedCount = 0;
-    emit endResetModel();
+    endResetModel();
 }
 
 QStringList StatisticsNameModel::getModules() const
@@ -43,11 +43,11 @@ QStringList StatisticsNameModel::getModules() const
 
 void StatisticsNameModel::clearStatisticsNames()
 {
-    emit beginResetModel();
+    beginResetModel();
     m_statNames.resize(0);
     m_indexes.resize(0);
     m_fetchedCount = 0;
-    emit endResetModel();
+    endResetModel();
 }
 
 static bool modulesTest(const std::vector<std::string> &modules, const std::string &name)
@@ -105,7 +105,7 @@ void StatisticsNameModel::setFilterPattern(const QStringList &modules, const QSt
         modulesStdStr.push_back(mod.toStdString());
     }
 
-    emit beginResetModel();
+    beginResetModel();
 
     if (patterns.size() == 1) {
         m_indexes.resize(0);
@@ -219,7 +219,7 @@ void StatisticsNameModel::setFilterPattern(const QStringList &modules, const QSt
         std::copy(tempIndexes.begin(), tempIndexes.end(), m_indexes.begin());
     }
     m_fetchedCount = 0;
-    emit endResetModel();
+    endResetModel();
 }
 
 int StatisticsNameModel::matchedCount() const
@@ -246,9 +246,9 @@ void StatisticsNameModel::fetchMore(const QModelIndex &parent)
     if (newCount > (int)m_indexes.size()) {
         newCount = static_cast<int>(m_indexes.size());
     }
-    emit beginInsertRows(QModelIndex(), m_fetchedCount, newCount - 1);
+    beginInsertRows(QModelIndex(), m_fetchedCount, newCount - 1);
     m_fetchedCount = newCount;
-    emit endInsertRows();
+    endInsertRows();
 }
 
 int	StatisticsNameModel::rowCount(const QModelIndex &parent) const

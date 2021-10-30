@@ -19,15 +19,6 @@ static PlotWindow* plotWindow(lua_State *L)
     return qobject_cast<PlotWindow*>(scriptWindow(L)->parent());
 }
 
-static QCPDataMap* dataMap(lua_State *L, const char *name)
-{
-    QCPDataMap *dataMap = plotWindow(L)->getStat().getDataMap(name);
-    if (dataMap == nullptr) {
-        luaL_error(L, "invalid node or statistics name");
-    }
-    return dataMap;
-}
-
 static int custom_print(lua_State *L)
 {
     const char *str = luaL_checkstring(L, 1);
@@ -178,13 +169,6 @@ static int update(lua_State *L)
         adjustYAxisRange(plot->yAxis);
     }
     plot->replot(QCustomPlot::rpQueued);
-    return 0;
-}
-
-static int dummy_debug(lua_State *L)
-{
-    luaL_error(L, "the call to debug.debug() has been disabled because interactive mode is "
-               "unavailable in this application");
     return 0;
 }
 
