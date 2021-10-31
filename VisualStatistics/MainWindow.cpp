@@ -580,8 +580,11 @@ bool MainWindow::event(QEvent *event)
 
             int leftWidth = 320, bottomHeight = 100;
             if (!qFuzzyCompare(m_lastScale, 1.0)) {
+                QSize oldSize = size();
                 QSize newSize = size() * m_lastScale;
-                resize(newSize);
+                int dx = qRound((newSize.width() - oldSize.width())/2.0);
+                int dy = qRound((newSize.height() - oldSize.height())/2.0);
+                setGeometry(geometry().adjusted(-dx, -dy, dx, dy));
 
                 leftWidth *= m_lastScale;
                 bottomHeight *= m_lastScale;
