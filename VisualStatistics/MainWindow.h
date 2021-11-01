@@ -30,14 +30,13 @@ private:
 
     void openStatFile(QString &path);
     void parseStatFileHeader(const QString &path, QString &error);
-    void translateToLocalPath(QString &path);
     void parseStatFileData(bool multipleWindows);
     void handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWindows);
     QString getMaintenanceToolPath();
 
-    void appendLogInfo(const QString &text);
-    void appendLogWarn(const QString &text);
-    void appendLogError(const QString &text);
+    void appendInfoLog(const QString &text);
+    void appendWarnLog(const QString &text);
+    void appendErrorLog(const QString &text);
 
     QString filterHistoryFilePath();
     void loadFilterHistory();
@@ -72,7 +71,7 @@ private slots:
     void clearLogEdit();
     void updateStatNameInfo();
     void updateModulesInfo();
-    void addRecentFile();
+    void openRecentFile();
     void caseSensitiveButtonClicked(bool checked);
 
     void actionOpenTriggered();

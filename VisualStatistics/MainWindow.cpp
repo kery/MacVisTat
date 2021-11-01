@@ -117,7 +117,7 @@ void MainWindow::startCheckNewVersionTask()
 {
     QString maintenanceToolPath = getMaintenanceToolPath();
     if (maintenanceToolPath.isEmpty()) {
-        appendLogWarn(QStringLiteral("unable to find updater"));
+        appendWarnLog(QStringLiteral("unable to find updater"));
         return;
     }
     QProcess *process = new QProcess();
@@ -173,7 +173,7 @@ bool MainWindow::isRegexpCaseButtonResizeEvent(QObject *obj, QEvent *event)
 
 void MainWindow::openStatFile(QString &path)
 {
-    translateToLocalPath(path);
+    path = QDir::toNativeSeparators(path);
 
     if (!m_statFilePath.isEmpty()) {
 #if defined(Q_OS_WIN)
@@ -191,7 +191,7 @@ void MainWindow::openStatFile(QString &path)
     QString error;
     parseStatFileHeader(path, error);
     if (!error.isEmpty()) {
-        appendLogError(error);
+        appendErrorLog(error);
         return;
     }
 
@@ -240,15 +240,10 @@ void MainWindow::parseStatFileHeader(const QString &path, QString &error)
             QString error;
             model->setFilterPattern(QStringList(), filterText, m_caseSensitive, error);
             if (!error.isEmpty()) {
-                appendLogError(error);
+                appendErrorLog(error);
             }
         }
     }
-}
-
-void MainWindow::translateToLocalPath(QString &path)
-{
-    path = QDir::toNativeSeparators(path);
 }
 
 void MainWindow::parseStatFileData(bool multipleWindows)
@@ -302,7 +297,7 @@ void MainWindow::parseStatFileData(bool multipleWindows)
     QString error;
     if (fileParser.parseFileData(indexNameMap, m_statFilePath, ndm, error)) {
         if (!error.isEmpty()) {
-            appendLogError(error);
+            appendErrorLog(error);
         } else if (!ndm.isEmpty()) {
             handleParsedStat(ndm, multipleWindows);
         }
@@ -353,19 +348,19 @@ QString MainWindow::getMaintenanceToolPath()
     return QString();
 }
 
-void MainWindow::appendLogInfo(const QString &text)
+void MainWindow::appendInfoLog(const QString &text)
 {
     m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='#808080'>[%1]</font>  <font color='#13a10e'>INFO</font>: %2").arg(
         QDateTime::currentDateTime().toString(DT_FORMAT), text));
 }
 
-void MainWindow::appendLogWarn(const QString &text)
+void MainWindow::appendWarnLog(const QString &text)
 {
     m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='#808080'>[%1]</font>  <font color='#c19c00'>WARN</font>: %2").arg(
         QDateTime::currentDateTime().toString(DT_FORMAT), text));
 }
 
-void MainWindow::appendLogError(const QString &text)
+void MainWindow::appendErrorLog(const QString &text)
 {
     m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='#808080'>[%1]</font> <font color='#c50f1f'>ERROR</font>: %2").arg(
         QDateTime::currentDateTime().toString(DT_FORMAT), text));
@@ -445,7 +440,7 @@ void MainWindow::initializeRecentFileActions()
     for (int i = 0; i < (int)m_recentFileActions.size(); ++i) {
         m_recentFileActions[i] = new QAction(this);
         m_recentFileActions[i]->setVisible(false);
-        connect(m_recentFileActions[i], SIGNAL(triggered()), this, SLOT(addRecentFile()));
+        connect(m_recentFileActions[i], &QAction::triggered, this, &MainWindow::openRecentFile);
 
         m_ui->menu_File->insertAction(m_sepAction, m_recentFileActions[i]);
     }
@@ -602,7 +597,7 @@ void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus 
     sender()->deleteLater();
 
     if (exitStatus != QProcess::NormalExit) {
-        appendLogWarn(QStringLiteral("updater crashed"));
+        appendWarnLog(QStringLiteral("updater crashed"));
         return;
     }
 
@@ -629,7 +624,7 @@ void MainWindow::checkNewVersionTaskError(QProcess::ProcessError error)
     // delivered, any pending events for the object are removed from the event queue.
     sender()->deleteLater();
 
-    appendLogWarn(QStringLiteral("updater failed with error %1").arg(error));
+    appendWarnLog(QStringLiteral("updater failed with error %1").arg(error));
 }
 
 void MainWindow::userReportTaskFinished(QNetworkReply *reply)
@@ -661,7 +656,7 @@ void MainWindow::updateFilterPattern()
     static_cast<StatisticsNameModel*>(m_ui->lvStatName->model())->setFilterPattern(
                 modules, m_ui->cbRegExpFilter->lineEdit()->text(), m_caseSensitive, error);
     if (!error.isEmpty()) {
-        appendLogError(error);
+        appendErrorLog(error);
     }
 }
 
@@ -725,7 +720,7 @@ void MainWindow::updateModulesInfo()
     m_lbModulesInfo->setText(QStringLiteral("Module:%1, Selected:%2; ").arg(modules).arg(selected));
 }
 
-void MainWindow::addRecentFile()
+void MainWindow::openRecentFile()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     QString path = action->data().toString();
@@ -772,21 +767,20 @@ void MainWindow::actionXmlToCSVTriggered()
     if (error.isEmpty()) {
         if (!convertedPath.isEmpty()) {
             QString info = "KPI-KCI files have been converted to " + QDir::toNativeSeparators(convertedPath);
-            appendLogInfo(info);
+            appendInfoLog(info);
+            actionCloseTriggered();
+            openStatFile(convertedPath);
 
             int answer = showQuestionMsgBox(this, info, QStringLiteral("Do you want to delete the original XML files?"), false);
             if (answer == QMessageBox::Yes) {
                 for (const QString &path : qAsConst(selectedFiles)) {
                     if (QFile::remove(path)) {
-                        appendLogInfo(QStringLiteral("delete %1 successfully").arg(QDir::toNativeSeparators(path)));
+                        appendInfoLog(QStringLiteral("delete %1 successfully").arg(QDir::toNativeSeparators(path)));
                     } else {
-                        appendLogWarn(QStringLiteral("delete %1 unsuccessfully").arg(QDir::toNativeSeparators(path)));
+                        appendWarnLog(QStringLiteral("delete %1 unsuccessfully").arg(QDir::toNativeSeparators(path)));
                     }
                 }
             }
-
-            actionCloseTriggered();
-            openStatFile(convertedPath);
         }
     } else {
         showErrorMsgBox(this, error);
