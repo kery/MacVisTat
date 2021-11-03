@@ -1,7 +1,7 @@
 #ifndef DRAGGABLEPLOT_H
 #define DRAGGABLEPLOT_H
 
-#include "third_party/qcustomplot/qcustomplot.h"
+#include <qcustomplot.h>
 
 class DraggablePlot : public QCustomPlot
 {

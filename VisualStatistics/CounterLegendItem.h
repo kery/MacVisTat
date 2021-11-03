@@ -1,7 +1,7 @@
 #ifndef COUNTERLEGENDITEM_H
 #define COUNTERLEGENDITEM_H
 
-#include "third_party/qcustomplot/qcustomplot.h"
+#include <qcustomplot.h>
 
 class CounterLegendItem : public QCPPlottableLegendItem
 {

@@ -19,39 +19,39 @@ UI_DIR = ui
 
 SOURCES += main.cpp\
     libcsv/libcsv.c \
-    third_party/qcustomplot/qcustomplot.cpp \
-    third_party/lua/lapi.cpp \
-    third_party/lua/lauxlib.cpp \
-    third_party/lua/lbaselib.cpp \
-    third_party/lua/lbitlib.cpp \
-    third_party/lua/lcode.cpp \
-    third_party/lua/lcorolib.cpp \
-    third_party/lua/lctype.cpp \
-    third_party/lua/ldblib.cpp \
-    third_party/lua/ldebug.cpp \
-    third_party/lua/ldo.cpp \
-    third_party/lua/ldump.cpp \
-    third_party/lua/lfunc.cpp \
-    third_party/lua/lgc.cpp \
-    third_party/lua/linit.cpp \
-    third_party/lua/liolib.cpp \
-    third_party/lua/llex.cpp \
-    third_party/lua/lmathlib.cpp \
-    third_party/lua/lmem.cpp \
-    third_party/lua/loadlib.cpp \
-    third_party/lua/lobject.cpp \
-    third_party/lua/lopcodes.cpp \
-    third_party/lua/loslib.cpp \
-    third_party/lua/lparser.cpp \
-    third_party/lua/lstate.cpp \
-    third_party/lua/lstring.cpp \
-    third_party/lua/lstrlib.cpp \
-    third_party/lua/ltable.cpp \
-    third_party/lua/ltablib.cpp \
-    third_party/lua/ltm.cpp \
-    third_party/lua/lundump.cpp \
-    third_party/lua/lvm.cpp \
-    third_party/lua/lzio.cpp \
+    qcustomplot/qcustomplot.cpp \
+    lua/lapi.cpp \
+    lua/lauxlib.cpp \
+    lua/lbaselib.cpp \
+    lua/lbitlib.cpp \
+    lua/lcode.cpp \
+    lua/lcorolib.cpp \
+    lua/lctype.cpp \
+    lua/ldblib.cpp \
+    lua/ldebug.cpp \
+    lua/ldo.cpp \
+    lua/ldump.cpp \
+    lua/lfunc.cpp \
+    lua/lgc.cpp \
+    lua/linit.cpp \
+    lua/liolib.cpp \
+    lua/llex.cpp \
+    lua/lmathlib.cpp \
+    lua/lmem.cpp \
+    lua/loadlib.cpp \
+    lua/lobject.cpp \
+    lua/lopcodes.cpp \
+    lua/loslib.cpp \
+    lua/lparser.cpp \
+    lua/lstate.cpp \
+    lua/lstring.cpp \
+    lua/lstrlib.cpp \
+    lua/ltable.cpp \
+    lua/ltablib.cpp \
+    lua/ltm.cpp \
+    lua/lundump.cpp \
+    lua/lvm.cpp \
+    lua/lzio.cpp \
     AboutDialog.cpp \
     AutoCompletionSrcPlotAPIs.cpp \
     ChangeLogDialog.cpp \
@@ -74,31 +74,31 @@ SOURCES += main.cpp\
 
 HEADERS  += \
     libcsv/csv.h \
-    third_party/qcustomplot/qcustomplot.h \
-    third_party/lua/lapi.h \
-    third_party/lua/lauxlib.h \
-    third_party/lua/lcode.h \
-    third_party/lua/lctype.h \
-    third_party/lua/ldebug.h \
-    third_party/lua/ldo.h \
-    third_party/lua/lfunc.h \
-    third_party/lua/lgc.h \
-    third_party/lua/llex.h \
-    third_party/lua/llimits.h \
-    third_party/lua/lmem.h \
-    third_party/lua/lobject.h \
-    third_party/lua/lopcodes.h \
-    third_party/lua/lparser.h \
-    third_party/lua/lstate.h \
-    third_party/lua/lstring.h \
-    third_party/lua/ltable.h \
-    third_party/lua/ltm.h \
-    third_party/lua/lua.h \
-    third_party/lua/luaconf.h \
-    third_party/lua/lualib.h \
-    third_party/lua/lundump.h \
-    third_party/lua/lvm.h \
-    third_party/lua/lzio.h \
+    qcustomplot/qcustomplot.h \
+    lua/lapi.h \
+    lua/lauxlib.h \
+    lua/lcode.h \
+    lua/lctype.h \
+    lua/ldebug.h \
+    lua/ldo.h \
+    lua/lfunc.h \
+    lua/lgc.h \
+    lua/llex.h \
+    lua/llimits.h \
+    lua/lmem.h \
+    lua/lobject.h \
+    lua/lopcodes.h \
+    lua/lparser.h \
+    lua/lstate.h \
+    lua/lstring.h \
+    lua/ltable.h \
+    lua/ltm.h \
+    lua/lua.h \
+    lua/luaconf.h \
+    lua/lualib.h \
+    lua/lundump.h \
+    lua/lvm.h \
+    lua/lzio.h \
     AboutDialog.h \
     AutoCompletionSrcPlotAPIs.h \
     ChangeLogDialog.h \
@@ -131,11 +131,12 @@ FORMS    += \
 RESOURCES += \
     VisualStatistics.qrc
 
-INCLUDEPATH += $$PWD/third_party/qcustomplot/
-INCLUDEPATH += $$PWD/third_party/expat
+INCLUDEPATH += $$PWD/qcustomplot/
+INCLUDEPATH += $$PWD/lua/
+INCLUDEPATH += $$PWD/expat
 
 win32 {
-    INCLUDEPATH += $$PWD/third_party/breakpad/
+    INCLUDEPATH += $$PWD/breakpad/
 
     QT += winextras
     TARGET = ../VisualStatistics
@@ -145,22 +146,22 @@ win32 {
 
     RC_FILE = VisualStatistics.rc
 
-    INCLUDEPATH += $$PWD/third_party/pcre/win
-    INCLUDEPATH += $$PWD/third_party/breakpad/client/windows/handler
+    INCLUDEPATH += $$PWD/pcre/win
+    INCLUDEPATH += $$PWD/breakpad/client/windows/handler
 
-    LIBS += -L$$PWD/third_party/pcre/win/ -lpcre
-    LIBS += -L$$PWD/third_party/expat/win/ -llibexpat
+    LIBS += -L$$PWD/pcre/win/ -lpcre
+    LIBS += -L$$PWD/expat/win/ -llibexpat
 }
 
 win32:CONFIG(debug, debug|release) {
-    LIBS += -L$$PWD/third_party/breakpad/lib/win/debug -lexception_handler -lcrash_generation_client -lcommon
+    LIBS += -L$$PWD/breakpad/lib/win/debug -lexception_handler -lcrash_generation_client -lcommon
 }
 
 win32:CONFIG(release, debug|release) {
     QMAKE_CXXFLAGS_RELEASE += /Zi
     QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
 
-    LIBS += -L$$PWD/third_party/breakpad/lib/win/release -lexception_handler -lcrash_generation_client -lcommon
+    LIBS += -L$$PWD/breakpad/lib/win/release -lexception_handler -lcrash_generation_client -lcommon
 }
 
 win32:CONFIG(profiling) {
@@ -175,11 +176,11 @@ unix:!macx {
     # infos
     # QMAKE_CXXFLAGS_RELEASE += -g
 
-    INCLUDEPATH += $$PWD/third_party/pcre/linux
+    INCLUDEPATH += $$PWD/pcre/linux
 
-    LIBS += -L$$PWD/third_party/pcre/linux/ -lpcre -lz
-    LIBS += -L$$PWD/third_party/expat/linux/ -lexpat
+    LIBS += -L$$PWD/pcre/linux/ -lpcre -lz
+    LIBS += -L$$PWD/expat/linux/ -lexpat
 }
 
 DISTFILES += \
-    third_party/lua/Makefile
+    lua/Makefile

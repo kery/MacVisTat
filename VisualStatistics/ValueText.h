@@ -1,7 +1,7 @@
 #ifndef VALUETEXT_H
 #define VALUETEXT_H
 
-#include <third_party/qcustomplot/qcustomplot.h>
+#include <qcustomplot.h>
 
 class ValueText : public QCPItemText
 {
