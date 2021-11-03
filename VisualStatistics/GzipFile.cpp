@@ -49,36 +49,35 @@ int GzipFile::read(char *data, int maxlen)
 
 int GzipFile::write(const char *data, int len)
 {
-    Q_ASSERT(_fileSize == -1);
-
     return writeData(data, len);
 }
 
 int GzipFile::write(const std::string &data)
 {
-    return write(data.c_str(), (int)data.length());
+    return writeData(data.c_str(), data.length());
 }
 
-bool GzipFile::readLine(std::string &line)
+bool GzipFile::readLine(std::string &line, bool rmNewline)
 {
     Q_ASSERT(_fileSize > -1);
 
-    char buffer[4096];
-
     line.clear();
 
+    char buffer[4096];
     while (gzgets(_gzFile, buffer, sizeof(buffer))) {
         line.append(buffer);
         if (line.back() == '\n') {
-            line.pop_back();
-            if (line.back() == '\r') {
+            if (rmNewline) {
                 line.pop_back();
+                if (line.back() == '\r') {
+                    line.pop_back();
+                }
             }
-            return true;
+            break;
         }
     }
 
-    return gzeof(_gzFile);
+    return !(line.empty() && gzeof(_gzFile));
 }
 
 int GzipFile::progress() const

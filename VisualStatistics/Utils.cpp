@@ -1,13 +1,6 @@
 #include "Utils.h"
 #include <cstring>
 
-int versionStringToNumber(const QString &version)
-{
-    QString temp(version);
-    temp.remove('.');
-    return temp.toInt();
-}
-
 void splitString(const char *str, char ch, vector<string> &out)
 {
     const char *ptr;
@@ -53,7 +46,7 @@ bool isValieOffsetFromUtc(int offset)
 void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info)
 {
     QMessageBox msgBox(parent);
-    msgBox.setWindowTitle(QStringLiteral("VisualStatistics"));
+    msgBox.setWindowTitle(QStringLiteral("Visual Statistics"));
     msgBox.setIcon(QMessageBox::Information);
     msgBox.setText(text);
     if (!info.isEmpty()) {
@@ -65,7 +58,7 @@ void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info)
 void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info)
 {
     QMessageBox msgBox(parent);
-    msgBox.setWindowTitle(QStringLiteral("VisualStatistics"));
+    msgBox.setWindowTitle(QStringLiteral("Visual Statistics"));
     msgBox.setIcon(QMessageBox::Critical);
     msgBox.setText(text);
     if (!info.isEmpty()) {
@@ -77,7 +70,7 @@ void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info)
 int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info, bool defaultYes)
 {
     QMessageBox msgBox(parent);
-    msgBox.setWindowTitle(QStringLiteral("VisualStatistics"));
+    msgBox.setWindowTitle(QStringLiteral("Visual Statistics"));
     msgBox.setIcon(QMessageBox::Question);
     msgBox.setText(text);
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);

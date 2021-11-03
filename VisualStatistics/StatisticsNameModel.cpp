@@ -1,5 +1,8 @@
 #include "StatisticsNameModel.h"
 #include "Statistics.h"
+#include "GzipFile.h"
+#include "libcsv/csv.h"
+
 #include <set>
 #include <QSet>
 
@@ -232,6 +235,52 @@ int StatisticsNameModel::totalCount() const
     return (int)m_statNames.size();
 }
 
+struct CsvCbUserData {
+    std::vector<std::string> columns;
+    std::unordered_map<StatisticsNameModel::StatId, std::string, StatisticsNameModel::StatIdHasher> *desc;
+};
+
+static void libcsvCbEndOfField(void *field, size_t len, void *ud)
+{
+    if (field) {
+        auto ccud = static_cast<CsvCbUserData *>(ud);
+        ccud->columns.push_back(std::string((const char *)field, len));
+    }
+}
+
+static void libcsvCbEndOfRow(int, void *ud)
+{
+    auto ccud = static_cast<CsvCbUserData *>(ud);
+    if (ccud->columns.size() == 4) {
+        ccud->desc->emplace(StatisticsNameModel::StatId(ccud->columns[0], ccud->columns[1], ccud->columns[2]), ccud->columns[3]);
+    }
+    ccud->columns.clear();
+}
+
+void StatisticsNameModel::parseStatDescription(const QString &path)
+{
+    GzipFile fileReader;
+    if (!fileReader.open(path)) {
+        return;
+    }
+
+    CsvCbUserData ud;
+    ud.columns.reserve(4);
+    ud.desc = &m_statDesc;
+
+    struct csv_parser p;
+    csv_init(&p, CSV_STRICT|CSV_STRICT_FINI|CSV_EMPTY_IS_NULL);
+
+    std::string line;
+    fileReader.readLine(line, false); // Consume the header line
+    while (fileReader.readLine(line, false)) {
+        csv_parse(&p, line.c_str(), line.length(), libcsvCbEndOfField, libcsvCbEndOfRow, &ud);
+    }
+
+    csv_fini(&p, libcsvCbEndOfField, libcsvCbEndOfRow, &ud);
+    csv_free(&p);
+}
+
 bool StatisticsNameModel::canFetchMore(const QModelIndex &parent) const
 {
     return m_fetchedCount < (int)m_indexes.size() && !parent.isValid();
@@ -256,11 +305,39 @@ int	StatisticsNameModel::rowCount(const QModelIndex &parent) const
     return parent.isValid() ? 0 : m_fetchedCount;
 }
 
+static StatisticsNameModel::StatId getStatId(const std::string &name)
+{
+    StatisticsNameModel::StatId sid;
+    size_t pos1 = name.find(',');
+    if (pos1 != std::string::npos) {
+        sid.module = name.substr(0, pos1);
+        pos1 = name.find("GroupName=", pos1);
+        if (pos1 != std::string::npos) {
+            pos1 += 10;
+            size_t pos2 = name.find(',', pos1);
+            if (pos2 != std::string::npos) {
+                sid.group = name.substr(pos1, pos2 - pos1);
+                pos1 = name.rfind(',');
+                if (pos1 != std::string::npos) {
+                    sid.object = name.substr(pos1 + 1);
+                }
+            }
+        }
+    }
+    return sid;
+}
+
 QVariant StatisticsNameModel::data(const QModelIndex &index, int role) const
 {
     if (index.isValid()) {
         if (role == Qt::DisplayRole) {
             return m_statNames[m_indexes[index.row()]].c_str();
+        } else if (role == Qt::StatusTipRole) {
+            const std::string &statName = m_statNames[m_indexes[index.row()]];
+            StatisticsNameModel::StatId sid = getStatId(statName);
+            if (m_statDesc.find(sid) != m_statDesc.end()) {
+                return m_statDesc.at(sid).c_str();
+            }
         } else if (role == Qt::UserRole) {
             // Consider the first 2 column: ##date;time;shm_xxx
             return m_indexes[index.row()] + 2;

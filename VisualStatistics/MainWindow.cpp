@@ -14,7 +14,6 @@
 #include <QDragEnterEvent>
 #include <QHostInfo>
 #include <QSysInfo>
-#include <QNetworkAccessManager>
 #include <QNetworkProxyQuery>
 
 MainWindow::MainWindow() :
@@ -97,10 +96,18 @@ MainWindow::MainWindow() :
     connect(m_ui->actionChangeLog, &QAction::triggered, this, &MainWindow::actionChangeLogTriggered);
     connect(m_ui->actionAbout, &QAction::triggered, this, &MainWindow::actionAboutTriggered);
 
+    QUrl url("http://sdu.int.nokia-sbell.com:4099/");
+    QNetworkProxyQuery npq(url);
+    QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(npq);
+    if (proxies.size() > 0) {
+        m_netMan.setProxy(proxies[0]);
+    }
+
 #ifdef INSTALLER
     startCheckNewVersionTask();
     startUserReportTask();
 #endif
+    startFetchStatDescriptionTask();
 
     loadFilterHistory();
 
@@ -128,15 +135,6 @@ void MainWindow::startCheckNewVersionTask()
 
 void MainWindow::startUserReportTask()
 {
-    QNetworkAccessManager *manager = new QNetworkAccessManager();
-    QUrl url("http://sdu.int.nokia-sbell.com:4099/report");
-    QNetworkProxyQuery npq(url);
-    QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(npq);
-    if (proxies.size() > 0) {
-        manager->setProxy(proxies[0]);
-    }
-    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(userReportTaskFinished(QNetworkReply*)));
-
     QByteArray hostNameHash = QCryptographicHash::hash(QHostInfo::localHostName().toLatin1(),
                                                        QCryptographicHash::Md5);
     QString postData("host=");
@@ -153,9 +151,19 @@ void MainWindow::startUserReportTask()
     postData += "&ver=";
     postData += VER_FILEVERSION_STR;
 
+    QUrl url("http://sdu.int.nokia-sbell.com:4099/report");
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    manager->post(request, postData.toLatin1());
+    QNetworkReply *reply = m_netMan.post(request, postData.toLatin1());
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::userReportTaskFinished);
+}
+
+void MainWindow::startFetchStatDescriptionTask()
+{
+    QUrl url("http://sdu.int.nokia-sbell.com:4099/counters.desc");
+    QNetworkRequest request(url);
+    QNetworkReply *reply = m_netMan.get(request);
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::fetchStatDescriptionFinished);
 }
 
 void MainWindow::disableToolTipOfToolButton()
@@ -369,6 +377,11 @@ void MainWindow::appendErrorLog(const QString &text)
 QString MainWindow::filterHistoryFilePath()
 {
     return QDir::home().filePath(QStringLiteral(".vstat_filter_hist"));
+}
+
+QString MainWindow::statDescriptionFilePath()
+{
+    return QDir::home().filePath(QStringLiteral(".vstat_stat_desc"));
 }
 
 void MainWindow::loadFilterHistory()
@@ -627,10 +640,29 @@ void MainWindow::checkNewVersionTaskError(QProcess::ProcessError error)
     appendWarnLog(QStringLiteral("updater failed with error %1").arg(error));
 }
 
-void MainWindow::userReportTaskFinished(QNetworkReply *reply)
+void MainWindow::userReportTaskFinished()
 {
     sender()->deleteLater();
+}
+
+void MainWindow::fetchStatDescriptionFinished()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     reply->deleteLater();
+
+    QFile file(statDescriptionFilePath());
+    if (reply->error() == QNetworkReply::NoError) {
+        QByteArray netData = reply->readAll();
+        if (file.open(QIODevice::ReadWrite)) {
+            QByteArray fileData = file.readAll();
+            if (fileData != netData && file.resize(0)) {
+                file.write(netData);
+            }
+            file.close();
+        }
+    }
+
+    static_cast<StatisticsNameModel*>(m_ui->lvStatName->model())->parseStatDescription(file.fileName());
 }
 
 void MainWindow::cbRegExpFilterEditReturnPressed()

@@ -452,7 +452,7 @@ static XmlHeaderResult parseXmlHeader(volatile const bool &working, const QStrin
         int isFinal = len < (int)sizeof(buf);
         if (XML_Parse(parser, buf, len, isFinal) == XML_STATUS_ERROR) {
             result.errors.reserve(1);
-            result.errors.append(QStringLiteral("failed to parse XML file %1: %2, line %3").arg(filePath)
+            result.errors.append(QStringLiteral("failed to parse KPI-KCI file %1: %2, line %3").arg(filePath)
                                  .arg(XML_ErrorString(XML_GetErrorCode(parser)))
                                  .arg(XML_GetCurrentLineNumber(parser)));
             break;
@@ -673,7 +673,7 @@ static XmlDataResult parseXmlData(const QString &filePath, const std::unordered_
         int isFinal = len < (int)sizeof(buf);
         if (XML_Parse(parser, buf, len, isFinal) == XML_STATUS_ERROR) {
             result.errors.reserve(1);
-            result.errors.append(QStringLiteral("failed to parse XML file %1: %2, line %3").arg(filePath)
+            result.errors.append(QStringLiteral("failed to parse KPI-KCI file %1: %2, line %3").arg(filePath)
                                  .arg(XML_ErrorString(XML_GetErrorCode(parser)))
                                  .arg(XML_GetCurrentLineNumber(parser)));
             break;

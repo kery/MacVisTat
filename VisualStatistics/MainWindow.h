@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <array>
 #include "Statistics.h"
@@ -24,6 +25,7 @@ public:
 private:
     void startCheckNewVersionTask();
     void startUserReportTask();
+    void startFetchStatDescriptionTask();
 
     void disableToolTipOfToolButton();
     bool isRegexpCaseButtonResizeEvent(QObject *obj, QEvent *event);
@@ -39,6 +41,7 @@ private:
     void appendErrorLog(const QString &text);
 
     QString filterHistoryFilePath();
+    QString statDescriptionFilePath();
     void loadFilterHistory();
     void saveFilterHistory();
     void adjustFilterHistoryOrder();
@@ -61,7 +64,8 @@ private:
 private slots:
     void checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void checkNewVersionTaskError(QProcess::ProcessError error);
-    void userReportTaskFinished(QNetworkReply *reply);
+    void userReportTaskFinished();
+    void fetchStatDescriptionFinished();
 
     void cbRegExpFilterEditReturnPressed();
     void updateFilterPattern();
@@ -97,6 +101,7 @@ private:
     QLabel *m_lbModulesInfo;
     QAction *m_sepAction;
     std::array<QAction *, 10> m_recentFileActions;
+    QNetworkAccessManager m_netMan;
 };
 
 #endif // MAINWINDOW_H

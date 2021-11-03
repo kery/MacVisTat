@@ -1,0 +1,3 @@
+[submodule "VisualStatistics/libcsv"]
+	path = VisualStatistics/libcsv
+	url = https://github.com/rgamble/libcsv.git

@@ -23,7 +23,7 @@ public:
     int write(const char *data, int len);
     int write(const std::string &data);
 
-    bool readLine(std::string &line);
+    bool readLine(std::string &line, bool rmNewline=true);
     int progress() const;
 
 protected:

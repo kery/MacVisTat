@@ -11,8 +11,6 @@
 
 using namespace std;
 
-int versionStringToNumber(const QString &version);
-
 void splitString(const char *str, char ch, vector<string> &out);
 
 void adjustYAxisRange(QCPAxis *yAxis);

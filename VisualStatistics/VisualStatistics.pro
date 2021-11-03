@@ -18,6 +18,7 @@ RCC_DIR = rcc
 UI_DIR = ui
 
 SOURCES += main.cpp\
+    libcsv/libcsv.c \
     third_party/qcustomplot/qcustomplot.cpp \
     third_party/lua/lapi.cpp \
     third_party/lua/lauxlib.cpp \
@@ -72,6 +73,7 @@ SOURCES += main.cpp\
     ValueText.cpp
 
 HEADERS  += \
+    libcsv/csv.h \
     third_party/qcustomplot/qcustomplot.h \
     third_party/lua/lapi.h \
     third_party/lua/lauxlib.h \
