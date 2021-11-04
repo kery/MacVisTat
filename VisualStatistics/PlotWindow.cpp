@@ -354,7 +354,7 @@ void PlotWindow::updateScatter(const QVector<double> &tickVector, int plotWidth,
     }
 }
 
-QCPGraph * PlotWindow::findNearestGraphValue(int index, double yCoord, double &value)
+QCPGraph * PlotWindow::findNearestGraphValue(int index, double yCoord, double &value, bool &suspect)
 {
     QCustomPlot *plot = m_ui->customPlot;
     QCPGraph *retGraph = nullptr;
@@ -376,6 +376,7 @@ QCPGraph * PlotWindow::findNearestGraphValue(int index, double yCoord, double &v
         if (yDistance < minDist) {
             minDist = yDistance;
             value = iter->value;
+            suspect = iter->valueErrorMinus > 0;
             retGraph = graph;
         }
     }
@@ -579,6 +580,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
 
     const double MAX_DIST = 20;
 
+    bool suspectFlag;
     QCPGraph *graph = nullptr;
     double value = 0, dist = MAX_DIST;
 
@@ -587,7 +589,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
 
     if (xRange.contains(index)) {
         double yCoord = plot->yAxis->pixelToCoord(event->pos().y());
-        graph = findNearestGraphValue(index, yCoord, value);
+        graph = findNearestGraphValue(index, yCoord, value, suspectFlag);
         dist = qAbs(plot->yAxis->coordToPixel(value) - event->pos().y());
     }
 
@@ -623,7 +625,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
 
         m_valueText->setGraphName(qobject_cast<CounterGraph *>(graph)->displayName());
         m_valueText->setDateTime(m_stat.getDateTimeString(index));
-        m_valueText->setGraphValue(QString::number(value, 'f', 2));
+        m_valueText->setGraphValue(QString::number(value, 'f', 2), suspectFlag);
         m_valueText->updateText();
         m_valueText->setVisible(true);
 

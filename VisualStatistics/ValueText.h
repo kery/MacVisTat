@@ -12,7 +12,7 @@ public:
 
     void setGraphName(const QString &name);
     void setDateTime(const QString &dt);
-    void setGraphValue(const QString &value);
+    void setGraphValue(const QString &value, bool suspectFlag);
     QString graphName() const;
     QString graphValue() const;
 
@@ -22,6 +22,7 @@ protected:
     virtual void draw(QCPPainter *painter);
 
 private:
+    bool m_suspectFlag;
     QString m_graphName;
     QString m_dateTime;
     QString m_graphValue;

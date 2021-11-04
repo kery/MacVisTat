@@ -45,7 +45,7 @@ private:
     bool shouldDrawScatter(const QVector<double> &tickVector, int plotWidth, int fontHeight) const;
     void updateScatter(const QVector<double> &tickVector, int plotWidth, int fontHeight);
 
-    QCPGraph * findNearestGraphValue(int index, double yCoord, double &value);
+    QCPGraph * findNearestGraphValue(int index, double yCoord, double &value, bool &suspect);
 
     QString genAggregateGraphName();
     void removeGraphs(const QVector<CounterGraph *> &graphs);

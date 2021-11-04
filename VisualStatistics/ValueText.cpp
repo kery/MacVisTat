@@ -29,9 +29,10 @@ void ValueText::setDateTime(const QString &dt)
     m_dateTime = dt;
 }
 
-void ValueText::setGraphValue(const QString &value)
+void ValueText::setGraphValue(const QString &value, bool suspectFlag)
 {
     m_graphValue = value;
+    m_suspectFlag = suspectFlag;
 }
 
 QString ValueText::graphName() const
@@ -51,6 +52,9 @@ void ValueText::updateText()
     text += m_dateTime;
     text += '\n';
     text += m_graphValue;
+    if (m_suspectFlag) {
+        text += " (suspect)";
+    }
 
     setText(text);
 }
