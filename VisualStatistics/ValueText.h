@@ -10,13 +10,9 @@ class ValueText : public QCPItemText
 public:
     ValueText(const QCPItemTracer *tracer);
 
-    void setGraphName(const QString &name);
-    void setDateTime(const QString &dt);
-    void setGraphValue(const QString &value, bool suspectFlag);
+    void setValueInfo(const QString &name, const QString &dt, const QString &value, bool suspectFlag);
     QString graphName() const;
     QString graphValue() const;
-
-    void updateText();
 
 protected:
     virtual void draw(QCPPainter *painter);

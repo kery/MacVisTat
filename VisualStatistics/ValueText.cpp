@@ -19,34 +19,13 @@ ValueText::ValueText(const QCPItemTracer *tracer) :
     position->setParentAnchor(tracer->position);
 }
 
-void ValueText::setGraphName(const QString &name)
+void ValueText::setValueInfo(const QString &name, const QString &dt, const QString &value, bool suspectFlag)
 {
     m_graphName = name;
-}
-
-void ValueText::setDateTime(const QString &dt)
-{
     m_dateTime = dt;
-}
-
-void ValueText::setGraphValue(const QString &value, bool suspectFlag)
-{
     m_graphValue = value;
     m_suspectFlag = suspectFlag;
-}
 
-QString ValueText::graphName() const
-{
-    return m_graphName;
-}
-
-QString ValueText::graphValue() const
-{
-    return m_graphValue;
-}
-
-void ValueText::updateText()
-{
     QString text = m_graphName;
     text += '\n';
     text += m_dateTime;
@@ -59,6 +38,16 @@ void ValueText::updateText()
     setText(text);
 }
 
+QString ValueText::graphName() const
+{
+    return m_graphName;
+}
+
+QString ValueText::graphValue() const
+{
+    return m_graphValue;
+}
+
 void ValueText::draw(QCPPainter *painter)
 {
     QPointF coords(PosOffset, PosOffset);
@@ -67,13 +56,13 @@ void ValueText::draw(QCPPainter *painter)
     double height = bottom->pixelPoint().y() - top->pixelPoint().y();
 
     double widthOutside = (tracerPos.x() + PosOffset + width) - clipRect().right();
-    if (widthOutside > 0) {
-        coords.rx() -= widthOutside;
+    if (widthOutside >= 0) {
+        coords.rx() -= widthOutside + 1;
     }
 
     double heightOutside = (tracerPos.y() + PosOffset + height) - clipRect().bottom();
-    if (heightOutside > 0) {
-        widthOutside > 0 ? coords.ry() = -PosOffset - height : coords.ry() -= heightOutside;
+    if (heightOutside >= 0) {
+        widthOutside >= 0 ? coords.ry() = -PosOffset - height : coords.ry() -= heightOutside + 2;
     }
 
     position->setCoords(coords);

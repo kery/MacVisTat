@@ -622,11 +622,10 @@ void PlotWindow::mouseMove(QMouseEvent *event)
         setTracerGraph(graph);
         m_tracer->setGraphKey(index);
         m_tracer->setVisible(true);
-
-        m_valueText->setGraphName(qobject_cast<CounterGraph *>(graph)->displayName());
-        m_valueText->setDateTime(m_stat.getDateTimeString(index));
-        m_valueText->setGraphValue(QString::number(value, 'f', 2), suspectFlag);
-        m_valueText->updateText();
+        m_valueText->setValueInfo(qobject_cast<CounterGraph *>(graph)->displayName(),
+                                  m_stat.getDateTimeString(index),
+                                  QString::number(value, 'f', 2),
+                                  suspectFlag);
         m_valueText->setVisible(true);
 
         if (plot->graphCount() <= AnimationMaxGraphs) {
