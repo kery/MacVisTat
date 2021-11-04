@@ -1,3 +1,6 @@
 [submodule "VisualStatistics/libcsv"]
 	path = VisualStatistics/libcsv
 	url = https://github.com/rgamble/libcsv.git
+[submodule "VisualStatistics/lua"]
+	path = VisualStatistics/lua
+	url = https://github.com/lua/lua.git

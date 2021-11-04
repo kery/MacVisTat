@@ -1,9 +1,11 @@
 #ifndef LUAENVIRONMENT_H
 #define LUAENVIRONMENT_H
 
+extern "C" {
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+}
 #include <QString>
 
 class ScriptWindow;
