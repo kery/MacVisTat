@@ -193,7 +193,6 @@ void PlotWindow::initializePlot()
     connect(plot, &QCustomPlot::mouseMove, this, &PlotWindow::mouseMove);
     connect(plot, &QCustomPlot::mouseWheel, this, &PlotWindow::mouseWheel);
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
-    connect(plot, &QCustomPlot::mouseDoubleClick, this, &PlotWindow::plotDoubleClick);
 
     QSettings settings;
     bool showSuspectFlag = settings.value(QStringLiteral("showSuspectFlag"), true).toBool();
@@ -704,25 +703,22 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         actionDisplayUtc->setEnabled(false);
     }
 
-    QAction *actionRemoveBg = menu->addAction(QStringLiteral("Remove Background"), this, &PlotWindow::removeBackgroundTriggered);
-    if (plot->background().isNull()) {
-        actionRemoveBg->setEnabled(false);
-    }
+    menu->addSeparator();
+
+    QAction *actionAddGraph = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, &PlotWindow::addAggregateGraph);
+    QAction *actionSetColor = menu->addAction(QStringLiteral("Set Graph Color"), this, &PlotWindow::setGraphColor);
+    QAction *actionCopyName = menu->addAction(QStringLiteral("Copy Graph Name"), this, &PlotWindow::copyGraphName);
+    QAction *actionCopyValue = menu->addAction(QStringLiteral("Copy Graph Value"), this, &PlotWindow::copyGraphValue);
 
     menu->addSeparator();
 
-    QAction *actionAddGraph = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, SLOT(addAggregateGraph()));
-    QAction *actionCopyName = menu->addAction(QStringLiteral("Copy Graph Name"), this, SLOT(copyGraphName()));
-    QAction *actionCopyValue = menu->addAction(QStringLiteral("Copy Graph Value"), this, SLOT(copyGraphValue()));
-
-    menu->addSeparator();
-
-    QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, SLOT(removeSelectedGraphs()));
-    QAction *actionRemoveUnsel = menu->addAction(QStringLiteral("Remove Unselected Graphs"), this, SLOT(removeUnselectedGraphs()));
+    QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, &PlotWindow::removeSelectedGraphs);
+    QAction *actionRemoveUnsel = menu->addAction(QStringLiteral("Remove Unselected Graphs"), this, &PlotWindow::removeUnselectedGraphs);
 
     auto selectedLegendItems = plot->legend->selectedItems();
     if (selectedLegendItems.isEmpty()) {
         if (!m_valueText->visible()) {
+            actionSetColor->setEnabled(false);
             actionCopyName->setEnabled(false);
         }
         actionRemove->setEnabled(false);
@@ -738,42 +734,6 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     }
 
     menu->popup(plot->mapToGlobal(pos));
-}
-
-void PlotWindow::plotDoubleClick(QMouseEvent *event)
-{
-    QVector<QCPGraph *> graphs;
-    DraggablePlot *plot = m_ui->customPlot;
-
-    if (m_ui->customPlot->legend->outerRect().contains(event->pos())) {
-        if (QCPGraph *graph = plot->graphAtPosInLegend(event->pos())) {
-            graphs.append(graph);
-        }
-    } else {
-        for (int i = 0; i < plot->graphCount(); ++i) {
-            graphs.append(plot->graph(i));
-        }
-    }
-    if (graphs.isEmpty()) {
-        return;
-    }
-
-    QColor color = QColorDialog::getColor(graphs.first()->pen().color(), this);
-    if (!color.isValid()) {
-        return;
-    }
-
-    for (QCPGraph *graph : graphs) {
-        graph->setPen(color);
-        graph->setSelectedPen(graph->pen());
-
-        QCPScatterStyle scatterStyle = graph->scatterStyle();
-        if (scatterStyle.shape() != QCPScatterStyle::ssNone) {
-            scatterStyle.setPen(color);
-            graph->setScatterStyle(scatterStyle);
-        }
-    }
-    m_ui->customPlot->replot(QCustomPlot::rpQueued);
 }
 
 static QRectF translateToInsetRect(QCPLayoutInset *layout, const QRectF &rect)
@@ -911,6 +871,40 @@ void PlotWindow::removeUnselectedGraphs()
     removeGraphs(selectedGraphs(false));
 }
 
+void PlotWindow::setGraphColor()
+{
+    QVector<QCPGraph *> graphs;
+    if (m_valueText->visible() && m_tracer->graph()) {
+        graphs.append(m_tracer->graph());
+    } else {
+        const auto selectedItems = m_ui->customPlot->legend->selectedItems();
+        for (auto item : selectedItems) {
+            QCPAbstractPlottable *plottable = qobject_cast<QCPPlottableLegendItem *>(item)->plottable();
+            QCPGraph *graph = qobject_cast<QCPGraph *>(plottable);
+            graphs.append(graph);
+        }
+    }
+    if (graphs.isEmpty()) {
+        return;
+    }
+
+    QColor color = QColorDialog::getColor(graphs.first()->pen().color(), this);
+    if (!color.isValid()) {
+        return;
+    }
+    for (QCPGraph *graph : graphs) {
+        graph->setPen(color);
+        graph->setSelectedPen(graph->pen());
+
+        QCPScatterStyle scatterStyle = graph->scatterStyle();
+        if (scatterStyle.shape() != QCPScatterStyle::ssNone) {
+            scatterStyle.setPen(color);
+            graph->setScatterStyle(scatterStyle);
+        }
+    }
+    m_ui->customPlot->replot(QCustomPlot::rpQueued);
+}
+
 void PlotWindow::copyGraphName()
 {
     if (m_valueText->visible()) {
@@ -963,16 +957,6 @@ void PlotWindow::displayUtcTimeTriggered(bool checked)
         updatePlotTitle();
         plot->replot(QCustomPlot::rpQueued);
     }
-}
-
-void PlotWindow::removeBackgroundTriggered(bool checked)
-{
-    Q_UNUSED(checked)
-
-    QCustomPlot *plot = m_ui->customPlot;
-    plot->setBackground(QPixmap());
-    plot->axisRect()->setAutoMargins(QCP::msAll);
-    plot->replot(QCustomPlot::rpQueued);
 }
 
 void PlotWindow::updateDateTimeEdit(const QCPRange &newRange)

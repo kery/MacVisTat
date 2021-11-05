@@ -6,16 +6,6 @@ DraggablePlot::DraggablePlot(QWidget *parent) :
     setAcceptDrops(true);
 }
 
-QCPGraph * DraggablePlot::graphAtPosInLegend(const QPoint &pos)
-{
-    QCPLayerable *clickedLayerable = layerableAt(pos, false, nullptr);
-    if (QCPAbstractLegendItem *li = qobject_cast<QCPAbstractLegendItem*>(clickedLayerable)) {
-        QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(li);
-        return qobject_cast<QCPGraph *>(plItem->plottable());
-    }
-    return nullptr;
-}
-
 void DraggablePlot::mousePressEvent(QMouseEvent *event)
 {
     if (legend->visible() && legend->selectTest(event->pos(), false) >= 0 &&
@@ -25,25 +15,6 @@ void DraggablePlot::mousePressEvent(QMouseEvent *event)
     } else {
         _dragStartPos.setX(-1);
         _dragStartPos.setY(-1);
-
-        if (event->button() == Qt::RightButton && QGuiApplication::keyboardModifiers() & Qt::ControlModifier) {
-            QPixmap bgImg = toBackgroundPixmap();
-            QByteArray bgData;
-            QDataStream stream(&bgData, QIODevice::WriteOnly);
-            stream << bgImg << window()->size() << axisRect()->margins();
-
-            QMimeData *mimeData = new QMimeData();
-            mimeData->setData(QStringLiteral("application/visualstat-bg"), bgData);
-
-            QDrag *drag = new QDrag(this);
-            drag->setMimeData(mimeData);
-            drag->setPixmap(bgImg.scaledToWidth(160, Qt::SmoothTransformation));
-
-            double scaleRatio = double(160)/bgImg.width();
-            QPoint pos = event->pos();
-            drag->setHotSpot(QPoint(pos.x()*scaleRatio, pos.y()*scaleRatio));
-            drag->exec(Qt::CopyAction);
-        }
     }
 
     QCustomPlot::mousePressEvent(event);
@@ -115,9 +86,6 @@ void DraggablePlot::dragEnterEvent(QDragEnterEvent *event)
             event->source() == this)
     {
         event->acceptProposedAction();
-    } else if (event->mimeData()->hasFormat(QStringLiteral("application/visualstat-bg")) &&
-               event->source() != this) {
-        event->acceptProposedAction();
     }
 }
 
@@ -139,37 +107,7 @@ void DraggablePlot::dropEvent(QDropEvent *event)
                                        (newPos.y() - insetLayoutRect.top())/insetLayoutRect.height(),
                                        0, 0));
         replot(rpQueued);
-    } else if (event->mimeData()->hasFormat(QStringLiteral("application/visualstat-bg"))) {
-        QByteArray bgData = event->mimeData()->data(QStringLiteral("application/visualstat-bg"));
-        QDataStream stream(&bgData, QIODevice::ReadOnly);
-
-        QPixmap pixmap;
-        QSize wndSize;
-        QMargins margins;
-        stream >> pixmap >> wndSize >> margins;
-
-        setBackground(pixmap, false);
-        axisRect()->setAutoMargins(QCP::msTop|QCP::msRight|QCP::msBottom);
-        axisRect()->setMargins(margins);
-        window()->resize(wndSize);
-        replot(rpQueued);
     }
-}
-
-QPixmap DraggablePlot::toBackgroundPixmap()
-{
-    QString label = xAxis2->label();
-    QColor labelColor = xAxis->tickLabelColor();
-
-    xAxis2->setLabel(" ");
-    xAxis->setTickLabelColor(mBackgroundBrush.color());
-    yAxis->setTickLabelColor(graphCount() > 0 ? graph(graphCount() - 1)->pen().color() : Qt::darkGray);
-    QPixmap result = toPixmap();
-    yAxis->setTickLabelColor(labelColor);
-    xAxis->setTickLabelColor(labelColor);
-    xAxis2->setLabel(label);
-
-    return result;
 }
 
 int DraggablePlot::calcLegendPixmapHeight(QPoint &hotSpot)
