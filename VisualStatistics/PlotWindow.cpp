@@ -87,6 +87,8 @@ PlotWindow::PlotWindow(Statistics &stat) :
 
 PlotWindow::~PlotWindow()
 {
+    delete m_tracer;
+    delete m_valueText;
     delete m_ui;
 }
 
@@ -396,6 +398,17 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
     QCustomPlot *plot = m_ui->customPlot;
     for (CounterGraph *graph : graphs) {
         m_stat.removeDataMap(graph->name());
+        if (m_tracer->graph() == graph) {
+            m_tracer->setVisible(false);
+            m_tracer->setGraph(nullptr);
+            m_valueText->setVisible(false);
+        }
+        for (int i = plot->itemCount() - 1; i >= 0; --i) {
+            CommentText *cmtText = qobject_cast<CommentText *>(plot->item(i));
+            if (cmtText && cmtText->graph() == graph) {
+                plot->removeItem(cmtText);
+            }
+        }
         plot->removeGraph(graph);
     }
 
@@ -451,6 +464,20 @@ void PlotWindow::setTracerGraph(QCPGraph *graph)
         connect(m_tracer, &QCPItemTracer::selectionChanged, graph, &QCPGraph::setSelected);
         connect(graph, &QCPGraph::selectionChanged, m_tracer, &QCPItemTracer::setSelected);
     }
+}
+
+QString PlotWindow::getInputComment(const QString &text)
+{
+    QInputDialog dlg(this, Qt::WindowSystemMenuHint | Qt::WindowTitleHint);
+    dlg.setOptions(QInputDialog::UsePlainTextEditForTextInput);
+    dlg.setWindowTitle(QStringLiteral("Visual Statistics"));
+    dlg.setLabelText(QStringLiteral("Comment:"));
+    dlg.setTextValue(text);
+    dlg.setInputMethodHints(Qt::ImhNone);
+    dlg.setSizeGripEnabled(true);
+    dlg.resize(800, 300);
+    dlg.exec();
+    return dlg.textValue();
 }
 
 int PlotWindow::graphIndex(QCPGraph *graph) const
@@ -618,8 +645,8 @@ void PlotWindow::mouseMove(QMouseEvent *event)
             m_tracer->setSelectedBrush(color);
         }
 
-        setTracerGraph(graph);
         m_tracer->setGraphKey(index);
+        setTracerGraph(graph);
         m_tracer->setVisible(true);
         m_valueText->setValueInfo(qobject_cast<CounterGraph *>(graph)->displayName(),
                                   m_stat.getDateTimeString(index),
@@ -705,6 +732,15 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
 
     menu->addSeparator();
 
+    QAction *actionAddComment = menu->addAction(QStringLiteral("Add Comment"), this, &PlotWindow::addComment);
+    QAction *actionEditComment = menu->addAction(QStringLiteral("Edit Comment"), this, &PlotWindow::editComment);
+    QAction *actionRmComment = menu->addAction(QStringLiteral("Remove Comment"), this, &PlotWindow::removeComment);
+    actionAddComment->setData(pos);
+    actionEditComment->setEnabled(false);
+    actionRmComment->setEnabled(false);
+
+    menu->addSeparator();
+
     QAction *actionAddGraph = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, &PlotWindow::addAggregateGraph);
     QAction *actionSetColor = menu->addAction(QStringLiteral("Set Graph Color"), this, &PlotWindow::setGraphColor);
     QAction *actionCopyName = menu->addAction(QStringLiteral("Copy Graph Name"), this, &PlotWindow::copyGraphName);
@@ -714,6 +750,16 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
 
     QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, &PlotWindow::removeSelectedGraphs);
     QAction *actionRemoveUnsel = menu->addAction(QStringLiteral("Remove Unselected Graphs"), this, &PlotWindow::removeUnselectedGraphs);
+
+    for (int i = 0; i < plot->itemCount(); ++i) {
+        CommentText *cmtText = qobject_cast<CommentText *>(plot->item(i));
+        if (cmtText && cmtText->selectTest(pos, false) > 0) {
+            actionEditComment->setEnabled(true);
+            actionRmComment->setEnabled(true);
+            actionEditComment->setData(QVariant::fromValue<void *>(cmtText));
+            actionRmComment->setData(QVariant::fromValue<void *>(cmtText));
+        }
+    }
 
     auto selectedLegendItems = plot->legend->selectedItems();
     if (selectedLegendItems.isEmpty()) {
@@ -725,7 +771,7 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         actionRemoveUnsel->setEnabled(false);
     }
 
-    if (plot->graphCount() < 2 || plot->legend->selectedItems().size() == 1) {
+    if (plot->legend->selectedItems().size() < 2) {
         actionAddGraph->setEnabled(false);
     }
 
@@ -792,6 +838,59 @@ void PlotWindow::moveLegend()
     } else {
         plot->replot(QCustomPlot::rpQueued);
     }
+}
+
+void PlotWindow::addComment()
+{
+    QString comment = getInputComment(m_valueText->visible() ? m_valueText->text() : QString());
+    if (comment.isEmpty()) {
+        return;
+    }
+
+    CommentText *textItem = new CommentText(m_ui->customPlot);
+    textItem->setText(comment);
+
+    if (m_tracer->visible() && m_tracer->graph()) {
+        QSize itemSize = textItem->size();
+        QPointF pos = m_tracer->position->pixelPoint();
+        pos.rx() += TracerSize + itemSize.width()/2 + 30;
+        pos.ry() -= TracerSize + itemSize.height()/2 + 30;
+        pos.setX(m_ui->customPlot->xAxis->pixelToCoord(pos.x()));
+        pos.setY(m_ui->customPlot->yAxis->pixelToCoord(pos.y()));
+        textItem->position->setCoords(pos);
+        textItem->setGraphAndKey(m_tracer->graph(), m_tracer->graphKey());
+        textItem->updateLine();
+        m_tracer->setVisible(false);
+        m_valueText->setVisible(false);
+    } else {
+        QAction *action = qobject_cast<QAction*>(sender());
+        QPoint pos = action->data().toPoint();
+        pos.setX(m_ui->customPlot->xAxis->pixelToCoord(pos.x()));
+        pos.setY(m_ui->customPlot->yAxis->pixelToCoord(pos.y()));
+        textItem->position->setCoords(pos);
+    }
+
+    m_ui->customPlot->replot(QCustomPlot::rpQueued);
+}
+
+void PlotWindow::editComment()
+{
+    QAction *action = qobject_cast<QAction*>(sender());
+    CommentText *cmtText = static_cast<CommentText *>(action->data().value<void *>());
+    QString comment = getInputComment(cmtText->text());
+    if (comment.isEmpty()) {
+        return;
+    }
+    cmtText->setText(comment);
+    m_ui->customPlot->replot(QCustomPlot::rpQueued);
+}
+
+void PlotWindow::removeComment()
+{
+    QAction *action = qobject_cast<QAction*>(sender());
+    CommentText *cmtText = static_cast<CommentText *>(action->data().value<void *>());
+    m_ui->customPlot->removeItem(cmtText);
+    m_ui->customPlot->replot(QCustomPlot::rpQueued);
 }
 
 void PlotWindow::addAggregateGraph()

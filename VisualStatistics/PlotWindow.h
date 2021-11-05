@@ -4,6 +4,7 @@
 #include "Statistics.h"
 #include "ColorManager.h"
 #include "ValueText.h"
+#include "CommentText.h"
 #include "CounterGraph.h"
 
 namespace Ui {
@@ -56,6 +57,7 @@ private:
     int getLegendItemIndex(QCPAbstractLegendItem *item) const;
 
     void setTracerGraph(QCPGraph *graph);
+    QString getInputComment(const QString &text);
 
     int graphIndex(QCPGraph *graph) const;
     QCPGraph * prevGraph(QCPGraph *graph) const;
@@ -71,6 +73,9 @@ private slots:
     void mouseWheel(QWheelEvent *event);
     void contextMenuRequest(const QPoint &pos);
     void moveLegend();
+    void addComment();
+    void editComment();
+    void removeComment();
     void addAggregateGraph();
     void removeSelectedGraphs();
     void removeUnselectedGraphs();

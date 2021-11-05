@@ -3,6 +3,8 @@
 
 #include <qcustomplot.h>
 
+class CommentText;
+
 class DraggablePlot : public QCustomPlot
 {
     Q_OBJECT
@@ -18,10 +20,15 @@ protected:
     virtual void dropEvent(QDropEvent *event);
 
 private:
+    void invalidateDragStartPos();
+    bool hasValidDragStartPos() const;
+    bool pointInVisibleLegend(const QPoint &pt) const;
+    CommentText * commentTextAt(const QPoint &pt) const;
     int calcLegendPixmapHeight(QPoint &hotSpot);
 
 private:
     QPoint _dragStartPos;
+    CommentText *_cmtText;
 };
 
 #endif // DRAGGABLEPLOT_H

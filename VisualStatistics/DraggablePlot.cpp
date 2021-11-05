@@ -1,36 +1,47 @@
 #include "DraggablePlot.h"
+#include "CommentText.h"
 
 DraggablePlot::DraggablePlot(QWidget *parent) :
-    QCustomPlot(parent)
+    QCustomPlot(parent),
+    _cmtText(nullptr)
 {
     setAcceptDrops(true);
+    invalidateDragStartPos();
 }
 
 void DraggablePlot::mousePressEvent(QMouseEvent *event)
 {
-    if (legend->visible() && legend->selectTest(event->pos(), false) >= 0 &&
-            event->button() == Qt::LeftButton)
-    {
-        _dragStartPos = event->pos();
-    } else {
-        _dragStartPos.setX(-1);
-        _dragStartPos.setY(-1);
+    if (event->button() == Qt::LeftButton) {
+        if (pointInVisibleLegend(event->pos())) {
+            _dragStartPos = event->pos();
+            QCustomPlot::mousePressEvent(event);
+            return;
+        }
+        if ((_cmtText = commentTextAt(event->pos())) != nullptr) {
+            // Don't call QCustomPlot::mousePressEvent(event), so that the QCustomPlot
+            // widget keeps in normal state, not in range dragging state, even though the mouse
+            // pointer is in a QCPAbstractItem rather than a QCPLayoutElement.
+            _dragStartPos = event->pos();
+            return;
+        }
     }
-
+    invalidateDragStartPos();
     QCustomPlot::mousePressEvent(event);
 }
 
 void DraggablePlot::mouseMoveEvent(QMouseEvent *event)
 {
-    if (legend->selectTest(event->pos(), false) >=0 &&
-            event->buttons() & Qt::LeftButton &&
-            _dragStartPos.x() >= 0 && _dragStartPos.y() >= 0)
-    {
+    if (!(event->buttons() & Qt::LeftButton) || !hasValidDragStartPos()) {
+        QCustomPlot::mouseMoveEvent(event);
+        return;
+    }
+
+    QColor color(100, 100, 100);
+    if (pointInVisibleLegend(event->pos())) {
         QPoint hotSpot;
         QRect rect = legend->outerRect();
         QPixmap pixmap(rect.width(), calcLegendPixmapHeight(hotSpot));
-        QCPPainter painter(&pixmap);
-        painter.fillRect(pixmap.rect(), QColor(96, 96, 96));
+        pixmap.fill(color);
 
         QByteArray itemData;
         QDataStream dataStream(&itemData, QIODevice::WriteOnly);
@@ -44,8 +55,23 @@ void DraggablePlot::mouseMoveEvent(QMouseEvent *event)
         drag->setPixmap(pixmap);
         drag->setHotSpot(hotSpot);
         drag->exec();
-    } else {
-        QCustomPlot::mouseMoveEvent(event);
+    } else if (_cmtText) {
+        QPoint hotSpot(event->pos() - _cmtText->topLeft->pixelPoint().toPoint());
+        QPixmap pixmap(_cmtText->size());
+        pixmap.fill(color);
+
+        QByteArray itemData;
+        QDataStream dataStream(&itemData, QIODevice::WriteOnly);
+        dataStream << _dragStartPos - _cmtText->position->pixelPoint().toPoint();
+
+        QMimeData *mimeData = new QMimeData();
+        mimeData->setData(QStringLiteral("application/visualstat-comment"), itemData);
+
+        QDrag *drag = new QDrag(this);
+        drag->setMimeData(mimeData);
+        drag->setPixmap(pixmap);
+        drag->setHotSpot(hotSpot);
+        drag->exec();
     }
 }
 
@@ -82,7 +108,8 @@ void DraggablePlot::resizeEvent(QResizeEvent *event)
 
 void DraggablePlot::dragEnterEvent(QDragEnterEvent *event)
 {
-    if (event->mimeData()->hasFormat(QStringLiteral("application/visualstat-legend")) &&
+    if ((event->mimeData()->hasFormat(QStringLiteral("application/visualstat-legend")) ||
+         event->mimeData()->hasFormat(QStringLiteral("application/visualstat-comment"))) &&
             event->source() == this)
     {
         event->acceptProposedAction();
@@ -94,7 +121,6 @@ void DraggablePlot::dropEvent(QDropEvent *event)
     if (event->mimeData()->hasFormat(QStringLiteral("application/visualstat-legend"))) {
         QByteArray itemData = event->mimeData()->data(QStringLiteral("application/visualstat-legend"));
         QDataStream dataStream(&itemData, QIODevice::ReadOnly);
-
         QPoint offset;
         dataStream >> offset;
 
@@ -107,7 +133,45 @@ void DraggablePlot::dropEvent(QDropEvent *event)
                                        (newPos.y() - insetLayoutRect.top())/insetLayoutRect.height(),
                                        0, 0));
         replot(rpQueued);
+    } else if (event->mimeData()->hasFormat(QStringLiteral("application/visualstat-comment"))) {
+        QByteArray itemData = event->mimeData()->data(QStringLiteral("application/visualstat-comment"));
+        QDataStream dataStream(&itemData, QIODevice::ReadOnly);
+        QPoint offset;
+        dataStream >> offset;
+
+        QPointF newPos = event->pos() - offset;
+        _cmtText->position->setCoords(xAxis->pixelToCoord(newPos.x()), yAxis->pixelToCoord(newPos.y()));
+        _cmtText->updateLine();
+
+        replot(rpQueued);
     }
+}
+
+void DraggablePlot::invalidateDragStartPos()
+{
+    _dragStartPos.setX(-1);
+    _dragStartPos.setY(-1);
+}
+
+bool DraggablePlot::hasValidDragStartPos() const
+{
+    return _dragStartPos.x() >= 0 && _dragStartPos.y() >= 0;
+}
+
+bool DraggablePlot::pointInVisibleLegend(const QPoint &pt) const
+{
+    return legend->visible() && legend->selectTest(pt, false) > 0;
+}
+
+CommentText * DraggablePlot::commentTextAt(const QPoint &pt) const
+{
+    for (int i = 0; i < itemCount(); ++i) {
+        CommentText *textItem = qobject_cast<CommentText *>(item(i));
+        if (textItem && textItem->selectTest(pt, false) > 0) {
+            return textItem;
+        }
+    }
+    return nullptr;
 }
 
 int DraggablePlot::calcLegendPixmapHeight(QPoint &hotSpot)
