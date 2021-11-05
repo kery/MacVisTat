@@ -859,7 +859,7 @@ void PlotWindow::addComment()
         pos.setY(m_ui->customPlot->yAxis->pixelToCoord(pos.y()));
         textItem->position->setCoords(pos);
         textItem->setGraphAndKey(m_tracer->graph(), m_tracer->graphKey());
-        textItem->updateLine();
+        textItem->updateTracerLineVisible();
         m_tracer->setVisible(false);
         m_valueText->setVisible(false);
     } else {
@@ -882,6 +882,7 @@ void PlotWindow::editComment()
         return;
     }
     cmtText->setText(comment);
+    cmtText->updateTracerLineVisible();
     m_ui->customPlot->replot(QCustomPlot::rpQueued);
 }
 

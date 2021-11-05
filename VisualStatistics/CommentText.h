@@ -13,7 +13,7 @@ public:
     QSize size() const;
     void setGraphAndKey(QCPGraph *graph, double key);
     QCPGraph * graph() const;
-    void updateLine();
+    void updateTracerLineVisible();
 
     virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
 

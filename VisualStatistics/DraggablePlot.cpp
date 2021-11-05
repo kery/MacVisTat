@@ -141,7 +141,7 @@ void DraggablePlot::dropEvent(QDropEvent *event)
 
         QPointF newPos = event->pos() - offset;
         _cmtText->position->setCoords(xAxis->pixelToCoord(newPos.x()), yAxis->pixelToCoord(newPos.y()));
-        _cmtText->updateLine();
+        _cmtText->updateTracerLineVisible();
 
         replot(rpQueued);
     }

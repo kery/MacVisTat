@@ -59,16 +59,18 @@ QCPGraph * CommentText::graph() const
     return nullptr;
 }
 
-void CommentText::updateLine()
+void CommentText::updateTracerLineVisible()
 {
-    if (m_line == nullptr) {
+    if (m_tracer == nullptr || m_line == nullptr) {
         return;
     }
 
     QPointF tracerPos = m_tracer->position->pixelPoint();
     if (selectTest(tracerPos, false) > 0) {
+        m_tracer->setVisible(false);
         m_line->setVisible(false);
     } else {
+        m_tracer->setVisible(true);
         m_line->setVisible(true);
 
         QSize itemSize = size();
