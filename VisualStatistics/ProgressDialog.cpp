@@ -9,7 +9,7 @@ ProgressDialog::ProgressDialog(QWidget *parent) :
     m_resizeMan(this)
 {
     m_ui->setupUi(this);
-    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::MSWindowsFixedSizeDialogHint);
+    setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::MSWindowsFixedSizeDialogHint);
 
     connect(m_ui->cancelButton, &QPushButton::clicked, this, &ProgressDialog::cancelButtonClicked);
 

@@ -3,7 +3,7 @@
 #include <QEvent>
 
 MultiLineInputDialog::MultiLineInputDialog(QWidget *parent) :
-    QInputDialog(parent, Qt::Window | Qt::WindowTitleHint),
+    QInputDialog(parent, Qt::Window | Qt::WindowCloseButtonHint),
     m_resizeMan(this)
 {
     setOptions(QInputDialog::UsePlainTextEditForTextInput);

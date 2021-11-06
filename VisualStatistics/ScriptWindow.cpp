@@ -6,7 +6,8 @@
 
 ScriptWindow::ScriptWindow(QWidget *parent) :
     QMainWindow(parent),
-    m_ui(new Ui::ScriptWindow)
+    m_ui(new Ui::ScriptWindow),
+    m_resizeMan(this)
 {
     m_ui->setupUi(this);
 
@@ -45,6 +46,14 @@ void ScriptWindow::closeEvent(QCloseEvent *event)
     } else {
         event->ignore();
     }
+}
+
+bool ScriptWindow::event(QEvent *event)
+{
+    if (event->type() == QEvent::ShowToParent && !m_resizeMan.showToParentHandled()) {
+        m_resizeMan.resizeWidgetOnShowToParent();
+    }
+    return QMainWindow::event(event);
 }
 
 void ScriptWindow::setupEditor(QsciScintilla *editor)

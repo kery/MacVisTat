@@ -7,13 +7,14 @@
 
 ChangeLogDialog::ChangeLogDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::ChangeLogDialog)
+    ui(new Ui::ChangeLogDialog),
+    m_resizeMan(this)
 {
     ui->setupUi(this);
     ui->label->setVisible(false);
 
-    setFixedSize(size());
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    setSizeGripEnabled(true);
 
     QNetworkAccessManager *manager = new QNetworkAccessManager();
     QUrl url("http://sdu.int.nokia-sbell.com:4099/changelog.txt");
@@ -37,6 +38,14 @@ void ChangeLogDialog::setShownAfterCheckingUpdates()
 {
     ui->label->setVisible(true);
     ui->buttonBox->button(QDialogButtonBox::Ok)->setText(QStringLiteral("Update"));
+}
+
+bool ChangeLogDialog::event(QEvent *event)
+{
+    if (event->type() == QEvent::ShowToParent && !m_resizeMan.showToParentHandled()) {
+        m_resizeMan.resizeWidgetOnShowToParent();
+    }
+    return QDialog::event(event);
 }
 
 void ChangeLogDialog::fetchChangeLogFinished(QNetworkReply *reply)

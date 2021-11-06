@@ -4,6 +4,8 @@
 #include <QDialog>
 #include <QNetworkReply>
 
+#include "ResizeManager.h"
+
 namespace Ui {
 class ChangeLogDialog;
 }
@@ -18,11 +20,15 @@ public:
 
     void setShownAfterCheckingUpdates();
 
+private:
+    virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
+
 private slots:
     void fetchChangeLogFinished(QNetworkReply *reply);
 
 private:
     Ui::ChangeLogDialog *ui;
+    ResizeManager m_resizeMan;
 };
 
 #endif // CHANGELOGDIALOG_H

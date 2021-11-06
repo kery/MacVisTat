@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "ResizeManager.h"
+
 namespace Ui {
 class AboutDialog;
 }
@@ -18,7 +20,11 @@ public:
     ~AboutDialog();
 
 private:
+    virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
+
+private:
     Ui::AboutDialog *m_ui;
+    ResizeManager m_resizeMan;
 };
 
 #endif // ABOUTDIALOG_H

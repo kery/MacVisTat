@@ -5,6 +5,7 @@
 #include <Qsci/qsciscintilla.h>
 
 #include "LuaEnvironment.h"
+#include "ResizeManager.h"
 
 namespace Ui {
 class ScriptWindow;
@@ -25,6 +26,7 @@ public:
 
 protected:
     virtual void closeEvent(QCloseEvent *event);
+    virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
 
     void setupEditor(QsciScintilla *editor);
     void setupAutoCompletion(QsciScintilla *editor);
@@ -47,6 +49,7 @@ private:
     Ui::ScriptWindow *m_ui;
     LuaEnvironment m_luaEnv;
     QString m_scriptFile;
+    ResizeManager m_resizeMan;
 };
 
 #endif // SCRIPTWINDOW_H
