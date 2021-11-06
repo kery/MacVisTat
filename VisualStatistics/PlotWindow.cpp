@@ -30,6 +30,10 @@ PlotWindow::PlotWindow(Statistics &stat) :
     // Value tip will use the same layer as tracer
     m_ui->customPlot->addLayer(QStringLiteral("valuetip"), 0, QCustomPlot::limBelow);
 
+    m_timer.setInterval(1000);
+    m_timer.setSingleShot(true);
+    connect(&m_timer, &QTimer::timeout, this, &PlotWindow::timerTimeout);
+
     // Must be called after setupUi because member customPlot is initialized
     // in it. QCustomPlot takes ownership of tracer.
     m_tracer = new QCPItemTracer(m_ui->customPlot);
@@ -400,8 +404,8 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
         m_stat.removeDataMap(graph->name());
         if (m_tracer->graph() == graph) {
             m_tracer->setVisible(false);
-            m_tracer->setGraph(nullptr);
             m_valueText->setVisible(false);
+            setTracerGraph(nullptr);
         }
         for (int i = plot->itemCount() - 1; i >= 0; --i) {
             CommentText *cmtText = qobject_cast<CommentText *>(plot->item(i));
@@ -577,6 +581,7 @@ void PlotWindow::selectionChanged()
     {
         m_tracer->setVisible(false);
         m_valueText->setVisible(false);
+        setTracerGraph(nullptr);
     }
 }
 
@@ -603,6 +608,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
     if (plot->legend->visible() && plot->legend->selectTest(event->pos(), false) >= 0) {
         return;
     }
+    m_timer.start();
 
     const double MAX_DIST = 20;
 
@@ -630,6 +636,7 @@ void PlotWindow::mouseMove(QMouseEvent *event)
             } else {
                 m_tracer->setVisible(false);
                 m_valueText->setVisible(false);
+                setTracerGraph(nullptr);
                 plot->replot(QCustomPlot::rpQueued);
             }
         }
@@ -691,6 +698,20 @@ void PlotWindow::mouseWheel(QWheelEvent *event)
         }
         plot->legend->setBrush(QBrush(color));
         plot->replot(QCustomPlot::rpQueued);
+    }
+}
+
+void PlotWindow::timerTimeout()
+{
+    if (!m_tracer->visible()) {
+        return;
+    }
+    QPoint pos = m_ui->customPlot->mapFromGlobal(QCursor::pos());
+    if (m_tracer->selectTest(pos, false) > m_ui->customPlot->selectionTolerance()) {
+        m_valueText->setVisible(false);
+        m_tracer->setVisible(false);
+        setTracerGraph(nullptr);
+        this->m_ui->customPlot->replot(QCustomPlot::rpQueued);
     }
 }
 
@@ -872,6 +893,7 @@ void PlotWindow::addComment()
         textItem->updateTracerLineVisible();
         m_tracer->setVisible(false);
         m_valueText->setVisible(false);
+        setTracerGraph(nullptr);
     } else {
         QAction *action = qobject_cast<QAction*>(sender());
         QPoint pos = action->data().toPoint();

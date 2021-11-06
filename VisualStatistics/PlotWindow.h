@@ -71,6 +71,7 @@ private slots:
     void mousePress(QMouseEvent *event);
     void mouseMove(QMouseEvent *event);
     void mouseWheel(QWheelEvent *event);
+    void timerTimeout();
     void contextMenuRequest(const QPoint &pos);
     void moveLegend();
     void addComment();
@@ -104,6 +105,7 @@ private:
     int m_agggraph_idx;
     int m_lastSelLegitemIndex;
     Ui::PlotWindow *m_ui;
+    QTimer m_timer;
     QPropertyAnimation m_animation;
     QCPItemTracer *m_tracer;
     ValueText *m_valueText;
