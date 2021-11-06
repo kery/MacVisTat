@@ -300,7 +300,7 @@ void StatisticsNameModel::fetchMore(const QModelIndex &parent)
     endInsertRows();
 }
 
-int	StatisticsNameModel::rowCount(const QModelIndex &parent) const
+int StatisticsNameModel::rowCount(const QModelIndex &parent) const
 {
     return parent.isValid() ? 0 : m_fetchedCount;
 }

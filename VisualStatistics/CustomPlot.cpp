@@ -141,7 +141,7 @@ void CustomPlot::dropEvent(QDropEvent *event)
 
         QPointF newPos = event->pos() - offset;
         _cmtText->position->setCoords(xAxis->pixelToCoord(newPos.x()), yAxis->pixelToCoord(newPos.y()));
-        _cmtText->updateTracerLineVisible();
+        _cmtText->updateTracerLineVisibility();
 
         replot(rpQueued);
     }

@@ -59,7 +59,7 @@ QCPGraph * CommentText::graph() const
     return nullptr;
 }
 
-void CommentText::updateTracerLineVisible()
+void CommentText::updateTracerLineVisibility()
 {
     if (m_tracer == nullptr || m_line == nullptr) {
         return;
