@@ -40,7 +40,7 @@
      <number>5</number>
     </property>
     <item>
-     <widget class="DraggablePlot" name="customPlot" native="true">
+     <widget class="CustomPlot" name="customPlot" native="true">
       <property name="contextMenuPolicy">
        <enum>Qt::CustomContextMenu</enum>
       </property>
@@ -166,9 +166,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DraggablePlot</class>
+   <class>CustomPlot</class>
    <extends>QWidget</extends>
-   <header>draggableplot.h</header>
+   <header>CustomPlot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

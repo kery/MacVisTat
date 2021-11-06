@@ -19,6 +19,7 @@ UI_DIR = ui
 
 SOURCES += main.cpp\
     CommentText.cpp \
+    CustomPlot.cpp \
     libcsv/libcsv.c \
     qcustomplot/qcustomplot.cpp \
     lua/lapi.c \
@@ -59,7 +60,6 @@ SOURCES += main.cpp\
     ColorManager.cpp \
     CounterGraph.cpp \
     CounterLegendItem.cpp \
-    DraggablePlot.cpp \
     GzipFile.cpp \
     LuaEnvironment.cpp \
     MainWindow.cpp \
@@ -75,6 +75,7 @@ SOURCES += main.cpp\
 
 HEADERS  += \
     CommentText.h \
+    CustomPlot.h \
     libcsv/csv.h \
     qcustomplot/qcustomplot.h \
     lua/lapi.h \
@@ -107,7 +108,6 @@ HEADERS  += \
     ColorManager.h \
     CounterGraph.h \
     CounterLegendItem.h \
-    DraggablePlot.h \
     GzipFile.h \
     LuaEnvironment.h \
     MainWindow.h \
