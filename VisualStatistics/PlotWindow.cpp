@@ -772,13 +772,14 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, &PlotWindow::removeSelectedGraphs);
     QAction *actionRemoveUnsel = menu->addAction(QStringLiteral("Remove Unselected Graphs"), this, &PlotWindow::removeUnselectedGraphs);
 
-    for (int i = 0; i < plot->itemCount(); ++i) {
+    for (int i = plot->itemCount() - 1; i >= 0; --i) {
         CommentText *cmtText = qobject_cast<CommentText *>(plot->item(i));
         if (cmtText && cmtText->selectTest(pos, false) > 0) {
             actionEditComment->setEnabled(true);
             actionRmComment->setEnabled(true);
             actionEditComment->setData(QVariant::fromValue<void *>(cmtText));
             actionRmComment->setData(QVariant::fromValue<void *>(cmtText));
+            break;
         }
     }
 
@@ -792,7 +793,7 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
         actionRemoveUnsel->setEnabled(false);
     }
 
-    if (plot->legend->selectedItems().size() < 2) {
+    if (plot->graphCount() < 2 || plot->legend->selectedItems().size() == 1) {
         actionAddGraph->setEnabled(false);
     }
 
