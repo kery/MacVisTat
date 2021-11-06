@@ -13,6 +13,7 @@ public:
     bool showToParentHandled() const;
     double currentScreenScale() const;
     bool resizeWidgetOnShowToParent();
+    bool resizeWidget(QWidget *widget);
 
 private:
     double m_scale;

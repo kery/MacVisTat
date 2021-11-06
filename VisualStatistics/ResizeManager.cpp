@@ -51,3 +51,12 @@ bool ResizeManager::resizeWidgetOnShowToParent()
     m_widget->setGeometry(m_widget->geometry().adjusted(-dx, -dy, dx, dy));
     return true;
 }
+
+bool ResizeManager::resizeWidget(QWidget *widget)
+{
+    if (qFuzzyCompare(m_scale, 1.0)) {
+        return false;
+    }
+    widget->resize(widget->size() * m_scale);
+    return true;
+}

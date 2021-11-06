@@ -331,6 +331,7 @@ void MainWindow::handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWin
             Statistics stat(tempNdm, m_offsetFromUtc);
             PlotWindow *plotWindow = new PlotWindow(stat);
             plotWindow->setAttribute(Qt::WA_DeleteOnClose);
+            m_resizeMan.resizeWidget(plotWindow);
             connect(this, SIGNAL(aboutToBeClosed()), plotWindow, SLOT(close()));
             plotWindow->showMaximized();
         }
@@ -338,6 +339,7 @@ void MainWindow::handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWin
         Statistics stat(ndm, m_offsetFromUtc);
         PlotWindow *plotWindow = new PlotWindow(stat);
         plotWindow->setAttribute(Qt::WA_DeleteOnClose);
+        m_resizeMan.resizeWidget(plotWindow);
         connect(this, SIGNAL(aboutToBeClosed()), plotWindow, SLOT(close()));
         plotWindow->showMaximized();
     }
