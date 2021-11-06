@@ -756,7 +756,7 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     QAction *actionAddComment = menu->addAction(QStringLiteral("Add Comment"), this, &PlotWindow::addComment);
     QAction *actionEditComment = menu->addAction(QStringLiteral("Edit Comment"), this, &PlotWindow::editComment);
     QAction *actionRmComment = menu->addAction(QStringLiteral("Remove Comment"), this, &PlotWindow::removeComment);
-    actionAddComment->setData(QPointF(pos));
+    actionAddComment->setData(pos);
     actionEditComment->setEnabled(false);
     actionRmComment->setEnabled(false);
 
@@ -896,7 +896,7 @@ void PlotWindow::addComment()
         setTracerGraph(nullptr);
     } else {
         QAction *action = qobject_cast<QAction*>(sender());
-        QPointF pos = action->data().toPointF();
+        QPointF pos = action->data().toPoint();
         pos.setX(m_ui->customPlot->xAxis->pixelToCoord(pos.x()));
         pos.setY(m_ui->customPlot->yAxis->pixelToCoord(pos.y()));
         textItem->position->setCoords(pos);
