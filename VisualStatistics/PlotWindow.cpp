@@ -851,10 +851,20 @@ void PlotWindow::addComment()
     textItem->setText(comment);
 
     if (m_tracer->visible() && m_tracer->graph()) {
+        QCPAxisRect *axisRect = m_ui->customPlot->axisRect();
         QSize itemSize = textItem->size();
-        QPointF pos = m_tracer->position->pixelPoint();
-        pos.rx() += TracerSize + itemSize.width()/2 + 30;
-        pos.ry() -= TracerSize + itemSize.height()/2 + 30;
+        QPointF pos = m_tracer->position->pixelPoint() + QPointF(30, -30);
+        if (pos.x() + itemSize.width() > axisRect->right()) {
+            pos.rx() = axisRect->right() - itemSize.width()/2;
+        } else {
+            pos.rx() += itemSize.width()/2;
+        }
+        if (pos.y() - itemSize.height() < axisRect->top()) {
+            pos.ry() = axisRect->top() + itemSize.height()/2;
+        } else {
+            pos.ry() -= itemSize.height()/2;
+        }
+
         pos.setX(m_ui->customPlot->xAxis->pixelToCoord(pos.x()));
         pos.setY(m_ui->customPlot->yAxis->pixelToCoord(pos.y()));
         textItem->position->setCoords(pos);

@@ -56,13 +56,13 @@ void ValueText::draw(QCPPainter *painter)
     double height = bottom->pixelPoint().y() - top->pixelPoint().y();
 
     double widthOutside = (tracerPos.x() + PosOffset + width) - clipRect().right();
-    if (widthOutside >= 0) {
-        coords.rx() -= widthOutside + 1;
+    if (widthOutside > 0) {
+        coords.rx() -= widthOutside;
     }
 
     double heightOutside = (tracerPos.y() + PosOffset + height) - clipRect().bottom();
-    if (heightOutside >= 0) {
-        widthOutside >= 0 ? coords.ry() = -PosOffset - height : coords.ry() -= heightOutside + 2;
+    if (heightOutside > 0) {
+        widthOutside > 0 ? coords.ry() = -PosOffset - height : coords.ry() -= heightOutside;
     }
 
     position->setCoords(coords);
