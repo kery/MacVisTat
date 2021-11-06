@@ -20,6 +20,8 @@ UI_DIR = ui
 SOURCES += main.cpp\
     CommentText.cpp \
     CustomPlot.cpp \
+    MultiLineInputDialog.cpp \
+    ResizeManager.cpp \
     libcsv/libcsv.c \
     qcustomplot/qcustomplot.cpp \
     lua/lapi.c \
@@ -76,6 +78,8 @@ SOURCES += main.cpp\
 HEADERS  += \
     CommentText.h \
     CustomPlot.h \
+    MultiLineInputDialog.h \
+    ResizeManager.h \
     libcsv/csv.h \
     qcustomplot/qcustomplot.h \
     lua/lapi.h \

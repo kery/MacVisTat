@@ -1,6 +1,7 @@
 #include "PlotWindow.h"
 #include "ui_PlotWindow.h"
 #include "ScriptWindow.h"
+#include "MultiLineInputDialog.h"
 #include "Utils.h"
 #include "Version.h"
 
@@ -472,15 +473,13 @@ void PlotWindow::setTracerGraph(QCPGraph *graph)
 
 QString PlotWindow::getInputComment(const QString &text)
 {
-    QInputDialog dlg(this, Qt::WindowSystemMenuHint | Qt::WindowTitleHint);
-    dlg.setOptions(QInputDialog::UsePlainTextEditForTextInput);
-    dlg.setWindowTitle(QStringLiteral("Visual Statistics"));
+    MultiLineInputDialog dlg(this);
     dlg.setLabelText(QStringLiteral("Comment:"));
     dlg.setTextValue(text);
-    dlg.setInputMethodHints(Qt::ImhNone);
-    dlg.setSizeGripEnabled(true);
-    dlg.resize(800, 300);
-    dlg.exec();
+    dlg.resize(640, 200);
+    if (dlg.exec() != QDialog::Accepted) {
+        return QString();
+    }
     return dlg.textValue();
 }
 
@@ -720,6 +719,7 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     QCustomPlot *plot = m_ui->customPlot;
     QMenu *menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
+    m_timer.stop();
 
     QAction *actionShowLegend = menu->addAction(QStringLiteral("Show Legend"), this, &PlotWindow::showLegendTriggered);
     actionShowLegend->setCheckable(true);

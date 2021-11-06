@@ -7,6 +7,7 @@
 #include <QNetworkReply>
 #include <array>
 #include "Statistics.h"
+#include "ResizeManager.h"
 
 namespace Ui {
 class MainWindow;
@@ -50,7 +51,6 @@ private:
 
     void initializeRecentFileActions();
     void updateRecentFileActions();
-    qreal getCurrentScreenScale();
 
     static bool checkFileName(const QString &path);
 
@@ -95,13 +95,13 @@ private:
     Ui::MainWindow *m_ui;
     int m_offsetFromUtc;
     bool m_caseSensitive;
-    qreal m_lastScale;
     QString m_statFilePath;
     QLabel *m_lbStatNameInfo;
     QLabel *m_lbModulesInfo;
     QAction *m_sepAction;
     std::array<QAction *, 10> m_recentFileActions;
     QNetworkAccessManager m_netMan;
+    ResizeManager m_resizeMan;
 };
 
 #endif // MAINWINDOW_H

@@ -7,6 +7,8 @@
 #include <QWinTaskbarProgress>
 #endif
 
+#include "ResizeManager.h"
+
 namespace Ui {
 class ProgressDialog;
 }
@@ -46,7 +48,8 @@ private slots:
     void cancelButtonClicked();
 
 protected:
-    virtual void keyPressEvent(QKeyEvent *e);
+    virtual void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
+    virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
 #if defined(Q_OS_WIN)
@@ -54,6 +57,7 @@ private:
     QWinTaskbarProgress *m_taskbarProgress;
 #endif
     Ui::ProgressDialog *m_ui;
+    ResizeManager m_resizeMan;
 };
 
 #endif // PROGRESSDIALOG_H

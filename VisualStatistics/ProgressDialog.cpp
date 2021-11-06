@@ -5,14 +5,13 @@
 
 ProgressDialog::ProgressDialog(QWidget *parent) :
     QDialog(parent),
-    m_ui(new Ui::ProgressDialog)
+    m_ui(new Ui::ProgressDialog),
+    m_resizeMan(this)
 {
     m_ui->setupUi(this);
+    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::MSWindowsFixedSizeDialogHint);
 
     connect(m_ui->cancelButton, &QPushButton::clicked, this, &ProgressDialog::cancelButtonClicked);
-
-    setFixedSize(size());
-    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
 #if defined(Q_OS_WIN)
     m_taskbarButton.setWindow(parent->windowHandle());
@@ -80,4 +79,12 @@ void ProgressDialog::cancelButtonClicked()
 void ProgressDialog::keyPressEvent(QKeyEvent *e)
 {
     e->ignore();
+}
+
+bool ProgressDialog::event(QEvent *event)
+{
+    if (event->type() == QEvent::ShowToParent && !m_resizeMan.showToParentHandled()) {
+        m_resizeMan.resizeWidgetOnShowToParent();
+    }
+    return QDialog::event(event);
 }

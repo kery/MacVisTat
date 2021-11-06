@@ -19,10 +19,10 @@
 MainWindow::MainWindow() :
     QMainWindow(nullptr),
     m_ui(new Ui::MainWindow),
-    m_lastScale(0.0),
     m_lbStatNameInfo(nullptr),
     m_lbModulesInfo(nullptr),
-    m_sepAction(nullptr)
+    m_sepAction(nullptr),
+    m_resizeMan(this)
 {
     m_ui->setupUi(this);
     disableToolTipOfToolButton();
@@ -487,13 +487,6 @@ void MainWindow::updateRecentFileActions()
     m_sepAction->setVisible(numRecentFiles > 0);
 }
 
-qreal MainWindow::getCurrentScreenScale()
-{
-    int screenNum = QApplication::desktop()->screenNumber(this);
-    QScreen *screen = QApplication::screens().at(screenNum);
-    return screen->logicalDotsPerInch()/96;
-}
-
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (isRegexpCaseButtonResizeEvent(obj, event)) {
@@ -543,13 +536,12 @@ void MainWindow::closeEvent(QCloseEvent *)
 
 void MainWindow::resizeEvent(QResizeEvent *)
 {
-    qreal scale = getCurrentScreenScale();
-    if (qFuzzyCompare(scale, m_lastScale)) {
+    double scale = m_resizeMan.currentScreenScale();
+    if (qFuzzyCompare(scale, m_resizeMan.scale())) {
         return;
     }
-
-    if (!qFuzzyIsNull(m_lastScale)) {
-        qreal factor = scale/m_lastScale;
+    if (!qFuzzyIsNull(m_resizeMan.scale())) {
+        double factor = scale/m_resizeMan.scale();
         auto sizesHor = m_ui->splitterHor->sizes();
         auto sizesVer = m_ui->splitterVer->sizes();
 
@@ -561,8 +553,7 @@ void MainWindow::resizeEvent(QResizeEvent *)
         int topHeight = sizesVer[0] + sizesVer[1] - bottomHeight;
         m_ui->splitterVer->setSizes(QList<int>() << topHeight << bottomHeight);
     }
-
-    m_lastScale = scale;
+    m_resizeMan.setScale(scale);
 }
 
 bool MainWindow::event(QEvent *event)
@@ -580,27 +571,14 @@ bool MainWindow::event(QEvent *event)
     //
     // This event is sent by QCoreApplication::sendEvent(q, &showToParentEvent)
     // in QWidgetPrivate::setVisible(bool visible).
-    if (event->type() == QEvent::ShowToParent) {
-        static bool scaleInitialized = false;
-        if (!scaleInitialized) {
-            scaleInitialized = true;
-            m_lastScale = getCurrentScreenScale();
-
-            int leftWidth = 320, bottomHeight = 100;
-            if (!qFuzzyCompare(m_lastScale, 1.0)) {
-                QSize oldSize = size();
-                QSize newSize = size() * m_lastScale;
-                int dx = qRound((newSize.width() - oldSize.width())/2.0);
-                int dy = qRound((newSize.height() - oldSize.height())/2.0);
-                setGeometry(geometry().adjusted(-dx, -dy, dx, dy));
-
-                leftWidth *= m_lastScale;
-                bottomHeight *= m_lastScale;
-            }
-
-            m_ui->splitterHor->setSizes(QList<int>() << leftWidth << width() - leftWidth);
-            m_ui->splitterVer->setSizes(QList<int>() << height() - bottomHeight << bottomHeight);
+    if (event->type() == QEvent::ShowToParent && !m_resizeMan.showToParentHandled()) {
+        int leftWidth = 320, bottomHeight = 100;
+        if (m_resizeMan.resizeWidgetOnShowToParent()) {
+            leftWidth *= m_resizeMan.scale();
+            bottomHeight *= m_resizeMan.scale();
         }
+        m_ui->splitterHor->setSizes(QList<int>() << leftWidth << width() - leftWidth);
+        m_ui->splitterVer->setSizes(QList<int>() << height() - bottomHeight << bottomHeight);
     }
     return QMainWindow::event(event);
 }
