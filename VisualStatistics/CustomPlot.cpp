@@ -165,7 +165,7 @@ bool CustomPlot::pointInVisibleLegend(const QPoint &pt) const
 
 CommentText * CustomPlot::commentTextAt(const QPoint &pt) const
 {
-    for (int i = 0; i < itemCount(); ++i) {
+    for (int i = itemCount() - 1; i >= 0 ; --i) {
         CommentText *textItem = qobject_cast<CommentText *>(item(i));
         if (textItem && textItem->selectTest(pt, false) > 0) {
             return textItem;
