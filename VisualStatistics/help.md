@@ -28,7 +28,9 @@ Use mouse wheel to zoom in/out the plot. While zooming in/out the plot, press `c
 
 Select the counter names in the legend box to hide the unselected counters. Press `ctrl`/`shift` key to select more than one counter names. Press `alt` key when selecting counter names to rescale the *y* axis for the visible graphs.
 
-The legend box is draggable and can be dragged at any place in the axis rectangle.
+Two types of comment can be added in plot window. Right click at blank area and click the `Add Comment` of the context menu to add a comment text. When a counter value is displayed in a text box with a tracer, the `Add Comment` can add a special type of comment which has an arrow point to the position of the displayed value.
+
+The legend box and comment items are draggable and can be dragged at any place in the axis rectangle.
 
 ### Lua support
 
