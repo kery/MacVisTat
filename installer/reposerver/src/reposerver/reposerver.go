@@ -17,11 +17,19 @@ type dirWithStat string
 
 func (d dirWithStat) Open(name string) (http.File, error) {
 	file, err := http.Dir(d).Open(name)
-	if err == nil {
-		mutex.Lock()
-		fileStat[name] += 1
-		mutex.Unlock()
+	if err != nil {
+		return nil, err
 	}
+	fi, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if fi.IsDir() {
+		return nil, os.ErrPermission
+	}
+	mutex.Lock()
+	fileStat[name] += 1
+	mutex.Unlock()
 	return file, err
 }
 
