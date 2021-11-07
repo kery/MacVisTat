@@ -15,7 +15,7 @@ def proj_root_dir():
     return path
 
 def get_version():
-    proc = subprocess.Popen(["git", "describe", "--tags", "--exact-match"],
+    proc = subprocess.Popen(["/usr/bin/git", "describe", "--tags", "--exact-match"],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
@@ -53,7 +53,7 @@ def check_version_existance(ver_info):
     cmd_list = ["test", "-f", path]
 
     if is_windows():
-        cmd_list = ["ssh", "-o", "StrictHostKeyChecking=no", "root@sdu.int.nokia-sbell.com"] + cmd_list
+        cmd_list = ["/usr/bin/ssh", "-o", "StrictHostKeyChecking=no", "root@sdu.int.nokia-sbell.com"] + cmd_list
 
     proc = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
@@ -114,7 +114,7 @@ def update_repository():
     path = os.path.join(proj_root_dir(), "installer", "installer")
     os.chdir(path)
 
-    proc = subprocess.Popen(["/cygdrive/c/Qt/QtIFW-3.1.1/bin/repogen", "--update-new-components", "-p", "packages", "repository"],
+    proc = subprocess.Popen(["/cygdrive/c/Qt5.9.4/Tools/QtInstallerFramework/4.1/bin/repogen", "--update-new-components", "-p", "packages", "repository"],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
@@ -130,7 +130,7 @@ def upload_repositry():
     if is_windows():
         path = "../installer/installer/repository/visualstatistics/" + files
         dest = "root@sdu.int.nokia-sbell.com:/visualstat/win/visualstatistics"
-        proc = subprocess.Popen("scp -B %s %s" % (path, dest), stdout=subprocess.PIPE,
+        proc = subprocess.Popen("/usr/bin/scp -B %s %s" % (path, dest), stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
     else:
         path = os.path.join(proj_root_dir(), "installer", "installer", "repository", "visualstatistics", files)
@@ -147,7 +147,7 @@ def upload_repositry():
 
     if is_windows():
         path = "../installer/installer/repository/Updates.xml"
-        proc = subprocess.Popen(["scp", "-B", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(["/usr/bin/scp", "-B", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
         path = os.path.join(proj_root_dir(), "installer", "installer", "repository", "Updates.xml")
         proc = subprocess.Popen(["cp", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -160,7 +160,7 @@ def restore_files():
     cwd = os.getcwd()
     os.chdir(proj_root_dir())
 
-    proc = subprocess.Popen(["git", "checkout", "--", "VisualStatistics/Version.h",
+    proc = subprocess.Popen(["/usr/bin/git", "checkout", "--", "VisualStatistics/Version.h",
         "installer/installer/packages/visualstatistics/meta/package.xml"],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()

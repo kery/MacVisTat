@@ -103,7 +103,7 @@ MainWindow::MainWindow() :
         m_netMan.setProxy(proxies[0]);
     }
 
-#ifdef INSTALLER
+#ifdef DEPLOY_VISUALSTAT
     startCheckNewVersionTask();
     startUserReportTask();
 #endif
