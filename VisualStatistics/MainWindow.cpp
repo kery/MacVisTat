@@ -479,6 +479,7 @@ void MainWindow::updateRecentFileActions()
 
         m_recentFileActions[i]->setText(text);
         m_recentFileActions[i]->setData(path);
+        m_recentFileActions[i]->setStatusTip(path);
         m_recentFileActions[i]->setVisible(true);
     }
 

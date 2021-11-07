@@ -98,7 +98,7 @@ def touch_rc_file():
 
 def copy_target_file():
     src = proj_root_dir()
-    src = os.path.join(src, "build-VisualStatistics-Release", "VisualStatistics")
+    src = os.path.join(src, "build-VisualStatistics-Deploy", "VisualStatistics")
     if  is_windows():
         src += ".exe"
     dest = proj_root_dir()
@@ -174,7 +174,7 @@ def copy_pdb_file():
     dest = os.path.join("/cygdrive/d/VisualStatisticsPDB", "v" + ".".join(ver_info))
     if not os.path.exists(dest):
         os.makedirs(dest)
-    shutil.copy("../build-VisualStatistics-Release/visualstatistics.pdb", dest)
+    shutil.copy("../build-VisualStatistics-Deploy/visualstatistics.pdb", dest)
 
 if __name__ == "__main__":
     if sys.argv[1] == "prebuild":
