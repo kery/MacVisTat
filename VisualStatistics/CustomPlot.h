@@ -12,6 +12,8 @@ class CustomPlot : public QCustomPlot
 public:
     CustomPlot(QWidget *parent);
 
+    CommentText * commentTextAt(const QPoint &pt, bool onlyVisible) const;
+
 protected:
     virtual void mousePressEvent(QMouseEvent *event);
     virtual void mouseMoveEvent(QMouseEvent *event);
@@ -23,7 +25,6 @@ private:
     void invalidateDragStartPos();
     bool hasValidDragStartPos() const;
     bool pointInVisibleLegend(const QPoint &pt) const;
-    CommentText * commentTextAt(const QPoint &pt) const;
     int calcLegendPixmapHeight(QPoint &hotSpot);
 
 private:

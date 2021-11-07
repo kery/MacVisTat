@@ -9,6 +9,20 @@ CustomPlot::CustomPlot(QWidget *parent) :
     invalidateDragStartPos();
 }
 
+CommentText * CustomPlot::commentTextAt(const QPoint &pt, bool onlyVisible) const
+{
+    for (int i = itemCount() - 1; i >= 0 ; --i) {
+        CommentText *textItem = qobject_cast<CommentText *>(item(i));
+        if (!textItem || (onlyVisible && !textItem->visible())) {
+            continue;
+        }
+        if (textItem->selectTest(pt, false) > 0) {
+            return textItem;
+        }
+    }
+    return nullptr;
+}
+
 void CustomPlot::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
@@ -17,7 +31,7 @@ void CustomPlot::mousePressEvent(QMouseEvent *event)
             QCustomPlot::mousePressEvent(event);
             return;
         }
-        if ((_cmtText = commentTextAt(event->pos())) != nullptr) {
+        if ((_cmtText = commentTextAt(event->pos(), true)) != nullptr) {
             // Don't call QCustomPlot::mousePressEvent(event), so that the QCustomPlot
             // widget keeps in normal state, not in range dragging state, even though the mouse
             // pointer is in a QCPAbstractItem rather than a QCPLayoutElement.
@@ -141,7 +155,7 @@ void CustomPlot::dropEvent(QDropEvent *event)
 
         QPointF newPos = event->pos() - offset;
         _cmtText->position->setCoords(xAxis->pixelToCoord(newPos.x()), yAxis->pixelToCoord(newPos.y()));
-        _cmtText->updateTracerLineVisibility();
+        _cmtText->updateTracerAndLine();
 
         replot(rpQueued);
     }
@@ -161,17 +175,6 @@ bool CustomPlot::hasValidDragStartPos() const
 bool CustomPlot::pointInVisibleLegend(const QPoint &pt) const
 {
     return legend->visible() && legend->selectTest(pt, false) > 0;
-}
-
-CommentText * CustomPlot::commentTextAt(const QPoint &pt) const
-{
-    for (int i = itemCount() - 1; i >= 0 ; --i) {
-        CommentText *textItem = qobject_cast<CommentText *>(item(i));
-        if (textItem && textItem->selectTest(pt, false) > 0) {
-            return textItem;
-        }
-    }
-    return nullptr;
 }
 
 int CustomPlot::calcLegendPixmapHeight(QPoint &hotSpot)

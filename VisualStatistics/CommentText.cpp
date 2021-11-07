@@ -55,7 +55,7 @@ QCPGraph * CommentText::graph() const
     return nullptr;
 }
 
-void CommentText::updateTracerLineVisibility()
+void CommentText::updateTracerAndLine()
 {
     if (m_tracer == nullptr || m_line == nullptr) {
         return;
@@ -96,6 +96,17 @@ void CommentText::updateTracerLineVisibility()
             }
         }
     }
+}
+
+void CommentText::setVisible (bool on)
+{
+    if (m_tracer) {
+        m_tracer->setVisible(on);
+    }
+    if (m_line) {
+        m_line->setVisible(on);
+    }
+    QCPItemText::setVisible(on);
 }
 
 double CommentText::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const

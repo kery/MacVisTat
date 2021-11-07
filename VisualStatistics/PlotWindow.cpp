@@ -408,11 +408,9 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
             m_valueText->setVisible(false);
             setTracerGraph(nullptr);
         }
-        for (int i = plot->itemCount() - 1; i >= 0; --i) {
-            CommentText *cmtText = qobject_cast<CommentText *>(plot->item(i));
-            if (cmtText && cmtText->graph() == graph) {
-                plot->removeItem(cmtText);
-            }
+        const QVector<CommentText *> cmtVec = commentsOfGraph(graph);
+        for (CommentText *cmtText : cmtVec) {
+            plot->removeItem(cmtText);
         }
         plot->removeGraph(graph);
     }
@@ -435,6 +433,18 @@ QVector<CounterGraph *> PlotWindow::selectedGraphs(bool selected) const
         }
     }
     return graphs;
+}
+
+QVector<CommentText *> PlotWindow::commentsOfGraph(const QCPGraph *graph) const
+{
+    QVector<CommentText *> cmtVec;
+    for (int i = m_ui->customPlot->itemCount() - 1; i >= 0; --i) {
+        CommentText *cmtText = qobject_cast<CommentText *>(m_ui->customPlot->item(i));
+        if (cmtText && cmtText->graph() == graph) {
+            cmtVec.append(cmtText);
+        }
+    }
+    return cmtVec;
 }
 
 QString PlotWindow::defaultSaveFileName() const
@@ -562,11 +572,21 @@ void PlotWindow::selectionChanged()
         for (int i = 0; i < plot->graphCount(); ++i) {
             QCPGraph *graph = plot->graph(i);
             graph->setVisible(true);
+
+            const QVector<CommentText *> cmtVec = commentsOfGraph(graph);
+            for (CommentText *cmtText : cmtVec) {
+                cmtText->setVisible(true);
+            }
         }
     } else {
         for (int i = 0; i < plot->graphCount(); ++i) {
             QCPGraph *graph = plot->graph(i);
             graph->setVisible(graph->selected());
+
+            const QVector<CommentText *> cmtVec = commentsOfGraph(graph);
+            for (CommentText *cmtText : cmtVec) {
+                cmtText->setVisible(graph->selected());
+            }
         }
 
         if (QApplication::keyboardModifiers() & Qt::AltModifier) {
@@ -716,7 +736,7 @@ void PlotWindow::timerTimeout()
 
 void PlotWindow::contextMenuRequest(const QPoint &pos)
 {
-    QCustomPlot *plot = m_ui->customPlot;
+    CustomPlot *plot = m_ui->customPlot;
     QMenu *menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
     m_timer.stop();
@@ -772,15 +792,12 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
     QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, &PlotWindow::removeSelectedGraphs);
     QAction *actionRemoveUnsel = menu->addAction(QStringLiteral("Remove Unselected Graphs"), this, &PlotWindow::removeUnselectedGraphs);
 
-    for (int i = plot->itemCount() - 1; i >= 0; --i) {
-        CommentText *cmtText = qobject_cast<CommentText *>(plot->item(i));
-        if (cmtText && cmtText->selectTest(pos, false) > 0) {
-            actionEditComment->setEnabled(true);
-            actionRmComment->setEnabled(true);
-            actionEditComment->setData(QVariant::fromValue<void *>(cmtText));
-            actionRmComment->setData(QVariant::fromValue<void *>(cmtText));
-            break;
-        }
+    CommentText *cmtText = plot->commentTextAt(pos, true);
+    if (cmtText) {
+        actionEditComment->setEnabled(true);
+        actionRmComment->setEnabled(true);
+        actionEditComment->setData(QVariant::fromValue<void *>(cmtText));
+        actionRmComment->setData(QVariant::fromValue<void *>(cmtText));
     }
 
     auto selectedLegendItems = plot->legend->selectedItems();
@@ -891,7 +908,7 @@ void PlotWindow::addComment()
         pos.setY(m_ui->customPlot->yAxis->pixelToCoord(pos.y()));
         textItem->position->setCoords(pos);
         textItem->setGraphAndKey(m_tracer->graph(), m_tracer->graphKey());
-        textItem->updateTracerLineVisibility();
+        textItem->updateTracerAndLine();
         m_tracer->setVisible(false);
         m_valueText->setVisible(false);
         setTracerGraph(nullptr);
@@ -915,7 +932,7 @@ void PlotWindow::editComment()
         return;
     }
     cmtText->setText(comment);
-    cmtText->updateTracerLineVisibility();
+    cmtText->updateTracerAndLine();
     m_ui->customPlot->replot(QCustomPlot::rpQueued);
 }
 

@@ -51,6 +51,7 @@ private:
     QString genAggregateGraphName();
     void removeGraphs(const QVector<CounterGraph *> &graphs);
     QVector<CounterGraph *> selectedGraphs(bool selected) const;
+    QVector<CommentText *> commentsOfGraph(const QCPGraph *graph) const;
 
     QString defaultSaveFileName() const;
 

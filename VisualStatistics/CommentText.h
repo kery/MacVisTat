@@ -13,7 +13,8 @@ public:
     QSize size() const;
     void setGraphAndKey(QCPGraph *graph, double key);
     QCPGraph * graph() const;
-    void updateTracerLineVisibility();
+    void updateTracerAndLine();
+    void setVisible (bool on);
 
     virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const override;
 
