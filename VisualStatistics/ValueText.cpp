@@ -4,17 +4,11 @@
 const double ValueText::PosOffset = PlotWindow::TracerSize/2 + 1;
 
 ValueText::ValueText(const QCPItemTracer *tracer) :
-    QCPItemText(tracer->parentPlot())
+    ItemText(tracer->parentPlot())
 {
-    setPen(QPen(QColor(118, 118, 118)));
-    setBrush(QBrush(Qt::white));
-    setPadding(QMargins(4, 2, 4, 2));
     setLayer(tracer->layer());
-    setTextAlignment(Qt::AlignLeft);
     setPositionAlignment(Qt::AlignLeft | Qt::AlignTop);
-    setAntialiased(false);
     setVisible(false);
-    setSelectable(false);
 
     position->setParentAnchor(tracer->position);
 }
@@ -67,5 +61,5 @@ void ValueText::draw(QCPPainter *painter)
 
     position->setCoords(coords);
 
-    QCPItemText::draw(painter);
+    ItemText::draw(painter);
 }

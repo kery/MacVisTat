@@ -1,9 +1,9 @@
 #ifndef VALUETEXT_H
 #define VALUETEXT_H
 
-#include <qcustomplot.h>
+#include "ItemText.h"
 
-class ValueText : public QCPItemText
+class ValueText : public ItemText
 {
     Q_OBJECT
 
@@ -15,7 +15,7 @@ public:
     QString graphValue() const;
 
 protected:
-    virtual void draw(QCPPainter *painter);
+    virtual void draw(QCPPainter *painter) override;
 
 private:
     bool m_suspectFlag;

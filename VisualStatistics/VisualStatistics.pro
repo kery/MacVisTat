@@ -20,6 +20,7 @@ UI_DIR = ui
 SOURCES += main.cpp\
     CommentText.cpp \
     CustomPlot.cpp \
+    ItemText.cpp \
     MultiLineInputDialog.cpp \
     ResizeManager.cpp \
     libcsv/libcsv.c \
@@ -78,6 +79,7 @@ SOURCES += main.cpp\
 HEADERS  += \
     CommentText.h \
     CustomPlot.h \
+    ItemText.h \
     MultiLineInputDialog.h \
     ResizeManager.h \
     libcsv/csv.h \

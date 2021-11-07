@@ -1,9 +1,9 @@
 #ifndef COMMENTTEXT_H
 #define COMMENTTEXT_H
 
-#include <qcustomplot.h>
+#include "ItemText.h"
 
-class CommentText : public QCPItemText
+class CommentText : public ItemText
 {
     Q_OBJECT
 public:
@@ -15,7 +15,7 @@ public:
     QCPGraph * graph() const;
     void updateTracerLineVisibility();
 
-    virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+    virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const override;
 
 private:
     QCPItemTracer *m_tracer;

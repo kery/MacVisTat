@@ -1,18 +1,10 @@
 #include "CommentText.h"
 
 CommentText::CommentText(QCustomPlot *parentPlot) :
-    QCPItemText(parentPlot),
+    ItemText(parentPlot),
     m_tracer(nullptr),
     m_line(nullptr)
 {
-    setPen(QPen(QColor(118, 118, 118)));
-    setBrush(QBrush(Qt::white));
-    setPadding(QMargins(4, 2, 4, 2));
-    setTextAlignment(Qt::AlignLeft);
-    setAntialiased(false);
-    setSelectable(false);
-    setPositionAlignment(Qt::AlignCenter);
-
     parentPlot->addItem(this);
 }
 
@@ -49,6 +41,10 @@ void CommentText::setGraphAndKey(QCPGraph *graph, double key)
     m_line = new QCPItemLine(mParentPlot);
     m_line->end->setParentAnchor(m_tracer->position);
     m_line->setHead(QCPLineEnding::esSpikeArrow);
+
+    QPen pen = m_line->pen();
+    pen.setStyle(Qt::DashLine);
+    m_line->setPen(pen);
 }
 
 QCPGraph * CommentText::graph() const
