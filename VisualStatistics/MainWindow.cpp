@@ -601,13 +601,12 @@ void MainWindow::checkNewVersionTaskFinished(int exitCode, QProcess::ExitStatus 
         return;
     }
 
-    ChangeLogDialog dlg(this);
-    dlg.setShownAfterCheckingUpdates();
-    dlg.exec();
-
-    QString maintenanceToolPath = getMaintenanceToolPath();
-    QProcess::startDetached(maintenanceToolPath, QStringList() << ("--updater") << "--proxy");
-    QApplication::exit();
+    ChangeLogDialog dlg(this, true);
+    if (dlg.exec() == QDialog::Accepted) {
+        QString maintenanceToolPath = getMaintenanceToolPath();
+        QProcess::startDetached(maintenanceToolPath, QStringList() << ("--updater") << "--proxy");
+        QApplication::exit();
+    }
 }
 
 void MainWindow::checkNewVersionTaskError(QProcess::ProcessError error)
@@ -831,7 +830,7 @@ void MainWindow::actionViewHelpTriggered()
 
 void MainWindow::actionChangeLogTriggered()
 {
-    ChangeLogDialog dlg(this);
+    ChangeLogDialog dlg(this, false);
     dlg.exec();
 }
 

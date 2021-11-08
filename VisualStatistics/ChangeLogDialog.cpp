@@ -5,15 +5,19 @@
 #include <QNetworkProxyQuery>
 #include <QPushButton>
 
-ChangeLogDialog::ChangeLogDialog(QWidget *parent) :
+ChangeLogDialog::ChangeLogDialog(QWidget *parent, bool update) :
     QDialog(parent),
     ui(new Ui::ChangeLogDialog),
     m_resizeMan(this)
 {
     ui->setupUi(this);
-    ui->label->setVisible(false);
+    if (update) {
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setText(QStringLiteral("Update"));
+    } else {
+        ui->label->setVisible(false);
+    }
 
-    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint);
     setSizeGripEnabled(true);
 
     QNetworkAccessManager *manager = new QNetworkAccessManager();
@@ -32,12 +36,6 @@ ChangeLogDialog::ChangeLogDialog(QWidget *parent) :
 ChangeLogDialog::~ChangeLogDialog()
 {
     delete ui;
-}
-
-void ChangeLogDialog::setShownAfterCheckingUpdates()
-{
-    ui->label->setVisible(true);
-    ui->buttonBox->button(QDialogButtonBox::Ok)->setText(QStringLiteral("Update"));
 }
 
 bool ChangeLogDialog::event(QEvent *event)

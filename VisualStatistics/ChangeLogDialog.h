@@ -15,10 +15,8 @@ class ChangeLogDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ChangeLogDialog(QWidget *parent = 0);
+    explicit ChangeLogDialog(QWidget *parent, bool update);
     ~ChangeLogDialog();
-
-    void setShownAfterCheckingUpdates();
 
 private:
     virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
