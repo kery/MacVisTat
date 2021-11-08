@@ -242,10 +242,8 @@ struct CsvCbUserData {
 
 static void libcsvCbEndOfField(void *field, size_t len, void *ud)
 {
-    if (field) {
-        auto ccud = static_cast<CsvCbUserData *>(ud);
-        ccud->columns.push_back(std::string((const char *)field, len));
-    }
+    auto ccud = static_cast<CsvCbUserData *>(ud);
+    ccud->columns.push_back(field ? std::string((const char *)field, len) : std::string());
 }
 
 static void libcsvCbEndOfRow(int, void *ud)
@@ -317,11 +315,12 @@ static StatisticsNameModel::StatId getStatId(const std::string &name)
             size_t pos2 = name.find(',', pos1);
             if (pos2 != std::string::npos) {
                 sid.group = name.substr(pos1, pos2 - pos1);
-                pos1 = name.rfind(',');
-                if (pos1 != std::string::npos) {
-                    sid.object = name.substr(pos1 + 1);
-                }
             }
+        }
+        // NRD counter has no GroupName, so we continue to get the KPI-KCI Object field
+        pos1 = name.rfind(',');
+        if (pos1 != std::string::npos) {
+            sid.object = name.substr(pos1 + 1);
         }
     }
     return sid;
