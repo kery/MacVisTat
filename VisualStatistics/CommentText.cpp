@@ -55,45 +55,37 @@ QCPGraph * CommentText::graph() const
     return nullptr;
 }
 
-void CommentText::updateTracerAndLine()
+void CommentText::updateLineStartAnchor()
 {
     if (m_tracer == nullptr || m_line == nullptr) {
         return;
     }
 
     QPointF tracerPos = m_tracer->position->pixelPoint();
-    if (selectTest(tracerPos, false) > 0) {
-        m_tracer->setVisible(false);
-        m_line->setVisible(false);
-    } else {
-        m_tracer->setVisible(true);
-        m_line->setVisible(true);
-
-        QSize itemSize = size();
-        QPointF leftPos = left->pixelPoint(), rightPos = right->pixelPoint();
-        QPointF topPos = top->pixelPoint(), bottomPos = bottom->pixelPoint();
-        if (tracerPos.x() < leftPos.x() + itemSize.width()/4) {
-            if (tracerPos.y() < topPos.y() + itemSize.height()/4) {
-                m_line->start->setParentAnchor(topLeft);
-            } else if (tracerPos.y() < bottomPos.y() - itemSize.height()/4) {
-                m_line->start->setParentAnchor(left);
-            } else {
-                m_line->start->setParentAnchor(bottomLeft);
-            }
-        } else if (tracerPos.x() < rightPos.x() - itemSize.width()/4) {
-            if (tracerPos.y() < topPos.y()) {
-                m_line->start->setParentAnchor(top);
-            } else {
-                m_line->start->setParentAnchor(bottom);
-            }
+    QSize itemSize = size();
+    QPointF leftPos = left->pixelPoint(), rightPos = right->pixelPoint();
+    QPointF topPos = top->pixelPoint(), bottomPos = bottom->pixelPoint();
+    if (tracerPos.x() < leftPos.x() + itemSize.width()/4) {
+        if (tracerPos.y() < topPos.y() + itemSize.height()/4) {
+            m_line->start->setParentAnchor(topLeft);
+        } else if (tracerPos.y() < bottomPos.y() - itemSize.height()/4) {
+            m_line->start->setParentAnchor(left);
         } else {
-            if (tracerPos.y() < topPos.y() + itemSize.height()/4) {
-                m_line->start->setParentAnchor(topRight);
-            } else if (tracerPos.y() < bottomPos.y() - itemSize.height()/4) {
-                m_line->start->setParentAnchor(right);
-            } else {
-                m_line->start->setParentAnchor(bottomRight);
-            }
+            m_line->start->setParentAnchor(bottomLeft);
+        }
+    } else if (tracerPos.x() < rightPos.x() - itemSize.width()/4) {
+        if (tracerPos.y() < topPos.y()) {
+            m_line->start->setParentAnchor(top);
+        } else {
+            m_line->start->setParentAnchor(bottom);
+        }
+    } else {
+        if (tracerPos.y() < topPos.y() + itemSize.height()/4) {
+            m_line->start->setParentAnchor(topRight);
+        } else if (tracerPos.y() < bottomPos.y() - itemSize.height()/4) {
+            m_line->start->setParentAnchor(right);
+        } else {
+            m_line->start->setParentAnchor(bottomRight);
         }
     }
 }
