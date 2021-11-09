@@ -24,7 +24,7 @@ AboutDialog::~AboutDialog()
 bool AboutDialog::event(QEvent *event)
 {
     if (event->type() == QEvent::ShowToParent && !m_resizeMan.showToParentHandled()) {
-        m_resizeMan.resizeWidgetOnShowToParent();
+        m_resizeMan.resizeWidgetFromCharWidth(80, 0.45);
     }
     return QDialog::event(event);
 }

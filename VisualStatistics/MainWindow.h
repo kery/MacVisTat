@@ -58,7 +58,6 @@ private:
     virtual void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
     virtual void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
     virtual void closeEvent(QCloseEvent *) Q_DECL_OVERRIDE;
-    virtual void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
     virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 private slots:

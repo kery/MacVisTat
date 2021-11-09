@@ -320,6 +320,8 @@ bool MainWindow::checkFileName(const QString &path)
 
 void MainWindow::handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWindows)
 {
+    QSize screenSize = m_resizeMan.getScreenSize();
+
     if (multipleWindows && ndm.size() > 1) {
         QVector<Statistics::NameDataMap> ndms = Statistics::divideNameDataMap(ndm);
         for (Statistics::NameDataMap &tempNdm : ndms) {
@@ -331,7 +333,7 @@ void MainWindow::handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWin
             Statistics stat(tempNdm, m_offsetFromUtc);
             PlotWindow *plotWindow = new PlotWindow(stat);
             plotWindow->setAttribute(Qt::WA_DeleteOnClose);
-            m_resizeMan.resizeWidget(plotWindow);
+            plotWindow->resize(screenSize * 0.75);
             connect(this, SIGNAL(aboutToBeClosed()), plotWindow, SLOT(close()));
             plotWindow->showMaximized();
         }
@@ -339,7 +341,7 @@ void MainWindow::handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWin
         Statistics stat(ndm, m_offsetFromUtc);
         PlotWindow *plotWindow = new PlotWindow(stat);
         plotWindow->setAttribute(Qt::WA_DeleteOnClose);
-        m_resizeMan.resizeWidget(plotWindow);
+        plotWindow->resize(screenSize * 0.75);
         connect(this, SIGNAL(aboutToBeClosed()), plotWindow, SLOT(close()));
         plotWindow->showMaximized();
     }
@@ -537,51 +539,15 @@ void MainWindow::closeEvent(QCloseEvent *)
     settings.setValue(QStringLiteral("caseSensitive"), m_caseSensitive);
 }
 
-void MainWindow::resizeEvent(QResizeEvent *)
-{
-    double scale = m_resizeMan.currentScreenScale();
-    if (qFuzzyCompare(scale, m_resizeMan.scale())) {
-        return;
-    }
-    if (!qFuzzyIsNull(m_resizeMan.scale())) {
-        double factor = scale/m_resizeMan.scale();
-        auto sizesHor = m_ui->splitterHor->sizes();
-        auto sizesVer = m_ui->splitterVer->sizes();
-
-        int leftWidth = qRound(sizesHor[0] * factor);
-        int rightWidth = sizesHor[0] + sizesHor[1] - leftWidth;
-        m_ui->splitterHor->setSizes(QList<int>() << leftWidth << rightWidth);
-
-        int bottomHeight = qRound(sizesVer[1] * factor);
-        int topHeight = sizesVer[0] + sizesVer[1] - bottomHeight;
-        m_ui->splitterVer->setSizes(QList<int>() << topHeight << bottomHeight);
-    }
-    m_resizeMan.setScale(scale);
-}
-
 bool MainWindow::event(QEvent *event)
 {
-    // Get the screen scale value in which this window is shown initially.
-    // Please note that we cannot do this in showEvent because at that point
-    // this window's position is on primary screen which may be different
-    // from the position after it is shown. It seems that the position is
-    // changed in show_sys() call.
-    //
-    // QShowEvent showEvent;
-    // QCoreApplication::sendEvent(q, &showEvent);
-    //
-    // show_sys();
-    //
-    // This event is sent by QCoreApplication::sendEvent(q, &showToParentEvent)
-    // in QWidgetPrivate::setVisible(bool visible).
     if (event->type() == QEvent::ShowToParent && !m_resizeMan.showToParentHandled()) {
-        int leftWidth = 320, bottomHeight = 100;
-        if (m_resizeMan.resizeWidgetOnShowToParent()) {
-            leftWidth *= m_resizeMan.scale();
-            bottomHeight *= m_resizeMan.scale();
-        }
-        m_ui->splitterHor->setSizes(QList<int>() << leftWidth << width() - leftWidth);
-        m_ui->splitterVer->setSizes(QList<int>() << height() - bottomHeight << bottomHeight);
+        m_resizeMan.resizeWidgetFromScreenSize(0.75, 0.75);
+
+        int leftWidth = m_ui->splitterHor->width() * 0.23334;
+        int bottomHeight = m_ui->splitterVer->height() * 0.13140604;
+        m_ui->splitterHor->setSizes(QList<int>() << leftWidth << m_ui->splitterHor->width() - leftWidth - m_ui->splitterHor->handleWidth());
+        m_ui->splitterVer->setSizes(QList<int>() << m_ui->splitterVer->height() - m_ui->splitterVer->handleWidth() - bottomHeight << bottomHeight);
     }
     return QMainWindow::event(event);
 }

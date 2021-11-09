@@ -486,7 +486,6 @@ QString PlotWindow::getInputComment(const QString &text)
     MultiLineInputDialog dlg(this);
     dlg.setLabelText(QStringLiteral("Comment:"));
     dlg.setTextValue(text);
-    dlg.resize(640, 200);
     if (dlg.exec() != QDialog::Accepted) {
         return QString();
     }

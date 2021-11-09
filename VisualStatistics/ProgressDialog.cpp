@@ -84,7 +84,7 @@ void ProgressDialog::keyPressEvent(QKeyEvent *e)
 bool ProgressDialog::event(QEvent *event)
 {
     if (event->type() == QEvent::ShowToParent && !m_resizeMan.showToParentHandled()) {
-        m_resizeMan.resizeWidgetOnShowToParent();
+        m_resizeMan.resizeWidgetFromCharWidth(100, 0.333334);
     }
     return QDialog::event(event);
 }

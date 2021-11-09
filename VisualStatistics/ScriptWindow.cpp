@@ -51,7 +51,7 @@ void ScriptWindow::closeEvent(QCloseEvent *event)
 bool ScriptWindow::event(QEvent *event)
 {
     if (event->type() == QEvent::ShowToParent && !m_resizeMan.showToParentHandled()) {
-        m_resizeMan.resizeWidgetOnShowToParent();
+        m_resizeMan.resizeWidgetFromScreenHeight(0.7, 1);
     }
     return QMainWindow::event(event);
 }

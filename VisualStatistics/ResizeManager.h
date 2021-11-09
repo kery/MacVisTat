@@ -1,6 +1,8 @@
 #ifndef RESIZEMANAGER_H
 #define RESIZEMANAGER_H
 
+#include <QSize>
+
 class QWidget;
 
 class ResizeManager
@@ -8,15 +10,16 @@ class ResizeManager
 public:
     ResizeManager(QWidget *widget);
 
-    double scale() const;
-    void setScale(double scale);
+    QSize getScreenSize() const;
     bool showToParentHandled() const;
-    double currentScreenScale() const;
-    bool resizeWidgetOnShowToParent();
-    bool resizeWidget(QWidget *widget);
+    void resizeWidgetFromScreenSize(double wr, double hr);
+    void resizeWidgetFromScreenHeight(double hr, double wr);
+    void resizeWidgetFromCharWidth(double mcw, double hr);
 
 private:
-    double m_scale;
+    void doResize(const QSizeF &newSize);
+
+private:
     bool m_showToParentHandled;
     QWidget *m_widget;
 };
