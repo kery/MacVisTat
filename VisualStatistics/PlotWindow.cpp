@@ -449,11 +449,12 @@ QVector<CommentText *> PlotWindow::commentsOfGraph(const QCPGraph *graph) const
 
 QString PlotWindow::defaultSaveFileName() const
 {
-    if (m_ui->customPlot->graphCount() > 0) {
-         CounterGraph *graph = qobject_cast<CounterGraph *>(m_ui->customPlot->graph(0));
-         return graph->displayName().splitRef('.').back().toString();
+    QString wndTitle = windowTitle();
+    QStringList nameParts = wndTitle.split(", ", QString::SkipEmptyParts);
+    if (!nameParts.isEmpty() && nameParts.last().endsWith(QLatin1String("..."))) {
+        nameParts.last().chop(3);
     }
-    return QString();
+    return nameParts.join('_');
 }
 
 int PlotWindow::getLegendItemIndex(QCPAbstractLegendItem *item) const
