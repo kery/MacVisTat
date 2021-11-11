@@ -151,7 +151,7 @@ QString Statistics::getDateTimeString(int index) const
         dt.setOffsetFromUtc(m_offsetFromUtc);
         dt = dt.toUTC();
     }
-    return dt.toString(DT_FORMAT);
+    return dt.toString(DT_FORMAT_IN_PLOT);
 }
 
 uint Statistics::getFirstDateTime() const

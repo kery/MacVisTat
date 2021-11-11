@@ -86,13 +86,13 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
         }
         if (newline) {
             QDateTime dt = QDateTime::fromString(QString::fromLatin1(newline,
-                DT_FORMAT_IN_FILE.length()), DT_FORMAT_IN_FILE);
+                DT_FORMAT_IN_CSV.length()), DT_FORMAT_IN_CSV);
             if (dt.isValid()) {
                 index = 2;
                 parsed = 0;
                 data.key = dt.toTime_t();
-                len -= DT_FORMAT_IN_FILE.length() + 1;
-                ptr = newline + DT_FORMAT_IN_FILE.length() + 1;
+                len -= DT_FORMAT_IN_CSV.length() + 1;
+                ptr = newline + DT_FORMAT_IN_CSV.length() + 1;
             } else {
                 result.error = "invalid date time format in ";
                 result.error += path;
@@ -139,7 +139,7 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
             }
             len -= newline - ptr;
             ptr = newline;
-            if (len > DT_FORMAT_IN_FILE.length() + 1) {
+            if (len > DT_FORMAT_IN_CSV.length() + 1) {
                 ++newline;
                 --len;
                 continue;
@@ -584,7 +584,7 @@ static void dataStartElementHandler(void *ud, const char *name, const char **att
         if (dateTime != userData->tempEndTime) {
             userData->tempEndTime = dateTime;
             userData->result->datas.push_back(MeasData(userData->indexes->size()));
-            userData->result->datas.back().dateTime = dateTime.toString(DT_FORMAT_IN_FILE).toStdString();
+            userData->result->datas.back().dateTime = dateTime.toString(DT_FORMAT_IN_CSV).toStdString();
         }
     }
 }
@@ -805,18 +805,44 @@ static QString getManagedElementFromKpiKciFile(const QString &path)
     return getAttributeFromKpiKciFile(path, getManagedElement_StartElementHandler);
 }
 
+static QString getUniqueIdFromKpiKciFileName(const QString &path)
+{
+    QStringRef uniqueId;
+    QRegularExpression regExpTypeA("A\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{4}[+-]\\d{4}(_-[^_]+)?(_[^_]+)?(_-_[^_])?.xml(.gz)?");
+    QRegularExpressionMatch match = regExpTypeA.match(path);
+    if (match.hasMatch()) {
+        uniqueId = match.capturedRef(2);
+    } else {
+        QRegularExpression regExpTypeC("C\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{8}\\.\\d{4}[+-]\\d{4}(_-[^_]+)?(_[^_]+)?(_-_[^_])?.xml(.gz)?");
+        match = regExpTypeC.match(path);
+        if (match.hasMatch()) {
+            uniqueId = match.capturedRef(2);
+        }
+    }
+    return uniqueId.mid(1).toString();
+}
+
 static QString getOutputFilePath(const QStringList &filePaths)
 {
-    QString managedElement = getManagedElementFromKpiKciFile(filePaths.first());
+    QString nodeName = getManagedElementFromKpiKciFile(filePaths.first());
+    if (nodeName.isEmpty()) {
+        nodeName = getUniqueIdFromKpiKciFileName(filePaths.first());
+    }
     QString firstEndTime = getFirstGranPeriodEndTimeFromKpiKciFile(filePaths.first());
     QString endTime = getEndTimeFromKpiKciFile(filePaths.last());
 
     QDateTime dtFirstEndTime = QDateTime::fromString(firstEndTime, Qt::ISODate);
     QDateTime dtEndTime = QDateTime::fromString(endTime, Qt::ISODate);
 
-    QString fileName = QString("%1__%2-%3.csv.gz").arg(managedElement,
-                                                       dtFirstEndTime.toString(DT_FORMAT_IN_FILE_NAME),
-                                                       dtEndTime.toString(DT_FORMAT_IN_FILE_NAME));
+    QString fileName;
+    if (nodeName.isEmpty()) {
+        fileName = QString("%1-%2.csv.gz").arg(dtFirstEndTime.toString(DT_FORMAT_IN_FILENAME),
+                                               dtEndTime.toString(DT_FORMAT_IN_FILENAME));
+    } else {
+        fileName = QString("%1__%2-%3.csv.gz").arg(nodeName, dtFirstEndTime.toString(DT_FORMAT_IN_FILENAME),
+                                                   dtEndTime.toString(DT_FORMAT_IN_FILENAME));
+    }
+
     QFileInfo fileInfo(filePaths.first());
     return fileInfo.absoluteDir().absoluteFilePath(fileName);
 }

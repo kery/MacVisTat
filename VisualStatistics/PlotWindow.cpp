@@ -69,14 +69,14 @@ PlotWindow::PlotWindow(Statistics &stat) :
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_ui->toolBar->addWidget(spacer);
     m_dtEditFrom = new QDateTimeEdit();
-    m_dtEditFrom->setDisplayFormat(DT_FORMAT);
+    m_dtEditFrom->setDisplayFormat(DT_FORMAT_IN_PLOT);
     m_ui->toolBar->addWidget(m_dtEditFrom);
     spacer = new QWidget();
     spacer->setMinimumWidth(5);
     spacer->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     m_ui->toolBar->addWidget(spacer);
     m_dtEditTo = new QDateTimeEdit();
-    m_dtEditTo->setDisplayFormat(DT_FORMAT);
+    m_dtEditTo->setDisplayFormat(DT_FORMAT_IN_PLOT);
     m_ui->toolBar->addWidget(m_dtEditTo);
 
     connectXAxisRangeChanged();

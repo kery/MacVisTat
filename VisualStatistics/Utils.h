@@ -5,9 +5,9 @@
 #include <string>
 #include <qcustomplot.h>
 
-#define DT_FORMAT QStringLiteral("yyyy-MM-dd HH:mm:ss")
-#define DT_FORMAT_IN_FILE QStringLiteral("dd.MM.yyyy;HH:mm:ss")
-#define DT_FORMAT_IN_FILE_NAME QStringLiteral("yyyyMMdd.HHmm")
+#define DT_FORMAT_IN_PLOT     QStringLiteral("yyyy-MM-dd HH:mm:ss")
+#define DT_FORMAT_IN_CSV      QStringLiteral("dd.MM.yyyy;HH:mm:ss")
+#define DT_FORMAT_IN_FILENAME QStringLiteral("yyyyMMdd.HHmm")
 
 using namespace std;
 

@@ -52,8 +52,6 @@ private:
     void initializeRecentFileActions();
     void updateRecentFileActions();
 
-    static bool checkFileName(const QString &path);
-
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
     virtual void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
     virtual void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;

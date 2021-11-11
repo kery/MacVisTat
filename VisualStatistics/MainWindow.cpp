@@ -312,12 +312,6 @@ void MainWindow::parseStatFileData(bool multipleWindows)
     }
 }
 
-bool MainWindow::checkFileName(const QString &path)
-{
-    return path.endsWith(QLatin1String(".csv"), Qt::CaseInsensitive) ||
-            path.endsWith(QLatin1String(".csv.gz"), Qt::CaseInsensitive);
-}
-
 void MainWindow::handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWindows)
 {
     QSize screenSize = m_resizeMan.getScreenSize();
@@ -363,19 +357,19 @@ QString MainWindow::getMaintenanceToolPath()
 void MainWindow::appendInfoLog(const QString &text)
 {
     m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='#808080'>[%1]</font>  <font color='#13a10e'>INFO</font>: %2").arg(
-        QDateTime::currentDateTime().toString(DT_FORMAT), text));
+        QDateTime::currentDateTime().toString(DT_FORMAT_IN_PLOT), text));
 }
 
 void MainWindow::appendWarnLog(const QString &text)
 {
     m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='#808080'>[%1]</font>  <font color='#c19c00'>WARN</font>: %2").arg(
-        QDateTime::currentDateTime().toString(DT_FORMAT), text));
+        QDateTime::currentDateTime().toString(DT_FORMAT_IN_PLOT), text));
 }
 
 void MainWindow::appendErrorLog(const QString &text)
 {
     m_ui->logTextEdit->appendHtml(QStringLiteral("<font color='#808080'>[%1]</font> <font color='#c50f1f'>ERROR</font>: %2").arg(
-        QDateTime::currentDateTime().toString(DT_FORMAT), text));
+        QDateTime::currentDateTime().toString(DT_FORMAT_IN_PLOT), text));
 }
 
 QString MainWindow::filterHistoryFilePath()
@@ -514,7 +508,10 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
         return;
     }
 
-    if (checkFileName(urls.first().toLocalFile())) {
+    QString path = urls.first().toLocalFile();
+    if (path.endsWith(QLatin1String(".csv"), Qt::CaseInsensitive) ||
+            path.endsWith(QLatin1String(".csv.gz"), Qt::CaseInsensitive))
+    {
         event->acceptProposedAction();
     }
 }
