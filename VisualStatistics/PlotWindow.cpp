@@ -422,19 +422,6 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
     plot->replot(QCustomPlot::rpQueued);
 }
 
-QVector<CounterGraph *> PlotWindow::selectedGraphs(bool selected) const
-{
-    QVector<CounterGraph*> graphs;
-    QCustomPlot *plot = m_ui->customPlot;
-    for (int i = 0; i < plot->graphCount(); ++i) {
-        CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
-        if (graph->selected() == selected) {
-            graphs.append(graph);
-        }
-    }
-    return graphs;
-}
-
 QVector<CommentText *> PlotWindow::commentsOfGraph(const QCPGraph *graph) const
 {
     QVector<CommentText *> cmtVec;
@@ -789,8 +776,8 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
 
     menu->addSeparator();
 
+    menu->addAction(QStringLiteral("Reverse Selection"), this, &PlotWindow::reverseSelection);
     QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, &PlotWindow::removeSelectedGraphs);
-    QAction *actionRemoveUnsel = menu->addAction(QStringLiteral("Remove Unselected Graphs"), this, &PlotWindow::removeUnselectedGraphs);
 
     CommentText *cmtText = plot->commentTextAt(pos, true);
     if (cmtText) {
@@ -807,7 +794,6 @@ void PlotWindow::contextMenuRequest(const QPoint &pos)
             actionCopyName->setEnabled(false);
         }
         actionRemove->setEnabled(false);
-        actionRemoveUnsel->setEnabled(false);
     }
 
     if (plot->graphCount() < 2 || plot->legend->selectedItems().size() == 1) {
@@ -1011,14 +997,27 @@ void PlotWindow::addAggregateGraph()
     plot->replot(QCustomPlot::rpQueued);
 }
 
-void PlotWindow::removeSelectedGraphs()
+void PlotWindow::reverseSelection()
 {
-    removeGraphs(selectedGraphs(true));
+    for (int i = 0; i < m_ui->customPlot->graphCount(); ++i) {
+        QCPGraph *graph = m_ui->customPlot->graph(i);
+        graph->setSelected(!graph->selected());
+    }
+    selectionChanged();
+    m_ui->customPlot->replot(QCustomPlot::rpQueued);
 }
 
-void PlotWindow::removeUnselectedGraphs()
+void PlotWindow::removeSelectedGraphs()
 {
-    removeGraphs(selectedGraphs(false));
+    QVector<CounterGraph*> graphs;
+    QCustomPlot *plot = m_ui->customPlot;
+    for (int i = 0; i < plot->graphCount(); ++i) {
+        CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
+        if (graph->selected()) {
+            graphs.append(graph);
+        }
+    }
+    removeGraphs(graphs);
 }
 
 void PlotWindow::setGraphColor()

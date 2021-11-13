@@ -50,7 +50,6 @@ private:
 
     QString genAggregateGraphName();
     void removeGraphs(const QVector<CounterGraph *> &graphs);
-    QVector<CounterGraph *> selectedGraphs(bool selected) const;
     QVector<CommentText *> commentsOfGraph(const QCPGraph *graph) const;
 
     QString defaultSaveFileName() const;
@@ -79,8 +78,8 @@ private slots:
     void editComment();
     void removeComment();
     void addAggregateGraph();
+    void reverseSelection();
     void removeSelectedGraphs();
-    void removeUnselectedGraphs();
     void setGraphColor();
     void copyGraphName();
     void copyGraphValue();

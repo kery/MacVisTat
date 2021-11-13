@@ -44,6 +44,7 @@ MainWindow::MainWindow() :
     toolButton->setStyleSheet(QStringLiteral("color:#999;"));
     toolButton->setAutoRaise(true);
     toolButton->setText(QStringLiteral("Aa"));
+    toolButton->setStatusTip(QStringLiteral("Case sensitive/insensitive match"));
     toolButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
     toolButton->installEventFilter(this);
 
@@ -684,7 +685,7 @@ void MainWindow::updateStatNameInfo()
     int matched = model->matchedCount();
     int total = model->totalCount();
 
-    m_lbStatNameInfo->setText(QStringLiteral("Stat:%1, Matched:%2, Displayed:%3; ").arg(total).arg(matched).arg(displayed));
+    m_lbStatNameInfo->setText(QStringLiteral("Counter:%1, Matched:%2, Displayed:%3; ").arg(total).arg(matched).arg(displayed));
 }
 
 void MainWindow::updateModulesInfo()
