@@ -43,6 +43,7 @@ private:
 
     QString filterHistoryFilePath();
     QString statDescriptionFilePath();
+    QString filterMenuFilePath();
     void loadFilterHistory();
     void saveFilterHistory();
     void adjustFilterHistoryOrder();
@@ -51,6 +52,7 @@ private:
 
     void initializeRecentFileActions();
     void updateRecentFileActions();
+    void initFilterMenu();
 
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
     virtual void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
@@ -84,6 +86,7 @@ private slots:
     void actionViewHelpTriggered();
     void actionChangeLogTriggered();
     void actionAboutTriggered();
+    void actionFilterTriggered();
 
 signals:
     void aboutToBeClosed();

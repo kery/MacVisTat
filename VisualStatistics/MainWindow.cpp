@@ -114,6 +114,7 @@ MainWindow::MainWindow() :
 
     initializeRecentFileActions();
     updateRecentFileActions();
+    initFilterMenu();
 }
 
 MainWindow::~MainWindow()
@@ -383,13 +384,18 @@ QString MainWindow::statDescriptionFilePath()
     return QDir::home().filePath(QStringLiteral(".vstat_stat_desc"));
 }
 
+QString MainWindow::filterMenuFilePath()
+{
+    return QDir::home().filePath(QStringLiteral(".vstat_filter_menu"));
+}
+
 void MainWindow::loadFilterHistory()
 {
     QFile histFile(filterHistoryFilePath());
     if (histFile.open(QIODevice::ReadOnly)) {
+        QString line;
         QTextStream ts(&histFile);
-        while (!ts.atEnd()) {
-            QString line = ts.readLine();
+        while (ts.readLineInto(&line)) {
             m_ui->cbRegExpFilter->addItem(line);
         }
         histFile.close();
@@ -447,14 +453,14 @@ void MainWindow::updateCaseSensitiveButtonFont()
 
 void MainWindow::initializeRecentFileActions()
 {
-    m_sepAction = m_ui->menu_File->insertSeparator(m_ui->actionExit);
+    m_sepAction = m_ui->menuFile->insertSeparator(m_ui->actionExit);
 
     for (int i = 0; i < (int)m_recentFileActions.size(); ++i) {
         m_recentFileActions[i] = new QAction(this);
         m_recentFileActions[i]->setVisible(false);
         connect(m_recentFileActions[i], &QAction::triggered, this, &MainWindow::openRecentFile);
 
-        m_ui->menu_File->insertAction(m_sepAction, m_recentFileActions[i]);
+        m_ui->menuFile->insertAction(m_sepAction, m_recentFileActions[i]);
     }
 }
 
@@ -485,6 +491,86 @@ void MainWindow::updateRecentFileActions()
     }
 
     m_sepAction->setVisible(numRecentFiles > 0);
+}
+
+static int trimLeadingSpace(QString &str)
+{
+    int i = 0;
+    for (; i < str.size(); ++i) {
+        if (str.at(i) != ' ') {
+            break;
+        }
+    }
+    if (i < str.size()) {
+        str.remove(0, i);
+        return i;
+    }
+    return -1;
+}
+
+void MainWindow::initFilterMenu()
+{
+    QFile file(filterMenuFilePath());
+    if (!file.open(QIODevice::ReadOnly)) {
+        return;
+    }
+    QString preLine, curLine;
+    QTextStream ts(&file);
+    if (!ts.readLineInto(&preLine)) {
+        return;
+    }
+    int numSpaces = trimLeadingSpace(preLine);
+    if (numSpaces < 0) {
+        return;
+    }
+
+    QStack<int> levelStack;
+    levelStack.push(numSpaces);
+
+    QStack<QMenu *> menuStack;
+    QMenu *filterMenu = new QMenu(QStringLiteral("Filter"), this);
+    menuStack.push(filterMenu);
+
+    while (ts.readLineInto(&curLine)) {
+        numSpaces = trimLeadingSpace(curLine);
+        if (numSpaces < 0) {
+            continue;
+        }
+        if (numSpaces > levelStack.top()) {
+            QMenu *menu = menuStack.top()->addMenu(preLine);
+            menuStack.push(menu);
+            levelStack.push(numSpaces);
+        } else {
+            QAction *action = menuStack.top()->addAction(preLine.section(',', 0, 0), this, &MainWindow::actionFilterTriggered);
+            QString tempStr = preLine.section(',', 1, 1);
+            if (!tempStr.isEmpty()) {
+                action->setData(tempStr);
+            }
+            tempStr = preLine.section(',', 2, 2);
+            if (!tempStr.isEmpty()) {
+                action->setStatusTip(tempStr);
+            }
+            while (levelStack.size() > 1 && numSpaces < levelStack.top()) {
+                levelStack.pop();
+                menuStack.pop();
+            }
+        }
+        preLine = curLine;
+    }
+    numSpaces = trimLeadingSpace(preLine);
+    if (numSpaces >= 0) {
+        QAction *action = menuStack.top()->addAction(preLine.section(',', 0, 0), this, &MainWindow::actionFilterTriggered);
+        QString tempStr = preLine.section(',', 1, 1);
+        if (!tempStr.isEmpty()) {
+            action->setData(tempStr);
+        }
+        tempStr = preLine.section(',', 2, 2);
+        if (!tempStr.isEmpty()) {
+            action->setStatusTip(tempStr);
+        }
+    }
+    QList<QAction *> actions = m_ui->menuBar->actions();
+    m_ui->menuBar->insertMenu(actions[1], filterMenu);
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -802,4 +888,16 @@ void MainWindow::actionAboutTriggered()
 {
     AboutDialog dialog(this);
     dialog.exec();
+}
+
+void MainWindow::actionFilterTriggered()
+{
+    QAction *action = qobject_cast<QAction*>(sender());
+    QString filterText = action->data().toString();
+    if (filterText.isEmpty()) {
+        m_ui->cbRegExpFilter->lineEdit()->setText(action->text());
+    } else {
+        m_ui->cbRegExpFilter->lineEdit()->setText(filterText);
+    }
+    updateFilterPattern();
 }
