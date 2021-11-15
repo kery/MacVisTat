@@ -147,7 +147,13 @@
     <addaction name="separator"/>
     <addaction name="actionClearFilterHistory"/>
    </widget>
+   <widget class="QMenu" name="menuFilter">
+    <property name="title">
+     <string>Filter</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuFilter"/>
    <addaction name="menuPlot"/>
    <addaction name="menuHelp"/>
   </widget>

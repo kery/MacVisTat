@@ -114,7 +114,7 @@ MainWindow::MainWindow() :
 
     initializeRecentFileActions();
     updateRecentFileActions();
-    initFilterMenu();
+    initFavoriteFilterMenu();
 }
 
 MainWindow::~MainWindow()
@@ -384,9 +384,9 @@ QString MainWindow::statDescriptionFilePath()
     return QDir::home().filePath(QStringLiteral(".vstat_stat_desc"));
 }
 
-QString MainWindow::filterMenuFilePath()
+QString MainWindow::favoriteFilterFilePath()
 {
-    return QDir::home().filePath(QStringLiteral(".vstat_filter_menu"));
+    return QDir::home().filePath(QStringLiteral(".vstat_filter_favorite.txt"));
 }
 
 void MainWindow::loadFilterHistory()
@@ -508,32 +508,32 @@ static int trimLeadingSpace(QString &str)
     return -1;
 }
 
-void MainWindow::initFilterMenu()
+void MainWindow::initFavoriteFilterMenu()
 {
-    QFile file(filterMenuFilePath());
-    if (!file.open(QIODevice::ReadOnly)) {
-        return;
-    }
-    QString preLine, curLine;
-    QTextStream ts(&file);
-    if (!ts.readLineInto(&preLine)) {
-        return;
-    }
-    int numSpaces = trimLeadingSpace(preLine);
-    if (numSpaces < 0) {
-        return;
-    }
-
+    int numSpaces;
     QStack<int> levelStack;
-    levelStack.push(numSpaces);
-
     QStack<QMenu *> menuStack;
-    QMenu *filterMenu = new QMenu(QStringLiteral("Filter"), this);
-    menuStack.push(filterMenu);
+    QString preLine, curLine;
+    QTextStream ts;
+
+    QFile file(favoriteFilterFilePath());
+    if (!file.open(QIODevice::ReadOnly)) {
+        goto _lbReturn;
+    }
+    ts.setDevice(&file);
 
     while (ts.readLineInto(&curLine)) {
         numSpaces = trimLeadingSpace(curLine);
         if (numSpaces < 0) {
+            continue;
+        }
+        if (curLine.startsWith('#')) {
+            continue;
+        }
+        if (preLine.isEmpty()) {
+            preLine = curLine;
+            levelStack.push(numSpaces);
+            menuStack.push(m_ui->menuFilter);
             continue;
         }
         if (numSpaces > levelStack.top()) {
@@ -541,15 +541,7 @@ void MainWindow::initFilterMenu()
             menuStack.push(menu);
             levelStack.push(numSpaces);
         } else {
-            QAction *action = menuStack.top()->addAction(preLine.section(',', 0, 0), this, &MainWindow::actionFilterTriggered);
-            QString tempStr = preLine.section(',', 1, 1);
-            if (!tempStr.isEmpty()) {
-                action->setData(tempStr);
-            }
-            tempStr = preLine.section(',', 2, 2);
-            if (!tempStr.isEmpty()) {
-                action->setStatusTip(tempStr);
-            }
+            addFavoriteFilterAction(menuStack.top(), preLine);
             while (levelStack.size() > 1 && numSpaces < levelStack.top()) {
                 levelStack.pop();
                 menuStack.pop();
@@ -559,18 +551,28 @@ void MainWindow::initFilterMenu()
     }
     numSpaces = trimLeadingSpace(preLine);
     if (numSpaces >= 0) {
-        QAction *action = menuStack.top()->addAction(preLine.section(',', 0, 0), this, &MainWindow::actionFilterTriggered);
-        QString tempStr = preLine.section(',', 1, 1);
-        if (!tempStr.isEmpty()) {
-            action->setData(tempStr);
-        }
-        tempStr = preLine.section(',', 2, 2);
-        if (!tempStr.isEmpty()) {
-            action->setStatusTip(tempStr);
-        }
+        addFavoriteFilterAction(menuStack.top(), preLine);
     }
-    QList<QAction *> actions = m_ui->menuBar->actions();
-    m_ui->menuBar->insertMenu(actions[1], filterMenu);
+
+_lbReturn:
+    if (!m_ui->menuFilter->isEmpty()) {
+        m_ui->menuFilter->addSeparator();
+    }
+    QAction *action = m_ui->menuFilter->addAction(QStringLiteral("Edit Favorite Filters"), this, &MainWindow::actionEditFavoriteFilters);
+    action->setStatusTip(QStringLiteral("Open favorite filter file for edit"));
+}
+
+void MainWindow::addFavoriteFilterAction(QMenu *menu, const QString &line)
+{
+    QAction *action = menu->addAction(line.section(',', 0, 0), this, &MainWindow::actionFilterTriggered);
+    QString tempStr = line.section(',', 1, 1);
+    if (!tempStr.isEmpty()) {
+        action->setData(tempStr);
+    }
+    tempStr = line.section(',', 2, 2);
+    if (!tempStr.isEmpty()) {
+        action->setStatusTip(tempStr);
+    }
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -888,6 +890,12 @@ void MainWindow::actionAboutTriggered()
 {
     AboutDialog dialog(this);
     dialog.exec();
+}
+
+void MainWindow::actionEditFavoriteFilters()
+{
+    QUrl url(favoriteFilterFilePath());
+    QDesktopServices::openUrl(url);
 }
 
 void MainWindow::actionFilterTriggered()
