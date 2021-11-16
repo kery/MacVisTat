@@ -97,6 +97,8 @@ MainWindow::MainWindow() :
     connect(m_ui->actionChangeLog, &QAction::triggered, this, &MainWindow::actionChangeLogTriggered);
     connect(m_ui->actionAbout, &QAction::triggered, this, &MainWindow::actionAboutTriggered);
 
+    connect(&m_filterFileWatcher, &QFileSystemWatcher::fileChanged, this, &MainWindow::favoriteFilterFileChanged);
+
     QUrl url("http://sdu.int.nokia-sbell.com:4099/");
     QNetworkProxyQuery npq(url);
     QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(npq);
@@ -800,6 +802,17 @@ void MainWindow::caseSensitiveButtonClicked(bool checked)
     updateFilterPattern();
 }
 
+void MainWindow::favoriteFilterFileChanged(const QString &path)
+{
+    // Some editors' (e.g. VSCode) behavior is to save file first with 0 length and then with the actual content, so
+    // in this case the fileChanged signal whill be emitted twice. The Windows build-in notepad.exe only save once.
+    QFileInfo fileInfo(path);
+    if (fileInfo.size() > 0) {
+        m_ui->menuFilter->clear();
+        loadFavoriteFilterMenu();
+    }
+}
+
 void MainWindow::actionOpenTriggered()
 {
     QFileDialog fileDialog(this);
@@ -912,7 +925,14 @@ void MainWindow::actionEditFavoriteFilters()
 "#         Filter2,filterText,description\n"
 "#     Filter3\n"
 "# Submenu3\n"
-"#     Filter4";
+"#     Filter4\n"
+"# Filter5";
+    }
+
+    // If the file is deleted or removed, the watching will stop. So, it's better to check if the watching
+    // is still working, add it again if not.
+    if (m_filterFileWatcher.files().isEmpty()) {
+        m_filterFileWatcher.addPath(path);
     }
 
     QUrl url(path);
