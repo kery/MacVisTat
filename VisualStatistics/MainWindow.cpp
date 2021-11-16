@@ -20,7 +20,6 @@ MainWindow::MainWindow() :
     QMainWindow(nullptr),
     m_ui(new Ui::MainWindow),
     m_lbStatNameInfo(nullptr),
-    m_lbModulesInfo(nullptr),
     m_sepAction(nullptr),
     m_resizeMan(this)
 {
@@ -57,14 +56,6 @@ MainWindow::MainWindow() :
     connect(toolButton, SIGNAL(clicked(bool)), this, SLOT(caseSensitiveButtonClicked(bool)));
 
     m_ui->lvStatName->setModel(new StatisticsNameModel(this));
-
-    m_lbModulesInfo = new QLabel(this);
-    m_lbModulesInfo->setStyleSheet(QStringLiteral("QLabel{color:#888888}"));
-    m_ui->statusBar->addPermanentWidget(m_lbModulesInfo);
-    updateModulesInfo();
-    connect(m_ui->lwModules->model(), SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(updateModulesInfo()));
-    connect(m_ui->lwModules->model(), SIGNAL(rowsRemoved(QModelIndex,int,int)), this, SLOT(updateModulesInfo()));
-
     m_lbStatNameInfo = new QLabel(this);
     m_lbStatNameInfo->setStyleSheet(QStringLiteral("QLabel{color:#888888}"));
     m_ui->statusBar->addPermanentWidget(m_lbStatNameInfo);
@@ -81,7 +72,7 @@ MainWindow::MainWindow() :
     connect(m_ui->cbRegExpFilter->lineEdit(), &QLineEdit::returnPressed, this, &MainWindow::cbRegExpFilterEditReturnPressed);
     connect(m_ui->lvStatName, &QListView::doubleClicked, this, &MainWindow::listViewDoubleClicked);
     connect(m_ui->lwModules, &QListWidget::itemSelectionChanged, this, &MainWindow::updateFilterPattern);
-    connect(m_ui->lwModules, &QListWidget::itemSelectionChanged, this, &MainWindow::updateModulesInfo);
+    connect(m_ui->lwModules, &QListWidget::itemSelectionChanged, this, &MainWindow::updateModuleTextColor);
 
     connect(m_ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logEditContextMenuRequest);
     connect(m_ui->lvStatName, &QListView::customContextMenuRequested, this, &MainWindow::listViewCtxMenuRequest);
@@ -778,12 +769,12 @@ void MainWindow::updateStatNameInfo()
     m_lbStatNameInfo->setText(QStringLiteral("Counter:%1, Matched:%2, Displayed:%3; ").arg(total).arg(matched).arg(displayed));
 }
 
-void MainWindow::updateModulesInfo()
+void MainWindow::updateModuleTextColor()
 {
-    int modules = m_ui->lwModules->count();
-    int selected = m_ui->lwModules->selectedItems().size();
-
-    m_lbModulesInfo->setText(QStringLiteral("Module:%1, Selected:%2; ").arg(modules).arg(selected));
+    bool hasSelection = m_ui->lwModules->selectionModel()->hasSelection();
+    for (int i = 0; i < m_ui->lwModules->count(); ++i) {
+        m_ui->lwModules->item(i)->setForeground(hasSelection ? Qt::gray : qvariant_cast<QBrush>(QVariant()));
+    }
 }
 
 void MainWindow::openRecentFile()

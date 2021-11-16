@@ -74,7 +74,7 @@ private slots:
     void listViewCtxMenuRequest(const QPoint &pos);
     void clearLogEdit();
     void updateStatNameInfo();
-    void updateModulesInfo();
+    void updateModuleTextColor();
     void openRecentFile();
     void caseSensitiveButtonClicked(bool checked);
     void favoriteFilterFileChanged(const QString &path);
@@ -100,7 +100,6 @@ private:
     bool m_caseSensitive;
     QString m_statFilePath;
     QLabel *m_lbStatNameInfo;
-    QLabel *m_lbModulesInfo;
     QAction *m_sepAction;
     std::array<QAction *, 10> m_recentFileActions;
     QNetworkAccessManager m_netMan;
