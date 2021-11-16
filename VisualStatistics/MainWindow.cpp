@@ -114,7 +114,7 @@ MainWindow::MainWindow() :
 
     initializeRecentFileActions();
     updateRecentFileActions();
-    initFavoriteFilterMenu();
+    loadFavoriteFilterMenu();
 }
 
 MainWindow::~MainWindow()
@@ -508,7 +508,7 @@ static int trimLeadingSpace(QString &str)
     return -1;
 }
 
-void MainWindow::initFavoriteFilterMenu()
+void MainWindow::loadFavoriteFilterMenu()
 {
     int numSpaces;
     QStack<int> levelStack;
@@ -894,7 +894,28 @@ void MainWindow::actionAboutTriggered()
 
 void MainWindow::actionEditFavoriteFilters()
 {
-    QUrl url(favoriteFilterFilePath());
+    QString path = favoriteFilterFilePath();
+    if (!QFileInfo::exists(path)) {
+        QFile file(path);
+        if (!file.open(QIODevice::WriteOnly)) {
+            appendErrorLog(file.errorString());
+            return;
+        }
+        QTextStream ts(&file);
+        ts <<
+"# Lines starting with '#' will be ignored. Menus and submenus will be created according to their\n"
+"# indentation. Filter text and description are optional.\n"
+"#\n"
+"# Submenu1\n"
+"#     Submenu2\n"
+"#         Filter1\n"
+"#         Filter2,filterText,description\n"
+"#     Filter3\n"
+"# Submenu3\n"
+"#     Filter4";
+    }
+
+    QUrl url(path);
     QDesktopServices::openUrl(url);
 }
 

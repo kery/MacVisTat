@@ -52,7 +52,7 @@ private:
 
     void initializeRecentFileActions();
     void updateRecentFileActions();
-    void initFavoriteFilterMenu();
+    void loadFavoriteFilterMenu();
     void addFavoriteFilterAction(QMenu *menu, const QString &line);
 
     virtual bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
