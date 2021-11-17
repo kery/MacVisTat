@@ -1,34 +1,25 @@
 #ifndef GZIPFILE_H
 #define GZIPFILE_H
 
+#include <string>
 #include <QIODevice>
-#if defined(Q_OS_WIN)
-    #include <QtZlib/zlib.h>
-#elif defined(Q_OS_LINUX)
-    #include <zlib.h>
-#endif
+#include <QtZlib/zlib.h>
 
-class GzipFile : public QIODevice
+class GzipFile
 {
-    Q_OBJECT
-
 public:
-    GzipFile(QObject *parent = nullptr);
+    GzipFile();
     ~GzipFile();
 
     bool open(const QString &path, int mode=QIODevice::ReadOnly);
-    virtual void close();
+    void close();
 
-    int read(char *data, int maxlen);
-    int write(const char *data, int len);
+    int read(char *data, unsigned int maxlen);
+    int write(const char *data, unsigned int len);
     int write(const std::string &data);
 
     bool readLine(std::string &line, bool rmNewline=true);
     int progress() const;
-
-protected:
-    virtual qint64 readData(char *data, qint64 maxlen);
-    virtual qint64 writeData(const char *data, qint64 len);
 
 private:
     gzFile _gzFile;
