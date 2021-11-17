@@ -407,6 +407,7 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
             m_tracer->setVisible(false);
             m_valueText->setVisible(false);
             setTracerGraph(nullptr);
+            m_tracer->setSelected(false);
         }
         const QVector<CommentText *> cmtVec = commentsOfGraph(graph);
         for (CommentText *cmtText : cmtVec) {
@@ -712,12 +713,13 @@ void PlotWindow::timerTimeout()
     if (!m_tracer->visible()) {
         return;
     }
-    QPoint pos = m_ui->customPlot->mapFromGlobal(QCursor::pos());
-    if (m_tracer->selectTest(pos, false) > m_ui->customPlot->selectionTolerance()) {
+    CustomPlot *plot = m_ui->customPlot;
+    QPoint pos = plot->mapFromGlobal(QCursor::pos());
+    if (m_tracer->selectTest(pos, false) > plot->selectionTolerance()) {
         m_valueText->setVisible(false);
         m_tracer->setVisible(false);
         setTracerGraph(nullptr);
-        this->m_ui->customPlot->replot(QCustomPlot::rpQueued);
+        plot->replot(QCustomPlot::rpQueued);
     }
 }
 
