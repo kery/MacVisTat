@@ -106,8 +106,11 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
                 if (*ptr != ';') {
                     data.value = strtod(ptr, &suspectFlag);
                     data.valueErrorMinus = *suspectFlag == 's' ? 1.0 : 0;
-                    result.ndm[inm.value(index)].insert(data.key, data);
+                } else {
+                    data.value = NAN;
+                    data.valueErrorMinus = 0;
                 }
+                result.ndm[inm.value(index)].insert(data.key, data);
                 if (++parsed == indexes.size()) {
                     len -= semicolon - ptr;
                     ptr = semicolon;
@@ -132,9 +135,14 @@ static FileDataResult doParseFileData(const StatisticsFileParser::IndexNameMap &
             ptr = semicolon + 1;
         }
         if (newline) {
-            if (parsed < indexes.size() && index == indexes.at(parsed) && *ptr != ';') {
-                data.value = strtod(ptr, &suspectFlag);
-                data.valueErrorMinus = *suspectFlag == 's' ? 1.0 : 0;
+            if (parsed < indexes.size() && index == indexes.at(parsed)) {
+                if (*ptr != ';') {
+                    data.value = strtod(ptr, &suspectFlag);
+                    data.valueErrorMinus = *suspectFlag == 's' ? 1.0 : 0;
+                } else {
+                    data.value = NAN;
+                    data.valueErrorMinus = 0;
+                }
                 result.ndm[inm.value(index)].insert(data.key, data);
             }
             len -= newline - ptr;

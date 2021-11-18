@@ -8,8 +8,7 @@ CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &
     m_showModule(false),
     m_module(module),
     m_name(name),
-    m_ssSuspectFlag(QCPScatterStyle::ssNone, ScatterSize),
-    m_ssDiscontinuousFlag(QCPScatterStyle::ssNone, ScatterSize)
+    m_ssSuspectFlag(QCPScatterStyle::ssNone, ScatterSize)
 {
 }
 
@@ -39,11 +38,6 @@ void CounterGraph::enableSuspectFlag(bool enable)
     m_ssSuspectFlag.setShape(enable ? QCPScatterStyle::ssCross : QCPScatterStyle::ssNone);
 }
 
-void CounterGraph::enableDiscontinuousFlag(bool enable)
-{
-    m_ssDiscontinuousFlag.setShape(enable ? QCPScatterStyle::ssSquare : QCPScatterStyle::ssNone);
-}
-
 bool CounterGraph::addToLegend()
 {
     if (!mParentPlot || !mParentPlot->legend)
@@ -64,12 +58,12 @@ void CounterGraph::draw(QCPPainter *painter)
 {
     if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
     if (mKeyAxis.data()->range().size() <= 0 || mData->isEmpty()) return;
-    if (mLineStyle == lsNone && mScatterStyle.isNone() && m_ssSuspectFlag.isNone() && m_ssDiscontinuousFlag.isNone()) return;
+    if (mLineStyle == lsNone && mScatterStyle.isNone() && m_ssSuspectFlag.isNone()) return;
 
     // allocate line and (if necessary) point vectors:
     QVector<QPointF> *lineData = new QVector<QPointF>;
     QVector<QCPData> *scatterData = 0;
-    if (!mScatterStyle.isNone() || !m_ssSuspectFlag.isNone() || !m_ssDiscontinuousFlag.isNone())
+    if (!mScatterStyle.isNone() || !m_ssSuspectFlag.isNone())
       scatterData = new QVector<QCPData>;
 
     // fill vectors with data appropriate to plot style:
@@ -139,12 +133,9 @@ void CounterGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatte
               continue;
           }
 
-          if ((data.valueErrorMinus > 0 && !m_ssSuspectFlag.isNone()) || (data.valueErrorPlus > 0 && !m_ssDiscontinuousFlag.isNone())) {
+          if (data.valueErrorMinus > 0 && !m_ssSuspectFlag.isNone()) {
               if (data.valueErrorMinus > 0 && !m_ssSuspectFlag.isNone()) {
                   m_ssSuspectFlag.drawShape(painter, valueAxis->coordToPixel(data.value), keyAxis->coordToPixel(data.key));
-              }
-              if (data.valueErrorPlus > 0 && !m_ssDiscontinuousFlag.isNone()) {
-                  m_ssDiscontinuousFlag.drawShape(painter, valueAxis->coordToPixel(data.value), keyAxis->coordToPixel(data.key));
               }
           } else {
               mScatterStyle.drawShape(painter, valueAxis->coordToPixel(data.value), keyAxis->coordToPixel(data.key));
@@ -157,12 +148,9 @@ void CounterGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatte
               continue;
           }
 
-          if ((data.valueErrorMinus > 0 && !m_ssSuspectFlag.isNone()) || (data.valueErrorPlus > 0 && !m_ssDiscontinuousFlag.isNone())) {
+          if (data.valueErrorMinus > 0 && !m_ssSuspectFlag.isNone()) {
               if (data.valueErrorMinus > 0 && !m_ssSuspectFlag.isNone()) {
                 m_ssSuspectFlag.drawShape(painter, keyAxis->coordToPixel(data.key), valueAxis->coordToPixel(data.value));
-              }
-              if (data.valueErrorPlus > 0 && !m_ssDiscontinuousFlag.isNone()) {
-                m_ssDiscontinuousFlag.drawShape(painter, keyAxis->coordToPixel(data.key), valueAxis->coordToPixel(data.value));
               }
           } else {
               mScatterStyle.drawShape(painter, keyAxis->coordToPixel(data.key), valueAxis->coordToPixel(data.value));

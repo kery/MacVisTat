@@ -38,7 +38,6 @@ PlotWindow::PlotWindow(Statistics &stat) :
     // Must be called after setupUi because member customPlot is initialized
     // in it. QCustomPlot takes ownership of tracer.
     m_tracer = new QCPItemTracer(m_ui->customPlot);
-    m_tracer->setInterpolating(true);
     m_tracer->setStyle(QCPItemTracer::tsCircle);
     m_tracer->setLayer(QStringLiteral("valuetip"));
     m_tracer->setVisible(false);
@@ -218,7 +217,6 @@ void PlotWindow::initializePlot()
         if (showSuspectFlag) {
             graph->enableSuspectFlag(true);
         }
-        graph->enableDiscontinuousFlag(true);
     }
 
     plot->rescaleAxes();
@@ -1270,7 +1268,7 @@ void PlotWindow::actionRemoveZeroCountersTriggered()
         bool isZeroCounter = true;
         for (const QCPData &data : *dataMap) {
             // compare with 2 decimal places precision
-            if (qint64(data.value * 100) != 0) {
+            if (!qIsNaN(data.value) && qint64(data.value * 100) != 0) {
                 isZeroCounter = false;
                 break;
             }

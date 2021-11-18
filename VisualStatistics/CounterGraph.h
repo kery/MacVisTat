@@ -15,7 +15,6 @@ public:
 
     void enableScatter(bool enable);
     void enableSuspectFlag(bool enable);
-    void enableDiscontinuousFlag(bool enable);
 
     virtual bool addToLegend();
 
@@ -33,7 +32,6 @@ private:
     QString m_module;
     QString m_name;
     QCPScatterStyle m_ssSuspectFlag; // scatter style for suspect (<suspect>true</suspect>) value
-    QCPScatterStyle m_ssDiscontinuousFlag;
 
     friend class CounterLegendItem;
 };
