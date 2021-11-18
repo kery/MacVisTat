@@ -179,25 +179,15 @@ void MainWindow::openStatFile(QString &path)
     path = QDir::toNativeSeparators(path);
 
     if (!m_statFilePath.isEmpty()) {
-#if defined(Q_OS_WIN)
-        Qt::CaseSensitivity cs = Qt::CaseInsensitive;
-#else
-        Qt::CaseSensitivity cs = Qt::CaseSensitive;
-#endif
-        if (m_statFilePath.compare(path, cs)) {
+        if (m_statFilePath.compare(path, Qt::CaseInsensitive)) {
             actionCloseTriggered();
         } else {
             return;
         }
     }
-
-    QString error;
-    parseStatFileHeader(path, error);
-    if (!error.isEmpty()) {
-        appendErrorLog(error);
+    if (!parseStatFileHeader(path)) {
         return;
     }
-
     m_statFilePath = path;
     setWindowTitle("Visual Statistics - " + path);
 
@@ -217,36 +207,45 @@ void MainWindow::openStatFile(QString &path)
     updateRecentFileActions();
 }
 
-void MainWindow::parseStatFileHeader(const QString &path, QString &error)
+bool MainWindow::parseStatFileHeader(const QString &path)
 {
     ProgressDialog dialog(this);
     dialog.setLabelText(QStringLiteral("Parsing statistics file header, please wait!"));
     dialog.busyIndicatorMode();
     dialog.setCancelButtonVisible(false);
 
+    QString error;
     StatisticsFileParser fileParser(dialog);
     std::string header = fileParser.parseFileHeader(path, m_offsetFromUtc, error);
-    if (error.isEmpty() && header.length() > 0) {
-        StatisticsNameModel *model = static_cast<StatisticsNameModel*>(m_ui->lvStatName->model());
-        StatisticsNameModel::StatisticsNames statNames;
+    if (!error.isEmpty()) {
+        appendErrorLog(error);
+        return false;
+    }
 
-        const char *ptr = strchr(header.c_str(), ';');
-        ptr = strchr(ptr + 1, ';');
-        splitString(ptr + 1, ';', statNames);
-        statNames.back().erase(statNames.back().length() - 2);
-        model->setStatisticsNames(statNames);
+    StatisticsNameModel *model = static_cast<StatisticsNameModel*>(m_ui->lvStatName->model());
+    StatisticsNameModel::StatisticsNames statNames;
 
-        m_ui->lwModules->addItems(model->getModules());
+    const char *ptr = strchr(header.c_str(), ';');
+    ptr = strchr(ptr + 1, ';');
+    if (ptr == nullptr) {
+        appendErrorLog(QStringLiteral("%1 is empty").arg(path));
+        return false;
+    }
+    splitString(ptr + 1, ';', statNames);
+    statNames.back().erase(statNames.back().length() - 2);
+    model->setStatisticsNames(statNames);
 
-        QString filterText = m_ui->cbRegExpFilter->lineEdit()->text();
-        if (!filterText.isEmpty()) {
-            QString error;
-            model->setFilterPattern(QStringList(), filterText, m_caseSensitive, error);
-            if (!error.isEmpty()) {
-                appendErrorLog(error);
-            }
+    m_ui->lwModules->addItems(model->getModules());
+
+    QString filterText = m_ui->cbRegExpFilter->lineEdit()->text();
+    if (!filterText.isEmpty()) {
+        QString error;
+        model->setFilterPattern(QStringList(), filterText, m_caseSensitive, error);
+        if (!error.isEmpty()) {
+            appendErrorLog(error);
         }
     }
+    return true;
 }
 
 void MainWindow::parseStatFileData(bool multipleWindows)

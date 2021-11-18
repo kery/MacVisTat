@@ -32,7 +32,7 @@ private:
     bool isRegexpCaseButtonResizeEvent(QObject *obj, QEvent *event);
 
     void openStatFile(QString &path);
-    void parseStatFileHeader(const QString &path, QString &error);
+    bool parseStatFileHeader(const QString &path);
     void parseStatFileData(bool multipleWindows);
     void handleParsedStat(Statistics::NameDataMap &ndm, bool multipleWindows);
     QString getMaintenanceToolPath();
