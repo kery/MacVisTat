@@ -144,8 +144,6 @@
     </property>
     <addaction name="actionPlot"/>
     <addaction name="actionPlotSeparately"/>
-    <addaction name="separator"/>
-    <addaction name="actionClearFilterHistory"/>
    </widget>
    <widget class="QMenu" name="menuFilter">
     <property name="title">

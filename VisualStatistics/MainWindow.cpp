@@ -82,12 +82,18 @@ MainWindow::MainWindow() :
     connect(m_ui->actionClose, &QAction::triggered, this, &MainWindow::actionCloseTriggered);
     connect(m_ui->actionPlot, &QAction::triggered, this, &MainWindow::actionPlotTriggered);
     connect(m_ui->actionPlotSeparately, &QAction::triggered, this, &MainWindow::actionPlotSeparatelyTriggered);
-    connect(m_ui->actionClearFilterHistory, &QAction::triggered, this, &MainWindow::actionClearFilterHistoryTriggered);
     connect(m_ui->actionViewHelp, &QAction::triggered, this, &MainWindow::actionViewHelpTriggered);
     connect(m_ui->actionChangeLog, &QAction::triggered, this, &MainWindow::actionChangeLogTriggered);
     connect(m_ui->actionAbout, &QAction::triggered, this, &MainWindow::actionAboutTriggered);
 
-    connect(&m_filterFileWatcher, &QFileSystemWatcher::fileChanged, this, &MainWindow::favoriteFilterFileChanged);
+    // Some editors' (e.g. VSCode) behavior is to save file first with 0 length and then with the actual content, so
+    // in this case the fileChanged signal whill be emitted twice. The Windows build-in notepad.exe only save once.
+    // In addition, sometimes the signal only emmitted once with 0 file length. So, seems a better way is to use a timer
+    // for reloading.
+    m_filterReloadTimer.setInterval(500);
+    m_filterReloadTimer.setSingleShot(true);
+    connect(&m_filterFileWatcher, &QFileSystemWatcher::fileChanged, &m_filterReloadTimer, QOverload<>::of(&QTimer::start));
+    connect(&m_filterReloadTimer, &QTimer::timeout, this, &MainWindow::favoriteFilterFileChanged);
 
     QUrl url("http://sdu.int.nokia-sbell.com:4099/");
     QNetworkProxyQuery npq(url);
@@ -549,8 +555,9 @@ _lbReturn:
     if (!m_ui->menuFilter->isEmpty()) {
         m_ui->menuFilter->addSeparator();
     }
+    m_ui->menuFilter->addAction(QStringLiteral("Clear Filter History"), this, &MainWindow::actionClearFilterHistoryTriggered);
     QAction *action = m_ui->menuFilter->addAction(QStringLiteral("Edit Favorite Filters"), this, &MainWindow::actionEditFavoriteFilters);
-    action->setStatusTip(QStringLiteral("Open favorite filter file for edit"));
+    action->setStatusTip(QStringLiteral("Open file of favorite filters for edit"));
 }
 
 void MainWindow::addFavoriteFilterAction(QMenu *menu, const QString &line)
@@ -791,15 +798,11 @@ void MainWindow::caseSensitiveButtonClicked(bool checked)
     updateFilterPattern();
 }
 
-void MainWindow::favoriteFilterFileChanged(const QString &path)
+void MainWindow::favoriteFilterFileChanged()
 {
-    // Some editors' (e.g. VSCode) behavior is to save file first with 0 length and then with the actual content, so
-    // in this case the fileChanged signal whill be emitted twice. The Windows build-in notepad.exe only save once.
-    QFileInfo fileInfo(path);
-    if (fileInfo.size() > 0) {
-        m_ui->menuFilter->clear();
-        loadFavoriteFilterMenu();
-    }
+    m_ui->menuFilter->clear();
+    loadFavoriteFilterMenu();
+    appendInfoLog(QStringLiteral("finished reloading favorite filters"));
 }
 
 void MainWindow::actionOpenTriggered()
@@ -873,7 +876,10 @@ void MainWindow::actionPlotSeparatelyTriggered()
 
 void MainWindow::actionClearFilterHistoryTriggered()
 {
-    m_ui->cbRegExpFilter->clear();
+    int answer = showQuestionMsgBox(this, QStringLiteral("Do you want to clear filter history?"), QString(), false);
+    if (QMessageBox::Yes == answer) {
+        m_ui->cbRegExpFilter->clear();
+    }
 }
 
 void MainWindow::actionViewHelpTriggered()

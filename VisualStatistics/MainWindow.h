@@ -77,7 +77,7 @@ private slots:
     void updateModuleTextColor();
     void openRecentFile();
     void caseSensitiveButtonClicked(bool checked);
-    void favoriteFilterFileChanged(const QString &path);
+    void favoriteFilterFileChanged();
 
     void actionOpenTriggered();
     void actionXmlToCSVTriggered();
@@ -104,6 +104,7 @@ private:
     std::array<QAction *, 10> m_recentFileActions;
     QNetworkAccessManager m_netMan;
     ResizeManager m_resizeMan;
+    QTimer m_filterReloadTimer;
     QFileSystemWatcher m_filterFileWatcher;
 };
 
