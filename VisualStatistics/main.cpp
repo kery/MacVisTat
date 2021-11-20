@@ -40,9 +40,19 @@ static bool minidumpCallback(const wchar_t* dump_path,
     return succeeded;
 }
 
+static void loadStyleSheet(QApplication &app)
+{
+    QFile file(":/qss/default.qss");
+    if (file.open(QFile::ReadOnly)) {
+        QString qss = QString::fromLatin1(file.readAll());
+        app.setStyleSheet(qss);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    loadStyleSheet(app);
     // Call these functions so that we can use default constructor of
     // QSettings.
     // Should be called before getAppDataDir since it use these

@@ -57,7 +57,6 @@ MainWindow::MainWindow() :
 
     m_ui->lvStatName->setModel(new StatisticsNameModel(this));
     m_lbStatNameInfo = new QLabel(this);
-    m_lbStatNameInfo->setStyleSheet(QStringLiteral("QLabel{color:#888888}"));
     m_ui->statusBar->addPermanentWidget(m_lbStatNameInfo);
     updateStatNameInfo();
     connect(m_ui->lvStatName->model(), SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(updateStatNameInfo()));
@@ -504,7 +503,7 @@ void MainWindow::loadFavoriteFilterMenu()
 {
     int numSpaces;
     QStack<int> levelStack;
-    QStack<QMenu *> menuStack;
+    QStack<QMenu*> menuStack;
     QString preLine, curLine;
     QTextStream ts;
 

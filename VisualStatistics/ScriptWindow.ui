@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="VisualStatistics.qrc">
-    <normaloff>:/resource/image/script.png</normaloff>:/resource/image/script.png</iconset>
+    <normaloff>:/images/script.png</normaloff>:/images/script.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -68,7 +68,7 @@
   <action name="actionOpen">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/open.png</normaloff>:/resource/image/open.png</iconset>
+     <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
    </property>
    <property name="text">
     <string>Open</string>
@@ -83,7 +83,7 @@
   <action name="actionRun">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/play.png</normaloff>:/resource/image/play.png</iconset>
+     <normaloff>:/images/play.png</normaloff>:/images/play.png</iconset>
    </property>
    <property name="text">
     <string>Run</string>
@@ -98,7 +98,7 @@
   <action name="actionClearLog">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/eraser.png</normaloff>:/resource/image/eraser.png</iconset>
+     <normaloff>:/images/eraser.png</normaloff>:/images/eraser.png</iconset>
    </property>
    <property name="text">
     <string>Clear Log</string>
@@ -107,7 +107,7 @@
   <action name="actionSave">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/save.png</normaloff>:/resource/image/save.png</iconset>
+     <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
    </property>
    <property name="text">
     <string>Save</string>

@@ -180,7 +180,7 @@
   <action name="actionOpen">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/plus.png</normaloff>:/resource/image/plus.png</iconset>
+     <normaloff>:/images/plus.png</normaloff>:/images/plus.png</iconset>
    </property>
    <property name="text">
     <string>Open...</string>
@@ -198,7 +198,7 @@
   <action name="actionClose">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/delete.png</normaloff>:/resource/image/delete.png</iconset>
+     <normaloff>:/images/delete.png</normaloff>:/images/delete.png</iconset>
    </property>
    <property name="text">
     <string>Close</string>
@@ -218,34 +218,10 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionSelectAll">
-   <property name="text">
-    <string>Select All</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+A</string>
-   </property>
-  </action>
-  <action name="actionClearSelection">
-   <property name="text">
-    <string>Clear Selection</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+L</string>
-   </property>
-  </action>
-  <action name="actionInvertSelection">
-   <property name="text">
-    <string>Invert Selection</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+I</string>
-   </property>
-  </action>
   <action name="actionViewHelp">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/help.png</normaloff>:/resource/image/help.png</iconset>
+     <normaloff>:/images/help.png</normaloff>:/images/help.png</iconset>
    </property>
    <property name="text">
     <string>View Help</string>
@@ -260,7 +236,7 @@
   <action name="actionPlot">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/plot.png</normaloff>:/resource/image/plot.png</iconset>
+     <normaloff>:/images/plot.png</normaloff>:/images/plot.png</iconset>
    </property>
    <property name="text">
     <string>Plot</string>
@@ -275,7 +251,7 @@
   <action name="actionPlotSeparately">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/plot-separately.png</normaloff>:/resource/image/plot-separately.png</iconset>
+     <normaloff>:/images/plot-separately.png</normaloff>:/images/plot-separately.png</iconset>
    </property>
    <property name="text">
     <string>Plot Separately</string>
@@ -303,7 +279,7 @@
   <action name="actionXmlToCSV">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/csv.png</normaloff>:/resource/image/csv.png</iconset>
+     <normaloff>:/images/csv.png</normaloff>:/images/csv.png</iconset>
    </property>
    <property name="text">
     <string>Convert KPI-KCI Files...</string>

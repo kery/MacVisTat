@@ -64,7 +64,7 @@
   <action name="actionSaveAsImage">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/save.png</normaloff>:/resource/image/save.png</iconset>
+     <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
    </property>
    <property name="text">
     <string>Save As Image</string>
@@ -79,7 +79,7 @@
   <action name="actionRestoreScale">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/restore.png</normaloff>:/resource/image/restore.png</iconset>
+     <normaloff>:/images/restore.png</normaloff>:/images/restore.png</iconset>
    </property>
    <property name="text">
     <string>Restore</string>
@@ -97,7 +97,7 @@
    </property>
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/minus.png</normaloff>:/resource/image/minus.png</iconset>
+     <normaloff>:/images/minus.png</normaloff>:/images/minus.png</iconset>
    </property>
    <property name="text">
     <string>Show Delta</string>
@@ -109,7 +109,7 @@
   <action name="actionCopyToClipboard">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/copy.png</normaloff>:/resource/image/copy.png</iconset>
+     <normaloff>:/images/copy.png</normaloff>:/images/copy.png</iconset>
    </property>
    <property name="text">
     <string>Copy To Clipboard</string>
@@ -124,7 +124,7 @@
   <action name="actionScript">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/script.png</normaloff>:/resource/image/script.png</iconset>
+     <normaloff>:/images/script.png</normaloff>:/images/script.png</iconset>
    </property>
    <property name="text">
     <string>Script</string>
@@ -133,7 +133,7 @@
   <action name="actionRemoveZeroCounters">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/remove.png</normaloff>:/resource/image/remove.png</iconset>
+     <normaloff>:/images/remove.png</normaloff>:/images/remove.png</iconset>
    </property>
    <property name="text">
     <string>Remove Zero Counters</string>
@@ -145,7 +145,7 @@
    </property>
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/resource/image/attention.png</normaloff>:/resource/image/attention.png</iconset>
+     <normaloff>:/images/attention.png</normaloff>:/images/attention.png</iconset>
    </property>
    <property name="text">
     <string>Show Suspect Flag</string>

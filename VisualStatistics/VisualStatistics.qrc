@@ -1,21 +1,22 @@
 <RCC>
     <qresource prefix="/">
-        <file>resource/image/plot.png</file>
-        <file>resource/image/save.png</file>
-        <file>resource/image/plot-separately.png</file>
-        <file>resource/image/plus.png</file>
-        <file>resource/image/delete.png</file>
-        <file>resource/image/help.png</file>
-        <file>resource/image/minus.png</file>
-        <file>resource/image/restore.png</file>
-        <file>resource/image/eraser.png</file>
-        <file>resource/image/play.png</file>
-        <file>resource/image/script.png</file>
-        <file>resource/image/remove.png</file>
-        <file>resource/image/pencil.png</file>
-        <file>resource/image/csv.png</file>
-        <file>resource/image/copy.png</file>
-        <file>resource/image/attention.png</file>
-        <file>resource/image/open.png</file>
+        <file>images/plot.png</file>
+        <file>images/save.png</file>
+        <file>images/plot-separately.png</file>
+        <file>images/plus.png</file>
+        <file>images/delete.png</file>
+        <file>images/help.png</file>
+        <file>images/minus.png</file>
+        <file>images/restore.png</file>
+        <file>images/eraser.png</file>
+        <file>images/play.png</file>
+        <file>images/script.png</file>
+        <file>images/remove.png</file>
+        <file>images/pencil.png</file>
+        <file>images/csv.png</file>
+        <file>images/copy.png</file>
+        <file>images/attention.png</file>
+        <file>images/open.png</file>
+        <file>qss/default.qss</file>
     </qresource>
 </RCC>
