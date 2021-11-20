@@ -7,9 +7,10 @@ CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &
     QCPGraph(keyAxis, valueAxis),
     m_showModule(false),
     m_module(module),
-    m_name(name),
-    m_ssSuspectFlag(QCPScatterStyle::ssCross, ScatterSize)
+    m_name(name)
 {
+    m_ssSuspectFlag.setSize(ScatterSize);
+    m_ssSuspectFlag.setCustomPath(suspectPainterPath());
 }
 
 void CounterGraph::setShowModule(bool show) {
@@ -47,6 +48,20 @@ bool CounterGraph::addToLegend()
         return true;
     }
     return false;
+}
+
+const QPainterPath& CounterGraph::suspectPainterPath()
+{
+    static QPainterPath path;
+    if (path.isEmpty()) {
+        QFont font(QStringLiteral("Courier New"));
+        font.setPointSizeF(6.0);
+        path.addText(0, 0, font, QStringLiteral("?"));
+
+        QRectF rect = path.boundingRect();
+        path.translate(-rect.width()/2, rect.height()/2);
+    }
+    return path;
 }
 
 void CounterGraph::draw(QCPPainter *painter)

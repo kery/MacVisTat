@@ -18,6 +18,8 @@ public:
     virtual bool addToLegend();
 
 protected:
+    static const QPainterPath& suspectPainterPath();
+
     virtual void draw(QCPPainter *painter);
     virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
     virtual void drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatterData) const;
