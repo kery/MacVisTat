@@ -30,9 +30,7 @@ void CommentText::setGraphAndKey(QCPGraph *graph, double key)
     Q_ASSERT(m_line == nullptr && m_tracer == nullptr);
 
     m_tracer = new QCPItemTracer(mParentPlot);
-    m_tracer->setStyle(QCPItemTracer::tsCircle);
-    m_tracer->setSize(6);
-    m_tracer->setSelectable(false);
+    m_tracer->setVisible(false);
     // call setGraphKey first so that the position can be updated by
     // updatePosition which is called in setGraph.
     m_tracer->setGraphKey(key);
@@ -92,9 +90,6 @@ void CommentText::updateLineStartAnchor()
 
 void CommentText::setVisible (bool on)
 {
-    if (m_tracer) {
-        m_tracer->setVisible(on);
-    }
     if (m_line) {
         m_line->setVisible(on);
     }
