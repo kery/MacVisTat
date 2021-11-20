@@ -14,7 +14,6 @@ public:
     QString displayName() const;
 
     void enableScatter(bool enable);
-    void enableSuspectFlag(bool enable);
 
     virtual bool addToLegend();
 

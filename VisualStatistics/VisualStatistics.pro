@@ -189,6 +189,3 @@ unix:!macx {
     LIBS += -L$$PWD/pcre/linux/ -lpcre -lz
     LIBS += -L$$PWD/expat/linux/ -lexpat
 }
-
-DISTFILES += \
-    lua/Makefile

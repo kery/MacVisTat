@@ -22,7 +22,6 @@ PlotWindow::PlotWindow(Statistics &stat) :
     connect(m_ui->actionSaveAsImage, &QAction::triggered, this, &PlotWindow::actionSaveAsImageTriggered);
     connect(m_ui->actionRestoreScale, &QAction::triggered, this, &PlotWindow::actionRestoreScaleTriggered);
     connect(m_ui->actionShowDelta, &QAction::triggered, this, &PlotWindow::actionShowDeltaTriggered);
-    connect(m_ui->actionShowSuspectFlag, &QAction::triggered, this, &PlotWindow::actionShowSuspectFlagTriggered);
     connect(m_ui->actionScript, &QAction::triggered, this, &PlotWindow::actionScriptTriggered);
     connect(m_ui->actionRemoveZeroCounters, &QAction::triggered, this, &PlotWindow::actionRemoveZeroCountersTriggered);
     connect(m_ui->actionCopyToClipboard, &QAction::triggered, this, &PlotWindow::actionCopyToClipboardTriggered);
@@ -200,12 +199,6 @@ void PlotWindow::initializePlot()
     connect(plot, &QCustomPlot::mouseWheel, this, &PlotWindow::mouseWheel);
     connect(plot, &QCustomPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequest);
 
-    QSettings settings;
-    bool showSuspectFlag = settings.value(QStringLiteral("showSuspectFlag"), true).toBool();
-    if (showSuspectFlag) {
-        m_ui->actionShowSuspectFlag->setChecked(true);
-    }
-
     const auto statNames = m_stat.getNames();
     for (const QString &statName : statNames) {
         QString name;
@@ -214,9 +207,6 @@ void PlotWindow::initializePlot()
         graph->setName(statName);
         // Set copy to true to avoid the data being deleted if show delta function is used
         graph->setData(m_stat.getDataMap(statName), true);
-        if (showSuspectFlag) {
-            graph->enableSuspectFlag(true);
-        }
     }
 
     plot->rescaleAxes();
@@ -986,9 +976,6 @@ void PlotWindow::addAggregateGraph()
     CounterGraph *aggregateGraph = addCounterGraph(aggregateGraphName);
     aggregateGraph->setName(aggregateGraphName);
     aggregateGraph->setData(aggregateDataMap, true);
-    if (m_ui->actionShowSuspectFlag->isChecked()) {
-        aggregateGraph->enableSuspectFlag(true);
-    }
 
     updateWindowTitle();
     updatePlotTitle();
@@ -1220,21 +1207,6 @@ void PlotWindow::actionShowDeltaTriggered(bool checked)
     plot->yAxis->rescale();
     adjustYAxisRange(plot->yAxis);
     plot->replot(QCustomPlot::rpQueued);
-}
-
-void PlotWindow::actionShowSuspectFlagTriggered(bool checked)
-{
-    QCustomPlot *plot = m_ui->customPlot;
-
-    for (int i = 0; i < plot->graphCount(); ++i) {
-        CounterGraph *graph = qobject_cast<CounterGraph *>(plot->graph(i));
-        graph->enableSuspectFlag(checked);
-    }
-
-    plot->replot(QCustomPlot::rpQueued);
-
-    QSettings settings;
-    settings.setValue(QStringLiteral("showSuspectFlag"), checked);
 }
 
 void PlotWindow::actionScriptTriggered()

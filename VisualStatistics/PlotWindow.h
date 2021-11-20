@@ -93,7 +93,6 @@ private slots:
     void actionSaveAsImageTriggered();
     void actionRestoreScaleTriggered();
     void actionShowDeltaTriggered(bool checked);
-    void actionShowSuspectFlagTriggered(bool checked);
     void actionScriptTriggered();
     void actionRemoveZeroCountersTriggered();
     void actionCopyToClipboardTriggered();

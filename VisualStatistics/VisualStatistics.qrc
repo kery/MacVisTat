@@ -15,7 +15,6 @@
         <file>images/pencil.png</file>
         <file>images/csv.png</file>
         <file>images/copy.png</file>
-        <file>images/attention.png</file>
         <file>images/open.png</file>
         <file>qss/default.qss</file>
     </qresource>

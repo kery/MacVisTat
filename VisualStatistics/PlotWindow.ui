@@ -57,7 +57,6 @@
    <addaction name="separator"/>
    <addaction name="actionRestoreScale"/>
    <addaction name="actionShowDelta"/>
-   <addaction name="actionShowSuspectFlag"/>
    <addaction name="actionRemoveZeroCounters"/>
    <addaction name="actionScript"/>
   </widget>
@@ -137,21 +136,6 @@
    </property>
    <property name="text">
     <string>Remove Zero Counters</string>
-   </property>
-  </action>
-  <action name="actionShowSuspectFlag">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/images/attention.png</normaloff>:/images/attention.png</iconset>
-   </property>
-   <property name="text">
-    <string>Show Suspect Flag</string>
-   </property>
-   <property name="toolTip">
-    <string>Show Suspect Flag</string>
    </property>
   </action>
  </widget>
