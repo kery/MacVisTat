@@ -2,16 +2,10 @@
 #define PROGRESSDIALOG_H
 
 #include <QDialog>
-#if defined(Q_OS_WIN)
 #include <QWinTaskbarButton>
-#include <QWinTaskbarProgress>
-#endif
-
 #include "ResizeManager.h"
 
-namespace Ui {
-class ProgressDialog;
-}
+namespace Ui { class ProgressDialog; }
 
 // Implement progress dialog class ourselves
 //
@@ -27,19 +21,16 @@ class ProgressDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ProgressDialog(QWidget *parent);
-    ProgressDialog(const ProgressDialog &) = delete;
-    ProgressDialog& operator=(const ProgressDialog &) = delete;
+    ProgressDialog(QWidget *parent);
     ~ProgressDialog();
 
-    void setLabelText(const QString &text);
-    void enableCancelButton(bool enabled);
+    void setDescription(const QString &text);
     void setCancelButtonVisible(bool visible);
-    void busyIndicatorMode();
+    void setUndeterminable();
 
 public slots:
-    void setRange(int minimum, int maximum);
-    void setValue(int progress);
+    void setRange(int min, int max);
+    void setValue(int value);
 
 signals:
     void canceling();
@@ -47,17 +38,14 @@ signals:
 private slots:
     void cancelButtonClicked();
 
-protected:
-    virtual void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
-    virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
-
 private:
-#if defined(Q_OS_WIN)
-    QWinTaskbarButton m_taskbarButton;
-    QWinTaskbarProgress *m_taskbarProgress;
-#endif
-    Ui::ProgressDialog *m_ui;
-    ResizeManager m_resizeMan;
+    virtual void keyPressEvent(QKeyEvent *event) override;
+    virtual bool event(QEvent *event) override;
+
+    Ui::ProgressDialog *ui;
+    QWinTaskbarButton _taskbarButton;
+    QWinTaskbarProgress *_taskbarProgress;
+    ResizeManager _resizeMan;
 };
 
 #endif // PROGRESSDIALOG_H

@@ -5,67 +5,71 @@
 #include <QScreen>
 
 ResizeManager::ResizeManager(QWidget *widget) :
-    m_showToParentHandled(false),
-    m_widget(widget)
+    _showToParentHandled(false),
+    _widget(widget)
 {
 }
 
-QSize ResizeManager::getScreenSize() const
+QSizeF ResizeManager::screenSize() const
 {
-    int screenNum = QApplication::desktop()->screenNumber(m_widget);
-    QScreen *screen = QApplication::screens().at(screenNum);
-    return screen->size();
+    int screenNum = QApplication::desktop()->screenNumber(_widget);
+    auto screens = QApplication::screens();
+    return screens.at(screenNum)->size();
 }
 
-bool ResizeManager::showToParentHandled() const
+bool ResizeManager::resizeWidgetFromScreenSize(QEvent *event, double wr, double hr)
 {
-    return m_showToParentHandled;
+    if (updateState(event)) {
+        QSizeF size = screenSize();
+        QSizeF newSize(size.width() * wr, size.height() * hr);
+
+        doResize(newSize);
+        return true;
+    }
+    return false;
 }
 
-#define CHECK_HANDLED if (m_showToParentHandled) {\
-        return;\
-    }\
-    m_showToParentHandled = true;
-
-void ResizeManager::resizeWidgetFromScreenSize(double wr, double hr)
+bool ResizeManager::resizeWidgetFromScreenHeight(QEvent *event, double hr, double wr)
 {
-    CHECK_HANDLED
+    if (updateState(event)) {
+        QSizeF newSize;
+        newSize.setHeight(screenSize().height() * hr);
+        newSize.setWidth(newSize.height() * wr);
 
-    QSizeF screenSize = getScreenSize();
-    QSizeF newSize(screenSize.width() * wr, screenSize.height() * hr);
-
-    doResize(newSize);
+        doResize(newSize);
+        return true;
+    }
+    return false;
 }
 
-void ResizeManager::resizeWidgetFromScreenHeight(double hr, double wr)
+bool ResizeManager::resizeWidgetFromCharWidth(QEvent *event, double mcw, double hr)
 {
-    CHECK_HANDLED
+    if (updateState(event)) {
+        QFontMetricsF fm = _widget->fontMetrics();
+        QSizeF newSize;
+        newSize.setWidth(fm.averageCharWidth() * mcw);
+        newSize.setHeight(newSize.width() * hr);
 
-    QSizeF screenSize = getScreenSize();
-    QSizeF newSize;
-    newSize.setHeight(screenSize.height() * hr);
-    newSize.setWidth(newSize.height() * wr);
-
-    doResize(newSize);
+        doResize(newSize);
+        return true;
+    }
+    return false;
 }
 
-void ResizeManager::resizeWidgetFromCharWidth(double mcw, double hr)
+bool ResizeManager::updateState(QEvent *event)
 {
-    CHECK_HANDLED
-
-    QFontMetricsF fm = m_widget->fontMetrics();
-    QSizeF newSize;
-    newSize.setWidth(fm.averageCharWidth() * mcw);
-    newSize.setHeight(newSize.width() * hr);
-
-    doResize(newSize);
+    if (event->type() == QEvent::ShowToParent && !_showToParentHandled) {
+        _showToParentHandled = true;
+        return true;
+    }
+    return false;
 }
 
 void ResizeManager::doResize(const QSizeF &newSize)
 {
-    QSizeF oldSize = m_widget->size();
+    QSizeF oldSize = _widget->size();
     int dx = qRound((newSize.width() - oldSize.width())/2.0);
     int dy = qRound((newSize.height() - oldSize.height())/2.0);
 
-    m_widget->setGeometry(m_widget->geometry().adjusted(-dx, -dy, dx, dy));
+    _widget->setGeometry(_widget->geometry().adjusted(-dx, -dy, dx, dy));
 }

@@ -2,23 +2,29 @@
 #define GZIPFILE_H
 
 #include <string>
-#include <QIODevice>
 #include <QtZlib/zlib.h>
 
-class GzipFile
+class GZipFile
 {
 public:
-    GzipFile();
-    ~GzipFile();
+    enum OpenMode {
+        ReadOnly,
+        WriteOnly
+    };
 
-    bool open(const QString &path, int mode=QIODevice::ReadOnly);
+    GZipFile();
+    ~GZipFile();
+
+    bool open(const QString &path, OpenMode mode);
     void close();
 
-    int read(char *data, unsigned int maxlen);
-    int write(const char *data, unsigned int len);
-    int write(const std::string &data);
-
-    bool readLine(std::string &line, bool rmNewline=true);
+    int read(char *buf, unsigned int maxlen);
+    bool readLine(std::string &line);
+    bool readLineKeepCrLf(std::string &line);
+    int write(const char *buf, unsigned int len);
+    int write(const std::string &str);
+    bool eof() const;
+    const char *error() const;
     int progress() const;
 
 private:

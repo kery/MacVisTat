@@ -16,9 +16,6 @@
   <property name="acceptDrops">
    <bool>true</bool>
   </property>
-  <property name="windowTitle">
-   <string>Visual Statistics</string>
-  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
@@ -30,7 +27,7 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <widget class="QListWidget" name="lwModules">
+       <widget class="QListWidget" name="moduleNameView">
         <property name="contextMenuPolicy">
          <enum>Qt::CustomContextMenu</enum>
         </property>
@@ -44,7 +41,7 @@
        <widget class="QWidget" name="layoutWidget">
         <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
          <item>
-          <widget class="QComboBox" name="cbRegExpFilter">
+          <widget class="QComboBox" name="filterComboBox">
            <property name="editable">
             <bool>true</bool>
            </property>
@@ -57,7 +54,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QListView" name="lvStatName">
+          <widget class="QListView" name="counterNameView">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -117,16 +114,20 @@
      <x>0</x>
      <y>0</y>
      <width>1152</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
+    <property name="separatorsCollapsible">
+     <bool>true</bool>
+    </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionXmlToCsv"/>
     <addaction name="actionClose"/>
-    <addaction name="actionXmlToCSV"/>
+    <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -134,7 +135,7 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionViewHelp"/>
+    <addaction name="actionHelp"/>
     <addaction name="actionChangeLog"/>
     <addaction name="actionAbout"/>
    </widget>
@@ -148,6 +149,9 @@
    <widget class="QMenu" name="menuFilter">
     <property name="title">
      <string>Filter</string>
+    </property>
+    <property name="separatorsCollapsible">
+     <bool>true</bool>
     </property>
    </widget>
    <addaction name="menuFile"/>
@@ -166,13 +170,10 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
-   <addaction name="actionClose"/>
-   <addaction name="actionXmlToCSV"/>
-   <addaction name="separator"/>
+   <addaction name="actionXmlToCsv"/>
    <addaction name="actionPlot"/>
    <addaction name="actionPlotSeparately"/>
-   <addaction name="separator"/>
-   <addaction name="actionViewHelp"/>
+   <addaction name="actionHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
@@ -184,25 +185,15 @@
     <string>Open...</string>
    </property>
    <property name="toolTip">
-    <string>Open</string>
-   </property>
-   <property name="statusTip">
-    <string>Open CSV format file</string>
+    <string>Open counter file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionClose">
-   <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/images/delete.png</normaloff>:/images/delete.png</iconset>
-   </property>
    <property name="text">
     <string>Close</string>
-   </property>
-   <property name="statusTip">
-    <string>Close file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -216,16 +207,13 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionViewHelp">
+  <action name="actionHelp">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
      <normaloff>:/images/help.png</normaloff>:/images/help.png</iconset>
    </property>
    <property name="text">
-    <string>View Help</string>
-   </property>
-   <property name="statusTip">
-    <string>View online help document</string>
+    <string>Help</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -239,7 +227,7 @@
    <property name="text">
     <string>Plot</string>
    </property>
-   <property name="statusTip">
+   <property name="toolTip">
     <string>Plot in a single window</string>
    </property>
    <property name="shortcut">
@@ -255,10 +243,7 @@
     <string>Plot Separately</string>
    </property>
    <property name="toolTip">
-    <string>Plot Separately</string>
-   </property>
-   <property name="statusTip">
-    <string>Plot separately in multiple windows</string>
+    <string>Plot in multiple windows</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
@@ -274,24 +259,21 @@
     <string>Clear Filter History</string>
    </property>
   </action>
-  <action name="actionXmlToCSV">
+  <action name="actionXmlToCsv">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
      <normaloff>:/images/csv.png</normaloff>:/images/csv.png</iconset>
    </property>
    <property name="text">
-    <string>Convert KPI-KCI Files...</string>
+    <string>XML to CSV...</string>
    </property>
-   <property name="statusTip">
-    <string>Convert selected KPI-KCI files to CSV format</string>
+   <property name="toolTip">
+    <string>Convert XML format KPI/KCI files</string>
    </property>
   </action>
   <action name="actionChangeLog">
    <property name="text">
     <string>Change Log...</string>
-   </property>
-   <property name="statusTip">
-    <string>Show change log</string>
    </property>
   </action>
  </widget>

@@ -1,27 +1,17 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <vector>
-#include <string>
-#include <qcustomplot.h>
+#include <QString>
 
-#define DT_FORMAT_IN_PLOT     QStringLiteral("yyyy-MM-dd HH:mm:ss")
-#define DT_FORMAT_IN_CSV      QStringLiteral("dd.MM.yyyy;HH:mm:ss")
-#define DT_FORMAT_IN_FILENAME QStringLiteral("yyyyMMdd.HHmm")
+class QWidget;
 
-using namespace std;
+#define APP_NAME "Visual Statistics"
 
-void splitString(const char *str, char ch, vector<string> &out);
+#define DTFMT_DISPLAY     "yyyy-MM-dd HH:mm:ss"
+#define DTFMT_IN_CSV      "dd.MM.yyyy;HH:mm:ss"
+#define DTFMT_IN_CSV_LEN  19
+#define DTFMT_IN_FILENAME "yyyyMMdd.HHmm"
 
-void adjustYAxisRange(QCPAxis *yAxis);
-
-QString getAppDataDir();
-QString getUserName();
-
-bool isValieOffsetFromUtc(int offset);
-
-void showInfoMsgBox(QWidget *parent, const QString &text, const QString &info = QString());
-void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info = QString());
-int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info = QString(), bool defaultYes=true);
+int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info = QString(), bool defaultYes = true);
 
 #endif // UTILS_H

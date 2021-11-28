@@ -31,7 +31,7 @@
      <number>5</number>
     </property>
     <item>
-     <widget class="CustomPlot" name="customPlot" native="true">
+     <widget class="CounterPlot" name="plot" native="true">
       <property name="contextMenuPolicy">
        <enum>Qt::CustomContextMenu</enum>
       </property>
@@ -52,30 +52,29 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionSaveAsImage"/>
-   <addaction name="actionCopyToClipboard"/>
-   <addaction name="separator"/>
-   <addaction name="actionRestoreScale"/>
+   <addaction name="actionSave"/>
+   <addaction name="actionCopy"/>
+   <addaction name="actionRestore"/>
    <addaction name="actionShowDelta"/>
    <addaction name="actionRemoveZeroCounters"/>
    <addaction name="actionScript"/>
   </widget>
-  <action name="actionSaveAsImage">
+  <action name="actionSave">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
      <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
    </property>
    <property name="text">
-    <string>Save As Image</string>
+    <string>Save</string>
    </property>
    <property name="toolTip">
-    <string>Save As Image</string>
+    <string>Save as Image</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionRestoreScale">
+  <action name="actionRestore">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
      <normaloff>:/images/restore.png</normaloff>:/images/restore.png</iconset>
@@ -105,16 +104,16 @@
     <string>Show Delta</string>
    </property>
   </action>
-  <action name="actionCopyToClipboard">
+  <action name="actionCopy">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
      <normaloff>:/images/copy.png</normaloff>:/images/copy.png</iconset>
    </property>
    <property name="text">
-    <string>Copy To Clipboard</string>
+    <string>Copy</string>
    </property>
    <property name="toolTip">
-    <string>Copy To Clipboard</string>
+    <string>Copy to Clipboard</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
@@ -141,9 +140,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CustomPlot</class>
+   <class>CounterPlot</class>
    <extends>QWidget</extends>
-   <header>CustomPlot.h</header>
+   <header>CounterPlot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -1,24 +1,24 @@
-#include "GzipFile.h"
-
+#include "GZipFile.h"
 #include <QFileInfo>
 
-GzipFile::GzipFile() :
+GZipFile::GZipFile() :
     _gzFile(nullptr),
     _fileSize(-1)
 {
 }
 
-GzipFile::~GzipFile()
+GZipFile::~GZipFile()
 {
     close();
 }
 
-bool GzipFile::open(const QString &path, int mode)
+bool GZipFile::open(const QString &path, OpenMode mode)
 {
-    _gzFile = gzopen(path.toLocal8Bit().data(), mode == QIODevice::ReadOnly ? "rb" : "wb");
-    if (_gzFile != nullptr) {
+    QByteArray baStr = path.toLocal8Bit();
+    _gzFile = gzopen(baStr.data(), mode == ReadOnly ? "rb" : "wb");
+    if (_gzFile) {
         gzbuffer(_gzFile, 128 * 1024);
-        if (mode == QIODevice::ReadOnly) {
+        if (mode == ReadOnly) {
             _fileSize = QFileInfo(path).size();
         }
         return true;
@@ -26,61 +26,74 @@ bool GzipFile::open(const QString &path, int mode)
     return false;
 }
 
-void GzipFile::close()
+void GZipFile::close()
 {
-    if (_gzFile != nullptr) {
+    if (_gzFile) {
         gzclose(_gzFile);
         _gzFile = nullptr;
         _fileSize = -1;
     }
 }
 
-int GzipFile::read(char *data, unsigned int maxlen)
+int GZipFile::read(char *buf, unsigned int maxlen)
 {
-    Q_ASSERT(_fileSize > -1);
-
-    return gzread(_gzFile, data, maxlen);
+    return gzread(_gzFile, buf, maxlen);
 }
 
-int GzipFile::write(const char *data, unsigned int len)
+bool GZipFile::readLine(std::string &line)
 {
-    Q_ASSERT(_fileSize == -1);
-
-    return gzwrite(_gzFile, data, len);
-}
-
-int GzipFile::write(const std::string &data)
-{
-    return write(data.c_str(), static_cast<unsigned int>(data.length()));
-}
-
-bool GzipFile::readLine(std::string &line, bool rmNewline)
-{
-    Q_ASSERT(_fileSize > -1);
-
     line.clear();
 
     char buffer[4096];
     while (gzgets(_gzFile, buffer, sizeof(buffer))) {
         line.append(buffer);
         if (line.back() == '\n') {
-            if (rmNewline) {
+            line.pop_back();
+            if (line.back() == '\r') {
                 line.pop_back();
-                if (line.back() == '\r') {
-                    line.pop_back();
-                }
             }
             break;
         }
     }
-
-    return !(line.empty() && gzeof(_gzFile));
+    return !line.empty() || gzeof(_gzFile) == 0;
 }
 
-int GzipFile::progress() const
+bool GZipFile::readLineKeepCrLf(std::string &line)
 {
-    Q_ASSERT(_fileSize > -1);
+    line.clear();
 
+    char buffer[4096];
+    while (gzgets(_gzFile, buffer, sizeof(buffer))) {
+        line.append(buffer);
+        if (line.back() == '\n') {
+            break;
+        }
+    }
+    return !line.empty();
+}
+
+int GZipFile::write(const char *buf, unsigned int len)
+{
+    return gzwrite(_gzFile, buf, len);
+}
+
+int GZipFile::write(const std::string &str)
+{
+    return write(str.c_str(), static_cast<unsigned int>(str.length()));
+}
+
+bool GZipFile::eof() const
+{
+    return gzeof(_gzFile) != 0;
+}
+
+const char *GZipFile::error() const
+{
+    return gzerror(_gzFile, nullptr);
+}
+
+int GZipFile::progress() const
+{
     if (_fileSize > 0) {
         return static_cast<double>(gzoffset(_gzFile)) / _fileSize * 100;
     }

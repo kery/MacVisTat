@@ -1,165 +1,51 @@
 #include "CounterGraph.h"
-#include "CounterLegendItem.h"
 
-const double CounterGraph::ScatterSize = 6.0;
+CounterData::CounterData() :
+    data(new QCPGraphDataContainer())
+{
+}
 
-CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &module, const QString &name) :
+const QChar CounterGraph::nameSeparator(',');
+
+CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
     QCPGraph(keyAxis, valueAxis),
-    m_showModule(false),
-    m_module(module),
-    m_name(name)
+    _suspectKeys(nullptr)
 {
-    m_ssSuspectFlag.setSize(ScatterSize);
-    m_ssSuspectFlag.setCustomPath(suspectPainterPath());
 }
 
-void CounterGraph::setShowModule(bool show) {
-    m_showModule = show;
+QString CounterGraph::moduleName() const
+{
+    return _moduleName;
 }
 
-QString CounterGraph::displayName() const
+void CounterGraph::setModuleName(const QString &name)
 {
-    if (m_showModule && !m_module.isEmpty()) {
-        return m_module + ',' + m_name;
+    _moduleName = name;
+}
+
+void CounterGraph::setSuspectKeys(QVector<double> *suspectKeys)
+{
+    _suspectKeys = suspectKeys;
+}
+
+QString CounterGraph::getModuleName(const QString &fullName)
+{
+    int index = fullName.indexOf(nameSeparator);
+    if (index > 0) {
+        return fullName.left(index);
     }
-    return m_name;
+    return QString();
 }
 
-void CounterGraph::enableScatter(bool enable)
+QPair<QString, QString> CounterGraph::separateModuleName(const QString &fullName)
 {
-    if (enable) {
-        setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, pen().color(), ScatterSize));
+    QPair<QString, QString> result;
+    int index = fullName.indexOf(nameSeparator);
+    if (index > 0) {
+        result.first = fullName.left(index);
+        result.second = fullName.mid(index + 1);
     } else {
-        setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone));
+        result.second = fullName;
     }
-}
-
-bool CounterGraph::addToLegend()
-{
-    if (!mParentPlot || !mParentPlot->legend)
-      return false;
-
-    if (!mParentPlot->legend->hasItemWithPlottable(this))
-    {
-        CounterLegendItem *item = new CounterLegendItem(mParentPlot->legend, this);
-        mParentPlot->legend->addItem(item);
-        connect(item, &CounterLegendItem::selectionChanged, this, &CounterGraph::setSelected);
-        connect(this, &CounterGraph::selectionChanged, item, &CounterLegendItem::setSelected);
-        return true;
-    }
-    return false;
-}
-
-const QPainterPath& CounterGraph::suspectPainterPath()
-{
-    static QPainterPath path;
-    if (path.isEmpty()) {
-        QFont font(QStringLiteral("Courier New"));
-        font.setPointSizeF(6.0);
-        path.addText(0, 0, font, QStringLiteral("?"));
-
-        QRectF rect = path.boundingRect();
-        path.translate(-rect.width()/2, rect.height()/2);
-    }
-    return path;
-}
-
-void CounterGraph::draw(QCPPainter *painter)
-{
-    if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
-    if (mKeyAxis.data()->range().size() <= 0 || mData->isEmpty()) return;
-    if (mLineStyle == lsNone && mScatterStyle.isNone()) return;
-
-    // allocate line and (if necessary) point vectors:
-    QVector<QPointF> *lineData = new QVector<QPointF>;
-    QVector<QCPData> *scatterData = new QVector<QCPData>;
-
-    // fill vectors with data appropriate to plot style:
-    getPlotData(lineData, scatterData);
-
-    // check data validity if flag set:
-  #ifdef QCUSTOMPLOT_CHECK_DATA
-    QCPDataMap::const_iterator it;
-    for (it = mData->constBegin(); it != mData->constEnd(); ++it)
-    {
-      if (QCP::isInvalidData(it.value().key, it.value().value) ||
-          QCP::isInvalidData(it.value().keyErrorPlus, it.value().keyErrorMinus) ||
-          QCP::isInvalidData(it.value().valueErrorPlus, it.value().valueErrorPlus))
-        qDebug() << Q_FUNC_INFO << "Data point at" << it.key() << "invalid." << "Plottable name:" << name();
-    }
-  #endif
-
-    // draw fill of graph:
-    if (mLineStyle != lsNone)
-      drawFill(painter, lineData);
-
-    // draw line:
-    if (mLineStyle == lsImpulse)
-      drawImpulsePlot(painter, lineData);
-    else if (mLineStyle != lsNone)
-      drawLinePlot(painter, lineData); // also step plots can be drawn as a line plot
-
-    // draw scatters:
-    drawScatterPlot(painter, scatterData);
-
-    // free allocated line and point vectors:
-    delete lineData;
-    delete scatterData;
-}
-
-void CounterGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
-{
-    QSizeF iconSize = parentPlot()->legend->iconSize();
-    QRectF textRect = painter->fontMetrics().boundingRect(0, 0, 0, iconSize.height(), Qt::TextDontClip, displayName());
-    if (textRect.height() > iconSize.height()) {
-        const_cast<QRectF &>(rect).translate(0, ((textRect.height() - iconSize.height()) / 2 + 1));
-        painter->setClipRect(rect);
-        painter->fillRect(rect, mPen.color());
-    } else {
-        painter->fillRect(rect, mPen.color());
-    }
-}
-
-void CounterGraph::drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatterData) const
-{
-    QCPAxis *keyAxis = mKeyAxis.data();
-    QCPAxis *valueAxis = mValueAxis.data();
-    if (!keyAxis || !valueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
-
-    // ignore the error bars, and the valueErrorMinus member of QCPData is used to determin whether to draw
-    // a special scatter for suspect value (<suspect>true</suspect>)
-
-    // draw scatter point symbols:
-    applyScattersAntialiasingHint(painter);
-    mScatterStyle.applyTo(painter, mPen);
-    if (keyAxis->orientation() == Qt::Vertical) {
-      for (int i = 0; i < scatterData->size(); ++i) {
-          const QCPData &data = scatterData->at(i);
-          if (qIsNaN(data.value)) {
-              continue;
-          }
-          if (data.valueErrorMinus > 0) {
-              m_ssSuspectFlag.drawShape(painter, valueAxis->coordToPixel(data.value), keyAxis->coordToPixel(data.key));
-          } else {
-              mScatterStyle.drawShape(painter, valueAxis->coordToPixel(data.value), keyAxis->coordToPixel(data.key));
-          }
-      }
-    } else {
-      for (int i = 0; i < scatterData->size(); ++i) {
-          const QCPData &data = scatterData->at(i);
-          if (qIsNaN(data.value)) {
-              continue;
-          }
-          if (data.valueErrorMinus > 0) {
-              m_ssSuspectFlag.drawShape(painter, keyAxis->coordToPixel(data.key), valueAxis->coordToPixel(data.value));
-          } else {
-              mScatterStyle.drawShape(painter, keyAxis->coordToPixel(data.key), valueAxis->coordToPixel(data.value));
-          }
-      }
-    }
-}
-
-QCPRange CounterGraph::getValueRange(bool &foundRange, SignDomain inSignDomain) const
-{
-    return QCPGraph::getValueRange(foundRange, inSignDomain, false);
+    return result;
 }

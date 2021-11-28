@@ -4,24 +4,24 @@
 #include <QSize>
 
 class QWidget;
+class QEvent;
 
 class ResizeManager
 {
 public:
     ResizeManager(QWidget *widget);
 
-    QSize getScreenSize() const;
-    bool showToParentHandled() const;
-    void resizeWidgetFromScreenSize(double wr, double hr);
-    void resizeWidgetFromScreenHeight(double hr, double wr);
-    void resizeWidgetFromCharWidth(double mcw, double hr);
+    QSizeF screenSize() const;
+    bool resizeWidgetFromScreenSize(QEvent *event, double wr, double hr);
+    bool resizeWidgetFromScreenHeight(QEvent *event, double hr, double wr);
+    bool resizeWidgetFromCharWidth(QEvent *event, double mcw, double hr);
 
 private:
+    bool updateState(QEvent *event);
     void doResize(const QSizeF &newSize);
 
-private:
-    bool m_showToParentHandled;
-    QWidget *m_widget;
+    bool _showToParentHandled;
+    QWidget *_widget;
 };
 
 #endif // RESIZEMANAGER_H

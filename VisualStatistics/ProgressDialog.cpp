@@ -1,90 +1,73 @@
 #include "ProgressDialog.h"
 #include "ui_ProgressDialog.h"
-
 #include <QKeyEvent>
+#include <QWinTaskbarProgress>
 
 ProgressDialog::ProgressDialog(QWidget *parent) :
     QDialog(parent),
-    m_ui(new Ui::ProgressDialog),
-    m_resizeMan(this)
+    ui(new Ui::ProgressDialog),
+    _resizeMan(this)
 {
-    m_ui->setupUi(this);
+    ui->setupUi(this);
     setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::MSWindowsFixedSizeDialogHint);
 
-    connect(m_ui->cancelButton, &QPushButton::clicked, this, &ProgressDialog::cancelButtonClicked);
+    connect(ui->cancelButton, &QPushButton::clicked, this, &ProgressDialog::cancelButtonClicked);
 
-#if defined(Q_OS_WIN)
-    m_taskbarButton.setWindow(parent->windowHandle());
-    m_taskbarProgress = m_taskbarButton.progress();
-    m_taskbarProgress->setVisible(true);
-#endif
+    _taskbarButton.setWindow(parent->windowHandle());
+    _taskbarProgress = _taskbarButton.progress();
+    _taskbarProgress->setVisible(true);
 }
 
 ProgressDialog::~ProgressDialog()
 {
-#if defined(Q_OS_WIN)
-    m_taskbarProgress->setVisible(false);
-#endif
-    delete m_ui;
+    _taskbarProgress->setVisible(false);
+    delete ui;
 }
 
-void ProgressDialog::setLabelText(const QString &text)
+void ProgressDialog::setDescription(const QString &text)
 {
-    m_ui->label->setText(text);
-}
-
-void ProgressDialog::enableCancelButton(bool enabled)
-{
-    m_ui->cancelButton->setEnabled(enabled);
+    ui->descLabel->setText(text);
 }
 
 void ProgressDialog::setCancelButtonVisible(bool visible)
 {
-    m_ui->cancelButton->setVisible(visible);
+    ui->cancelButton->setVisible(visible);
 }
 
-void ProgressDialog::busyIndicatorMode()
+void ProgressDialog::setUndeterminable()
 {
-    m_ui->progressBar->setRange(0, 0);
-#if defined(Q_OS_WIN)
-    m_taskbarProgress->setRange(0, 0);
-#endif
+    ui->progressBar->setRange(0, 0);
+    _taskbarProgress->setRange(0, 0);
 }
 
-void ProgressDialog::setRange(int minimum, int maximum)
+void ProgressDialog::setRange(int min, int max)
 {
-    m_ui->progressBar->setRange(minimum, maximum);
-    m_ui->progressBar->setValue(minimum);
-#if defined(Q_OS_WIN)
-    m_taskbarProgress->setRange(minimum, maximum);
-    m_taskbarProgress->setValue(minimum);
-#endif
+    ui->progressBar->setRange(min, max);
+    ui->progressBar->setValue(min);
+    _taskbarProgress->setRange(min, max);
+    _taskbarProgress->setValue(min);
 }
 
-void ProgressDialog::setValue(int progress)
+void ProgressDialog::setValue(int value)
 {
-    m_ui->progressBar->setValue(progress);
-#if defined(Q_OS_WIN)
-    m_taskbarProgress->setValue(progress);
-#endif
+    ui->progressBar->setValue(value);
+    _taskbarProgress->setValue(value);
 }
 
 void ProgressDialog::cancelButtonClicked()
 {
-    setLabelText(QStringLiteral("Canceling..."));
-    enableCancelButton(false);
+    setDescription(QStringLiteral("Canceling..."));
+    ui->cancelButton->setEnabled(false);
     emit canceling();
 }
 
-void ProgressDialog::keyPressEvent(QKeyEvent *e)
+void ProgressDialog::keyPressEvent(QKeyEvent *event)
 {
-    e->ignore();
+    event->ignore();
 }
 
 bool ProgressDialog::event(QEvent *event)
 {
-    if (event->type() == QEvent::ShowToParent && !m_resizeMan.showToParentHandled()) {
-        m_resizeMan.resizeWidgetFromCharWidth(100, 0.333334);
-    }
+    _resizeMan.resizeWidgetFromCharWidth(event, 80, 0.33333);
     return QDialog::event(event);
 }

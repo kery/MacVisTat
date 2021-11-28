@@ -14,6 +14,10 @@ QMenuBar::item:selected {
     background: #cdcdcd;
 }
 
+QComboBox QToolButton {
+    color: #999;
+}
+
 QStatusBar QLabel {
     color: #686868;
 }

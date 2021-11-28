@@ -1,40 +1,34 @@
 #ifndef COUNTERGRAPH_H
 #define COUNTERGRAPH_H
 
-#include <qcustomplot.h>
+#include "qcustomplot/qcustomplot.h"
+
+struct CounterData
+{
+    CounterData();
+
+    QVector<double> suspectKeys;
+    QSharedPointer<QCPGraphDataContainer> data;
+};
 
 class CounterGraph : public QCPGraph
 {
     Q_OBJECT
 
 public:
-    CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis, const QString &module, const QString &name);
+    CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis);
 
-    void setShowModule(bool show);
-    QString displayName() const;
+    QString moduleName() const;
+    void setModuleName(const QString &name);
+    void setSuspectKeys(QVector<double> *suspectKeys);
 
-    void enableScatter(bool enable);
-
-    virtual bool addToLegend();
-
-protected:
-    static const QPainterPath& suspectPainterPath();
-
-    virtual void draw(QCPPainter *painter);
-    virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const;
-    virtual void drawScatterPlot(QCPPainter *painter, QVector<QCPData> *scatterData) const;
-    virtual QCPRange getValueRange(bool &foundRange, SignDomain inSignDomain=sdBoth) const;
-
-public:
-    static const double ScatterSize;
+    static const QChar nameSeparator;
+    static QString getModuleName(const QString &fullName);
+    static QPair<QString, QString> separateModuleName(const QString &fullName);
 
 private:
-    bool m_showModule;
-    QString m_module;
-    QString m_name;
-    QCPScatterStyle m_ssSuspectFlag; // scatter style for suspect (<suspect>true</suspect>) value
-
-    friend class CounterLegendItem;
+    QString _moduleName;
+    QVector<double> *_suspectKeys;
 };
 
 #endif // COUNTERGRAPH_H
