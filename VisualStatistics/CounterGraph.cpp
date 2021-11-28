@@ -191,3 +191,9 @@ void CounterGraph::draw(QCPPainter *painter)
         mSelectionDecorator->drawDecoration(painter, selection());
     }
 }
+
+void CounterGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
+{
+    applyFillAntialiasingHint(painter);
+    painter->fillRect(rect.adjusted(1, 1, -2, -2), mPen.color());
+}

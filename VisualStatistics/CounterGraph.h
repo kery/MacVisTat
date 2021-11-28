@@ -33,6 +33,7 @@ private:
     void getScatters(QVector<QPointF> *scatters, QVector<QPointF> *suspectScatters, const QCPDataRange &dataRange) const;
 
     virtual void draw(QCPPainter *painter) override;
+    virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const override;
 
     QString _moduleName;
     const QSet<double> *_suspectKeys;
