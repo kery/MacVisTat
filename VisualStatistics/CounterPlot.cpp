@@ -26,7 +26,6 @@ CounterPlot::CounterPlot(QWidget *parent) :
 CounterGraph *CounterPlot::addGraph()
 {
     CounterGraph *graph = new CounterGraph(xAxis, yAxis);
-    graph->setPen(QPen(_colorPool.getColor()));
     return graph;
 }
 
@@ -55,6 +54,8 @@ void CounterPlot::mousePressEvent(QMouseEvent *event)
     axisRect()->setRangeDrag(rangeDrag);
 
     setSelectionRectMode(event->modifiers() & Qt::ControlModifier ? QCP::srmZoom : QCP::srmNone);
+
+    // TODO: adjust transperancy of legend.
 
     QCustomPlot::mousePressEvent(event);
 }

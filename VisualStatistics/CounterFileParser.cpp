@@ -175,7 +175,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
                 cdata.data->add(data);
                 // Must check data.value firstly since the suspectChar is updated only when it is NOT a NaN.
                 if (!qIsNaN(data.value) && *suspectChar == 's') {
-                    cdata.suspectKeys.append(data.key);
+                    cdata.suspectKeys.insert(data.key);
                 }
                 if (++parsed == indexes.size()) {
                     len -= semicolon - ptr;
@@ -213,7 +213,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
                 cdata.data->add(data);
                 // Must check data.value firstly since the suspectChar is updated only when it is NOT a NaN.
                 if (!qIsNaN(data.value) && *suspectChar == 's') {
-                    cdata.suspectKeys.append(data.key);
+                    cdata.suspectKeys.insert(data.key);
                 }
             }
             len -= newline - ptr;

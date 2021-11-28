@@ -2,7 +2,6 @@
 #define COUNTERPLOT_H
 
 #include "qcustomplot/qcustomplot.h"
-#include "ColorPool.h"
 
 class CounterGraph;
 
@@ -16,8 +15,6 @@ public:
     CounterGraph *addGraph();
 
 private:
-    ColorPool _colorPool;
-
     virtual void resizeEvent(QResizeEvent *event) override;
     virtual void mousePressEvent(QMouseEvent *event) override;
     virtual void wheelEvent(QWheelEvent *event) override;

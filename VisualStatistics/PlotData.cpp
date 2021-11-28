@@ -27,3 +27,11 @@ QSharedPointer<QCPGraphDataContainer> PlotData::graphData(const QString &name)
     }
     return QSharedPointer<QCPGraphDataContainer>();
 }
+
+const QSet<double> *PlotData::suspectKeys(const QString &name)
+{
+    if (_dataMap.contains(name)) {
+        return &_dataMap[name].suspectKeys;
+    }
+    return nullptr;
+}

@@ -3,6 +3,7 @@
 
 DateTimeTicker::DateTimeTicker(QCPAxis *parentAxis) :
     _showUtcTime(false),
+    _skippedTicks(-1),
     _offsetFromUtc(0),
     _dateTimeFmt(DTFMT_DISPLAY),
     _parentAxis(parentAxis)
@@ -50,12 +51,18 @@ QVector<double> DateTimeTicker::createTickVector(double tickStep, const QCPRange
         QSharedPointer<QCPGraphDataContainer> data = plot->graph(0)->data();
         double fontHeight = QFontMetricsF(_parentAxis->tickLabelFont()).height();
         double prePos = -fontHeight;
-        for (auto iter = data->findBegin(range.lower, false), end = data->findEnd(range.upper); iter != end; ++iter) {
+        auto iterBegin = data->findBegin(range.lower, false), iterEnd = data->findEnd(range.upper);
+        for (auto iter = iterBegin; iter != iterEnd; ++iter) {
             double curPos = _parentAxis->coordToPixel(iter->key);
             if (curPos - prePos >= fontHeight) {
                 result.append(iter->key);
                 prePos = curPos;
             }
+        }
+        int skippedTicks = iterEnd - iterBegin - result.size();
+        if (skippedTicks != _skippedTicks) {
+            _skippedTicks = skippedTicks;
+            emit skippedTicksChanged(_skippedTicks);
         }
     }
     return result;

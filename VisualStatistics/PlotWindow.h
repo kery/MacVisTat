@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "PlotData.h"
+#include "ColorPool.h"
 
 namespace Ui { class PlotWindow; }
 
@@ -15,7 +16,10 @@ public:
     ~PlotWindow();
 
 private slots:
+    void actionSaveTriggered();
     void actionRestoreTriggered();
+
+    void skippedTicksChanged(int skipped);
 
 private:
     void setupPlot();
@@ -23,6 +27,7 @@ private:
 
     Ui::PlotWindow *ui;
     PlotData _plotData;
+    ColorPool _colorPool;
 };
 
 #endif // PLOTWINDOW_H

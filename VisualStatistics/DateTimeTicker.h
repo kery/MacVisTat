@@ -3,15 +3,18 @@
 
 #include "qcustomplot/qcustomplot.h"
 
-class DateTimeTicker : public QCPAxisTicker
+class DateTimeTicker : public QObject, public QCPAxisTicker
 {
-//    Q_OBJECT
+    Q_OBJECT
 
 public:
     DateTimeTicker(QCPAxis *parentAxis);
 
     void setShowUtcTime(bool showUtc);
     void setOffsetFromUtc(int offset);
+
+signals:
+    void skippedTicksChanged(int skipped);
 
 private:
     virtual int getSubTickCount(double tickStep) override;
@@ -21,6 +24,7 @@ private:
     static bool isValidOffsetFromUtc(int offset);
 
     bool _showUtcTime;
+    int _skippedTicks;
     int _offsetFromUtc;
     QString _dateTimeFmt;
     QCPAxis *_parentAxis;
