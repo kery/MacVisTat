@@ -45,6 +45,10 @@ private:
 
     virtual void keyPressEvent(QKeyEvent *event);
 
+    static void translateToInsetRect(QCPLayoutInset *inset, QRectF &rect);
+
+    static const int sAnimationMaxGraphs;
+
     Ui::PlotWindow *ui;
     PlotData mPlotData;
     ColorPool mColorPool;

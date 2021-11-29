@@ -2,6 +2,8 @@
 #include "ui_PlotWindow.h"
 #include "DateTimeTicker.h"
 
+const int PlotWindow::sAnimationMaxGraphs = 50;
+
 PlotWindow::PlotWindow(PlotData &plotData) :
     ui(new Ui::PlotWindow),
     mPlotData(std::move(plotData)),
@@ -97,6 +99,44 @@ void PlotWindow::actionShowLegendTriggered(bool checked)
 
 void PlotWindow::actionMoveLegend()
 {
+    QAction *action = qobject_cast<QAction*>(sender());
+    int align = action->data().toInt();
+    CounterPlot *plot = ui->plot;
+    QCPLayoutInset *inset = plot->axisRect()->insetLayout();
+    inset->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
+    inset->setInsetAlignment(0, static_cast<Qt::Alignment>(align));
+
+    if (!plot->legend->visible()) {
+        return;
+    }
+
+    if (plot->graphCount() <= sAnimationMaxGraphs) {
+        QRectF originRect = plot->legend->outerRect();
+        translateToInsetRect(inset, originRect);
+
+        inset->updateLayout();
+
+        QRectF newRect = plot->legend->outerRect();
+        translateToInsetRect(inset, newRect);
+
+        QVariantAnimation *anim = new QVariantAnimation();
+        anim->setDuration(250);
+        anim->setStartValue(originRect);
+        anim->setEndValue(newRect);
+        anim->setEasingCurve(QEasingCurve::OutQuad);
+        connect(anim, &QVariantAnimation::valueChanged, [inset, plot] (const QVariant &value) {
+            inset->setInsetRect(0, value.toRectF());
+            plot->replot(QCustomPlot::rpImmediateRefresh);
+        });
+        connect(anim, &QVariantAnimation::finished, [inset, plot] () {
+            inset->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
+            plot->replot(QCustomPlot::rpQueuedReplot);
+        });
+        inset->setInsetPlacement(0, QCPLayoutInset::ipFree);
+        anim->start(QAbstractAnimation::DeleteWhenStopped);
+    } else {
+        plot->replot(QCustomPlot::rpQueuedReplot);
+    }
 }
 
 void PlotWindow::actionReverseSelection()
@@ -358,4 +398,10 @@ void PlotWindow::keyPressEvent(QKeyEvent *event)
         selectionChanged();
         ui->plot->replot(QCustomPlot::rpQueuedReplot);
     }
+}
+
+void PlotWindow::translateToInsetRect(QCPLayoutInset *inset, QRectF &rect)
+{
+    rect.translate(-inset->rect().x(), -inset->rect().y());
+    rect = QRectF(rect.x()/inset->rect().width(), rect.y()/inset->rect().height(), 0, 0);
 }

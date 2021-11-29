@@ -99,8 +99,6 @@ void CounterPlot::mousePressEvent(QMouseEvent *event)
 
     setSelectionRectMode(event->modifiers() & Qt::ControlModifier ? QCP::srmZoom : QCP::srmNone);
 
-    // TODO: adjust transperancy of legend.
-
     QCustomPlot::mousePressEvent(event);
 }
 
@@ -113,5 +111,19 @@ void CounterPlot::wheelEvent(QWheelEvent *event)
     } else {
         axisRect()->setRangeZoom(Qt::Horizontal | Qt::Vertical);
     }
-    QCustomPlot::wheelEvent(event);
+
+    if (legend->rect().contains(event->pos())) {
+        const int step = 25;
+        QPoint delta = event->angleDelta();
+        QColor color = legend->brush().color();
+        if (delta.y() < 0) {
+            color.setAlpha(qMax(0, color.alpha() - step));
+        } else {
+            color.setAlpha(qMin(color.alpha() + step, 255));
+        }
+        legend->setBrush(QBrush(color));
+        replot(QCustomPlot::rpImmediateRefresh);
+    } else {
+        QCustomPlot::wheelEvent(event);
+    }
 }
