@@ -18,6 +18,7 @@ public:
     CounterDataMap &counterDataMap();
     QList<QString> counterNames() const;
     QSharedPointer<QCPGraphDataContainer> graphData(const QString &name);
+    QSharedPointer<QCPGraphDataContainer> graphDeltaData(const QString &name);
     const QSet<double> *suspectKeys(const QString &name);
 
 private:

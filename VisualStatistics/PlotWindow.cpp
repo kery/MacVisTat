@@ -24,6 +24,8 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     connect(ticker.data(), &DateTimeTicker::skippedTicksChanged, this, &PlotWindow::skippedTicksChanged);
 
     initGraphs();
+    updateWindowTitle();
+    updatePlotTitle();
 }
 
 PlotWindow::~PlotWindow()
@@ -37,6 +39,7 @@ void PlotWindow::actionSaveTriggered()
 
 void PlotWindow::actionCopyTriggered()
 {
+    QApplication::clipboard()->setPixmap(ui->plot->toPixmap());
 }
 
 void PlotWindow::actionRestoreTriggered()
@@ -48,12 +51,24 @@ void PlotWindow::actionRestoreTriggered()
 
 void PlotWindow::actionShowDeltaTriggered(bool checked)
 {
+    for (int i = 0; i < ui->plot->graphCount(); ++i) {
+        CounterGraph *graph = ui->plot->graph(i);
+        graph->setData(checked ? _plotData.graphDeltaData(graph->fullName()) : _plotData.graphData(graph->fullName()));
+    }
+
+    // TODO
+
+    ui->plot->yAxis->rescale();
+    adjustYAxisRange();
+    updatePlotTitle();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 void PlotWindow::actionDisplayUtcTriggered(bool checked)
 {
     auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
     ticker->setDisplayUtc(checked);
+    updatePlotTitle();
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
@@ -139,10 +154,12 @@ void PlotWindow::initGraphs()
     for (const QString &name : counterNames) {
         auto pair = CounterGraph::separateModuleName(name);
         CounterGraph *graph = ui->plot->addGraph();
-        graph->setPen(QPen(_colorPool.getColor()));
         graph->setModuleName(pair.first);
         graph->setName(pair.second);
-        graph->setData(_plotData.graphData(name), _plotData.suspectKeys(name));
+        graph->setFullName(name);
+        graph->setPen(QPen(_colorPool.getColor()));
+        graph->setData(_plotData.graphData(name));
+        graph->setSuspectKeys(_plotData.suspectKeys(name));
     }
 
     ui->plot->rescaleAxes();
@@ -157,6 +174,47 @@ void PlotWindow::adjustYAxisRange()
     range.lower -= delta;
     range.upper += delta;
     ui->plot->yAxis->setRange(range);
+}
+
+void PlotWindow::updateWindowTitle()
+{
+    QStringList strList;
+    bool appendEllipsis = false;
+    for (int i = 0; i < ui->plot->graphCount(); ++i) {
+        QString rightPart = CounterGraph::getNameRightPart(ui->plot->graph(i)->name());
+        if (!strList.contains(rightPart)) {
+            if (strList.size() < 3){
+                strList.append(rightPart);
+            } else {
+                appendEllipsis = true;
+                break;
+            }
+        }
+    }
+
+    QString title = strList.join(QLatin1String(", "));
+    if (appendEllipsis) {
+        title += "...";
+    }
+    setWindowTitle(title);
+}
+
+void PlotWindow::updatePlotTitle()
+{
+    QString title(windowTitle());
+    title += " (";
+    title += QString::number(ui->plot->graphCount());
+    title += ui->plot->graphCount() > 1 ? " Graphs" : " Graph";
+
+    if (ui->actionShowDelta->isChecked()) {
+        title += ", Delta";
+    }
+    if (ui->actionDisplayUtc->isChecked()) {
+        title += ", UTC";
+    }
+
+    title += ')';
+    ui->plot->xAxis2->setLabel(title);
 }
 
 int PlotWindow::legendItemIndex(QCPAbstractLegendItem *item) const

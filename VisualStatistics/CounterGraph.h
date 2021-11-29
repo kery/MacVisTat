@@ -19,14 +19,17 @@ public:
     CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis);
 
     void setPen(const QPen &pen);
-    void setData(QSharedPointer<QCPGraphDataContainer> data, const QSet<double> *suspectKeys);
 
     QString moduleName() const;
     void setModuleName(const QString &name);
+    QString fullName() const;
+    void setFullName(const QString &fullName);
     void setScatterVisible(bool visible);
+    void setSuspectKeys(const QSet<double> *suspectKeys);
 
     static const QChar nameSeparator;
     static QString getModuleName(const QString &fullName);
+    static QString getNameRightPart(const QString &name);
     static QPair<QString, QString> separateModuleName(const QString &fullName);
     static const QPainterPath &suspectPainterPath();
 
@@ -39,6 +42,7 @@ private:
     virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const override;
 
     QString _moduleName;
+    QString _fullName;
     const QSet<double> *_suspectKeys;
     QCPScatterStyle _suspectScatterStyle;
 };

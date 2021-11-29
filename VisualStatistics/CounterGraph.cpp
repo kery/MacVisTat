@@ -21,12 +21,6 @@ void CounterGraph::setPen(const QPen &pen)
     mSelectionDecorator->setPen(pen);
 }
 
-void CounterGraph::setData(QSharedPointer<QCPGraphDataContainer> data, const QSet<double> *suspectKeys)
-{
-    QCPGraph::setData(data);
-    _suspectKeys = suspectKeys;
-}
-
 QString CounterGraph::moduleName() const
 {
     return _moduleName;
@@ -37,9 +31,24 @@ void CounterGraph::setModuleName(const QString &name)
     _moduleName = name;
 }
 
+QString CounterGraph::fullName() const
+{
+    return _fullName;
+}
+
+void CounterGraph::setFullName(const QString &fullName)
+{
+    _fullName = fullName;
+}
+
 void CounterGraph::setScatterVisible(bool visible)
 {
     mScatterStyle.setShape(visible ? QCPScatterStyle::ssDisc : QCPScatterStyle::ssNone);
+}
+
+void CounterGraph::setSuspectKeys(const QSet<double> *suspectKeys)
+{
+    _suspectKeys = suspectKeys;
 }
 
 QString CounterGraph::getModuleName(const QString &fullName)
@@ -49,6 +58,11 @@ QString CounterGraph::getModuleName(const QString &fullName)
         return fullName.left(index);
     }
     return QString();
+}
+
+QString CounterGraph::getNameRightPart(const QString &name)
+{
+    return name.mid(name.lastIndexOf(nameSeparator) + 1);
 }
 
 QPair<QString, QString> CounterGraph::separateModuleName(const QString &fullName)

@@ -30,6 +30,8 @@ private slots:
 private:
     void initGraphs();
     void adjustYAxisRange();
+    void updateWindowTitle();
+    void updatePlotTitle();
     int legendItemIndex(QCPAbstractLegendItem *item) const;
     int graphIndex(CounterGraph *graph) const;
     CounterGraph *prevGraph(CounterGraph *graph) const;
