@@ -5,6 +5,16 @@ CounterData::CounterData() :
 {
 }
 
+bool CounterData::isZeroData(QSharedPointer<QCPGraphDataContainer> data)
+{
+    for (auto iter = data->begin(), end = data->end(); iter != end; ++iter) {
+        if (!qIsNaN(iter->value) && !qFuzzyCompare(iter->value, 0.0)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 const QChar CounterGraph::nameSeparator(',');
 
 CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :

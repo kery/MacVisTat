@@ -74,6 +74,14 @@ void PlotWindow::actionDisplayUtcTriggered(bool checked)
 
 void PlotWindow::actionRemoveZeroCountersTriggered()
 {
+    QVector<CounterGraph*> graphsToRemove;
+    for (int i = 0; i < ui->plot->graphCount(); ++i) {
+        CounterGraph *graph = ui->plot->graph(i);
+        if (CounterData::isZeroData(graph->data())) {
+            graphsToRemove.append(graph);
+        }
+    }
+    removeGraphs(graphsToRemove);
 }
 
 void PlotWindow::actionScriptTriggered()
@@ -215,6 +223,22 @@ void PlotWindow::updatePlotTitle()
 
     title += ')';
     ui->plot->xAxis2->setLabel(title);
+}
+
+void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
+{
+    if (graphs.isEmpty()) { return; }
+
+    for (CounterGraph *graph : graphs) {
+        _plotData.removeGraphData(graph->fullName());
+        // TODO
+        ui->plot->removeGraph(graph);
+    }
+
+    updateWindowTitle();
+    updatePlotTitle();
+    selectionChanged();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 int PlotWindow::legendItemIndex(QCPAbstractLegendItem *item) const

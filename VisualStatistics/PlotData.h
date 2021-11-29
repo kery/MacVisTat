@@ -20,6 +20,7 @@ public:
     QSharedPointer<QCPGraphDataContainer> graphData(const QString &name);
     QSharedPointer<QCPGraphDataContainer> graphDeltaData(const QString &name);
     const QSet<double> *suspectKeys(const QString &name);
+    void removeGraphData(const QString &name);
 
 private:
     int _offsetFromUtc;

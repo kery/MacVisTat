@@ -9,6 +9,8 @@ struct CounterData
 
     QSet<double> suspectKeys;
     QSharedPointer<QCPGraphDataContainer> data;
+
+    static bool isZeroData(QSharedPointer<QCPGraphDataContainer> data);
 };
 
 class CounterGraph : public QCPGraph

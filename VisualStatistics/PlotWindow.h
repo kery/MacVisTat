@@ -32,6 +32,7 @@ private:
     void adjustYAxisRange();
     void updateWindowTitle();
     void updatePlotTitle();
+    void removeGraphs(const QVector<CounterGraph*> &graphs);
     int legendItemIndex(QCPAbstractLegendItem *item) const;
     int graphIndex(CounterGraph *graph) const;
     CounterGraph *prevGraph(CounterGraph *graph) const;

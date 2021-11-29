@@ -53,3 +53,11 @@ const QSet<double> *PlotData::suspectKeys(const QString &name)
     }
     return nullptr;
 }
+
+void PlotData::removeGraphData(const QString &name)
+{
+    auto iter = _dataMap.find(name);
+    if (iter != _dataMap.end()) {
+        _dataMap.erase(iter);
+    }
+}
