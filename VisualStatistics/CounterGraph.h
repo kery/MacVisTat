@@ -47,6 +47,8 @@ private:
     QString _fullName;
     const QSet<double> *_suspectKeys;
     QCPScatterStyle _suspectScatterStyle;
+
+    friend class CounterLegendItem;
 };
 
 #endif // COUNTERGRAPH_H

@@ -1,5 +1,6 @@
 #include "CounterPlot.h"
 #include "CounterGraph.h"
+#include "CounterLegendItem.h"
 #include "DateTimeTicker.h"
 
 CounterPlot::CounterPlot(QWidget *parent) :
@@ -22,6 +23,7 @@ CounterPlot::CounterPlot(QWidget *parent) :
     legend->setVisible(true);
 
     setNoAntialiasingOnDrag(true);
+    setAutoAddPlottableToLegend(false);
     setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectPlottables |
                     QCP::iSelectAxes | QCP::iSelectLegend | QCP::iSelectItems);
 }
@@ -29,7 +31,8 @@ CounterPlot::CounterPlot(QWidget *parent) :
 CounterGraph *CounterPlot::addGraph()
 {
     CounterGraph *graph = new CounterGraph(xAxis, yAxis);
-    QCPPlottableLegendItem *item = legend->itemWithPlottable(graph);
+    CounterLegendItem *item = new CounterLegendItem(legend, graph);
+    legend->addItem(item);
     connect(item, &QCPPlottableLegendItem::selectionChanged, graph, &CounterGraph::setSelected);
     connect(graph, QOverload<bool>::of(&CounterGraph::selectionChanged), item, &QCPPlottableLegendItem::setSelected);
     return graph;

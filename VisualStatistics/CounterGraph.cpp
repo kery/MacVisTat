@@ -241,6 +241,5 @@ void CounterGraph::draw(QCPPainter *painter)
 
 void CounterGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
-    applyFillAntialiasingHint(painter);
-    painter->fillRect(rect.marginsAdded(QMarginsF(1, 1, 2, 2)), mPen.color());
+    painter->fillRect(rect, mPen.color());
 }
