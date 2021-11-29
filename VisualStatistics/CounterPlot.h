@@ -13,7 +13,8 @@ public:
     CounterPlot(QWidget *parent = nullptr);
 
     CounterGraph *addGraph();
-    CounterGraph *graph(int index);
+    CounterGraph *graph(int index) const;
+    bool hasSelectedGraphs() const;
     QList<CounterGraph*> selectedGraphs() const;
 
 private:

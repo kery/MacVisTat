@@ -21,6 +21,7 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     connect(ui->actionRemoveZeroCounters, &QAction::triggered, this, &PlotWindow::actionRemoveZeroCountersTriggered);
     connect(ui->actionScript, &QAction::triggered, this, &PlotWindow::actionScriptTriggered);
     connect(ui->plot, &CounterPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
+    connect(ui->plot, &CounterPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequested);
     connect(ticker.data(), &DateTimeTicker::skippedTicksChanged, this, &PlotWindow::skippedTicksChanged);
 
     initGraphs();
@@ -86,6 +87,38 @@ void PlotWindow::actionRemoveZeroCountersTriggered()
 
 void PlotWindow::actionScriptTriggered()
 {
+}
+
+void PlotWindow::actionShowLegendTriggered(bool checked)
+{
+    ui->plot->legend->setVisible(checked);
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
+}
+
+void PlotWindow::actionMoveLegend()
+{
+}
+
+void PlotWindow::actionReverseSelection()
+{
+    for (int i = 0; i < ui->plot->graphCount(); ++i) {
+        CounterGraph *graph = ui->plot->graph(i);
+        graph->setSelected(!graph->selected());
+    }
+    selectionChanged();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
+}
+
+void PlotWindow::actionRemoveSelectedGraphs()
+{
+    QVector<CounterGraph*> graphsToRemove;
+    for (int i = 0; i < ui->plot->graphCount(); ++i) {
+        CounterGraph *graph = ui->plot->graph(i);
+        if (graph->selected()) {
+            graphsToRemove.append(graph);
+        }
+    }
+    removeGraphs(graphsToRemove);
 }
 
 void PlotWindow::selectionChanged()
@@ -154,6 +187,43 @@ void PlotWindow::skippedTicksChanged(int skipped)
         CounterGraph *graph = qobject_cast<CounterGraph*>(ui->plot->graph(i));
         graph->setScatterVisible(visible);
     }
+}
+
+void PlotWindow::contextMenuRequested(const QPoint &pos)
+{
+    QMenu *menu = new QMenu();
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    // TODO
+
+    QAction *actionShowLegend = menu->addAction(QStringLiteral("Show Legend"), this, &PlotWindow::actionShowLegendTriggered);
+    actionShowLegend->setCheckable(true);
+    actionShowLegend->setChecked(ui->plot->legend->visible());
+
+    QMenu *menuMoveLegend = menu->addMenu(QStringLiteral("Move Legend to"));
+    menuMoveLegend->addAction(QStringLiteral("Top Left"), this, &PlotWindow::actionMoveLegend)->setData(
+        static_cast<int>(Qt::AlignTop | Qt::AlignLeft));
+    menuMoveLegend->addAction(QStringLiteral("Top Center"), this, &PlotWindow::actionMoveLegend)->setData(
+        static_cast<int>(Qt::AlignTop | Qt::AlignCenter));
+    menuMoveLegend->addAction(QStringLiteral("Top Right"), this, &PlotWindow::actionMoveLegend)->setData(
+        static_cast<int>(Qt::AlignTop | Qt::AlignRight));
+    menuMoveLegend->addSeparator();
+    menuMoveLegend->addAction(QStringLiteral("Bottom Left"), this, &PlotWindow::actionMoveLegend)->setData(
+        static_cast<int>(Qt::AlignBottom | Qt::AlignLeft));
+    menuMoveLegend->addAction(QStringLiteral("Bottom Center"), this, &PlotWindow::actionMoveLegend)->setData(
+        static_cast<int>(Qt::AlignBottom | Qt::AlignCenter));
+    menuMoveLegend->addAction(QStringLiteral("Bottom Right"), this, &PlotWindow::actionMoveLegend)->setData(
+        static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
+
+    menu->addSeparator();
+
+    menu->addAction(QStringLiteral("Reverse Selection"), this, &PlotWindow::actionReverseSelection);
+    QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, &PlotWindow::actionRemoveSelectedGraphs);
+
+    if (!ui->plot->hasSelectedGraphs()) {
+        actionRemove->setEnabled(false);
+    }
+
+    menu->popup(ui->plot->mapToGlobal(pos));
 }
 
 void PlotWindow::initGraphs()

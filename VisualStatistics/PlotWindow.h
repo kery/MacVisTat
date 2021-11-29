@@ -23,9 +23,14 @@ private slots:
     void actionDisplayUtcTriggered(bool checked);
     void actionRemoveZeroCountersTriggered();
     void actionScriptTriggered();
+    void actionShowLegendTriggered(bool checked);
+    void actionMoveLegend();
+    void actionReverseSelection();
+    void actionRemoveSelectedGraphs();
 
     void selectionChanged();
     void skippedTicksChanged(int skipped);
+    void contextMenuRequested(const QPoint &pos);
 
 private:
     void initGraphs();

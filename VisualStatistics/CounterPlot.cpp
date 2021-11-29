@@ -35,9 +35,19 @@ CounterGraph *CounterPlot::addGraph()
     return graph;
 }
 
-CounterGraph *CounterPlot::graph(int index)
+CounterGraph *CounterPlot::graph(int index) const
 {
     return qobject_cast<CounterGraph*>(QCustomPlot::graph(index));
+}
+
+bool CounterPlot::hasSelectedGraphs() const
+{
+    for (int i = 0; i < graphCount(); ++i) {
+        if (graph(i)->selected()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 QList<CounterGraph*> CounterPlot::selectedGraphs() const
