@@ -23,8 +23,8 @@ public:
     void removeGraphData(const QString &name);
 
 private:
-    int _offsetFromUtc;
-    CounterDataMap _dataMap;
+    int mOffsetFromUtc;
+    CounterDataMap mDataMap;
 };
 
 #endif // PLOTDATA_H

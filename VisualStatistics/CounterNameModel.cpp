@@ -3,34 +3,34 @@
 
 CounterNameModel::CounterNameModel(QObject *parent) :
     QAbstractListModel(parent),
-    _fetchedCount(0),
-    _jitStack(pcre_jit_stack_alloc(32 * 1024, 1024 * 1024))
+    mFetchedCount(0),
+    mJitStack(pcre_jit_stack_alloc(32 * 1024, 1024 * 1024))
 {
 }
 
 CounterNameModel::~CounterNameModel()
 {
-    if (_jitStack) {
-        pcre_jit_stack_free(_jitStack);
+    if (mJitStack) {
+        pcre_jit_stack_free(mJitStack);
     }
 }
 
 void CounterNameModel::setCounterNames(QVector<QString> &names)
 {
     beginResetModel();
-    _counterNames.swap(names);
-    _matchedIndexes.reserve(_counterNames.size());
-    for (int i = 0; i < _counterNames.size(); ++i) {
-        _matchedIndexes.append(i);
+    mCounterNames.swap(names);
+    mMatchedIndexes.reserve(mCounterNames.size());
+    for (int i = 0; i < mCounterNames.size(); ++i) {
+        mMatchedIndexes.append(i);
     }
-    _fetchedCount = 0;
+    mFetchedCount = 0;
     endResetModel();
 }
 
 QStringList CounterNameModel::moduleNames() const
 {
     QSet<QString> result;
-    for (const QString &counterName : _counterNames) {
+    for (const QString &counterName : mCounterNames) {
         QString moduleName = CounterGraph::getModuleName(counterName);
         if (!moduleName.isEmpty()) {
             result.insert(moduleName);
@@ -42,9 +42,9 @@ QStringList CounterNameModel::moduleNames() const
 void CounterNameModel::clear()
 {
     beginResetModel();
-    _fetchedCount = 0;
-    _matchedIndexes.clear();
-    _counterNames.clear();
+    mFetchedCount = 0;
+    mMatchedIndexes.clear();
+    mCounterNames.clear();
     endResetModel();
 }
 
@@ -55,7 +55,7 @@ bool CounterNameModel::moduleNameTest(const QVector<QString> &moduleNames, const
     }
     for (const QString &moduleName : moduleNames) {
         if (counterName.length() > moduleName.length() + 1 &&
-            counterName[moduleName.length()] == CounterGraph::nameSeparator &&
+            counterName[moduleName.length()] == CounterGraph::sNameSeparator &&
             counterName.startsWith(moduleName))
         {
             return true;
@@ -69,7 +69,7 @@ bool CounterNameModel::moduleNameTest(const QVector<QString> &moduleNames, const
 QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, const QString &pattern, bool caseSensitive)
 {
     QString error;
-    if (_counterNames.isEmpty()) {
+    if (mCounterNames.isEmpty()) {
         return error;
     }
 
@@ -96,36 +96,36 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
     pcre_extra *extra = NULL;
     extra = pcre_study(re, PCRE_STUDY_EXTRA_NEEDED | PCRE_STUDY_JIT_COMPILE, &err);
     // pcre_assign_jit_stack() does nothing unless the extra argument is non-NULL
-    pcre_assign_jit_stack(extra, NULL, _jitStack);
+    pcre_assign_jit_stack(extra, NULL, mJitStack);
 
     beginResetModel();
 
     if (patterns.size() == 1) {
-        _matchedIndexes.clear();
+        mMatchedIndexes.clear();
         if (invert) {
-            for (int i = 0; i < _counterNames.size(); ++i) {
-                const QString &counterName = _counterNames[i];
+            for (int i = 0; i < mCounterNames.size(); ++i) {
+                const QString &counterName = mCounterNames[i];
                 if (!moduleNameTest(moduleNames, counterName)) {
                     continue;
                 }
                 baStr = counterName.toLocal8Bit();
                 if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                  0, 0, ovector, OVECCOUNT, _jitStack) == PCRE_ERROR_NOMATCH)
+                                  0, 0, ovector, OVECCOUNT, mJitStack) == PCRE_ERROR_NOMATCH)
                 {
-                    _matchedIndexes.append(i);
+                    mMatchedIndexes.append(i);
                 }
             }
         } else {
-            for (int i = 0; i < _counterNames.size(); ++i) {
-                const QString &counterName = _counterNames[i];
+            for (int i = 0; i < mCounterNames.size(); ++i) {
+                const QString &counterName = mCounterNames[i];
                 if (!moduleNameTest(moduleNames, counterName)) {
                     continue;
                 }
                 baStr = counterName.toLocal8Bit();
                 if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                  0, 0, ovector, OVECCOUNT, _jitStack) != PCRE_ERROR_NOMATCH)
+                                  0, 0, ovector, OVECCOUNT, mJitStack) != PCRE_ERROR_NOMATCH)
                 {
-                    _matchedIndexes.append(i);
+                    mMatchedIndexes.append(i);
                 }
             }
         }
@@ -136,27 +136,27 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
     } else {
         QSet<int> tempIndexes;
         if (invert) {
-            for (int i = 0; i < _counterNames.size(); ++i) {
-                const QString &counterName = _counterNames[i];
+            for (int i = 0; i < mCounterNames.size(); ++i) {
+                const QString &counterName = mCounterNames[i];
                 if (!moduleNameTest(moduleNames, counterName)) {
                     continue;
                 }
                 baStr = counterName.toLocal8Bit();
                 if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                  0, 0, ovector, OVECCOUNT, _jitStack) == PCRE_ERROR_NOMATCH)
+                                  0, 0, ovector, OVECCOUNT, mJitStack) == PCRE_ERROR_NOMATCH)
                 {
                     tempIndexes.insert(i);
                 }
             }
         } else {
-            for (int i = 0; i < _counterNames.size(); ++i) {
-                const QString &counterName = _counterNames[i];
+            for (int i = 0; i < mCounterNames.size(); ++i) {
+                const QString &counterName = mCounterNames[i];
                 if (!moduleNameTest(moduleNames, counterName)) {
                     continue;
                 }
                 baStr = counterName.toLocal8Bit();
                 if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                  0, 0, ovector, OVECCOUNT, _jitStack) != PCRE_ERROR_NOMATCH)
+                                  0, 0, ovector, OVECCOUNT, mJitStack) != PCRE_ERROR_NOMATCH)
                 {
                     tempIndexes.insert(i);
                 }
@@ -182,14 +182,14 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
 
             extra = pcre_study(re, PCRE_STUDY_EXTRA_NEEDED | PCRE_STUDY_JIT_COMPILE, &err);
             // pcre_assign_jit_stack() does nothing unless the extra argument is non-NULL
-            pcre_assign_jit_stack(extra, NULL, _jitStack);
+            pcre_assign_jit_stack(extra, NULL, mJitStack);
 
             if (invert) {
                 for (auto iter = tempIndexes.begin(); iter != tempIndexes.end();) {
-                    const QString &counterName = _counterNames[*iter];
+                    const QString &counterName = mCounterNames[*iter];
                     baStr = counterName.toLocal8Bit();
                     if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                      0, 0, ovector, OVECCOUNT, _jitStack) != PCRE_ERROR_NOMATCH)
+                                      0, 0, ovector, OVECCOUNT, mJitStack) != PCRE_ERROR_NOMATCH)
                     {
                         iter = tempIndexes.erase(iter);
                     } else {
@@ -198,10 +198,10 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
                 }
             } else {
                 for (auto iter = tempIndexes.begin(); iter != tempIndexes.end();) {
-                    const QString &counterName = _counterNames[*iter];
+                    const QString &counterName = mCounterNames[*iter];
                     baStr = counterName.toLocal8Bit();
                     if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                      0, 0, ovector, OVECCOUNT, _jitStack) != PCRE_ERROR_NOMATCH)
+                                      0, 0, ovector, OVECCOUNT, mJitStack) != PCRE_ERROR_NOMATCH)
                     {
                         ++iter;
                     } else {
@@ -215,10 +215,10 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
             }
         }
 
-        _matchedIndexes.resize(tempIndexes.size());
-        std::copy(tempIndexes.begin(), tempIndexes.end(), _matchedIndexes.begin());
+        mMatchedIndexes.resize(tempIndexes.size());
+        std::copy(tempIndexes.begin(), tempIndexes.end(), mMatchedIndexes.begin());
     }
-    _fetchedCount = 0;
+    mFetchedCount = 0;
     endResetModel();
 
     return error;
@@ -226,34 +226,34 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
 
 int CounterNameModel::matchedCount() const
 {
-    return _matchedIndexes.size();
+    return mMatchedIndexes.size();
 }
 
 int CounterNameModel::totalCount() const
 {
-    return _counterNames.size();
+    return mCounterNames.size();
 }
 
 bool CounterNameModel::canFetchMore(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return _fetchedCount < _matchedIndexes.size();
+    return mFetchedCount < mMatchedIndexes.size();
 }
 
 void CounterNameModel::fetchMore(const QModelIndex &parent)
 {
     Q_UNUSED(parent);
-    int newCount = qMin(_fetchedCount + 100, _matchedIndexes.size());
+    int newCount = qMin(mFetchedCount + 100, mMatchedIndexes.size());
 
-    beginInsertRows(QModelIndex(), _fetchedCount, newCount - 1);
-    _fetchedCount = newCount;
+    beginInsertRows(QModelIndex(), mFetchedCount, newCount - 1);
+    mFetchedCount = newCount;
     endInsertRows();
 }
 
 int CounterNameModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return _fetchedCount;
+    return mFetchedCount;
 }
 
 QVariant CounterNameModel::data(const QModelIndex &index, int role) const
@@ -261,12 +261,12 @@ QVariant CounterNameModel::data(const QModelIndex &index, int role) const
     if (index.isValid()) {
         switch (role) {
         case Qt::DisplayRole:
-            return _counterNames[_matchedIndexes[index.row()]];
+            return mCounterNames[mMatchedIndexes[index.row()]];
         case Qt::StatusTipRole:
             break;
         case IndexRole:
             // Skip the first 2 columns (##date;time;) in CSV file.
-            return _matchedIndexes[index.row()] + 2;
+            return mMatchedIndexes[index.row()] + 2;
         }
     }
     return QVariant();

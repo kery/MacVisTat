@@ -31,10 +31,10 @@ public:
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
 private:
-    int _fetchedCount;
-    QVector<int> _matchedIndexes;
-    QVector<QString> _counterNames;
-    pcre_jit_stack *_jitStack;
+    int mFetchedCount;
+    QVector<int> mMatchedIndexes;
+    QVector<QString> mCounterNames;
+    pcre_jit_stack *mJitStack;
 };
 
 #endif // COUNTERNAMEMODEL_H

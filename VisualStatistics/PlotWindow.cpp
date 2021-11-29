@@ -4,14 +4,14 @@
 
 PlotWindow::PlotWindow(PlotData &plotData) :
     ui(new Ui::PlotWindow),
-    _plotData(std::move(plotData)),
-    _lastSelLegItemIndex(-1)
+    mPlotData(std::move(plotData)),
+    mLastSelLegItemIndex(-1)
 {
     ui->setupUi(this);
 
     // QCPAxisTicker isn't derived from QObject, so we use qSharedPointerDynamicCast here.
     auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
-    ticker->setOffsetFromUtc(_plotData.offsetFromUtc());
+    ticker->setOffsetFromUtc(mPlotData.offsetFromUtc());
 
     connect(ui->actionSave, &QAction::triggered, this, &PlotWindow::actionSaveTriggered);
     connect(ui->actionCopy, &QAction::triggered, this, &PlotWindow::actionCopyTriggered);
@@ -54,7 +54,7 @@ void PlotWindow::actionShowDeltaTriggered(bool checked)
 {
     for (int i = 0; i < ui->plot->graphCount(); ++i) {
         CounterGraph *graph = ui->plot->graph(i);
-        graph->setData(checked ? _plotData.graphDeltaData(graph->fullName()) : _plotData.graphData(graph->fullName()));
+        graph->setData(checked ? mPlotData.graphDeltaData(graph->fullName()) : mPlotData.graphData(graph->fullName()));
     }
 
     // TODO
@@ -125,26 +125,26 @@ void PlotWindow::selectionChanged()
 {
     auto selectedLegendItems = ui->plot->legend->selectedItems();
     if (selectedLegendItems.size() == 1) {
-        if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) && _lastSelLegItemIndex >= 0) {
+        if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) && mLastSelLegItemIndex >= 0) {
             int curSelLegItemIndex = legendItemIndex(selectedLegendItems.first());
             int min = 0, max = 0;
-            if (curSelLegItemIndex < _lastSelLegItemIndex) {
+            if (curSelLegItemIndex < mLastSelLegItemIndex) {
                 min = curSelLegItemIndex + 1;
-                max = qMin(_lastSelLegItemIndex + 1, ui->plot->graphCount());
-            } else if (curSelLegItemIndex > _lastSelLegItemIndex) {
-                min = _lastSelLegItemIndex;
+                max = qMin(mLastSelLegItemIndex + 1, ui->plot->graphCount());
+            } else if (curSelLegItemIndex > mLastSelLegItemIndex) {
+                min = mLastSelLegItemIndex;
                 max = curSelLegItemIndex;
             }
             for (int i = min; i < max; ++i) {
                 ui->plot->graph(i)->setSelected(true);
             }
         } else {
-            _lastSelLegItemIndex = legendItemIndex(selectedLegendItems.first());
+            mLastSelLegItemIndex = legendItemIndex(selectedLegendItems.first());
         }
     }
 
     if (ui->plot->legend->selectedItems().isEmpty()) {
-        _lastSelLegItemIndex = -1;
+        mLastSelLegItemIndex = -1;
         for (int i = 0; i < ui->plot->graphCount(); ++i) {
             CounterGraph *graph = ui->plot->graph(i);
             graph->setVisible(true);
@@ -228,16 +228,16 @@ void PlotWindow::contextMenuRequested(const QPoint &pos)
 
 void PlotWindow::initGraphs()
 {
-    const QList<QString> counterNames = _plotData.counterNames();
+    const QList<QString> counterNames = mPlotData.counterNames();
     for (const QString &name : counterNames) {
         auto pair = CounterGraph::separateModuleName(name);
         CounterGraph *graph = ui->plot->addGraph();
         graph->setModuleName(pair.first);
         graph->setName(pair.second);
         graph->setFullName(name);
-        graph->setPen(QPen(_colorPool.getColor()));
-        graph->setData(_plotData.graphData(name));
-        graph->setSuspectKeys(_plotData.suspectKeys(name));
+        graph->setPen(QPen(mColorPool.getColor()));
+        graph->setData(mPlotData.graphData(name));
+        graph->setSuspectKeys(mPlotData.suspectKeys(name));
     }
 
     ui->plot->rescaleAxes();
@@ -300,7 +300,7 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
     if (graphs.isEmpty()) { return; }
 
     for (CounterGraph *graph : graphs) {
-        _plotData.removeGraphData(graph->fullName());
+        mPlotData.removeGraphData(graph->fullName());
         // TODO
         ui->plot->removeGraph(graph);
     }

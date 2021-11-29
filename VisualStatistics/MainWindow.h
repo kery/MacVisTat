@@ -104,16 +104,16 @@ private:
     static int trimLeadingSpace(QString &str);
 
     Ui::MainWindow *ui;
-    int _offsetFromUtc;
-    QLabel *_cntNameInfoLabel;
-    bool _caseSensitive;
-    QString _counterFilePath;
-    QString _logDateTimeFmt;
-    std::array<QAction*, 10> _recentFileActions;
-    QTimer _filterMenuReloadTimer;
-    QFileSystemWatcher _filterFileWatcher;
-    ResizeManager _resizeMan;
-    QNetworkAccessManager _netMan;
+    int mOffsetFromUtc;
+    QLabel *mCntNameInfoLabel;
+    bool mCaseSensitive;
+    QString mCounterFilePath;
+    QString mLogDateTimeFmt;
+    std::array<QAction*, 10> mRecentFileActions;
+    QTimer mFilterMenuReloadTimer;
+    QFileSystemWatcher mFilterFileWatcher;
+    ResizeManager mResizeMan;
+    QNetworkAccessManager mNetMan;
 };
 
 #endif // MAINWINDOW_H

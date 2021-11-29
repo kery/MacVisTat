@@ -2,24 +2,24 @@
 #include "Utils.h"
 
 DateTimeTicker::DateTimeTicker(QCPAxis *parentAxis) :
-    _displayUtc(false),
-    _skippedTicks(-1),
-    _offsetFromUtc(0),
-    _dateTimeFmt(DTFMT_DISPLAY),
-    _parentAxis(parentAxis)
+    mDisplayUtc(false),
+    mSkippedTicks(-1),
+    mOffsetFromUtc(0),
+    mDateTimeFmt(DTFMT_DISPLAY),
+    mParentAxis(parentAxis)
 {
-    _parentAxis->setTickLabelRotation(90);
+    mParentAxis->setTickLabelRotation(90);
 }
 
 void DateTimeTicker::setDisplayUtc(bool displayUtc)
 {
-    _displayUtc = displayUtc;
+    mDisplayUtc = displayUtc;
 }
 
 void DateTimeTicker::setOffsetFromUtc(int offset)
 {
     if (isValidOffsetFromUtc(offset)) {
-        _offsetFromUtc = offset;
+        mOffsetFromUtc = offset;
     }
 }
 
@@ -35,34 +35,34 @@ QString DateTimeTicker::getTickLabel(double tick, const QLocale &locale, QChar f
     Q_UNUSED(formatChar)
     Q_UNUSED(precision)
     QDateTime dateTime = QDateTime::fromSecsSinceEpoch(tick);
-    if (_displayUtc) {
-        dateTime.setOffsetFromUtc(_offsetFromUtc);
+    if (mDisplayUtc) {
+        dateTime.setOffsetFromUtc(mOffsetFromUtc);
         dateTime = dateTime.toUTC();
     }
-    return dateTime.toString(_dateTimeFmt);
+    return dateTime.toString(mDateTimeFmt);
 }
 
 QVector<double> DateTimeTicker::createTickVector(double tickStep, const QCPRange &range)
 {
     Q_UNUSED(tickStep)
     QVector<double> result;
-    QCustomPlot *plot = _parentAxis->parentPlot();
+    QCustomPlot *plot = mParentAxis->parentPlot();
     if (plot->graphCount() > 0 && plot->graph(0)->dataCount() > 0) {
         QSharedPointer<QCPGraphDataContainer> data = plot->graph(0)->data();
-        double fontHeight = QFontMetricsF(_parentAxis->tickLabelFont()).height();
+        double fontHeight = QFontMetricsF(mParentAxis->tickLabelFont()).height();
         double prePos = -fontHeight;
         auto iterBegin = data->findBegin(range.lower, false), iterEnd = data->findEnd(range.upper);
         for (auto iter = iterBegin; iter != iterEnd; ++iter) {
-            double curPos = _parentAxis->coordToPixel(iter->key);
+            double curPos = mParentAxis->coordToPixel(iter->key);
             if (curPos - prePos >= fontHeight) {
                 result.append(iter->key);
                 prePos = curPos;
             }
         }
         int skippedTicks = iterEnd - iterBegin - result.size();
-        if (skippedTicks != _skippedTicks) {
-            _skippedTicks = skippedTicks;
-            emit skippedTicksChanged(_skippedTicks);
+        if (skippedTicks != mSkippedTicks) {
+            mSkippedTicks = skippedTicks;
+            emit skippedTicksChanged(mSkippedTicks);
         }
     }
     return result;

@@ -5,13 +5,13 @@
 #include <QtConcurrent>
 
 CounterFileParser::CounterFileParser(QWidget *parent) :
-    _parent(parent)
+    mParent(parent)
 {
 }
 
 QString CounterFileParser::parseHeader(const QString &path, QVector<QString> &names, int &offsetFromUtc)
 {
-    ProgressDialog dlg(_parent);
+    ProgressDialog dlg(mParent);
     dlg.setDescription(QStringLiteral("Parsing counter file header..."));
     dlg.setUndeterminable();
     dlg.setCancelButtonVisible(false);
@@ -46,7 +46,7 @@ QString CounterFileParser::parseData(const QString &path, const IndexNameMap &in
 {
     volatile bool working = true;
 
-    ProgressDialog dlg(_parent);
+    ProgressDialog dlg(mParent);
     dlg.setDescription(QStringLiteral("Parsing counter file data..."));
     dlg.setRange(0, 100);
     QObject::connect(&dlg, &ProgressDialog::canceling, [&working]() { working = false; });

@@ -15,14 +15,14 @@ bool CounterData::isZeroData(QSharedPointer<QCPGraphDataContainer> data)
     return true;
 }
 
-const QChar CounterGraph::nameSeparator(',');
+const QChar CounterGraph::sNameSeparator(',');
 
 CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
     QCPGraph(keyAxis, valueAxis),
-    _suspectKeys(nullptr)
+    mSuspectKeys(nullptr)
 {
-    _suspectScatterStyle.setBrush(Qt::white);
-    _suspectScatterStyle.setCustomPath(suspectPainterPath());
+    mSuspectScatterStyle.setBrush(Qt::white);
+    mSuspectScatterStyle.setCustomPath(suspectPainterPath());
 }
 
 void CounterGraph::setPen(const QPen &pen)
@@ -33,22 +33,22 @@ void CounterGraph::setPen(const QPen &pen)
 
 QString CounterGraph::moduleName() const
 {
-    return _moduleName;
+    return mModuleName;
 }
 
 void CounterGraph::setModuleName(const QString &name)
 {
-    _moduleName = name;
+    mModuleName = name;
 }
 
 QString CounterGraph::fullName() const
 {
-    return _fullName;
+    return mFullName;
 }
 
 void CounterGraph::setFullName(const QString &fullName)
 {
-    _fullName = fullName;
+    mFullName = fullName;
 }
 
 void CounterGraph::setScatterVisible(bool visible)
@@ -58,12 +58,12 @@ void CounterGraph::setScatterVisible(bool visible)
 
 void CounterGraph::setSuspectKeys(const QSet<double> *suspectKeys)
 {
-    _suspectKeys = suspectKeys;
+    mSuspectKeys = suspectKeys;
 }
 
 QString CounterGraph::getModuleName(const QString &fullName)
 {
-    int index = fullName.indexOf(nameSeparator);
+    int index = fullName.indexOf(sNameSeparator);
     if (index > 0) {
         return fullName.left(index);
     }
@@ -72,13 +72,13 @@ QString CounterGraph::getModuleName(const QString &fullName)
 
 QString CounterGraph::getNameRightPart(const QString &name)
 {
-    return name.mid(name.lastIndexOf(nameSeparator) + 1);
+    return name.mid(name.lastIndexOf(sNameSeparator) + 1);
 }
 
 QPair<QString, QString> CounterGraph::separateModuleName(const QString &fullName)
 {
     QPair<QString, QString> result;
-    int index = fullName.indexOf(nameSeparator);
+    int index = fullName.indexOf(sNameSeparator);
     if (index > 0) {
         result.first = fullName.left(index);
         result.second = fullName.mid(index + 1);
@@ -138,14 +138,14 @@ void CounterGraph::getScatters(QVector<QPointF> *scatters, QVector<QPointF> *sus
         std::reverse(data.begin(), data.end());
     }
 
-    scatters->reserve(data.size() - _suspectKeys->size());
-    suspectScatters->reserve(_suspectKeys->size());
+    scatters->reserve(data.size() - mSuspectKeys->size());
+    suspectScatters->reserve(mSuspectKeys->size());
     if (keyAxis->orientation() == Qt::Vertical) {
         for (int i = 0; i < data.size(); ++i) {
             if (!qIsNaN(data.at(i).value)) {
                 QPointF pos(valueAxis->coordToPixel(data.at(i).value),
                             keyAxis->coordToPixel(data.at(i).key));
-                if (_suspectKeys->contains(data.at(i).key)) {
+                if (mSuspectKeys->contains(data.at(i).key)) {
                     suspectScatters->append(pos);
                 } else {
                     scatters->append(pos);
@@ -157,7 +157,7 @@ void CounterGraph::getScatters(QVector<QPointF> *scatters, QVector<QPointF> *sus
             if (!qIsNaN(data.at(i).value)) {
                 QPointF pos(keyAxis->coordToPixel(data.at(i).key),
                             valueAxis->coordToPixel(data.at(i).value));
-                if (_suspectKeys->contains(data.at(i).key)) {
+                if (mSuspectKeys->contains(data.at(i).key)) {
                     suspectScatters->append(pos);
                 } else {
                     scatters->append(pos);
@@ -226,10 +226,10 @@ void CounterGraph::draw(QCPPainter *painter)
         if (isSelectedSegment && mSelectionDecorator) {
             finalScatterStyle = mSelectionDecorator->getFinalScatterStyle(mScatterStyle);
         }
-        if (!finalScatterStyle.isNone() || !_suspectKeys->isEmpty()) {
+        if (!finalScatterStyle.isNone() || !mSuspectKeys->isEmpty()) {
             getScatters(&scatters, &suspectScatters, allSegments.at(i));
             drawScatterPlot(painter, scatters, finalScatterStyle);
-            drawScatterPlot(painter, suspectScatters, _suspectScatterStyle);
+            drawScatterPlot(painter, suspectScatters, mSuspectScatterStyle);
         }
     }
 

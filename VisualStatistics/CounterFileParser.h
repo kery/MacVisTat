@@ -21,7 +21,7 @@ private:
     static QString parseDataInternal(const QString &path, const IndexNameMap &inm, const volatile bool &working, ProgressDialog &dlg, CounterDataMap &cmd);
     static void splitHeader(const char *str, QVector<QString> &out);
 
-    QWidget *_parent;
+    QWidget *mParent;
 };
 
 #endif // COUNTERFILEPARSER_H

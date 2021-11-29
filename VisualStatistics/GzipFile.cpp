@@ -2,8 +2,8 @@
 #include <QFileInfo>
 
 GZipFile::GZipFile() :
-    _gzFile(nullptr),
-    _fileSize(-1)
+    mGzFile(nullptr),
+    mFileSize(-1)
 {
 }
 
@@ -15,11 +15,11 @@ GZipFile::~GZipFile()
 bool GZipFile::open(const QString &path, OpenMode mode)
 {
     QByteArray baStr = path.toLocal8Bit();
-    _gzFile = gzopen(baStr.data(), mode == ReadOnly ? "rb" : "wb");
-    if (_gzFile) {
-        gzbuffer(_gzFile, 128 * 1024);
+    mGzFile = gzopen(baStr.data(), mode == ReadOnly ? "rb" : "wb");
+    if (mGzFile) {
+        gzbuffer(mGzFile, 128 * 1024);
         if (mode == ReadOnly) {
-            _fileSize = QFileInfo(path).size();
+            mFileSize = QFileInfo(path).size();
         }
         return true;
     }
@@ -28,16 +28,16 @@ bool GZipFile::open(const QString &path, OpenMode mode)
 
 void GZipFile::close()
 {
-    if (_gzFile) {
-        gzclose(_gzFile);
-        _gzFile = nullptr;
-        _fileSize = -1;
+    if (mGzFile) {
+        gzclose(mGzFile);
+        mGzFile = nullptr;
+        mFileSize = -1;
     }
 }
 
 int GZipFile::read(char *buf, unsigned int maxlen)
 {
-    return gzread(_gzFile, buf, maxlen);
+    return gzread(mGzFile, buf, maxlen);
 }
 
 bool GZipFile::readLine(std::string &line)
@@ -45,7 +45,7 @@ bool GZipFile::readLine(std::string &line)
     line.clear();
 
     char buffer[4096];
-    while (gzgets(_gzFile, buffer, sizeof(buffer))) {
+    while (gzgets(mGzFile, buffer, sizeof(buffer))) {
         line.append(buffer);
         if (line.back() == '\n') {
             line.pop_back();
@@ -55,7 +55,7 @@ bool GZipFile::readLine(std::string &line)
             break;
         }
     }
-    return !line.empty() || gzeof(_gzFile) == 0;
+    return !line.empty() || gzeof(mGzFile) == 0;
 }
 
 bool GZipFile::readLineKeepCrLf(std::string &line)
@@ -63,7 +63,7 @@ bool GZipFile::readLineKeepCrLf(std::string &line)
     line.clear();
 
     char buffer[4096];
-    while (gzgets(_gzFile, buffer, sizeof(buffer))) {
+    while (gzgets(mGzFile, buffer, sizeof(buffer))) {
         line.append(buffer);
         if (line.back() == '\n') {
             break;
@@ -74,7 +74,7 @@ bool GZipFile::readLineKeepCrLf(std::string &line)
 
 int GZipFile::write(const char *buf, unsigned int len)
 {
-    return gzwrite(_gzFile, buf, len);
+    return gzwrite(mGzFile, buf, len);
 }
 
 int GZipFile::write(const std::string &str)
@@ -84,18 +84,18 @@ int GZipFile::write(const std::string &str)
 
 bool GZipFile::eof() const
 {
-    return gzeof(_gzFile) != 0;
+    return gzeof(mGzFile) != 0;
 }
 
 const char *GZipFile::error() const
 {
-    return gzerror(_gzFile, nullptr);
+    return gzerror(mGzFile, nullptr);
 }
 
 int GZipFile::progress() const
 {
-    if (_fileSize > 0) {
-        return static_cast<double>(gzoffset(_gzFile)) / _fileSize * 100;
+    if (mFileSize > 0) {
+        return static_cast<double>(gzoffset(mGzFile)) / mFileSize * 100;
     }
     return -1;
 }

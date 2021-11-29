@@ -20,8 +20,8 @@ private:
     bool updateState(QEvent *event);
     void doResize(const QSizeF &newSize);
 
-    bool _showToParentHandled;
-    QWidget *_widget;
+    bool mShowToParentHandled;
+    QWidget *mWidget;
 };
 
 #endif // RESIZEMANAGER_H

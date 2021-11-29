@@ -46,9 +46,9 @@ private:
     virtual void keyPressEvent(QKeyEvent *event);
 
     Ui::PlotWindow *ui;
-    PlotData _plotData;
-    ColorPool _colorPool;
-    int _lastSelLegItemIndex;
+    PlotData mPlotData;
+    ColorPool mColorPool;
+    int mLastSelLegItemIndex;
 };
 
 #endif // PLOTWINDOW_H

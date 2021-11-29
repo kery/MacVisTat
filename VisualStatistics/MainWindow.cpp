@@ -11,10 +11,10 @@
 
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow),
-    _offsetFromUtc(0),
-    _cntNameInfoLabel(new QLabel(this)),
-    _logDateTimeFmt(DTFMT_DISPLAY),
-    _resizeMan(this)
+    mOffsetFromUtc(0),
+    mCntNameInfoLabel(new QLabel(this)),
+    mLogDateTimeFmt(DTFMT_DISPLAY),
+    mResizeMan(this)
 {
     ui->setupUi(this);
     setupFilterComboBox();
@@ -28,15 +28,15 @@ MainWindow::MainWindow() :
 
     CounterNameModel *model = new CounterNameModel(this);
     ui->counterNameView->setModel(model);
-    ui->statusBar->addPermanentWidget(_cntNameInfoLabel);
+    ui->statusBar->addPermanentWidget(mCntNameInfoLabel);
     updateCounterNameCountInfo();
 
     // Some editors' (e.g. VSCode) behavior is to save file first with 0 length and then with the actual content, so
     // in this case the fileChanged signal whill be emitted twice. The Windows build-in notepad.exe only save once.
     // In addition, sometimes the signal only emmitted once with 0 file length. So, seems a better way is to use a timer
     // for reloading.
-    _filterMenuReloadTimer.setInterval(500);
-    _filterMenuReloadTimer.setSingleShot(true);
+    mFilterMenuReloadTimer.setInterval(500);
+    mFilterMenuReloadTimer.setSingleShot(true);
 
     connect(ui->counterNameView, &QListView::doubleClicked, this, &MainWindow::counterNameViewDoubleClicked);
     connect(ui->moduleNameView, &QListWidget::itemSelectionChanged, this, &MainWindow::updateFilterPattern);
@@ -54,8 +54,8 @@ MainWindow::MainWindow() :
     connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::actionHelpTriggered);
     connect(ui->actionChangeLog, &QAction::triggered, this, &MainWindow::actionChangeLogTriggered);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::actionAboutTriggered);
-    connect(&_filterFileWatcher, &QFileSystemWatcher::fileChanged, &_filterMenuReloadTimer, QOverload<>::of(&QTimer::start));
-    connect(&_filterMenuReloadTimer, &QTimer::timeout, this, &MainWindow::filterFileChanged);
+    connect(&mFilterFileWatcher, &QFileSystemWatcher::fileChanged, &mFilterMenuReloadTimer, QOverload<>::of(&QTimer::start));
+    connect(&mFilterMenuReloadTimer, &QTimer::timeout, this, &MainWindow::filterFileChanged);
 
     initRecentFileActions();
     updateRecentFileActions(QStringList());
@@ -93,7 +93,7 @@ void MainWindow::actionXmlToCsvTriggered()
 
 void MainWindow::actionCloseTriggered()
 {
-    _counterFilePath.clear();
+    mCounterFilePath.clear();
     updateWindowTitle();
     ui->moduleNameView->clear();
     CounterNameModel *model = qobject_cast<CounterNameModel*>(ui->counterNameView->model());
@@ -153,8 +153,8 @@ void MainWindow::actionEditFilterFileTriggered()
 
     // If the file is deleted or removed, the watching will stop. So, it's better to check if the watching
     // is still working, add it again if not.
-    if (_filterFileWatcher.files().isEmpty()) {
-        _filterFileWatcher.addPath(path);
+    if (mFilterFileWatcher.files().isEmpty()) {
+        mFilterFileWatcher.addPath(path);
     }
 
     QDesktopServices::openUrl(path);
@@ -188,7 +188,7 @@ void MainWindow::actionAboutTriggered()
 void MainWindow::caseSensitiveButtonClicked(bool checked)
 {
     Q_UNUSED(checked);
-    _caseSensitive = !_caseSensitive;
+    mCaseSensitive = !mCaseSensitive;
     updateCaseSensitiveButtonFont();
     updateFilterPattern();
 }
@@ -199,7 +199,7 @@ void MainWindow::updateCounterNameCountInfo()
     int total = model->totalCount();
     int matched = model->matchedCount();
     int displayed = model->rowCount();
-    _cntNameInfoLabel->setText(QStringLiteral("Counter:%1 Matched:%2 Displayed:%3").arg(total).arg(matched).arg(displayed));
+    mCntNameInfoLabel->setText(QStringLiteral("Counter:%1 Matched:%2 Displayed:%3").arg(total).arg(matched).arg(displayed));
 }
 
 void MainWindow::updateFilterPattern()
@@ -212,7 +212,7 @@ void MainWindow::updateFilterPattern()
     }
 
     CounterNameModel *model = qobject_cast<CounterNameModel*>(ui->counterNameView->model());
-    QString error = model->setFilterPattern(moduleNames, ui->filterComboBox->lineEdit()->text(), _caseSensitive);
+    QString error = model->setFilterPattern(moduleNames, ui->filterComboBox->lineEdit()->text(), mCaseSensitive);
     if (!error.isEmpty()) {
         appendErrorLog(error);
     }
@@ -326,12 +326,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
     saveFilterHistory();
 
     QSettings setting;
-    setting.setValue(SETTING_KEY_CASE_SENSITIVE, _caseSensitive);
+    setting.setValue(SETTING_KEY_CASE_SENSITIVE, mCaseSensitive);
 }
 
 bool MainWindow::event(QEvent *event)
 {
-    if (_resizeMan.resizeWidgetFromScreenSize(event, 0.75, 0.75)) {
+    if (mResizeMan.resizeWidgetFromScreenSize(event, 0.75, 0.75)) {
 
         int leftWidth = ui->splitterHor->width() * 0.23334;
         int bottomHeight = ui->splitterVer->height() * 0.13141;
@@ -349,12 +349,12 @@ bool MainWindow::isCaseSensitiveButtonResizeEvent(QObject *obj, QEvent *event) c
 void MainWindow::setupFilterComboBox()
 {
     QSettings settings;
-    _caseSensitive = settings.value(SETTING_KEY_CASE_SENSITIVE, true).toBool();
+    mCaseSensitive = settings.value(SETTING_KEY_CASE_SENSITIVE, true).toBool();
 
     QToolButton *toolButton = new QToolButton();
     QFont font = toolButton->font();
     font.setBold(true);
-    font.setStrikeOut(!_caseSensitive);
+    font.setStrikeOut(!mCaseSensitive);
     toolButton->setFont(font);
     toolButton->setAutoRaise(true);
     toolButton->setText(QStringLiteral("Aa"));
@@ -395,9 +395,9 @@ void MainWindow::connectClearButtonSignal()
 void MainWindow::updateWindowTitle()
 {
     QString title(APP_NAME);
-    if (!_counterFilePath.isEmpty()) {
+    if (!mCounterFilePath.isEmpty()) {
         title += " - ";
-        title += _counterFilePath;
+        title += mCounterFilePath;
     }
     setWindowTitle(title);
 }
@@ -406,7 +406,7 @@ void MainWindow::updateCaseSensitiveButtonFont()
 {
     QToolButton *toolButton = ui->filterComboBox->findChild<QToolButton*>();
     QFont font = toolButton->font();
-    font.setStrikeOut(!_caseSensitive);
+    font.setStrikeOut(!mCaseSensitive);
     toolButton->setFont(font);
 }
 
@@ -415,11 +415,11 @@ void MainWindow::initRecentFileActions()
     auto fileActions = ui->menuFile->actions();
     QAction *actionSep = fileActions.at(fileActions.size() - 2);
 
-    for (size_t i = 0; i < _recentFileActions.size(); ++i) {
-        _recentFileActions[i] = new QAction(this);
-        _recentFileActions[i]->setVisible(false);
-        connect(_recentFileActions[i], &QAction::triggered, this, &MainWindow::actionRecentFileTriggered);
-        ui->menuFile->insertAction(actionSep, _recentFileActions[i]);
+    for (size_t i = 0; i < mRecentFileActions.size(); ++i) {
+        mRecentFileActions[i] = new QAction(this);
+        mRecentFileActions[i]->setVisible(false);
+        connect(mRecentFileActions[i], &QAction::triggered, this, &MainWindow::actionRecentFileTriggered);
+        ui->menuFile->insertAction(actionSep, mRecentFileActions[i]);
     }
 }
 
@@ -437,21 +437,21 @@ void MainWindow::updateRecentFileActions(const QStringList &recentFiles)
         return !QFileInfo::exists(path);
     }), files.end());
 
-    int numRecentFiles = qMin(files.size(), static_cast<int>(_recentFileActions.size()));
+    int numRecentFiles = qMin(files.size(), static_cast<int>(mRecentFileActions.size()));
     for (int i = 0; i < numRecentFiles; ++i) {
         QString path = files[i];
         QString text = QString::number(i + 1);
         text += ": ";
         text += QFileInfo(path).fileName();
 
-        _recentFileActions[i]->setText(text);
-        _recentFileActions[i]->setData(path);
-        _recentFileActions[i]->setStatusTip(QDir::toNativeSeparators(path));
-        _recentFileActions[i]->setVisible(true);
+        mRecentFileActions[i]->setText(text);
+        mRecentFileActions[i]->setData(path);
+        mRecentFileActions[i]->setStatusTip(QDir::toNativeSeparators(path));
+        mRecentFileActions[i]->setVisible(true);
     }
 
-    for (int i = numRecentFiles; i < _recentFileActions.size(); ++i) {
-        _recentFileActions[i]->setVisible(false);
+    for (int i = numRecentFiles; i < mRecentFileActions.size(); ++i) {
+        mRecentFileActions[i]->setVisible(false);
     }
 }
 
@@ -566,7 +566,7 @@ void MainWindow::setupNetworkAccessManager()
     QNetworkProxyQuery npq(url(upRoot));
     QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(npq);
     if (!proxies.isEmpty()) {
-        _netMan.setProxy(proxies[0]);
+        mNetMan.setProxy(proxies[0]);
     }
 }
 
@@ -588,15 +588,15 @@ void MainWindow::startUsageReport()
 void MainWindow::openCounterFile(const QString &path)
 {
     QString nativePath = QDir::toNativeSeparators(path);
-    if (!_counterFilePath.isEmpty()) {
-        if (_counterFilePath.compare(nativePath, Qt::CaseInsensitive)) {
+    if (!mCounterFilePath.isEmpty()) {
+        if (mCounterFilePath.compare(nativePath, Qt::CaseInsensitive)) {
             actionCloseTriggered();
         } else {
             return;
         }
     }
     if (parseCounterFileHeader(path)) {
-        _counterFilePath = nativePath;
+        mCounterFilePath = nativePath;
         updateWindowTitle();
         ui->filterComboBox->setFocus();
 
@@ -605,7 +605,7 @@ void MainWindow::openCounterFile(const QString &path)
         files.removeOne(path);
         files.prepend(path);
 
-        while (files.size() > static_cast<int>(_recentFileActions.size())) {
+        while (files.size() > static_cast<int>(mRecentFileActions.size())) {
             files.removeLast();
         }
 
@@ -618,7 +618,7 @@ bool MainWindow::parseCounterFileHeader(const QString &path)
 {
     QVector<QString> counterNames;
     CounterFileParser parser(this);
-    QString error = parser.parseHeader(path, counterNames, _offsetFromUtc);
+    QString error = parser.parseHeader(path, counterNames, mOffsetFromUtc);
     if (error.isEmpty()) {
         CounterNameModel *model = qobject_cast<CounterNameModel*>(ui->counterNameView->model());
         model->setCounterNames(counterNames);
@@ -626,7 +626,7 @@ bool MainWindow::parseCounterFileHeader(const QString &path)
 
         QString filterText = ui->filterComboBox->lineEdit()->text();
         if (!filterText.isEmpty()) {
-            QString error = model->setFilterPattern(QVector<QString>(), filterText, _caseSensitive);
+            QString error = model->setFilterPattern(QVector<QString>(), filterText, mCaseSensitive);
             if (!error.isEmpty()) {
                 appendErrorLog(error);
             }
@@ -639,7 +639,7 @@ bool MainWindow::parseCounterFileHeader(const QString &path)
 
 void MainWindow::parseCounterFileData(bool multiWnd)
 {
-    if (_counterFilePath.isEmpty()) {
+    if (mCounterFilePath.isEmpty()) {
         return;
     }
 
@@ -671,8 +671,8 @@ void MainWindow::parseCounterFileData(bool multiWnd)
     }
 
     CounterFileParser parser(this);
-    PlotData plotData(_offsetFromUtc);
-    QString error = parser.parseData(_counterFilePath, inm, plotData.counterDataMap());
+    PlotData plotData(mOffsetFromUtc);
+    QString error = parser.parseData(mCounterFilePath, inm, plotData.counterDataMap());
     if (error.isEmpty()) {
         processPlotData(plotData, multiWnd);
     } else {
@@ -690,7 +690,7 @@ PlotWindow *MainWindow::createPlotWindow(PlotData &plotData) const
 {
     PlotWindow *plotWnd = new PlotWindow(plotData);
     plotWnd->setAttribute(Qt::WA_DeleteOnClose);
-    plotWnd->resize((_resizeMan.screenSize() * 0.75).toSize());
+    plotWnd->resize((mResizeMan.screenSize() * 0.75).toSize());
     connect(this, &MainWindow::aboutToBeClosed, plotWnd, &PlotWindow::close);
     return plotWnd;
 }
@@ -698,7 +698,7 @@ PlotWindow *MainWindow::createPlotWindow(PlotData &plotData) const
 QString MainWindow::formatLog(const QString &text, LogLevel level)
 {
     QString result("<font color='#808080'>");
-    result += QDateTime::currentDateTime().toString(_logDateTimeFmt);
+    result += QDateTime::currentDateTime().toString(mLogDateTimeFmt);
     switch (level) {
     case llInfo:
         result += "</font>  <font color='#13a10e'>INFO</font>: ";

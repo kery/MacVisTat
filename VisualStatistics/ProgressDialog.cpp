@@ -6,21 +6,21 @@
 ProgressDialog::ProgressDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ProgressDialog),
-    _resizeMan(this)
+    mResizeMan(this)
 {
     ui->setupUi(this);
     setWindowFlags(Qt::Window | Qt::CustomizeWindowHint | Qt::MSWindowsFixedSizeDialogHint);
 
     connect(ui->cancelButton, &QPushButton::clicked, this, &ProgressDialog::cancelButtonClicked);
 
-    _taskbarButton.setWindow(parent->windowHandle());
-    _taskbarProgress = _taskbarButton.progress();
-    _taskbarProgress->setVisible(true);
+    mTaskbarButton.setWindow(parent->windowHandle());
+    mTaskbarProgress = mTaskbarButton.progress();
+    mTaskbarProgress->setVisible(true);
 }
 
 ProgressDialog::~ProgressDialog()
 {
-    _taskbarProgress->setVisible(false);
+    mTaskbarProgress->setVisible(false);
     delete ui;
 }
 
@@ -37,21 +37,21 @@ void ProgressDialog::setCancelButtonVisible(bool visible)
 void ProgressDialog::setUndeterminable()
 {
     ui->progressBar->setRange(0, 0);
-    _taskbarProgress->setRange(0, 0);
+    mTaskbarProgress->setRange(0, 0);
 }
 
 void ProgressDialog::setRange(int min, int max)
 {
     ui->progressBar->setRange(min, max);
     ui->progressBar->setValue(min);
-    _taskbarProgress->setRange(min, max);
-    _taskbarProgress->setValue(min);
+    mTaskbarProgress->setRange(min, max);
+    mTaskbarProgress->setValue(min);
 }
 
 void ProgressDialog::setValue(int value)
 {
     ui->progressBar->setValue(value);
-    _taskbarProgress->setValue(value);
+    mTaskbarProgress->setValue(value);
 }
 
 void ProgressDialog::cancelButtonClicked()
@@ -68,6 +68,6 @@ void ProgressDialog::keyPressEvent(QKeyEvent *event)
 
 bool ProgressDialog::event(QEvent *event)
 {
-    _resizeMan.resizeWidgetFromCharWidth(event, 80, 0.33333);
+    mResizeMan.resizeWidgetFromCharWidth(event, 80, 0.33333);
     return QDialog::event(event);
 }

@@ -1,6 +1,6 @@
 #include "ColorPool.h"
 
-const std::array<QColor, 8> ColorPool::predefinedColors = {
+const std::array<QColor, 8> ColorPool::sPredefinedColors = {
     QColor(0, 0, 255),
     QColor(0, 255, 0),
     QColor(255, 0, 0),
@@ -12,16 +12,16 @@ const std::array<QColor, 8> ColorPool::predefinedColors = {
 };
 
 ColorPool::ColorPool() :
-    _usedPredefinedColors(0),
-    _uniformIntDis(0, 255)
+    mUsedPredefinedColors(0),
+    mUniformIntDis(0, 255)
 {
 }
 
 QColor ColorPool::getColor()
 {
-    if (_usedPredefinedColors < predefinedColors.size()) {
-        return predefinedColors[_usedPredefinedColors++];
+    if (mUsedPredefinedColors < sPredefinedColors.size()) {
+        return sPredefinedColors[mUsedPredefinedColors++];
     } else {
-        return QColor(_uniformIntDis(_randomEngine), _uniformIntDis(_randomEngine), _uniformIntDis(_randomEngine));
+        return QColor(mUniformIntDis(mRandomEngine), mUniformIntDis(mRandomEngine), mUniformIntDis(mRandomEngine));
     }
 }

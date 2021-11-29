@@ -23,11 +23,11 @@ private:
 
     static bool isValidOffsetFromUtc(int offset);
 
-    bool _displayUtc;
-    int _skippedTicks;
-    int _offsetFromUtc;
-    QString _dateTimeFmt;
-    QCPAxis *_parentAxis;
+    bool mDisplayUtc;
+    int mSkippedTicks;
+    int mOffsetFromUtc;
+    QString mDateTimeFmt;
+    QCPAxis *mParentAxis;
 };
 
 #endif // DATETIMETICKER_H

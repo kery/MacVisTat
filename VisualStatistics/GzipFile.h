@@ -28,8 +28,8 @@ public:
     int progress() const;
 
 private:
-    gzFile _gzFile;
-    qint64 _fileSize;
+    gzFile mGzFile;
+    qint64 mFileSize;
 };
 
 #endif // GZIPFILE_H

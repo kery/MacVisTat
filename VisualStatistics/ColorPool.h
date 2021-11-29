@@ -13,11 +13,11 @@ public:
     QColor getColor();
 
 private:
-    unsigned int _usedPredefinedColors;
-    std::default_random_engine _randomEngine;
-    std::uniform_int_distribution<> _uniformIntDis;
+    unsigned int mUsedPredefinedColors;
+    std::default_random_engine mRandomEngine;
+    std::uniform_int_distribution<> mUniformIntDis;
 
-    static const std::array<QColor, 8> predefinedColors;
+    static const std::array<QColor, 8> sPredefinedColors;
 };
 
 #endif // COLORPOOL_H

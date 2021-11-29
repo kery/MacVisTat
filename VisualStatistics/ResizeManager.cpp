@@ -5,14 +5,14 @@
 #include <QScreen>
 
 ResizeManager::ResizeManager(QWidget *widget) :
-    _showToParentHandled(false),
-    _widget(widget)
+    mShowToParentHandled(false),
+    mWidget(widget)
 {
 }
 
 QSizeF ResizeManager::screenSize() const
 {
-    int screenNum = QApplication::desktop()->screenNumber(_widget);
+    int screenNum = QApplication::desktop()->screenNumber(mWidget);
     auto screens = QApplication::screens();
     return screens.at(screenNum)->size();
 }
@@ -45,7 +45,7 @@ bool ResizeManager::resizeWidgetFromScreenHeight(QEvent *event, double hr, doubl
 bool ResizeManager::resizeWidgetFromCharWidth(QEvent *event, double mcw, double hr)
 {
     if (updateState(event)) {
-        QFontMetricsF fm = _widget->fontMetrics();
+        QFontMetricsF fm = mWidget->fontMetrics();
         QSizeF newSize;
         newSize.setWidth(fm.averageCharWidth() * mcw);
         newSize.setHeight(newSize.width() * hr);
@@ -58,8 +58,8 @@ bool ResizeManager::resizeWidgetFromCharWidth(QEvent *event, double mcw, double 
 
 bool ResizeManager::updateState(QEvent *event)
 {
-    if (event->type() == QEvent::ShowToParent && !_showToParentHandled) {
-        _showToParentHandled = true;
+    if (event->type() == QEvent::ShowToParent && !mShowToParentHandled) {
+        mShowToParentHandled = true;
         return true;
     }
     return false;
@@ -67,9 +67,9 @@ bool ResizeManager::updateState(QEvent *event)
 
 void ResizeManager::doResize(const QSizeF &newSize)
 {
-    QSizeF oldSize = _widget->size();
+    QSizeF oldSize = mWidget->size();
     int dx = qRound((newSize.width() - oldSize.width())/2.0);
     int dy = qRound((newSize.height() - oldSize.height())/2.0);
 
-    _widget->setGeometry(_widget->geometry().adjusted(-dx, -dy, dx, dy));
+    mWidget->setGeometry(mWidget->geometry().adjusted(-dx, -dy, dx, dy));
 }

@@ -29,7 +29,7 @@ public:
     void setScatterVisible(bool visible);
     void setSuspectKeys(const QSet<double> *suspectKeys);
 
-    static const QChar nameSeparator;
+    static const QChar sNameSeparator;
     static QString getModuleName(const QString &fullName);
     static QString getNameRightPart(const QString &name);
     static QPair<QString, QString> separateModuleName(const QString &fullName);
@@ -43,10 +43,10 @@ private:
     virtual void draw(QCPPainter *painter) override;
     virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const override;
 
-    QString _moduleName;
-    QString _fullName;
-    const QSet<double> *_suspectKeys;
-    QCPScatterStyle _suspectScatterStyle;
+    QString mModuleName;
+    QString mFullName;
+    const QSet<double> *mSuspectKeys;
+    QCPScatterStyle mSuspectScatterStyle;
 
     friend class CounterLegendItem;
 };

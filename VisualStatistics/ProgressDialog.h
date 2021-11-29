@@ -43,9 +43,9 @@ private:
     virtual bool event(QEvent *event) override;
 
     Ui::ProgressDialog *ui;
-    QWinTaskbarButton _taskbarButton;
-    QWinTaskbarProgress *_taskbarProgress;
-    ResizeManager _resizeMan;
+    QWinTaskbarButton mTaskbarButton;
+    QWinTaskbarProgress *mTaskbarProgress;
+    ResizeManager mResizeMan;
 };
 
 #endif // PROGRESSDIALOG_H
