@@ -28,10 +28,13 @@ public:
     static const QChar nameSeparator;
     static QString getModuleName(const QString &fullName);
     static QPair<QString, QString> separateModuleName(const QString &fullName);
+    static const QPainterPath &suspectPainterPath();
+
+public slots:
+    void setSelected(bool selected);
 
 private:
     void getScatters(QVector<QPointF> *scatters, QVector<QPointF> *suspectScatters, const QCPDataRange &dataRange) const;
-
     virtual void draw(QCPPainter *painter) override;
     virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const override;
 

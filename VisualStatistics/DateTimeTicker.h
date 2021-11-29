@@ -10,7 +10,7 @@ class DateTimeTicker : public QObject, public QCPAxisTicker
 public:
     DateTimeTicker(QCPAxis *parentAxis);
 
-    void setShowUtcTime(bool showUtc);
+    void setDisplayUtc(bool displayUtc);
     void setOffsetFromUtc(int offset);
 
 signals:
@@ -23,7 +23,7 @@ private:
 
     static bool isValidOffsetFromUtc(int offset);
 
-    bool _showUtcTime;
+    bool _displayUtc;
     int _skippedTicks;
     int _offsetFromUtc;
     QString _dateTimeFmt;

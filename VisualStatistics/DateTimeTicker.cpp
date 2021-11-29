@@ -2,7 +2,7 @@
 #include "Utils.h"
 
 DateTimeTicker::DateTimeTicker(QCPAxis *parentAxis) :
-    _showUtcTime(false),
+    _displayUtc(false),
     _skippedTicks(-1),
     _offsetFromUtc(0),
     _dateTimeFmt(DTFMT_DISPLAY),
@@ -11,9 +11,9 @@ DateTimeTicker::DateTimeTicker(QCPAxis *parentAxis) :
     _parentAxis->setTickLabelRotation(90);
 }
 
-void DateTimeTicker::setShowUtcTime(bool showUtc)
+void DateTimeTicker::setDisplayUtc(bool displayUtc)
 {
-    _showUtcTime = showUtc;
+    _displayUtc = displayUtc;
 }
 
 void DateTimeTicker::setOffsetFromUtc(int offset)
@@ -35,7 +35,7 @@ QString DateTimeTicker::getTickLabel(double tick, const QLocale &locale, QChar f
     Q_UNUSED(formatChar)
     Q_UNUSED(precision)
     QDateTime dateTime = QDateTime::fromSecsSinceEpoch(tick);
-    if (_showUtcTime) {
+    if (_displayUtc) {
         dateTime.setOffsetFromUtc(_offsetFromUtc);
         dateTime = dateTime.toUTC();
     }

@@ -9,16 +9,16 @@ const QChar CounterGraph::nameSeparator(',');
 
 CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
     QCPGraph(keyAxis, valueAxis),
-    _suspectKeys(nullptr),
-    _suspectScatterStyle(QCPScatterStyle::ssCross)
+    _suspectKeys(nullptr)
 {
+    _suspectScatterStyle.setBrush(Qt::white);
+    _suspectScatterStyle.setCustomPath(suspectPainterPath());
 }
 
 void CounterGraph::setPen(const QPen &pen)
 {
     mPen = pen;
-    mScatterStyle.setPen(pen);
-    _suspectScatterStyle.setPen(pen);
+    mSelectionDecorator->setPen(pen);
 }
 
 void CounterGraph::setData(QSharedPointer<QCPGraphDataContainer> data, const QSet<double> *suspectKeys)
@@ -62,6 +62,29 @@ QPair<QString, QString> CounterGraph::separateModuleName(const QString &fullName
         result.second = fullName;
     }
     return result;
+}
+
+const QPainterPath &CounterGraph::suspectPainterPath()
+{
+    static QPainterPath path;
+    if (path.isEmpty()) {
+        QFont font(QStringLiteral("Courier New"));
+        font.setPointSizeF(6.0);
+        path.addText(0, 0, font, QStringLiteral("?"));
+
+        QRectF rect = path.boundingRect();
+        QRectF square = rect.united(rect.transposed());
+        square.moveCenter(rect.center());
+        square = square.marginsAdded(QMarginsF(2, 2, 2, 2));
+        path.addEllipse(square);
+        path.translate(-rect.width()/2, rect.height()/2);
+    }
+    return path;
+}
+
+void CounterGraph::setSelected(bool selected)
+{
+    setSelection(selected ? QCPDataSelection(QCPDataRange(0, 1)) : QCPDataSelection());
 }
 
 void CounterGraph::getScatters(QVector<QPointF> *scatters, QVector<QPointF> *suspectScatters, const QCPDataRange &dataRange) const
@@ -195,5 +218,5 @@ void CounterGraph::draw(QCPPainter *painter)
 void CounterGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
     applyFillAntialiasingHint(painter);
-    painter->fillRect(rect.adjusted(1, 1, -2, -2), mPen.color());
+    painter->fillRect(rect.marginsAdded(QMarginsF(1, 1, 2, 2)), mPen.color());
 }

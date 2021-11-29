@@ -56,6 +56,7 @@
    <addaction name="actionCopy"/>
    <addaction name="actionRestore"/>
    <addaction name="actionShowDelta"/>
+   <addaction name="actionDisplayUtc"/>
    <addaction name="actionRemoveZeroCounters"/>
    <addaction name="actionScript"/>
   </widget>
@@ -98,7 +99,7 @@
      <normaloff>:/images/minus.png</normaloff>:/images/minus.png</iconset>
    </property>
    <property name="text">
-    <string>Show Delta</string>
+    <string>ShowDelta</string>
    </property>
    <property name="toolTip">
     <string>Show Delta</string>
@@ -134,7 +135,25 @@
      <normaloff>:/images/remove.png</normaloff>:/images/remove.png</iconset>
    </property>
    <property name="text">
+    <string>RemoveZeroCounters</string>
+   </property>
+   <property name="toolTip">
     <string>Remove Zero Counters</string>
+   </property>
+  </action>
+  <action name="actionDisplayUtc">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="VisualStatistics.qrc">
+     <normaloff>:/images/pencil.png</normaloff>:/images/pencil.png</iconset>
+   </property>
+   <property name="text">
+    <string>DisplayUtc</string>
+   </property>
+   <property name="toolTip">
+    <string>Display UTC Time</string>
    </property>
   </action>
  </widget>

@@ -185,7 +185,7 @@
     <string>Open...</string>
    </property>
    <property name="toolTip">
-    <string>Open counter file</string>
+    <string>Open CSV format counter file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -243,7 +243,7 @@
     <string>Plot Separately</string>
    </property>
    <property name="toolTip">
-    <string>Plot in multiple windows</string>
+    <string>Plot separately in multiple windows</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
