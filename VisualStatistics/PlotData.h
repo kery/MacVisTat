@@ -17,8 +17,7 @@ public:
     int offsetFromUtc() const;
     CounterDataMap &counterDataMap();
     QList<QString> counterNames() const;
-    QSharedPointer<QCPGraphDataContainer> graphData(const QString &name);
-    QSharedPointer<QCPGraphDataContainer> graphDeltaData(const QString &name);
+    QSharedPointer<QCPGraphDataContainer> graphData(const QString &name, bool delta = false);
     const QSet<double> *suspectKeys(const QString &name);
     void removeGraphData(const QString &name);
 

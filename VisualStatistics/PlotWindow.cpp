@@ -56,7 +56,7 @@ void PlotWindow::actionShowDeltaTriggered(bool checked)
 {
     for (int i = 0; i < ui->plot->graphCount(); ++i) {
         CounterGraph *graph = ui->plot->graph(i);
-        graph->setData(checked ? mPlotData.graphDeltaData(graph->fullName()) : mPlotData.graphData(graph->fullName()));
+        graph->setData(mPlotData.graphData(graph->fullName(), checked));
     }
 
     // TODO

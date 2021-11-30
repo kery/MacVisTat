@@ -20,17 +20,13 @@ QList<QString> PlotData::counterNames() const
     return mDataMap.keys();
 }
 
-QSharedPointer<QCPGraphDataContainer> PlotData::graphData(const QString &name)
+QSharedPointer<QCPGraphDataContainer> PlotData::graphData(const QString &name, bool delta)
 {
-    if (mDataMap.contains(name)) {
-        return mDataMap[name].data;
+    if (!mDataMap.contains(name)) {
+        return QSharedPointer<QCPGraphDataContainer>();
     }
-    return QSharedPointer<QCPGraphDataContainer>();
-}
 
-QSharedPointer<QCPGraphDataContainer> PlotData::graphDeltaData(const QString &name)
-{
-    if (mDataMap.contains(name)) {
+    if (delta) {
         auto originalData = mDataMap[name].data;
         auto iterBegin = originalData->begin(), iterEnd = originalData->end();
         QSharedPointer<QCPGraphDataContainer> deltaData(new QCPGraphDataContainer());
@@ -43,7 +39,8 @@ QSharedPointer<QCPGraphDataContainer> PlotData::graphDeltaData(const QString &na
         }
         return deltaData;
     }
-    return QSharedPointer<QCPGraphDataContainer>();
+
+    return mDataMap[name].data;
 }
 
 const QSet<double> *PlotData::suspectKeys(const QString &name)
