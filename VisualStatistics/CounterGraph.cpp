@@ -1,11 +1,11 @@
 #include "CounterGraph.h"
 
-CounterData::CounterData() :
-    data(new QCPGraphDataContainer())
+void CounterData::dummyDeleter(QCPGraphDataContainer *data)
 {
+    // Do nothing
 }
 
-bool CounterData::isZeroData(QSharedPointer<QCPGraphDataContainer> data)
+bool CounterData::isAllZero(QSharedPointer<QCPGraphDataContainer> data)
 {
     for (auto iter = data->begin(), end = data->end(); iter != end; ++iter) {
         if (!qIsNaN(iter->value) && !qFuzzyCompare(iter->value, 0.0)) {

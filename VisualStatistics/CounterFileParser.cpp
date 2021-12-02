@@ -172,7 +172,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
                     data.value = NAN;
                 }
                 CounterData &cdata = cdm[inm.value(index)];
-                cdata.data->add(data);
+                cdata.data.add(data);
                 // Must check data.value firstly since the suspectChar is updated only when it is NOT a NaN.
                 if (!qIsNaN(data.value) && *suspectChar == 's') {
                     cdata.suspectKeys.insert(data.key);
@@ -210,7 +210,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
                     data.value = NAN;
                 }
                 CounterData &cdata = cdm[inm.value(index)];
-                cdata.data->add(data);
+                cdata.data.add(data);
                 // Must check data.value firstly since the suspectChar is updated only when it is NOT a NaN.
                 if (!qIsNaN(data.value) && *suspectChar == 's') {
                     cdata.suspectKeys.insert(data.key);

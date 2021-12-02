@@ -5,12 +5,11 @@
 
 struct CounterData
 {
-    CounterData();
-
     QSet<double> suspectKeys;
-    QSharedPointer<QCPGraphDataContainer> data;
+    QCPGraphDataContainer data;
 
-    static bool isZeroData(QSharedPointer<QCPGraphDataContainer> data);
+    static void dummyDeleter(QCPGraphDataContainer *data);
+    static bool isAllZero(QSharedPointer<QCPGraphDataContainer> data);
 };
 
 class CounterGraph : public QCPGraph

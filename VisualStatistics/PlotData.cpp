@@ -27,8 +27,8 @@ QSharedPointer<QCPGraphDataContainer> PlotData::graphData(const QString &name, b
     }
 
     if (delta) {
-        auto originalData = mDataMap[name].data;
-        auto iterBegin = originalData->begin(), iterEnd = originalData->end();
+        const QCPGraphDataContainer &originalData = mDataMap[name].data;
+        auto iterBegin = originalData.constBegin(), iterEnd = originalData.constEnd();
         QSharedPointer<QCPGraphDataContainer> deltaData(new QCPGraphDataContainer());
 
         if (iterBegin != iterEnd) {
@@ -40,7 +40,9 @@ QSharedPointer<QCPGraphDataContainer> PlotData::graphData(const QString &name, b
         return deltaData;
     }
 
-    return mDataMap[name].data;
+    // Use an empty deleter for normal QCPGraphDataContainer since it is allocated by QMap. Only
+    // the delta version needs to be deleted.
+    return QSharedPointer<QCPGraphDataContainer>(&mDataMap[name].data, CounterData::dummyDeleter);
 }
 
 const QSet<double> *PlotData::suspectKeys(const QString &name)

@@ -80,7 +80,7 @@ void PlotWindow::actionRemoveZeroCountersTriggered()
     QVector<CounterGraph*> graphsToRemove;
     for (int i = 0; i < ui->plot->graphCount(); ++i) {
         CounterGraph *graph = ui->plot->graph(i);
-        if (CounterData::isZeroData(graph->data())) {
+        if (CounterData::isAllZero(graph->data())) {
             graphsToRemove.append(graph);
         }
     }
