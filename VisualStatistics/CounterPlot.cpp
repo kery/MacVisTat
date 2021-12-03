@@ -28,6 +28,11 @@ CounterPlot::CounterPlot(QWidget *parent) :
                     QCP::iSelectAxes | QCP::iSelectLegend | QCP::iSelectItems);
 }
 
+CounterPlot::~CounterPlot()
+{
+    clearGraphs();
+}
+
 CounterGraph *CounterPlot::addGraph()
 {
     CounterGraph *graph = new CounterGraph(xAxis, yAxis);
@@ -41,6 +46,40 @@ CounterGraph *CounterPlot::addGraph()
 CounterGraph *CounterPlot::graph(int index) const
 {
     return qobject_cast<CounterGraph*>(QCustomPlot::graph(index));
+}
+
+// The call of setFillOrder in QCPLegend::removeItem takes a lot of time, to prevent it from been called
+// we override some of the related methods.
+bool CounterPlot::removeGraph(CounterGraph *graph)
+{
+    if (!mGraphs.contains(graph)) {
+        return false;
+    }
+    if (QCPPlottableLegendItem *lip = legend->itemWithPlottable(graph)) {
+        if (legend->remove(lip)) {
+            legend->simplify(); // Call simplify instead of setFillOrder to save time.
+        }
+    }
+    mGraphs.removeOne(graph);
+    delete graph;
+    mPlottables.removeOne(graph);
+    return true;
+}
+
+bool CounterPlot::removeGraph(int index)
+{
+    if (CounterGraph *g = graph(index)) {
+        return removeGraph(g);
+    }
+    return false;
+}
+
+int CounterPlot::clearGraphs()
+{
+    int c = mGraphs.size();
+    for (int i = c - 1; i >= 0; --i)
+      removeGraph(i);
+    return c;
 }
 
 bool CounterPlot::hasSelectedGraphs() const

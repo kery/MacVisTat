@@ -11,9 +11,13 @@ class CounterPlot : public QCustomPlot
 
 public:
     CounterPlot(QWidget *parent = nullptr);
+    ~CounterPlot();
 
     CounterGraph *addGraph();
     CounterGraph *graph(int index) const;
+    bool removeGraph(CounterGraph *graph);
+    bool removeGraph(int index);
+    int clearGraphs();
     bool hasSelectedGraphs() const;
     QList<CounterGraph*> selectedGraphs() const;
 
