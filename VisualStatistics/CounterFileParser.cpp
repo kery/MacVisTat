@@ -42,7 +42,7 @@ QString CounterFileParser::parseHeader(const QString &path, QVector<QString> &na
     return QString();
 }
 
-QString CounterFileParser::parseData(const QString &path, const IndexNameMap &inm, bool zeroMissingData, CounterDataMap &cdm)
+QString CounterFileParser::parseData(const QString &path, const IndexNameMap &inm, CounterDataMap &cdm)
 {
     volatile bool working = true;
 
@@ -53,7 +53,7 @@ QString CounterFileParser::parseData(const QString &path, const IndexNameMap &in
 
     QFutureWatcher<QString> watcher;
     QObject::connect(&watcher, &QFutureWatcher<QString>::finished, &dlg, &ProgressDialog::accept);
-    auto runner = std::bind(parseDataInternal, std::cref(path), std::cref(inm), zeroMissingData, std::cref(working), std::ref(dlg), std::ref(cdm));
+    auto runner = std::bind(parseDataInternal, std::cref(path), std::cref(inm), std::cref(working), std::ref(dlg), std::ref(cdm));
     watcher.setFuture(QtConcurrent::run(runner));
 
     dlg.exec();
@@ -109,7 +109,7 @@ static inline const char *searchr(const char *ptr, unsigned int len, char ch, co
     return *newline = nullptr;
 }
 
-QString CounterFileParser::parseDataInternal(const QString &path, const IndexNameMap &inm, bool zeroMissingData,
+QString CounterFileParser::parseDataInternal(const QString &path, const IndexNameMap &inm,
                                              const volatile bool &working, ProgressDialog &dlg, CounterDataMap &cdm)
 {
     GzipFile reader;
@@ -129,7 +129,6 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
 
     const int bufferSize = 4096;
     const char *ptr = nullptr;
-    const double missingValue = zeroMissingData ? 0.0 : NAN;
     int progress = 0, parsed = 0, copied = 0, index = 2;
     QCPGraphData data;
     QList<int> indexes = inm.keys();
@@ -164,14 +163,14 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
                 return error;
             }
         }
-        char *suspectChar;
+        char *suspectChar = nullptr;
         const char *semicolon;
         while ((semicolon = searchr(ptr, len, ';', &newline)) != nullptr) {
             if (index == indexes.at(parsed)) {
                 if (*ptr != ';') {
                     data.value = strtod(ptr, &suspectChar);
                 } else {
-                    data.value = missingValue;
+                    data.value = NAN;
                 }
                 CounterData &cdata = cdm[inm.value(index)];
                 cdata.data.add(data);
@@ -209,7 +208,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
                 if (*ptr != ';') {
                     data.value = strtod(ptr, &suspectChar);
                 } else {
-                    data.value = missingValue;
+                    data.value = NAN;
                 }
                 CounterData &cdata = cdm[inm.value(index)];
                 cdata.data.add(data);

@@ -9,7 +9,6 @@
 #define SETTING_KEY_RECENT_FILES       "recentFileList"
 #define SETTING_KEY_CASE_SENSITIVE     "caseSensitive"
 #define SETTING_KEY_HIDE_TIME_GAP      "hideTimeGap"
-#define SETTING_KEY_ZERO_MISSING_VALUE "zeroMissingValue"
 
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow),
@@ -673,9 +672,7 @@ void MainWindow::parseCounterFileData(bool multiWnd)
 
     CounterFileParser parser(this);
     CounterDataMap dataMap;
-    QSettings setting;
-    bool zeroMissingValue = setting.value(SETTING_KEY_ZERO_MISSING_VALUE, false).toBool();
-    QString error = parser.parseData(mCounterFilePath, inm, zeroMissingValue, dataMap);
+    QString error = parser.parseData(mCounterFilePath, inm, dataMap);
     if (error.isEmpty()) {
         QSettings setting;
         PlotData::KeyType keyType = PlotData::ktDateTime;
