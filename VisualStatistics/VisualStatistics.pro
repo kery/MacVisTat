@@ -14,7 +14,7 @@ SOURCES += \
     CounterNameModel.cpp \
     CounterPlot.cpp \
     DateTimeTicker.cpp \
-    GZipFile.cpp \
+    GzipFile.cpp \
     PlotData.cpp \
     PlotWindow.cpp \
     ProgressDialog.cpp \
@@ -32,7 +32,7 @@ HEADERS += \
     CounterNameModel.h \
     CounterPlot.h \
     DateTimeTicker.h \
-    GZipFile.h \
+    GzipFile.h \
     MainWindow.h \
     PlotData.h \
     PlotWindow.h \

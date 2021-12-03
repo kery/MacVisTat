@@ -1,6 +1,6 @@
 #include "CounterFileParser.h"
 #include "ProgressDialog.h"
-#include "GZipFile.h"
+#include "GzipFile.h"
 #include "Utils.h"
 #include <QtConcurrent>
 
@@ -42,7 +42,7 @@ QString CounterFileParser::parseHeader(const QString &path, QVector<QString> &na
     return QString();
 }
 
-QString CounterFileParser::parseData(const QString &path, const IndexNameMap &inm, CounterDataMap &cdm)
+QString CounterFileParser::parseData(const QString &path, const IndexNameMap &inm, bool zeroMissingData, CounterDataMap &cdm)
 {
     volatile bool working = true;
 
@@ -53,7 +53,7 @@ QString CounterFileParser::parseData(const QString &path, const IndexNameMap &in
 
     QFutureWatcher<QString> watcher;
     QObject::connect(&watcher, &QFutureWatcher<QString>::finished, &dlg, &ProgressDialog::accept);
-    auto runner = std::bind(parseDataInternal, std::cref(path), std::cref(inm), std::cref(working), std::ref(dlg), std::ref(cdm));
+    auto runner = std::bind(parseDataInternal, std::cref(path), std::cref(inm), zeroMissingData, std::cref(working), std::ref(dlg), std::ref(cdm));
     watcher.setFuture(QtConcurrent::run(runner));
 
     dlg.exec();
@@ -63,8 +63,8 @@ QString CounterFileParser::parseData(const QString &path, const IndexNameMap &in
 
 std::string CounterFileParser::parseHeaderInternal(const QString &path, int &offsetFromUtc, QString &error)
 {
-    GZipFile fileReader;
-    if (!fileReader.open(path, GZipFile::ReadOnly)) {
+    GzipFile fileReader;
+    if (!fileReader.open(path, GzipFile::ReadOnly)) {
         error = "failed to open ";
         error += path;
         return std::string();
@@ -109,10 +109,11 @@ static inline const char *searchr(const char *ptr, unsigned int len, char ch, co
     return *newline = nullptr;
 }
 
-QString CounterFileParser::parseDataInternal(const QString &path, const IndexNameMap &inm, const volatile bool &working, ProgressDialog &dlg, CounterDataMap &cdm)
+QString CounterFileParser::parseDataInternal(const QString &path, const IndexNameMap &inm, bool zeroMissingData,
+                                             const volatile bool &working, ProgressDialog &dlg, CounterDataMap &cdm)
 {
-    GZipFile reader;
-    if (!reader.open(path, GZipFile::ReadOnly)) {
+    GzipFile reader;
+    if (!reader.open(path, GzipFile::ReadOnly)) {
         QString error("failed to open ");
         error += path;
         return error;
@@ -126,14 +127,15 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
         return error;
     }
 
-    const int BUFFER_SIZE = 4096;
+    const int bufferSize = 4096;
     const char *ptr = nullptr;
+    const double missingValue = zeroMissingData ? 0.0 : NAN;
     int progress = 0, parsed = 0, copied = 0, index = 2;
     QCPGraphData data;
     QList<int> indexes = inm.keys();
-    QScopedPointer<char, QScopedPointerArrayDeleter<char>> buffer(new char[BUFFER_SIZE]);
+    QScopedPointer<char, QScopedPointerArrayDeleter<char>> buffer(new char[bufferSize]);
 
-    int bytes = reader.read(buffer.data(), BUFFER_SIZE);
+    int bytes = reader.read(buffer.data(), bufferSize);
     if (bytes <= 0) {
         QString error("failed to read data from ");
         error += path;
@@ -169,7 +171,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
                 if (*ptr != ';') {
                     data.value = strtod(ptr, &suspectChar);
                 } else {
-                    data.value = NAN;
+                    data.value = missingValue;
                 }
                 CounterData &cdata = cdm[inm.value(index)];
                 cdata.data.add(data);
@@ -181,7 +183,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
                     len -= semicolon - ptr;
                     ptr = semicolon;
                     while ((newline = (const char *)memchr(ptr, '\n', len)) == nullptr) {
-                        if ((bytes = reader.read(buffer.data(), BUFFER_SIZE)) <= 0) {
+                        if ((bytes = reader.read(buffer.data(), bufferSize)) <= 0) {
                             if (reader.eof()) {
                                 return QString();
                             }
@@ -207,7 +209,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
                 if (*ptr != ';') {
                     data.value = strtod(ptr, &suspectChar);
                 } else {
-                    data.value = NAN;
+                    data.value = missingValue;
                 }
                 CounterData &cdata = cdm[inm.value(index)];
                 cdata.data.add(data);
@@ -232,7 +234,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
             memcpy(buffer.data(), ptr, copied);
             ptr = buffer.data();
         }
-        if ((bytes = reader.read(buffer.data() + copied, BUFFER_SIZE - copied)) <= 0) {
+        if ((bytes = reader.read(buffer.data() + copied, bufferSize - copied)) <= 0) {
             if (reader.eof()) {
                 return QString();
             }

@@ -6,9 +6,10 @@
 #include "Utils.h"
 #include <QNetworkProxyQuery>
 
-#define SETTING_KEY_RECENT_FILES   "recentFileList"
-#define SETTING_KEY_CASE_SENSITIVE "caseSensitive"
-#define SETTING_KEY_HIDE_TIME_GAP  "hideTimeGap"
+#define SETTING_KEY_RECENT_FILES       "recentFileList"
+#define SETTING_KEY_CASE_SENSITIVE     "caseSensitive"
+#define SETTING_KEY_HIDE_TIME_GAP      "hideTimeGap"
+#define SETTING_KEY_ZERO_MISSING_VALUE "zeroMissingValue"
 
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow),
@@ -138,18 +139,17 @@ void MainWindow::actionEditFilterFileTriggered()
             return;
         }
         QTextStream ts(&file);
-        ts <<
-"# Lines starting with '#' will be ignored. Menus and submenus will be created according to their\n"
-"# indentation. Filter text and description are optional.\n"
-"#\n"
-"# Submenu1\n"
-"#     Submenu2\n"
-"#         Filter1\n"
-"#         Filter2,filterText,description\n"
-"#     Filter3\n"
-"# Submenu3\n"
-"#     Filter4\n"
-"# Filter5";
+        ts << "# Lines starting with '#' will be ignored. Menus and submenus will be created according to their\n"
+              "# indentation. Filter text and description are optional.\n"
+              "#\n"
+              "# Submenu1\n"
+              "#     Submenu2\n"
+              "#         Filter1\n"
+              "#         Filter2,filterText,description\n"
+              "#     Filter3\n"
+              "# Submenu3\n"
+              "#     Filter4\n"
+              "# Filter5";
     }
 
     // If the file is deleted or removed, the watching will stop. So, it's better to check if the watching
@@ -673,7 +673,9 @@ void MainWindow::parseCounterFileData(bool multiWnd)
 
     CounterFileParser parser(this);
     CounterDataMap dataMap;
-    QString error = parser.parseData(mCounterFilePath, inm, dataMap);
+    QSettings setting;
+    bool zeroMissingValue = setting.value(SETTING_KEY_ZERO_MISSING_VALUE, false).toBool();
+    QString error = parser.parseData(mCounterFilePath, inm, zeroMissingValue, dataMap);
     if (error.isEmpty()) {
         QSettings setting;
         PlotData::KeyType keyType = PlotData::ktDateTime;

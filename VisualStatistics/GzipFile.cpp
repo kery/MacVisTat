@@ -1,18 +1,18 @@
-#include "GZipFile.h"
+#include "GzipFile.h"
 #include <QFileInfo>
 
-GZipFile::GZipFile() :
+GzipFile::GzipFile() :
     mGzFile(nullptr),
     mFileSize(-1)
 {
 }
 
-GZipFile::~GZipFile()
+GzipFile::~GzipFile()
 {
     close();
 }
 
-bool GZipFile::open(const QString &path, OpenMode mode)
+bool GzipFile::open(const QString &path, OpenMode mode)
 {
     QByteArray baStr = path.toLocal8Bit();
     mGzFile = gzopen(baStr.data(), mode == ReadOnly ? "rb" : "wb");
@@ -26,7 +26,7 @@ bool GZipFile::open(const QString &path, OpenMode mode)
     return false;
 }
 
-void GZipFile::close()
+void GzipFile::close()
 {
     if (mGzFile) {
         gzclose(mGzFile);
@@ -35,12 +35,12 @@ void GZipFile::close()
     }
 }
 
-int GZipFile::read(char *buf, unsigned int maxlen)
+int GzipFile::read(char *buf, unsigned int maxlen)
 {
     return gzread(mGzFile, buf, maxlen);
 }
 
-bool GZipFile::readLine(std::string &line)
+bool GzipFile::readLine(std::string &line)
 {
     line.clear();
 
@@ -58,7 +58,7 @@ bool GZipFile::readLine(std::string &line)
     return !line.empty() || gzeof(mGzFile) == 0;
 }
 
-bool GZipFile::readLineKeepCrLf(std::string &line)
+bool GzipFile::readLineKeepCrLf(std::string &line)
 {
     line.clear();
 
@@ -72,27 +72,27 @@ bool GZipFile::readLineKeepCrLf(std::string &line)
     return !line.empty();
 }
 
-int GZipFile::write(const char *buf, unsigned int len)
+int GzipFile::write(const char *buf, unsigned int len)
 {
     return gzwrite(mGzFile, buf, len);
 }
 
-int GZipFile::write(const std::string &str)
+int GzipFile::write(const std::string &str)
 {
     return write(str.c_str(), static_cast<unsigned int>(str.length()));
 }
 
-bool GZipFile::eof() const
+bool GzipFile::eof() const
 {
     return gzeof(mGzFile) != 0;
 }
 
-const char *GZipFile::error() const
+const char *GzipFile::error() const
 {
     return gzerror(mGzFile, nullptr);
 }
 
-int GZipFile::progress() const
+int GzipFile::progress() const
 {
     if (mFileSize > 0) {
         return static_cast<double>(gzoffset(mGzFile)) / mFileSize * 100;

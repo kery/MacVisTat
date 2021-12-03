@@ -4,7 +4,7 @@
 #include <string>
 #include <QtZlib/zlib.h>
 
-class GZipFile
+class GzipFile
 {
 public:
     enum OpenMode {
@@ -12,8 +12,8 @@ public:
         WriteOnly
     };
 
-    GZipFile();
-    ~GZipFile();
+    GzipFile();
+    ~GzipFile();
 
     bool open(const QString &path, OpenMode mode);
     void close();
