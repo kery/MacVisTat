@@ -8,6 +8,7 @@
 
 #define SETTING_KEY_RECENT_FILES   "recentFileList"
 #define SETTING_KEY_CASE_SENSITIVE "caseSensitive"
+#define SETTING_KEY_HIDE_TIME_GAP  "hideTimeGap"
 
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow),
@@ -671,9 +672,16 @@ void MainWindow::parseCounterFileData(bool multiWnd)
     }
 
     CounterFileParser parser(this);
-    PlotData plotData(mOffsetFromUtc);
-    QString error = parser.parseData(mCounterFilePath, inm, plotData.counterDataMap());
+    CounterDataMap dataMap;
+    QString error = parser.parseData(mCounterFilePath, inm, dataMap);
     if (error.isEmpty()) {
+        QSettings setting;
+        PlotData::KeyType keyType = PlotData::ktDateTime;
+        if (setting.value(SETTING_KEY_HIDE_TIME_GAP, false).toBool()) {
+            keyType = PlotData::ktIndex;
+        }
+        PlotData plotData(mOffsetFromUtc);
+        plotData.setCounterDataMap(keyType, dataMap);
         processPlotData(plotData, multiWnd);
     } else {
         appendErrorLog(error);

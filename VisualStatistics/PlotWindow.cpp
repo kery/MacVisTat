@@ -14,6 +14,9 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     // QCPAxisTicker isn't derived from QObject, so we use qSharedPointerDynamicCast here.
     auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
     ticker->setOffsetFromUtc(mPlotData.offsetFromUtc());
+    if (mPlotData.keyType() == PlotData::ktIndex) {
+        ticker->setDateTimeVector(mPlotData.dateTimeVector());
+    }
 
     connect(ui->actionSave, &QAction::triggered, this, &PlotWindow::actionSaveTriggered);
     connect(ui->actionCopy, &QAction::triggered, this, &PlotWindow::actionCopyTriggered);

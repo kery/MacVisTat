@@ -23,6 +23,11 @@ void DateTimeTicker::setOffsetFromUtc(int offset)
     }
 }
 
+void DateTimeTicker::setDateTimeVector(QVector<qint64> &&dtv)
+{
+    mDateTimeVector.swap(dtv);
+}
+
 int DateTimeTicker::getSubTickCount(double tickStep)
 {
     Q_UNUSED(tickStep)
@@ -34,12 +39,23 @@ QString DateTimeTicker::getTickLabel(double tick, const QLocale &locale, QChar f
     Q_UNUSED(locale)
     Q_UNUSED(formatChar)
     Q_UNUSED(precision)
-    QDateTime dateTime = QDateTime::fromSecsSinceEpoch(tick);
-    if (mDisplayUtc) {
-        dateTime.setOffsetFromUtc(mOffsetFromUtc);
-        dateTime = dateTime.toUTC();
+    QDateTime dateTime;
+    if (mDateTimeVector.isEmpty()) {
+        dateTime = QDateTime::fromSecsSinceEpoch(tick);
+    } else {
+        int index = static_cast<int>(tick);
+        if (index >= 0 && index < mDateTimeVector.size()) {
+            dateTime = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
+        }
     }
-    return dateTime.toString(mDateTimeFmt);
+    if (!dateTime.isNull()) {
+        if (mDisplayUtc) {
+            dateTime.setOffsetFromUtc(mOffsetFromUtc);
+            dateTime = dateTime.toUTC();
+        }
+        return dateTime.toString(mDateTimeFmt);
+    }
+    return QString();
 }
 
 QVector<double> DateTimeTicker::createTickVector(double tickStep, const QCPRange &range)

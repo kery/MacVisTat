@@ -1,8 +1,14 @@
 #include "PlotData.h"
 
 PlotData::PlotData(int offsetFromUtc) :
+    mKeyType(ktUnknown),
     mOffsetFromUtc(offsetFromUtc)
 {
+}
+
+PlotData::KeyType PlotData::keyType() const
+{
+    return mKeyType;
 }
 
 int PlotData::offsetFromUtc() const
@@ -10,9 +16,33 @@ int PlotData::offsetFromUtc() const
     return mOffsetFromUtc;
 }
 
-CounterDataMap &PlotData::counterDataMap()
+QVector<qint64> PlotData::dateTimeVector() const
 {
-    return mDataMap;
+    return mDateTimeVector;
+}
+
+void PlotData::setCounterDataMap(KeyType keyType, CounterDataMap &dataMap)
+{
+    if (keyType == ktIndex) {
+        const CounterData &cdata = dataMap.first();
+        mDateTimeVector.resize(cdata.data.size());
+        for (int i = 0; i < mDateTimeVector.size(); ++i) {
+            mDateTimeVector[i] = cdata.data.at(i)->key;
+        }
+        for (CounterData &cdata : dataMap) {
+            QSet<double> sptKeys;
+            for (auto begin = cdata.data.begin(), end = cdata.data.end(), iter = begin; iter != end; ++iter) {
+                int index = iter - begin;
+                if (cdata.suspectKeys.contains(iter->key)) {
+                    sptKeys.insert(index);
+                }
+                iter->key = index;
+            }
+            cdata.suspectKeys.swap(sptKeys);
+        }
+    }
+    mKeyType = keyType;
+    mDataMap.swap(dataMap);
 }
 
 QList<QString> PlotData::counterNames() const

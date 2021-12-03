@@ -12,6 +12,7 @@ public:
 
     void setDisplayUtc(bool displayUtc);
     void setOffsetFromUtc(int offset);
+    void setDateTimeVector(QVector<qint64> &&dtv);
 
 signals:
     void skippedTicksChanged(int skipped);
@@ -28,6 +29,7 @@ private:
     int mOffsetFromUtc;
     QString mDateTimeFmt;
     QCPAxis *mParentAxis;
+    QVector<qint64> mDateTimeVector;
 };
 
 #endif // DATETIMETICKER_H
