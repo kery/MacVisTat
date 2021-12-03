@@ -16,9 +16,31 @@ int PlotData::offsetFromUtc() const
     return mOffsetFromUtc;
 }
 
-QVector<qint64> PlotData::dateTimeVector() const
+QVector<double> PlotData::dateTimeVector() const
 {
     return mDateTimeVector;
+}
+
+double PlotData::getSampleInterval() const
+{
+    double interval = std::numeric_limits<double>::max();
+    switch (mKeyType) {
+    case PlotData::ktDateTime:
+        // TODO
+        Q_ASSERT(false);
+        break;
+    case PlotData::ktIndex:
+        for (int i = 1; i < mDateTimeVector.size(); ++i) {
+            double diff = mDateTimeVector[i] - mDateTimeVector[i - 1];
+            if (diff < interval) {
+                interval = diff;
+            }
+        }
+        break;
+    default:
+        break;
+    }
+    return interval;
 }
 
 void PlotData::setCounterDataMap(KeyType keyType, CounterDataMap &dataMap)

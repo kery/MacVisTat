@@ -23,7 +23,7 @@ void DateTimeTicker::setOffsetFromUtc(int offset)
     }
 }
 
-void DateTimeTicker::setDateTimeVector(QVector<qint64> &&dtv)
+void DateTimeTicker::setDateTimeVector(QVector<double> &&dtv)
 {
     mDateTimeVector.swap(dtv);
 }

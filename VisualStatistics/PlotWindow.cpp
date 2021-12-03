@@ -30,6 +30,7 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     connect(ticker.data(), &DateTimeTicker::skippedTicksChanged, this, &PlotWindow::skippedTicksChanged);
 
     initGraphs();
+    highlightTimeGap();
     updateWindowTitle();
     updatePlotTitle();
 }
@@ -295,6 +296,26 @@ void PlotWindow::adjustYAxisRange()
     range.lower -= delta;
     range.upper += delta;
     ui->plot->yAxis->setRange(range);
+}
+
+void PlotWindow::highlightTimeGap()
+{
+    if (mPlotData.keyType() != PlotData::ktIndex) {
+        return;
+    }
+    QPen pen(Qt::red);
+    pen.setStyle(Qt::DotLine);
+    double interval = mPlotData.getSampleInterval();
+    QVector<double> dtVector = mPlotData.dateTimeVector();
+    for (int i = 1; i < dtVector.size(); ++i) {
+        double diff = dtVector[i] - dtVector[i - 1];
+        if (diff >= interval * 1.5) {
+            QCPItemStraightLine *line = new QCPItemStraightLine(ui->plot);
+            line->setPen(pen);
+            line->point1->setCoords(i, 0);
+            line->point2->setCoords(i, 1);
+        }
+    }
 }
 
 void PlotWindow::updateWindowTitle()

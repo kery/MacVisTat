@@ -35,6 +35,7 @@ private slots:
 private:
     void initGraphs();
     void adjustYAxisRange();
+    void highlightTimeGap();
     void updateWindowTitle();
     void updatePlotTitle();
     void removeGraphs(const QVector<CounterGraph*> &graphs);

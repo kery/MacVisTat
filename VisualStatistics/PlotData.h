@@ -22,7 +22,8 @@ public:
 
     KeyType keyType() const;
     int offsetFromUtc() const;
-    QVector<qint64> dateTimeVector() const;
+    QVector<double> dateTimeVector() const;
+    double getSampleInterval() const;
     void setCounterDataMap(KeyType keyType, CounterDataMap &dataMap);
     QList<QString> counterNames() const;
     QSharedPointer<QCPGraphDataContainer> graphData(const QString &name, bool delta = false);
@@ -32,7 +33,7 @@ public:
 private:
     KeyType mKeyType;
     int mOffsetFromUtc;
-    QVector<qint64> mDateTimeVector;
+    QVector<double> mDateTimeVector;
     CounterDataMap mDataMap;
 };
 
