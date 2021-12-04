@@ -27,6 +27,16 @@ ValueTipItem::ValueTipItem(QCustomPlot *plot) :
     connect(&mAnimation, &QPropertyAnimation::finished, this, &ValueTipItem::animFinished);
 }
 
+QString ValueTipItem::graphName() const
+{
+    return mGraphName;
+}
+
+QString ValueTipItem::graphValue() const
+{
+    return mGraphValue;
+}
+
 void ValueTipItem::setSelected(bool selected)
 {
     mTracer->setSelected(selected);
@@ -35,6 +45,11 @@ void ValueTipItem::setSelected(bool selected)
 CounterGraph *ValueTipItem::tracerGraph() const
 {
     return qobject_cast<CounterGraph*>(mTracer->graph());
+}
+
+QCPItemPosition *ValueTipItem::tracerPosition() const
+{
+    return mTracer->position;
 }
 
 void ValueTipItem::setTracerGraph(CounterGraph *graph)

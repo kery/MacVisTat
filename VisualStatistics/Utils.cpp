@@ -17,3 +17,13 @@ int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info
     msgBox.setDefaultButton(defaultYes ? QMessageBox::Yes : QMessageBox::No);
     return msgBox.exec();
 }
+
+void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info)
+{
+    QMessageBox msgBox(parent);
+    msgBox.setWindowTitle(APP_NAME);
+    msgBox.setIcon(QMessageBox::Critical);
+    msgBox.setInformativeText(info);
+    msgBox.setText(text);
+    msgBox.exec();
+}

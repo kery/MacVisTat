@@ -8,6 +8,7 @@
 namespace Ui { class PlotWindow; }
 
 class ValueTipItem;
+class CommentItem;
 
 class PlotWindow : public QMainWindow
 {
@@ -26,9 +27,16 @@ private slots:
     void actionRemoveZeroCountersTriggered();
     void actionScriptTriggered();
     void actionShowLegendTriggered(bool checked);
-    void actionMoveLegend();
-    void actionReverseSelection();
-    void actionRemoveSelectedGraphs();
+    void actionMoveLegendTriggered();
+    void actionAddCommentTriggered();
+    void actionEditCommentTriggered();
+    void actionRemoveCommentTriggered();
+    void actionAddAggregateGraphTriggered();
+    void actionSetGraphColorTriggered();
+    void actionCopyGraphNameTriggered();
+    void actionCopyGraphValueTriggered();
+    void actionReverseSelectionTriggered();
+    void actionRemoveSelectedGraphsTriggered();
 
     void selectionChanged();
     void skippedTicksChanged(int skipped);
@@ -42,6 +50,9 @@ private:
     void highlightTimeGap();
     void updateWindowTitle();
     void updatePlotTitle();
+    QString defaultSaveFileName() const;
+    QString getInputComment(const QString &text);
+    QVector<CommentItem*> commentItemsOfGraph(CounterGraph *graph) const;
     void removeGraphs(const QVector<CounterGraph*> &graphs);
     int legendItemIndex(QCPAbstractLegendItem *item) const;
     int graphIndex(CounterGraph *graph) const;

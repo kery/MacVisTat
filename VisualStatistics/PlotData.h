@@ -28,7 +28,8 @@ public:
     void setCounterDataMap(KeyType keyType, CounterDataMap &dataMap);
     QList<QString> counterNames() const;
     QSharedPointer<QCPGraphDataContainer> graphData(const QString &name, bool delta = false);
-    const QSet<double> *suspectKeys(const QString &name);
+    QSharedPointer<QCPGraphDataContainer> addGraphData(const QString &name);
+    QSet<double> *suspectKeys(const QString &name);
     void removeGraphData(const QString &name);
 
 private:

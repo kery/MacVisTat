@@ -2,7 +2,11 @@
 #include "ui_PlotWindow.h"
 #include "DateTimeTicker.h"
 #include "ValueTipItem.h"
+#include "CommentItem.h"
+#include "MultiLineInputDialog.h"
 #include "Utils.h"
+
+#define WND_TITLE_SEP ", "
 
 PlotWindow::PlotWindow(PlotData &plotData) :
     ui(new Ui::PlotWindow),
@@ -37,6 +41,11 @@ PlotWindow::~PlotWindow()
 
 void PlotWindow::actionSaveTriggered()
 {
+    QString path = QFileDialog::getSaveFileName(this, QStringLiteral("Save As Image"), defaultSaveFileName(),
+                                                QStringLiteral("PNG File (*.png)"));
+    if (!path.isEmpty()) {
+        ui->plot->savePng(path);
+    }
 }
 
 void PlotWindow::actionCopyTriggered()
@@ -58,11 +67,10 @@ void PlotWindow::actionShowDeltaTriggered(bool checked)
         graph->setData(mPlotData.graphData(graph->fullName(), checked));
     }
 
-    // TODO
-
     ui->plot->yAxis->rescale();
     adjustYAxisRange();
     updatePlotTitle();
+    mValueTip->hideWithAnimation();
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
@@ -96,7 +104,7 @@ void PlotWindow::actionShowLegendTriggered(bool checked)
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
-void PlotWindow::actionMoveLegend()
+void PlotWindow::actionMoveLegendTriggered()
 {
     QAction *action = qobject_cast<QAction*>(sender());
     int align = action->data().toInt();
@@ -106,7 +114,195 @@ void PlotWindow::actionMoveLegend()
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
-void PlotWindow::actionReverseSelection()
+void PlotWindow::actionAddCommentTriggered()
+{
+    QString comment = getInputComment(mValueTip->visible() ? mValueTip->text() : QString());
+    if (comment.isEmpty()) {
+        return;
+    }
+
+    CommentItem *ci = new CommentItem(ui->plot);
+    ci->setText(comment);
+
+    if (mValueTip->visible()) {
+        QCPAxisRect *axisRect = ui->plot->axisRect();
+        QSizeF ciSize = ci->size();
+        QPointF pos = mValueTip->tracerPosition()->pixelPosition() + QPointF(30, -30);
+        if (pos.x() + ciSize.width() > axisRect->right()) {
+            pos.rx() = axisRect->right() - ciSize.width() / 2;
+        } else {
+            pos.rx() += ciSize.width() / 2;
+        }
+        if (pos.y() - ciSize.height() < axisRect->top()) {
+            pos.ry() = axisRect->top() + ciSize.height() / 2;
+        } else {
+            pos.ry() -= ciSize.height() / 2;
+        }
+
+        pos.setX(ui->plot->xAxis->pixelToCoord(pos.x()));
+        pos.setY(ui->plot->yAxis->pixelToCoord(pos.y()));
+        ci->position->setCoords(pos);
+        ci->setGraphAndKey(mValueTip->tracerGraph(), mValueTip->tracerGraphKey());
+        ci->updateLineStartAnchor();
+        mValueTip->hideWithAnimation();
+        mValueTip->setTracerGraph(nullptr);
+    } else {
+        QAction *action = qobject_cast<QAction*>(sender());
+        QPointF pos = action->data().toPoint();
+        pos.setX(ui->plot->xAxis->pixelToCoord(pos.x()));
+        pos.setY(ui->plot->yAxis->pixelToCoord(pos.y()));
+        ci->position->setCoords(pos);
+    }
+
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
+}
+
+void PlotWindow::actionEditCommentTriggered()
+{
+    QAction *action = qobject_cast<QAction*>(sender());
+    CommentItem *ci = static_cast<CommentItem*>(action->data().value<void*>());
+    QString comment = getInputComment(ci->text());
+    if (comment.isEmpty()) {
+        return;
+    }
+    ci->setText(comment);
+    ci->updateLineStartAnchor();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
+}
+
+void PlotWindow::actionRemoveCommentTriggered()
+{
+    QAction *action = qobject_cast<QAction*>(sender());
+    CommentItem *ci = static_cast<CommentItem*>(action->data().value<void*>());
+    ui->plot->removeItem(ci);
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
+}
+
+void PlotWindow::actionAddAggregateGraphTriggered()
+{
+    QInputDialog dlg(this);
+    dlg.setWindowTitle(APP_NAME);
+    dlg.setWindowFlags(dlg.windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    dlg.setInputMode(QInputDialog::TextInput);
+    dlg.setLabelText(QStringLiteral("Graph name:"));
+    dlg.resize(500, 0);
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    QString graphName = dlg.textValue();
+    if (graphName.isEmpty()) {
+        return;
+    }
+    QSharedPointer<QCPGraphDataContainer> newData = mPlotData.addGraphData(graphName);
+    if (!newData) {
+        showErrorMsgBox(this, QStringLiteral("Graph name \"%1\" already exists!").arg(graphName));
+        return;
+    }
+
+    QSet<double> *suspectKeys = mPlotData.suspectKeys(graphName);
+    QVector<QCPGraphData> sumDataVector;
+    const auto selectedGraphs = ui->plot->selectedGraphs();
+    if (selectedGraphs.size() > 1) {
+        CounterGraph *graph = selectedGraphs.first();
+        QSharedPointer<QCPGraphDataContainer> data = graph->data();
+        sumDataVector.resize(data->size());
+
+        suspectKeys->unite(*graph->suspectKeys());
+        for (int i = 0; i < data->size(); ++i) {
+            sumDataVector[i].key = data->at(i)->key;
+            sumDataVector[i].value = data->at(i)->value;
+        }
+
+        for (int i = 1; i < selectedGraphs.size(); ++i) {
+            CounterGraph *graph = selectedGraphs[i];
+            QSharedPointer<QCPGraphDataContainer> data = graph->data();
+            suspectKeys->unite(*graph->suspectKeys());
+            for (int j = 0; j < data->size(); ++j) {
+                sumDataVector[j].value += data->at(j)->value;
+            }
+        }
+    } else {
+        CounterGraph *graph = ui->plot->graph(0);
+        QSharedPointer<QCPGraphDataContainer> data = graph->data();
+        sumDataVector.resize(data->size());
+
+        suspectKeys->unite(*graph->suspectKeys());
+        for (int i = 0; i < data->size(); ++i) {
+            sumDataVector[i].key = data->at(i)->key;
+            sumDataVector[i].value = data->at(i)->value;
+        }
+
+        for (int i = 1; i < ui->plot->graphCount(); ++i) {
+            CounterGraph *graph = ui->plot->graph(i);
+            QSharedPointer<QCPGraphDataContainer> data = graph->data();
+            suspectKeys->unite(*graph->suspectKeys());
+            for (int j = 0; j < data->size(); ++j) {
+                sumDataVector[j].value += data->at(j)->value;
+            }
+        }
+    }
+    newData->set(sumDataVector, true);
+
+    CounterGraph *newGraph = ui->plot->addGraph();
+    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
+    newGraph->setName(graphName);
+    newGraph->setFullName(graphName);
+    newGraph->setPen(QPen(mColorPool.getColor()));
+    newGraph->setData(newData);
+    newGraph->setSuspectKeys(suspectKeys);
+    newGraph->setScatterVisible(ticker->skippedTicks() == 0);
+
+    updateWindowTitle();
+    updatePlotTitle();
+    ui->plot->yAxis->rescale();
+    adjustYAxisRange();
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
+}
+
+void PlotWindow::actionSetGraphColorTriggered()
+{
+    QVector<CounterGraph*> graphVector;
+    if (mValueTip->visible() && mValueTip->tracerGraph()) {
+        graphVector.append(mValueTip->tracerGraph());
+    } else {
+        const auto selectedGraphs = ui->plot->selectedGraphs();
+        for (CounterGraph *graph : selectedGraphs) {
+            graphVector.append(graph);
+        }
+    }
+    if (graphVector.isEmpty()) {
+        return;
+    }
+    QColor color = QColorDialog::getColor(graphVector.first()->pen().color(), this);
+    if (!color.isValid()) {
+        return;
+    }
+    for (CounterGraph *graph : graphVector) {
+        graph->setPen(color);
+    }
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
+}
+
+void PlotWindow::actionCopyGraphNameTriggered()
+{
+    if (mValueTip->visible()) {
+        QApplication::clipboard()->setText(mValueTip->graphName());
+    } else {
+        QStringList strList;
+        const auto selectedGraphs = ui->plot->selectedGraphs();
+        for (const CounterGraph *graph : selectedGraphs) {
+            strList << graph->name();
+        }
+        QApplication::clipboard()->setText(strList.join('\n'));
+    }
+}
+
+void PlotWindow::actionCopyGraphValueTriggered()
+{
+    QGuiApplication::clipboard()->setText(mValueTip->graphValue());
+}
+
+void PlotWindow::actionReverseSelectionTriggered()
 {
     for (int i = 0; i < ui->plot->graphCount(); ++i) {
         CounterGraph *graph = ui->plot->graph(i);
@@ -116,7 +312,7 @@ void PlotWindow::actionReverseSelection()
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
-void PlotWindow::actionRemoveSelectedGraphs()
+void PlotWindow::actionRemoveSelectedGraphsTriggered()
 {
     QVector<CounterGraph*> graphsToRemove;
     for (int i = 0; i < ui->plot->graphCount(); ++i) {
@@ -150,26 +346,26 @@ void PlotWindow::selectionChanged()
         }
     }
 
-    if (ui->plot->legend->selectedItems().isEmpty()) {
+    if (!ui->plot->hasSelectedGraphs()) {
         mLastSelLegItemIndex = -1;
         for (int i = 0; i < ui->plot->graphCount(); ++i) {
             CounterGraph *graph = ui->plot->graph(i);
             graph->setVisible(true);
 
-//            const QVector<CommentText *> cmtVec = commentsOfGraph(graph);
-//            for (CommentText *cmtText : cmtVec) {
-//                cmtText->setVisible(true);
-//            }
+            const QVector<CommentItem*> ciVector = commentItemsOfGraph(graph);
+            for (CommentItem *ci : ciVector) {
+                ci->setVisible(true);
+            }
         }
     } else {
         for (int i = 0; i < ui->plot->graphCount(); ++i) {
             CounterGraph *graph = ui->plot->graph(i);
             graph->setVisible(graph->selected());
 
-//            const QVector<CommentText *> cmtVec = commentsOfGraph(graph);
-//            for (CommentText *cmtText : cmtVec) {
-//                cmtText->setVisible(graph->selected());
-//            }
+            const QVector<CommentItem*> ciVector = commentItemsOfGraph(graph);
+            for (CommentItem *ci : ciVector) {
+                ci->setVisible(graph->selected());
+            }
         }
 
         if (QApplication::keyboardModifiers() & Qt::AltModifier) {
@@ -197,34 +393,66 @@ void PlotWindow::contextMenuRequested(const QPoint &pos)
 {
     QMenu *menu = new QMenu();
     menu->setAttribute(Qt::WA_DeleteOnClose);
-    // TODO
 
     QAction *actionShowLegend = menu->addAction(QStringLiteral("Show Legend"), this, &PlotWindow::actionShowLegendTriggered);
     actionShowLegend->setCheckable(true);
     actionShowLegend->setChecked(ui->plot->legend->visible());
 
     QMenu *menuMoveLegend = menu->addMenu(QStringLiteral("Move Legend to"));
-    menuMoveLegend->addAction(QStringLiteral("Top Left"), this, &PlotWindow::actionMoveLegend)->setData(
+    menuMoveLegend->addAction(QStringLiteral("Top Left"), this, &PlotWindow::actionMoveLegendTriggered)->setData(
         static_cast<int>(Qt::AlignTop | Qt::AlignLeft));
-    menuMoveLegend->addAction(QStringLiteral("Top Center"), this, &PlotWindow::actionMoveLegend)->setData(
+    menuMoveLegend->addAction(QStringLiteral("Top Center"), this, &PlotWindow::actionMoveLegendTriggered)->setData(
         static_cast<int>(Qt::AlignTop | Qt::AlignCenter));
-    menuMoveLegend->addAction(QStringLiteral("Top Right"), this, &PlotWindow::actionMoveLegend)->setData(
+    menuMoveLegend->addAction(QStringLiteral("Top Right"), this, &PlotWindow::actionMoveLegendTriggered)->setData(
         static_cast<int>(Qt::AlignTop | Qt::AlignRight));
     menuMoveLegend->addSeparator();
-    menuMoveLegend->addAction(QStringLiteral("Bottom Left"), this, &PlotWindow::actionMoveLegend)->setData(
+    menuMoveLegend->addAction(QStringLiteral("Bottom Left"), this, &PlotWindow::actionMoveLegendTriggered)->setData(
         static_cast<int>(Qt::AlignBottom | Qt::AlignLeft));
-    menuMoveLegend->addAction(QStringLiteral("Bottom Center"), this, &PlotWindow::actionMoveLegend)->setData(
+    menuMoveLegend->addAction(QStringLiteral("Bottom Center"), this, &PlotWindow::actionMoveLegendTriggered)->setData(
         static_cast<int>(Qt::AlignBottom | Qt::AlignCenter));
-    menuMoveLegend->addAction(QStringLiteral("Bottom Right"), this, &PlotWindow::actionMoveLegend)->setData(
+    menuMoveLegend->addAction(QStringLiteral("Bottom Right"), this, &PlotWindow::actionMoveLegendTriggered)->setData(
         static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
 
     menu->addSeparator();
 
-    menu->addAction(QStringLiteral("Reverse Selection"), this, &PlotWindow::actionReverseSelection);
-    QAction *actionRemove = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, &PlotWindow::actionRemoveSelectedGraphs);
+    QAction *actionAddComment = menu->addAction(QStringLiteral("Add Comment"), this, &PlotWindow::actionAddCommentTriggered);
+    QAction *actionEditComment = menu->addAction(QStringLiteral("Edit Comment"), this, &PlotWindow::actionEditCommentTriggered);
+    QAction *actionRmComment = menu->addAction(QStringLiteral("Remove Comment"), this, &PlotWindow::actionRemoveCommentTriggered);
+    actionAddComment->setData(pos);
+    actionEditComment->setEnabled(false);
+    actionRmComment->setEnabled(false);
 
+    menu->addSeparator();
+
+    QAction *actionAddGraph = menu->addAction(QStringLiteral("Add Aggregate Graph"), this, &PlotWindow::actionAddAggregateGraphTriggered);
+    QAction *actionSetColor = menu->addAction(QStringLiteral("Set Graph Color"), this, &PlotWindow::actionSetGraphColorTriggered);
+    QAction *actionCopyName = menu->addAction(QStringLiteral("Copy Graph Name"), this, &PlotWindow::actionCopyGraphNameTriggered);
+    QAction *actionCopyValue = menu->addAction(QStringLiteral("Copy Graph Value"), this, &PlotWindow::actionCopyGraphValueTriggered);
+
+    menu->addSeparator();
+
+    menu->addAction(QStringLiteral("Reverse Selection"), this, &PlotWindow::actionReverseSelectionTriggered);
+    QAction *actionRmGraphs = menu->addAction(QStringLiteral("Remove Selected Graphs"), this, &PlotWindow::actionRemoveSelectedGraphsTriggered);
+
+    CommentItem *ci = ui->plot->commentItemAt(pos, true);
+    if (ci) {
+        actionEditComment->setEnabled(true);
+        actionRmComment->setEnabled(true);
+        actionEditComment->setData(QVariant::fromValue<void*>(ci));
+        actionRmComment->setData(QVariant::fromValue<void*>(ci));
+    }
     if (!ui->plot->hasSelectedGraphs()) {
-        actionRemove->setEnabled(false);
+        if (!mValueTip->visible()) {
+            actionSetColor->setEnabled(false);
+            actionCopyName->setEnabled(false);
+        }
+        actionRmGraphs->setEnabled(false);
+    }
+    if (ui->plot->graphCount() < 2 || ui->plot->selectedGraphCount() == 1) {
+        actionAddGraph->setEnabled(false);
+    }
+    if (!mValueTip->visible()) {
+        actionCopyValue->setEnabled(false);
     }
 
     menu->popup(ui->plot->mapToGlobal(pos));
@@ -232,7 +460,7 @@ void PlotWindow::contextMenuRequested(const QPoint &pos)
 
 void PlotWindow::plotMouseMove(QMouseEvent *event)
 {
-    if ((ui->plot->legend->visible() && ui->plot->legend->selectTest(event->pos(), false) > 0) || ui->plot->graphCount() == 0) {
+    if (ui->plot->pointInVisibleLegend(event->pos()) || ui->plot->graphCount() == 0) {
         return;
     }
 
@@ -359,7 +587,7 @@ void PlotWindow::updateWindowTitle()
         }
     }
 
-    QString title = strList.join(QLatin1String(", "));
+    QString title = strList.join(QLatin1String(WND_TITLE_SEP));
     if (appendEllipsis) {
         title += "...";
     }
@@ -384,6 +612,39 @@ void PlotWindow::updatePlotTitle()
     ui->plot->xAxis2->setLabel(title);
 }
 
+QString PlotWindow::defaultSaveFileName() const
+{
+    QString wndTitle = windowTitle();
+    QStringList strList = wndTitle.split(WND_TITLE_SEP, QString::SkipEmptyParts);
+    if (!strList.isEmpty() && strList.last().endsWith(QLatin1String("..."))) {
+        strList.last().chop(3);
+    }
+    return strList.join('_');
+}
+
+QString PlotWindow::getInputComment(const QString &text)
+{
+    MultiLineInputDialog dlg(this);
+    dlg.setLabelText(QStringLiteral("Comment:"));
+    dlg.setTextValue(text);
+    if (dlg.exec() != QDialog::Accepted) {
+        return QString();
+    }
+    return dlg.textValue();
+}
+
+QVector<CommentItem*> PlotWindow::commentItemsOfGraph(CounterGraph *graph) const
+{
+    QVector<CommentItem*> ciVector;
+    for (int i = ui->plot->itemCount() - 1; i >= 0; --i) {
+        CommentItem *ci = qobject_cast<CommentItem*>(ui->plot->item(i));
+        if (ci && ci->graph() == graph) {
+            ciVector.append(ci);
+        }
+    }
+    return ciVector;
+}
+
 void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
 {
     if (graphs.isEmpty()) { return; }
@@ -395,7 +656,10 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
             mValueTip->setTracerGraph(nullptr);
             mValueTip->setSelected(false);
         }
-        // TODO
+        const QVector<CommentItem*> ciVector = commentItemsOfGraph(graph);
+        for (CommentItem *ci : ciVector) {
+            ui->plot->removeItem(ci);
+        }
         ui->plot->removeGraph(graph);
     }
 

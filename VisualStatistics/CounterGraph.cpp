@@ -56,6 +56,11 @@ void CounterGraph::setScatterVisible(bool visible)
     mScatterStyle.setShape(visible ? QCPScatterStyle::ssDisc : QCPScatterStyle::ssNone);
 }
 
+const QSet<double> *CounterGraph::suspectKeys() const
+{
+    return mSuspectKeys;
+}
+
 void CounterGraph::setSuspectKeys(const QSet<double> *suspectKeys)
 {
     mSuspectKeys = suspectKeys;

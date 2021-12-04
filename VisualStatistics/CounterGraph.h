@@ -26,6 +26,7 @@ public:
     QString fullName() const;
     void setFullName(const QString &fullName);
     void setScatterVisible(bool visible);
+    const QSet<double> *suspectKeys() const;
     void setSuspectKeys(const QSet<double> *suspectKeys);
     bool isSuspect(double key);
 

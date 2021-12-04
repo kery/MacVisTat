@@ -112,7 +112,15 @@ QSharedPointer<QCPGraphDataContainer> PlotData::graphData(const QString &name, b
     return QSharedPointer<QCPGraphDataContainer>(&mDataMap[name].data, CounterData::dummyDeleter);
 }
 
-const QSet<double> *PlotData::suspectKeys(const QString &name)
+QSharedPointer<QCPGraphDataContainer> PlotData::addGraphData(const QString &name)
+{
+    if (mDataMap.contains(name)) {
+        return QSharedPointer<QCPGraphDataContainer>();
+    }
+    return QSharedPointer<QCPGraphDataContainer>(&mDataMap[name].data, CounterData::dummyDeleter);
+}
+
+QSet<double> *PlotData::suspectKeys(const QString &name)
 {
     if (mDataMap.contains(name)) {
         return &mDataMap[name].suspectKeys;

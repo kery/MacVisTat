@@ -11,6 +11,11 @@ DateTimeTicker::DateTimeTicker(QCPAxis *parentAxis) :
     mParentAxis->setTickLabelRotation(90);
 }
 
+int DateTimeTicker::skippedTicks() const
+{
+    return mSkippedTicks;
+}
+
 void DateTimeTicker::setDisplayUtc(bool displayUtc)
 {
     mDisplayUtc = displayUtc;

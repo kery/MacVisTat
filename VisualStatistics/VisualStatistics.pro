@@ -8,6 +8,7 @@ CONFIG += c++11
 
 SOURCES += \
     ColorPool.cpp \
+    CommentItem.cpp \
     CounterFileParser.cpp \
     CounterGraph.cpp \
     CounterLegendItem.cpp \
@@ -15,6 +16,7 @@ SOURCES += \
     CounterPlot.cpp \
     DateTimeTicker.cpp \
     GzipFile.cpp \
+    MultiLineInputDialog.cpp \
     PlotData.cpp \
     PlotWindow.cpp \
     ProgressDialog.cpp \
@@ -28,6 +30,7 @@ SOURCES += \
 
 HEADERS += \
     ColorPool.h \
+    CommentItem.h \
     CounterFileParser.h \
     CounterGraph.h \
     CounterLegendItem.h \
@@ -36,6 +39,7 @@ HEADERS += \
     DateTimeTicker.h \
     GzipFile.h \
     MainWindow.h \
+    MultiLineInputDialog.h \
     PlotData.h \
     PlotWindow.h \
     ProgressDialog.h \

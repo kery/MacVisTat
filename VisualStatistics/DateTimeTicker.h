@@ -10,6 +10,7 @@ class DateTimeTicker : public QObject, public QCPAxisTicker
 public:
     DateTimeTicker(QCPAxis *parentAxis);
 
+    int skippedTicks() const;
     void setDisplayUtc(bool displayUtc);
     void setOffsetFromUtc(int offset);
     void setDateTimeVector(QVector<double> &&dtv);

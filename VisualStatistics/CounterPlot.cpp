@@ -2,10 +2,17 @@
 #include "CounterGraph.h"
 #include "CounterLegendItem.h"
 #include "DateTimeTicker.h"
+#include "CommentItem.h"
+
+#define MIME_TYPE_LEGEND_DRAGGING  "application/visualstat-legend"
+#define MIME_TYPE_COMMENT_DRAGGING "application/visualstat-comment"
 
 CounterPlot::CounterPlot(QWidget *parent) :
-    QCustomPlot(parent)
+    QCustomPlot(parent),
+    mCommentItem(nullptr)
 {
+    setAcceptDrops(true);
+    invalidateDragStartPos();
 }
 
 CounterPlot::~CounterPlot()
@@ -72,6 +79,15 @@ bool CounterPlot::hasSelectedGraphs() const
     return false;
 }
 
+int CounterPlot::selectedGraphCount() const
+{
+    int result = 0;
+    for (int i = 0; i < graphCount(); ++i) {
+        if (graph(i)->selected()) { ++result; }
+    }
+    return result;
+}
+
 QList<CounterGraph*> CounterPlot::selectedGraphs() const
 {
     QList<CounterGraph*> result;
@@ -80,6 +96,25 @@ QList<CounterGraph*> CounterPlot::selectedGraphs() const
         result.append(qobject_cast<CounterGraph*>(graph));
     }
     return result;
+}
+
+CommentItem *CounterPlot::commentItemAt(const QPointF &pos, bool onlyVisible) const
+{
+    for (int i = itemCount() - 1; i >= 0 ; --i) {
+        CommentItem *ci = qobject_cast<CommentItem *>(item(i));
+        if (!ci || (onlyVisible && !ci->visible())) {
+            continue;
+        }
+        if (ci->selectTest(pos, false) > 0) {
+            return ci;
+        }
+    }
+    return nullptr;
+}
+
+bool CounterPlot::pointInVisibleLegend(const QPoint &pos)
+{
+    return legend->visible() && legend->selectTest(pos, false) > 0;
 }
 
 void CounterPlot::resizeEvent(QResizeEvent *event)
@@ -94,6 +129,24 @@ void CounterPlot::resizeEvent(QResizeEvent *event)
 
 void CounterPlot::mousePressEvent(QMouseEvent *event)
 {
+    if (event->button() == Qt::LeftButton) {
+        // Don't call QCustomPlot::mousePressEvent(event) when starting drag legend or comment
+        // item, so that the QCustomPlot widget keeps in normal state, not in range dragging state.
+        if (pointInVisibleLegend(event->pos())) {
+            mDragStartPos = event->pos();
+
+            // To make legend item selection work.
+            mMouseHasMoved = false;
+            mMousePressPos = event->pos();
+            return;
+        }
+        if ((mCommentItem = commentItemAt(event->pos(), true)) != nullptr) {
+            mDragStartPos = event->pos();
+            return;
+        }
+    }
+    invalidateDragStartPos();
+
     Qt::Orientations rangeDrag;
     if (xAxis->selectedParts() != QCPAxis::spNone || xAxis2->selectedParts() != QCPAxis::spNone) {
         rangeDrag |= Qt::Horizontal;
@@ -109,6 +162,52 @@ void CounterPlot::mousePressEvent(QMouseEvent *event)
     setSelectionRectMode(event->modifiers() & Qt::ControlModifier ? QCP::srmZoom : QCP::srmNone);
 
     QCustomPlot::mousePressEvent(event);
+}
+
+void CounterPlot::mouseMoveEvent(QMouseEvent *event)
+{
+    if (!(event->buttons() & Qt::LeftButton) || !hasValidDragStartPos()) {
+        QCustomPlot::mouseMoveEvent(event);
+        return;
+    }
+
+    QColor color(100, 100, 100);
+    if (pointInVisibleLegend(event->pos())) {
+        QPoint hotSpot;
+        QRect rect = legend->outerRect();
+        QPixmap pixmap(rect.width(), calcLegendPixmapHeight(hotSpot));
+        pixmap.fill(color);
+
+        QByteArray itemData;
+        QDataStream dataStream(&itemData, QIODevice::WriteOnly);
+        dataStream << mDragStartPos - rect.topLeft();
+
+        QMimeData *mimeData = new QMimeData();
+        mimeData->setData(MIME_TYPE_LEGEND_DRAGGING, itemData);
+
+        QDrag *drag = new QDrag(this);
+        drag->setMimeData(mimeData);
+        drag->setPixmap(pixmap);
+        drag->setHotSpot(hotSpot);
+        drag->exec();
+    } else if (mCommentItem) {
+        QPoint hotSpot(event->pos() - mCommentItem->topLeft->pixelPosition().toPoint());
+        QPixmap pixmap(mCommentItem->size().toSize());
+        pixmap.fill(color);
+
+        QByteArray itemData;
+        QDataStream dataStream(&itemData, QIODevice::WriteOnly);
+        dataStream << mDragStartPos - mCommentItem->position->pixelPosition().toPoint();
+
+        QMimeData *mimeData = new QMimeData();
+        mimeData->setData(MIME_TYPE_COMMENT_DRAGGING, itemData);
+
+        QDrag *drag = new QDrag(this);
+        drag->setMimeData(mimeData);
+        drag->setPixmap(pixmap);
+        drag->setHotSpot(hotSpot);
+        drag->exec();
+    }
 }
 
 void CounterPlot::wheelEvent(QWheelEvent *event)
@@ -135,4 +234,76 @@ void CounterPlot::wheelEvent(QWheelEvent *event)
     } else {
         QCustomPlot::wheelEvent(event);
     }
+}
+
+void CounterPlot::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->source() == this &&
+        (event->mimeData()->hasFormat(MIME_TYPE_LEGEND_DRAGGING) ||
+         event->mimeData()->hasFormat(MIME_TYPE_COMMENT_DRAGGING)))
+    {
+        event->acceptProposedAction();
+    }
+}
+
+void CounterPlot::dropEvent(QDropEvent *event)
+{
+    if (event->mimeData()->hasFormat(MIME_TYPE_LEGEND_DRAGGING)) {
+        QByteArray itemData = event->mimeData()->data(MIME_TYPE_LEGEND_DRAGGING);
+        QDataStream dataStream(&itemData, QIODevice::ReadOnly);
+        QPoint offset;
+        dataStream >> offset;
+
+        QCPLayoutInset *layout = axisRect()->insetLayout();
+        layout->setInsetPlacement(0, QCPLayoutInset::ipFree);
+
+        QPointF newPos = event->pos() - offset;
+        QRect insetLayoutRect = layout->rect();
+        layout->setInsetRect(0, QRectF((newPos.x() - insetLayoutRect.left())/insetLayoutRect.width(),
+                                       (newPos.y() - insetLayoutRect.top())/insetLayoutRect.height(),
+                                       0, 0));
+        replot(rpQueuedReplot);
+    } else if (event->mimeData()->hasFormat(MIME_TYPE_COMMENT_DRAGGING)) {
+        QByteArray itemData = event->mimeData()->data(MIME_TYPE_COMMENT_DRAGGING);
+        QDataStream dataStream(&itemData, QIODevice::ReadOnly);
+        QPoint offset;
+        dataStream >> offset;
+
+        QPointF newPos = event->pos() - offset;
+        mCommentItem->position->setCoords(xAxis->pixelToCoord(newPos.x()), yAxis->pixelToCoord(newPos.y()));
+        mCommentItem->updateLineStartAnchor();
+
+        replot(rpQueuedReplot);
+    }
+}
+
+void CounterPlot::invalidateDragStartPos()
+{
+    mDragStartPos.setX(-1);
+    mDragStartPos.setY(-1);
+}
+
+bool CounterPlot::hasValidDragStartPos() const
+{
+    return mDragStartPos.x() >= 0 && mDragStartPos.y() >= 0;
+}
+
+int CounterPlot::calcLegendPixmapHeight(QPoint &hotSpot)
+{
+    const QRect legendRect = legend->outerRect();
+    const int screenHeight = QApplication::desktop()->screenGeometry(this).height();
+    const int hCursorToLegendTop = mDragStartPos.y() - legendRect.top();
+    const int hCursorToLegendBottom = legendRect.bottom() - mDragStartPos.y();
+
+    hotSpot = mDragStartPos - legendRect.topLeft();
+
+    int h1, h2 = qMin(hCursorToLegendBottom, screenHeight);
+    if (hCursorToLegendTop < screenHeight) {
+        h1 = hCursorToLegendTop;
+    } else {
+        h1 = screenHeight;
+        hotSpot.ry() -= hCursorToLegendTop - screenHeight;
+    }
+
+    return h1 + h2;
 }
