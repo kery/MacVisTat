@@ -1,6 +1,11 @@
 #include "Utils.h"
 #include <QMessageBox>
 
+double pointDistance(const QPointF &pt1, const QPointF &pt2)
+{
+    return std::sqrt(std::pow(pt1.x() - pt2.x(), 2) + std::pow(pt1.y() - pt2.y(), 2));
+}
+
 int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info, bool defaultYes)
 {
     QMessageBox msgBox(parent);

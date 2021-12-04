@@ -145,6 +145,8 @@
     </property>
     <addaction name="actionPlot"/>
     <addaction name="actionPlotSeparately"/>
+    <addaction name="separator"/>
+    <addaction name="actionOptions"/>
    </widget>
    <widget class="QMenu" name="menuFilter">
     <property name="title">
@@ -274,6 +276,11 @@
   <action name="actionChangeLog">
    <property name="text">
     <string>Change Log...</string>
+   </property>
+  </action>
+  <action name="actionOptions">
+   <property name="text">
+    <string>Options...</string>
    </property>
   </action>
  </widget>

@@ -27,6 +27,7 @@ public:
     void setFullName(const QString &fullName);
     void setScatterVisible(bool visible);
     void setSuspectKeys(const QSet<double> *suspectKeys);
+    bool isSuspect(double key);
 
     static const QChar sNameSeparator;
     static QString getModuleName(const QString &fullName);

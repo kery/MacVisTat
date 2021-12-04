@@ -6,26 +6,6 @@
 CounterPlot::CounterPlot(QWidget *parent) :
     QCustomPlot(parent)
 {
-    setupSelectionRect();
-
-    axisRect()->setupFullAxesBox();
-    xAxis2->setTicks(false);
-    xAxis2->setTickLabels(false);
-    yAxis2->setTicks(false);
-    yAxis2->setTickLabels(false);
-    xAxis->setTicker(QSharedPointer<DateTimeTicker>(new DateTimeTicker(xAxis)));
-
-    QColor color = legend->brush().color();
-    color.setAlpha(200);
-    legend->setIconSize(20, 10);
-    legend->setBrush(QBrush(color));
-    legend->setSelectableParts(QCPLegend::spItems);
-    legend->setVisible(true);
-
-    setNoAntialiasingOnDrag(true);
-    setAutoAddPlottableToLegend(false);
-    setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectPlottables |
-                    QCP::iSelectAxes | QCP::iSelectLegend | QCP::iSelectItems);
 }
 
 CounterPlot::~CounterPlot()
@@ -100,16 +80,6 @@ QList<CounterGraph*> CounterPlot::selectedGraphs() const
         result.append(qobject_cast<CounterGraph*>(graph));
     }
     return result;
-}
-
-void CounterPlot::setupSelectionRect()
-{
-    QColor color(70, 50, 200);
-    QPen pen(Qt::DashLine);
-    pen.setColor(color);
-    mSelectionRect->setPen(pen);
-    color.setAlpha(30);
-    mSelectionRect->setBrush(color);
 }
 
 void CounterPlot::resizeEvent(QResizeEvent *event)

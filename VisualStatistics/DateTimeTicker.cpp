@@ -67,7 +67,7 @@ QVector<double> DateTimeTicker::createTickVector(double tickStep, const QCPRange
         QSharedPointer<QCPGraphDataContainer> data = plot->graph(0)->data();
         double fontHeight = QFontMetricsF(mParentAxis->tickLabelFont()).height();
         double prePos = -fontHeight;
-        auto iterBegin = data->findBegin(range.lower, false), iterEnd = data->findEnd(range.upper);
+        auto iterBegin = data->findBegin(range.lower, false), iterEnd = data->findBegin(range.upper, false);
         for (auto iter = iterBegin; iter != iterEnd; ++iter) {
             double curPos = mParentAxis->coordToPixel(iter->key);
             if (curPos - prePos >= fontHeight) {

@@ -22,8 +22,6 @@ public:
     QList<CounterGraph*> selectedGraphs() const;
 
 private:
-    void setupSelectionRect();
-
     virtual void resizeEvent(QResizeEvent *event) override;
     virtual void mousePressEvent(QMouseEvent *event) override;
     virtual void wheelEvent(QWheelEvent *event) override;

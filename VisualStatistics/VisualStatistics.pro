@@ -19,7 +19,9 @@ SOURCES += \
     PlotWindow.cpp \
     ProgressDialog.cpp \
     ResizeManager.cpp \
+    TextItem.cpp \
     Utils.cpp \
+    ValueTipItem.cpp \
     main.cpp \
     MainWindow.cpp \
     qcustomplot/qcustomplot.cpp
@@ -38,7 +40,9 @@ HEADERS += \
     PlotWindow.h \
     ProgressDialog.h \
     ResizeManager.h \
+    TextItem.h \
     Utils.h \
+    ValueTipItem.h \
     Version.h \
     pcre/pcre.h \
     qcustomplot/qcustomplot.h

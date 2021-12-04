@@ -23,6 +23,7 @@ public:
     KeyType keyType() const;
     int offsetFromUtc() const;
     QVector<double> dateTimeVector() const;
+    QString dateTimeString(double key);
     double getSampleInterval() const;
     void setCounterDataMap(KeyType keyType, CounterDataMap &dataMap);
     QList<QString> counterNames() const;

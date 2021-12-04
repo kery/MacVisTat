@@ -7,6 +7,8 @@
 
 namespace Ui { class PlotWindow; }
 
+class ValueTipItem;
+
 class PlotWindow : public QMainWindow
 {
     Q_OBJECT
@@ -31,8 +33,10 @@ private slots:
     void selectionChanged();
     void skippedTicksChanged(int skipped);
     void contextMenuRequested(const QPoint &pos);
+    void plotMouseMove(QMouseEvent *event);
 
 private:
+    void setupPlot();
     void initGraphs();
     void adjustYAxisRange();
     void highlightTimeGap();
@@ -43,14 +47,12 @@ private:
     int graphIndex(CounterGraph *graph) const;
     CounterGraph *prevGraph(CounterGraph *graph) const;
     CounterGraph *nextGraph(CounterGraph *graph) const;
+    CounterGraph *findNearestGraphData(const QPoint &pos, QCPGraphData &data) const;
 
     virtual void keyPressEvent(QKeyEvent *event);
 
-    static void translateToInsetRect(QCPLayoutInset *inset, QRectF &rect);
-
-    static const int sAnimationMaxGraphs;
-
     Ui::PlotWindow *ui;
+    ValueTipItem *mValueTip;
     PlotData mPlotData;
     ColorPool mColorPool;
     int mLastSelLegItemIndex;

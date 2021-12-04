@@ -61,6 +61,11 @@ void CounterGraph::setSuspectKeys(const QSet<double> *suspectKeys)
     mSuspectKeys = suspectKeys;
 }
 
+bool CounterGraph::isSuspect(double key)
+{
+    return mSuspectKeys->contains(key);
+}
+
 QString CounterGraph::getModuleName(const QString &fullName)
 {
     int index = fullName.indexOf(sNameSeparator);

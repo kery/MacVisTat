@@ -1,4 +1,5 @@
 #include "PlotData.h"
+#include "Utils.h"
 
 PlotData::PlotData(int offsetFromUtc) :
     mKeyType(ktUnknown),
@@ -21,15 +22,29 @@ QVector<double> PlotData::dateTimeVector() const
     return mDateTimeVector;
 }
 
+QString PlotData::dateTimeString(double key)
+{
+    QDateTime dateTime;
+    if (mKeyType == ktDateTime) {
+        dateTime = QDateTime::fromSecsSinceEpoch(key);
+    } else {
+        int index = static_cast<int>(key);
+        if (index >= 0 && index < mDateTimeVector.size()) {
+            dateTime = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
+        }
+    }
+    return dateTime.toString(DTFMT_DISPLAY);
+}
+
 double PlotData::getSampleInterval() const
 {
     double interval = std::numeric_limits<double>::max();
     switch (mKeyType) {
-    case PlotData::ktDateTime:
+    case ktDateTime:
         // TODO
         Q_ASSERT(false);
         break;
-    case PlotData::ktIndex:
+    case ktIndex:
         for (int i = 1; i < mDateTimeVector.size(); ++i) {
             double diff = mDateTimeVector[i] - mDateTimeVector[i - 1];
             if (diff < interval) {

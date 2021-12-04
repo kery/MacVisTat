@@ -1,22 +1,19 @@
 #include "PlotWindow.h"
 #include "ui_PlotWindow.h"
 #include "DateTimeTicker.h"
-
-const int PlotWindow::sAnimationMaxGraphs = 50;
+#include "ValueTipItem.h"
+#include "Utils.h"
 
 PlotWindow::PlotWindow(PlotData &plotData) :
     ui(new Ui::PlotWindow),
+    mValueTip(nullptr),
     mPlotData(std::move(plotData)),
     mLastSelLegItemIndex(-1)
 {
     ui->setupUi(this);
+    setupPlot();
 
-    // QCPAxisTicker isn't derived from QObject, so we use qSharedPointerDynamicCast here.
-    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
-    ticker->setOffsetFromUtc(mPlotData.offsetFromUtc());
-    if (mPlotData.keyType() == PlotData::ktIndex) {
-        ticker->setDateTimeVector(mPlotData.dateTimeVector());
-    }
+    mValueTip = new ValueTipItem(ui->plot);
 
     connect(ui->actionSave, &QAction::triggered, this, &PlotWindow::actionSaveTriggered);
     connect(ui->actionCopy, &QAction::triggered, this, &PlotWindow::actionCopyTriggered);
@@ -25,10 +22,8 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     connect(ui->actionDisplayUtc, &QAction::triggered, this, &PlotWindow::actionDisplayUtcTriggered);
     connect(ui->actionRemoveZeroCounters, &QAction::triggered, this, &PlotWindow::actionRemoveZeroCountersTriggered);
     connect(ui->actionScript, &QAction::triggered, this, &PlotWindow::actionScriptTriggered);
-    connect(ui->plot, &CounterPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
-    connect(ui->plot, &CounterPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequested);
-    connect(ticker.data(), &DateTimeTicker::skippedTicksChanged, this, &PlotWindow::skippedTicksChanged);
 
+    setFocus();
     initGraphs();
     highlightTimeGap();
     updateWindowTitle();
@@ -105,42 +100,10 @@ void PlotWindow::actionMoveLegend()
 {
     QAction *action = qobject_cast<QAction*>(sender());
     int align = action->data().toInt();
-    CounterPlot *plot = ui->plot;
-    QCPLayoutInset *inset = plot->axisRect()->insetLayout();
+    QCPLayoutInset *inset = ui->plot->axisRect()->insetLayout();
     inset->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
     inset->setInsetAlignment(0, static_cast<Qt::Alignment>(align));
-
-    if (!plot->legend->visible()) {
-        return;
-    }
-
-    if (plot->graphCount() <= sAnimationMaxGraphs) {
-        QRectF originRect = plot->legend->outerRect();
-        translateToInsetRect(inset, originRect);
-
-        inset->updateLayout();
-
-        QRectF newRect = plot->legend->outerRect();
-        translateToInsetRect(inset, newRect);
-
-        QVariantAnimation *anim = new QVariantAnimation();
-        anim->setDuration(250);
-        anim->setStartValue(originRect);
-        anim->setEndValue(newRect);
-        anim->setEasingCurve(QEasingCurve::OutQuad);
-        connect(anim, &QVariantAnimation::valueChanged, [inset, plot] (const QVariant &value) {
-            inset->setInsetRect(0, value.toRectF());
-            plot->replot(QCustomPlot::rpImmediateRefresh);
-        });
-        connect(anim, &QVariantAnimation::finished, [inset, plot] () {
-            inset->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
-            plot->replot(QCustomPlot::rpQueuedReplot);
-        });
-        inset->setInsetPlacement(0, QCPLayoutInset::ipFree);
-        anim->start(QAbstractAnimation::DeleteWhenStopped);
-    } else {
-        plot->replot(QCustomPlot::rpQueuedReplot);
-    }
+    ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 void PlotWindow::actionReverseSelection()
@@ -215,13 +178,10 @@ void PlotWindow::selectionChanged()
         }
     }
 
-//    if ((m_tracer->visible() || m_valueText->visible()) &&
-//            m_tracer->graph() != nullptr && !m_tracer->graph()->visible())
-//    {
-//        m_tracer->setVisible(false);
-//        m_valueText->setVisible(false);
-//        setTracerGraph(nullptr);
-//    }
+    if (mValueTip->visible() && mValueTip->tracerGraph() != nullptr && !mValueTip->tracerGraph()->visible()) {
+        mValueTip->hideWithAnimation();
+        mValueTip->setTracerGraph(nullptr);
+    }
 }
 
 void PlotWindow::skippedTicksChanged(int skipped)
@@ -268,6 +228,71 @@ void PlotWindow::contextMenuRequested(const QPoint &pos)
     }
 
     menu->popup(ui->plot->mapToGlobal(pos));
+}
+
+void PlotWindow::plotMouseMove(QMouseEvent *event)
+{
+    if ((ui->plot->legend->visible() && ui->plot->legend->selectTest(event->pos(), false) > 0) || ui->plot->graphCount() == 0) {
+        return;
+    }
+
+    QCPGraphData data;
+    CounterGraph *graph = findNearestGraphData(event->pos(), data);
+    if (graph == nullptr) {
+        if (mValueTip->visible()) {
+            mValueTip->hideWithAnimation();
+        }
+    } else if (graph != mValueTip->tracerGraph() || !qFuzzyCompare(mValueTip->tracerGraphKey(), data.key)) {
+        mValueTip->setTracerGraphKey(data.key);
+        if (graph != mValueTip->tracerGraph()) {
+            mValueTip->setTracerPen(graph->pen());
+            mValueTip->setTracerGraph(graph);
+        }
+        mValueTip->setValueInfo(graph->name(), mPlotData.dateTimeString(data.key), QString::number(data.value, 'f', 2), graph->isSuspect(data.key));
+        mValueTip->showWithAnimation();
+    }
+}
+
+void PlotWindow::setupPlot()
+{
+    QColor color(70, 50, 200);
+    QPen pen(Qt::DashLine);
+    pen.setColor(color);
+    ui->plot->selectionRect()->setPen(pen);
+    color.setAlpha(30);
+    ui->plot->selectionRect()->setBrush(color);
+
+    QCPLegend *legend = ui->plot->legend;
+    color = legend->brush().color();
+    color.setAlpha(200);
+    legend->setIconSize(15, 8);
+    legend->setBrush(QBrush(color));
+    legend->setSelectableParts(QCPLegend::spItems);
+    legend->setVisible(true);
+
+    QSharedPointer<DateTimeTicker> ticker(new DateTimeTicker(ui->plot->xAxis));
+    ticker->setOffsetFromUtc(mPlotData.offsetFromUtc());
+    if (mPlotData.keyType() == PlotData::ktIndex) {
+        ticker->setDateTimeVector(mPlotData.dateTimeVector());
+    }
+    connect(ticker.data(), &DateTimeTicker::skippedTicksChanged, this, &PlotWindow::skippedTicksChanged);
+
+    ui->plot->axisRect()->setupFullAxesBox();
+    ui->plot->xAxis2->setTicks(false);
+    ui->plot->xAxis2->setTickLabels(false);
+    ui->plot->yAxis2->setTicks(false);
+    ui->plot->yAxis2->setTickLabels(false);
+    ui->plot->xAxis->setTicker(ticker);
+    ui->plot->setNoAntialiasingOnDrag(true);
+    ui->plot->setAutoAddPlottableToLegend(false);
+    ui->plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectPlottables |
+                              QCP::iSelectAxes | QCP::iSelectLegend | QCP::iSelectItems);
+    ui->plot->addLayer(ValueTipItem::layerName(), ui->plot->layer(QStringLiteral("axes")));
+    ui->plot->layer(ValueTipItem::layerName())->setMode(QCPLayer::lmBuffered);
+
+    connect(ui->plot, &CounterPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
+    connect(ui->plot, &CounterPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequested);
+    connect(ui->plot, &CounterPlot::mouseMove, this, &PlotWindow::plotMouseMove);
 }
 
 void PlotWindow::initGraphs()
@@ -365,6 +390,11 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
 
     for (CounterGraph *graph : graphs) {
         mPlotData.removeGraphData(graph->fullName());
+        if (mValueTip->tracerGraph() == graph) {
+            mValueTip->hideWithAnimation();
+            mValueTip->setTracerGraph(nullptr);
+            mValueTip->setSelected(false);
+        }
         // TODO
         ui->plot->removeGraph(graph);
     }
@@ -407,6 +437,37 @@ CounterGraph *PlotWindow::nextGraph(CounterGraph *graph) const
     return nextIndex == 0 || nextIndex >= ui->plot->graphCount() ? nullptr : ui->plot->graph(nextIndex);
 }
 
+CounterGraph *PlotWindow::findNearestGraphData(const QPoint &pos, QCPGraphData &data) const
+{
+    CounterGraph *resultGraph = nullptr;
+    double minDistance = std::numeric_limits<double>::max();
+    QCPAxis *xAxis = ui->plot->xAxis, *yAxis = ui->plot->yAxis;
+    const double radius = 10;
+    const double minKey = xAxis->pixelToCoord(pos.x() - radius);
+    const double maxKey = xAxis->pixelToCoord(pos.x() + radius);
+
+    for (int i = ui->plot->graphCount() - 1; i >= 0; --i) {
+        CounterGraph *graph = ui->plot->graph(i);
+        if (!graph->visible()) {
+            continue;
+        }
+        QSharedPointer<QCPGraphDataContainer> dataContainer = graph->data();
+        if (dataContainer->isEmpty()) {
+            continue;
+        }
+        for (auto iter = dataContainer->findBegin(minKey); iter != dataContainer->end() && iter->key < maxKey; ++iter) {
+            QPointF dataPos(xAxis->coordToPixel(iter->key), yAxis->coordToPixel(iter->value));
+            double distance = pointDistance(pos, dataPos);
+            if (distance < radius && distance < minDistance) {
+                resultGraph = graph;
+                data = *iter;
+            }
+        }
+    }
+
+    return resultGraph;
+}
+
 void PlotWindow::keyPressEvent(QKeyEvent *event)
 {
     QList<CounterGraph*> selectedGraphs = ui->plot->selectedGraphs();
@@ -422,10 +483,4 @@ void PlotWindow::keyPressEvent(QKeyEvent *event)
         selectionChanged();
         ui->plot->replot(QCustomPlot::rpQueuedReplot);
     }
-}
-
-void PlotWindow::translateToInsetRect(QCPLayoutInset *inset, QRectF &rect)
-{
-    rect.translate(-inset->rect().x(), -inset->rect().y());
-    rect = QRectF(rect.x()/inset->rect().width(), rect.y()/inset->rect().height(), 0, 0);
 }
