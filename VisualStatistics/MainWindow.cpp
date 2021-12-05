@@ -716,8 +716,15 @@ void MainWindow::parseCounterFileData(bool multiWnd)
 
 void MainWindow::processPlotData(PlotData &plotData, bool multiWnd)
 {
-    PlotWindow *plotWnd = createPlotWindow(plotData);
-    plotWnd->showMaximized();
+    if (multiWnd && plotData.dataCount() > 1) {
+        std::unique_ptr<PlotData[]> plotDataPtr = plotData.split();
+        for (int i = 0; i < plotData.dataCount(); ++i) {
+            processPlotData(plotDataPtr[i], false);
+        }
+    } else {
+        PlotWindow *plotWnd = createPlotWindow(plotData);
+        plotWnd->showMaximized();
+    }
 }
 
 PlotWindow *MainWindow::createPlotWindow(PlotData &plotData) const

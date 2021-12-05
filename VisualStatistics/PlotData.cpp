@@ -22,6 +22,11 @@ QVector<double> PlotData::dateTimeVector() const
     return mDateTimeVector;
 }
 
+int PlotData::dataCount() const
+{
+    return mDataMap.size();
+}
+
 QString PlotData::dateTimeString(double key)
 {
     QDateTime dateTime;
@@ -134,4 +139,21 @@ void PlotData::removeGraphData(const QString &name)
     if (iter != mDataMap.end()) {
         mDataMap.erase(iter);
     }
+}
+
+std::unique_ptr<PlotData[]> PlotData::split()
+{
+    int i = 0;
+    std::unique_ptr<PlotData[]> result(new PlotData[mDataMap.size()]);
+    for (auto iter = mDataMap.begin(); iter != mDataMap.end(); ++iter, ++i) {
+        result[i].mKeyType = mKeyType;
+        result[i].mOffsetFromUtc = mOffsetFromUtc;
+        result[i].mDateTimeVector = mDateTimeVector;
+        result[i].mDataMap[iter.key()] = std::move(iter.value());
+    }
+    return result;
+}
+
+PlotData::PlotData()
+{
 }
