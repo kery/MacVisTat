@@ -24,6 +24,7 @@ SOURCES += \
     TextItem.cpp \
     Utils.cpp \
     ValueTipItem.cpp \
+    libcsv/libcsv.c \
     main.cpp \
     MainWindow.cpp \
     qcustomplot/qcustomplot.cpp
@@ -48,6 +49,7 @@ HEADERS += \
     Utils.h \
     ValueTipItem.h \
     Version.h \
+    libcsv/csv.h \
     pcre/pcre.h \
     qcustomplot/qcustomplot.h
 

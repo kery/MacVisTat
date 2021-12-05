@@ -30,7 +30,6 @@ public:
     void setSuspectKeys(const QSet<double> *suspectKeys);
     bool isSuspect(double key);
 
-    static const QChar sNameSeparator;
     static QString getModuleName(const QString &fullName);
     static QString getNameRightPart(const QString &name);
     static QPair<QString, QString> separateModuleName(const QString &fullName);

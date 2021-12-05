@@ -49,6 +49,7 @@ private slots:
     void logTextEditCtxMenuRequest(const QPoint &pos);
     void listViewCtxMenuRequest(const QPoint &pos);
     void filterFileChanged();
+    void fetchCounterDescriptionFinished();
 
 private:
     virtual bool eventFilter(QObject *obj, QEvent *event) override;
@@ -92,12 +93,14 @@ private:
 
     enum UrlPath {
         upHelp,
+        upCounterDescription,
         upRoot,
     };
 
     enum FilePath {
         fpFavoriteFilter,
         fpFilterHistory,
+        fpCounterDescription,
     };
 
     static QUrl url(UrlPath up);

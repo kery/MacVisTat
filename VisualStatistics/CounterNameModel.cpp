@@ -1,5 +1,26 @@
 #include "CounterNameModel.h"
 #include "CounterGraph.h"
+#include "GzipFile.h"
+#include "libcsv/csv.h"
+
+const QChar CounterNameModel::sNameSeparator(',');
+
+CounterId::CounterId(const QString &module, const QString &group, const QString &object) :
+    mModule(module),
+    mGroup(group),
+    mObject(object)
+{
+}
+
+bool CounterId::operator==(const CounterId &other) const
+{
+    return other.mModule == mModule && other.mGroup == mGroup && other.mObject == mObject;
+}
+
+uint qHash(const CounterId &cid, uint seed)
+{
+    return qHash(cid.mModule, seed) ^ qHash(cid.mModule, seed) ^ qHash(cid.mObject, seed);
+}
 
 CounterNameModel::CounterNameModel(QObject *parent) :
     QAbstractListModel(parent),
@@ -46,22 +67,6 @@ void CounterNameModel::clear()
     mMatchedIndexes.clear();
     mCounterNames.clear();
     endResetModel();
-}
-
-bool CounterNameModel::moduleNameTest(const QVector<QString> &moduleNames, const QString &counterName)
-{
-    if (moduleNames.isEmpty()) {
-        return true;
-    }
-    for (const QString &moduleName : moduleNames) {
-        if (counterName.length() > moduleName.length() + 1 &&
-            counterName[moduleName.length()] == CounterGraph::sNameSeparator &&
-            counterName.startsWith(moduleName))
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 // Use pcre for regular expression matching because the QRegExp
@@ -234,6 +239,30 @@ int CounterNameModel::totalCount() const
     return mCounterNames.size();
 }
 
+void CounterNameModel::parseCounterDescription(const QString &path)
+{
+    GzipFile reader;
+    if (!reader.open(path, GzipFile::ReadOnly)) {
+        return;
+    }
+
+    CsvCallbackUserData ud;
+    ud.columns.reserve(4);
+    ud.description = &mCounterDescription;
+
+    struct csv_parser parser;
+    csv_init(&parser, CSV_STRICT | CSV_STRICT_FINI | CSV_EMPTY_IS_NULL);
+
+    std::string line;
+    reader.readLineKeepCrLf(line); // Consume the header line
+    while (reader.readLineKeepCrLf(line)) {
+        csv_parse(&parser, line.c_str(), line.length(), libcsvCbEndOfField, libcsvCbEndOfRow, &ud);
+    }
+
+    csv_fini(&parser, libcsvCbEndOfField, libcsvCbEndOfRow, &ud);
+    csv_free(&parser);
+}
+
 bool CounterNameModel::canFetchMore(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
@@ -259,15 +288,73 @@ int CounterNameModel::rowCount(const QModelIndex &parent) const
 QVariant CounterNameModel::data(const QModelIndex &index, int role) const
 {
     if (index.isValid()) {
-        switch (role) {
-        case Qt::DisplayRole:
+        if (role == Qt::DisplayRole) {
             return mCounterNames[mMatchedIndexes[index.row()]];
-        case Qt::StatusTipRole:
-            break;
-        case IndexRole:
+        } else if (role == Qt::StatusTipRole) {
+            CounterId cid = getCounterId(mCounterNames[mMatchedIndexes[index.row()]]);
+            auto iter = mCounterDescription.find(cid);
+            if (iter != mCounterDescription.end()) {
+                return iter.value();
+            }
+        } else if (role == IndexRole) {
             // Skip the first 2 columns (##date;time;) in CSV file.
             return mMatchedIndexes[index.row()] + 2;
         }
     }
     return QVariant();
+}
+
+bool CounterNameModel::moduleNameTest(const QVector<QString> &moduleNames, const QString &counterName)
+{
+    if (moduleNames.isEmpty()) {
+        return true;
+    }
+    for (const QString &moduleName : moduleNames) {
+        if (counterName.length() > moduleName.length() + 1 &&
+            counterName[moduleName.length()] == sNameSeparator &&
+            counterName.startsWith(moduleName))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void CounterNameModel::libcsvCbEndOfField(void *field, size_t len, void *ud)
+{
+    auto ccud = static_cast<CsvCallbackUserData*>(ud);
+    ccud->columns.append(field ? QString::fromLatin1(static_cast<const char*>(field), static_cast<int>(len)) : QString());
+}
+
+void CounterNameModel::libcsvCbEndOfRow(int, void *ud)
+{
+    auto ccud = static_cast<CsvCallbackUserData*>(ud);
+    if (ccud->columns.size() == 4) {
+        CounterId cid(ccud->columns[0], ccud->columns[1], ccud->columns[2]);
+        ccud->description->insert(cid, ccud->columns[3]);
+    }
+    ccud->columns.clear();
+}
+
+CounterId CounterNameModel::getCounterId(const QString &name)
+{
+    QString module, group, object;
+    int pos1 = name.indexOf(sNameSeparator);
+    if (pos1 != -1) {
+        module = name.mid(0, pos1);
+        pos1 = name.indexOf(QLatin1String("GroupName="), pos1);
+        if (pos1 != -1) {
+            pos1 += 10;
+            int pos2 = name.indexOf(sNameSeparator, pos1);
+            if (pos2 != -1) {
+                group = name.mid(pos1, pos2 - pos1);
+            }
+        }
+        // NRD counter has no GroupName, so we continue to get the KPI-KCI Object field
+        pos1 = name.lastIndexOf(sNameSeparator);
+        if (pos1 != -1) {
+            object = name.mid(pos1 + 1);
+        }
+    }
+    return CounterId(module, group, object);
 }

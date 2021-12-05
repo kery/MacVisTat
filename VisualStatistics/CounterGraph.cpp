@@ -1,7 +1,9 @@
 #include "CounterGraph.h"
+#include "CounterNameModel.h"
 
 void CounterData::dummyDeleter(QCPGraphDataContainer *data)
 {
+    Q_UNUSED(data)
     // Do nothing
 }
 
@@ -14,8 +16,6 @@ bool CounterData::isAllZero(QSharedPointer<QCPGraphDataContainer> data)
     }
     return true;
 }
-
-const QChar CounterGraph::sNameSeparator(',');
 
 CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
     QCPGraph(keyAxis, valueAxis),
@@ -73,7 +73,7 @@ bool CounterGraph::isSuspect(double key)
 
 QString CounterGraph::getModuleName(const QString &fullName)
 {
-    int index = fullName.indexOf(sNameSeparator);
+    int index = fullName.indexOf(CounterNameModel::sNameSeparator);
     if (index > 0) {
         return fullName.left(index);
     }
@@ -82,13 +82,13 @@ QString CounterGraph::getModuleName(const QString &fullName)
 
 QString CounterGraph::getNameRightPart(const QString &name)
 {
-    return name.mid(name.lastIndexOf(sNameSeparator) + 1);
+    return name.mid(name.lastIndexOf(CounterNameModel::sNameSeparator) + 1);
 }
 
 QPair<QString, QString> CounterGraph::separateModuleName(const QString &fullName)
 {
     QPair<QString, QString> result;
-    int index = fullName.indexOf(sNameSeparator);
+    int index = fullName.indexOf(CounterNameModel::sNameSeparator);
     if (index > 0) {
         result.first = fullName.left(index);
         result.second = fullName.mid(index + 1);

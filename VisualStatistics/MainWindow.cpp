@@ -5,6 +5,7 @@
 #include "CounterFileParser.h"
 #include "Utils.h"
 #include <QNetworkProxyQuery>
+#include <QNetworkReply>
 
 #define SETTING_KEY_RECENT_FILES       "recentFileList"
 #define SETTING_KEY_CASE_SENSITIVE     "caseSensitive"
@@ -284,6 +285,27 @@ void MainWindow::filterFileChanged()
     ui->menuFilter->clear();
     loadFavoriteFilterMenu();
     appendInfoLog(QStringLiteral("finished reloading favorite filters"));
+}
+
+void MainWindow::fetchCounterDescriptionFinished()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+    reply->deleteLater();
+
+    QFile file(filePath(fpCounterDescription));
+    if (reply->error() == QNetworkReply::NoError) {
+        QByteArray netData = reply->readAll();
+        if (file.open(QIODevice::ReadWrite)) {
+            QByteArray fileData = file.readAll();
+            if (fileData != netData && file.resize(0)) {
+                file.write(netData);
+            }
+            file.close();
+        }
+    }
+
+    CounterNameModel *model = qobject_cast<CounterNameModel*>(ui->counterNameView->model());
+    model->parseCounterDescription(file.fileName());
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -582,7 +604,9 @@ void MainWindow::startCheckUpdateTask()
 
 void MainWindow::startFetchCounterDescriptionTask()
 {
-    // TODO
+    QNetworkRequest request(url(upCounterDescription));
+    QNetworkReply *reply = mNetMan.get(request);
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::fetchCounterDescriptionFinished);
 }
 
 void MainWindow::startUsageReport()
@@ -748,6 +772,8 @@ QUrl MainWindow::url(UrlPath up)
     switch (up) {
     case upHelp:
         return root.resolved(QStringLiteral("/help.html"));
+    case upCounterDescription:
+        return root.resolved(QStringLiteral("/counters.desc"));
     case upRoot:
         break;
     }
@@ -763,6 +789,8 @@ QString MainWindow::filePath(FilePath fp)
         return home.filePath(QStringLiteral(".vstat_filter_favorite.txt"));
     case fpFilterHistory:
         return home.filePath(QStringLiteral(".vstat_filter_hist"));
+    case fpCounterDescription:
+        return home.filePath(QStringLiteral(".vstat_stat_desc"));
     }
 
     return QString();
