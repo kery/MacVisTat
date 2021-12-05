@@ -4,7 +4,9 @@
 #include "ValueTipItem.h"
 #include "CommentItem.h"
 #include "MultiLineInputDialog.h"
+#include "CounterNameModel.h"
 #include "Utils.h"
+#include "GlobalDefines.h"
 
 #define WND_TITLE_SEP ", "
 
@@ -64,7 +66,7 @@ void PlotWindow::actionShowDeltaTriggered(bool checked)
 {
     for (int i = 0; i < ui->plot->graphCount(); ++i) {
         CounterGraph *graph = ui->plot->graph(i);
-        graph->setData(mPlotData.graphData(graph->fullName(), checked));
+        graph->setData(mPlotData.graphData(graph->name(), checked));
     }
 
     ui->plot->yAxis->rescale();
@@ -245,8 +247,8 @@ void PlotWindow::actionAddAggregateGraphTriggered()
 
     CounterGraph *newGraph = ui->plot->addGraph();
     auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
+    newGraph->setDisplayName(graphName);
     newGraph->setName(graphName);
-    newGraph->setFullName(graphName);
     newGraph->setPen(QPen(mColorPool.getColor()));
     newGraph->setData(newData);
     newGraph->setSuspectKeys(suspectKeys);
@@ -527,11 +529,11 @@ void PlotWindow::initGraphs()
 {
     const QList<QString> counterNames = mPlotData.counterNames();
     for (const QString &name : counterNames) {
-        auto pair = CounterGraph::separateModuleName(name);
+        auto pair = CounterNameModel::separateModuleName(name);
         CounterGraph *graph = ui->plot->addGraph();
         graph->setModuleName(pair.first);
-        graph->setName(pair.second);
-        graph->setFullName(name);
+        graph->setDisplayName(pair.second);
+        graph->setName(name);
         graph->setPen(QPen(mColorPool.getColor()));
         graph->setData(mPlotData.graphData(name));
         graph->setSuspectKeys(mPlotData.suspectKeys(name));
@@ -576,10 +578,10 @@ void PlotWindow::updateWindowTitle()
     QStringList strList;
     bool appendEllipsis = false;
     for (int i = 0; i < ui->plot->graphCount(); ++i) {
-        QString rightPart = CounterGraph::getNameRightPart(ui->plot->graph(i)->name());
-        if (!strList.contains(rightPart)) {
+        QString objName = CounterNameModel::getObjectName(ui->plot->graph(i)->name());
+        if (!strList.contains(objName)) {
             if (strList.size() < 3){
-                strList.append(rightPart);
+                strList.append(objName);
             } else {
                 appendEllipsis = true;
                 break;
@@ -650,7 +652,7 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
     if (graphs.isEmpty()) { return; }
 
     for (CounterGraph *graph : graphs) {
-        mPlotData.removeGraphData(graph->fullName());
+        mPlotData.removeGraphData(graph->name());
         if (mValueTip->tracerGraph() == graph) {
             mValueTip->hideWithAnimation();
             mValueTip->setTracerGraph(nullptr);

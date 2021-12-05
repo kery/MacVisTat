@@ -1,4 +1,5 @@
 #include "Utils.h"
+#include "GlobalDefines.h"
 #include <QMessageBox>
 
 double pointDistance(const QPointF &pt1, const QPointF &pt2)

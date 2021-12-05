@@ -1,7 +1,7 @@
 #include "CounterFileParser.h"
 #include "ProgressDialog.h"
 #include "GzipFile.h"
-#include "Utils.h"
+#include "GlobalDefines.h"
 #include <QtConcurrent>
 
 CounterFileParser::CounterFileParser(QWidget *parent) :

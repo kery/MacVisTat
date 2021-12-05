@@ -1,5 +1,5 @@
 #include "DateTimeTicker.h"
-#include "Utils.h"
+#include "GlobalDefines.h"
 
 DateTimeTicker::DateTimeTicker(QCPAxis *parentAxis) :
     mDisplayUtc(false),

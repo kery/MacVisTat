@@ -1,9 +1,12 @@
 #include "CounterNameModel.h"
 #include "CounterGraph.h"
 #include "GzipFile.h"
+#include "GlobalDefines.h"
 #include "libcsv/csv.h"
 
-const QChar CounterNameModel::sNameSeparator(',');
+QChar CounterNameModel::sModuleSeparator;
+QChar CounterNameModel::sGroupSeparator;
+QChar CounterNameModel::sIndexesSeparator;
 
 CounterId::CounterId(const QString &module, const QString &group, const QString &object) :
     mModule(module),
@@ -52,7 +55,7 @@ QStringList CounterNameModel::moduleNames() const
 {
     QSet<QString> result;
     for (const QString &counterName : mCounterNames) {
-        QString moduleName = CounterGraph::getModuleName(counterName);
+        QString moduleName = getModuleName(counterName);
         if (!moduleName.isEmpty()) {
             result.insert(moduleName);
         }
@@ -304,20 +307,39 @@ QVariant CounterNameModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-bool CounterNameModel::moduleNameTest(const QVector<QString> &moduleNames, const QString &counterName)
+void CounterNameModel::initSeparators()
 {
-    if (moduleNames.isEmpty()) {
-        return true;
+    QSettings setting;
+    sModuleSeparator = setting.value(SETTING_KEY_MODULE_SEP, ',').toChar();
+    sGroupSeparator = setting.value(SETTING_KEY_GROUP_SEP, ',').toChar();
+    sIndexesSeparator = setting.value(SETTING_KEY_INDEXES_SEP, ',').toChar();
+}
+
+QString CounterNameModel::getModuleName(const QString &name)
+{
+    int index = name.indexOf(sModuleSeparator);
+    if (index > 0) {
+        return name.left(index);
     }
-    for (const QString &moduleName : moduleNames) {
-        if (counterName.length() > moduleName.length() + 1 &&
-            counterName[moduleName.length()] == sNameSeparator &&
-            counterName.startsWith(moduleName))
-        {
-            return true;
-        }
+    return QString();
+}
+
+QString CounterNameModel::getObjectName(const QString &name)
+{
+    return name.mid(name.lastIndexOf(sIndexesSeparator) + 1);
+}
+
+QPair<QString, QString> CounterNameModel::separateModuleName(const QString &name)
+{
+    QPair<QString, QString> result;
+    int index = name.indexOf(sModuleSeparator);
+    if (index > 0) {
+        result.first = name.left(index);
+        result.second = name.mid(index + 1);
+    } else {
+        result.second = name;
     }
-    return false;
+    return result;
 }
 
 void CounterNameModel::libcsvCbEndOfField(void *field, size_t len, void *ud)
@@ -339,22 +361,38 @@ void CounterNameModel::libcsvCbEndOfRow(int, void *ud)
 CounterId CounterNameModel::getCounterId(const QString &name)
 {
     QString module, group, object;
-    int pos1 = name.indexOf(sNameSeparator);
+    int pos1 = name.indexOf(sModuleSeparator);
     if (pos1 != -1) {
         module = name.mid(0, pos1);
         pos1 = name.indexOf(QLatin1String("GroupName="), pos1);
         if (pos1 != -1) {
             pos1 += 10;
-            int pos2 = name.indexOf(sNameSeparator, pos1);
+            int pos2 = name.indexOf(sGroupSeparator, pos1);
             if (pos2 != -1) {
                 group = name.mid(pos1, pos2 - pos1);
             }
         }
         // NRD counter has no GroupName, so we continue to get the KPI-KCI Object field
-        pos1 = name.lastIndexOf(sNameSeparator);
+        pos1 = name.lastIndexOf(sIndexesSeparator);
         if (pos1 != -1) {
             object = name.mid(pos1 + 1);
         }
     }
     return CounterId(module, group, object);
+}
+
+bool CounterNameModel::moduleNameTest(const QVector<QString> &moduleNames, const QString &name)
+{
+    if (moduleNames.isEmpty()) {
+        return true;
+    }
+    for (const QString &moduleName : moduleNames) {
+        if (name.length() > moduleName.length() + 1 &&
+            name[moduleName.length()] == sModuleSeparator &&
+            name.startsWith(moduleName))
+        {
+            return true;
+        }
+    }
+    return false;
 }

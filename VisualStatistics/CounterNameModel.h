@@ -44,9 +44,10 @@ public:
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    static bool moduleNameTest(const QVector<QString> &moduleNames, const QString &counterName);
-
-    static const QChar sNameSeparator;
+    static void initSeparators();
+    static QString getModuleName(const QString &name);
+    static QString getObjectName(const QString &name);
+    static QPair<QString, QString> separateModuleName(const QString &name);
 
 private:
     struct CsvCallbackUserData
@@ -58,6 +59,14 @@ private:
     static void libcsvCbEndOfField(void *field, size_t len, void *ud);
     static void libcsvCbEndOfRow(int, void *ud);
     static CounterId getCounterId(const QString &name);
+    static bool moduleNameTest(const QVector<QString> &moduleNames, const QString &name);
+
+    // Module              Group                           Indexes                                                      KPI/KCI Object
+    // -------------------,-------------------------------,------------------------------------------------------------,--------------
+    // KPIReferencePointGX,KPI=ReferencePoint,GroupName=GX,vprnRouterName=vprn20,vrId=3,address=10.234.110.34,port=3868,VS.RxCcaI
+    static QChar sModuleSeparator;
+    static QChar sGroupSeparator;
+    static QChar sIndexesSeparator;
 
     int mFetchedCount;
     QVector<int> mMatchedIndexes;

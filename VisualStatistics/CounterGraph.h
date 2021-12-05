@@ -22,17 +22,14 @@ public:
     void setPen(const QPen &pen);
 
     QString moduleName() const;
-    void setModuleName(const QString &name);
-    QString fullName() const;
-    void setFullName(const QString &fullName);
+    void setModuleName(const QString &moduleName);
+    QString displayName() const;
+    void setDisplayName(const QString &displayName);
     void setScatterVisible(bool visible);
     const QSet<double> *suspectKeys() const;
     void setSuspectKeys(const QSet<double> *suspectKeys);
     bool isSuspect(double key);
 
-    static QString getModuleName(const QString &fullName);
-    static QString getNameRightPart(const QString &name);
-    static QPair<QString, QString> separateModuleName(const QString &fullName);
     static const QPainterPath &suspectPainterPath();
 
 public slots:
@@ -44,7 +41,7 @@ private:
     virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const override;
 
     QString mModuleName;
-    QString mFullName;
+    QString mDisplayName;
     const QSet<double> *mSuspectKeys;
     QCPScatterStyle mSuspectScatterStyle;
 

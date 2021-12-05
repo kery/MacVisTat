@@ -1,5 +1,5 @@
 #include "MultiLineInputDialog.h"
-#include "Utils.h"
+#include "GlobalDefines.h"
 #include <QEvent>
 
 MultiLineInputDialog::MultiLineInputDialog(QWidget *parent) :

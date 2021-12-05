@@ -36,19 +36,19 @@ QString CounterGraph::moduleName() const
     return mModuleName;
 }
 
-void CounterGraph::setModuleName(const QString &name)
+void CounterGraph::setModuleName(const QString &moduleName)
 {
-    mModuleName = name;
+    mModuleName = moduleName;
 }
 
-QString CounterGraph::fullName() const
+QString CounterGraph::displayName() const
 {
-    return mFullName;
+    return mDisplayName;
 }
 
-void CounterGraph::setFullName(const QString &fullName)
+void CounterGraph::setDisplayName(const QString &displayName)
 {
-    mFullName = fullName;
+    mDisplayName = displayName;
 }
 
 void CounterGraph::setScatterVisible(bool visible)
@@ -69,33 +69,6 @@ void CounterGraph::setSuspectKeys(const QSet<double> *suspectKeys)
 bool CounterGraph::isSuspect(double key)
 {
     return mSuspectKeys->contains(key);
-}
-
-QString CounterGraph::getModuleName(const QString &fullName)
-{
-    int index = fullName.indexOf(CounterNameModel::sNameSeparator);
-    if (index > 0) {
-        return fullName.left(index);
-    }
-    return QString();
-}
-
-QString CounterGraph::getNameRightPart(const QString &name)
-{
-    return name.mid(name.lastIndexOf(CounterNameModel::sNameSeparator) + 1);
-}
-
-QPair<QString, QString> CounterGraph::separateModuleName(const QString &fullName)
-{
-    QPair<QString, QString> result;
-    int index = fullName.indexOf(CounterNameModel::sNameSeparator);
-    if (index > 0) {
-        result.first = fullName.left(index);
-        result.second = fullName.mid(index + 1);
-    } else {
-        result.second = fullName;
-    }
-    return result;
 }
 
 const QPainterPath &CounterGraph::suspectPainterPath()

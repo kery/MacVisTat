@@ -3,13 +3,10 @@
 #include "PlotWindow.h"
 #include "CounterNameModel.h"
 #include "CounterFileParser.h"
+#include "GlobalDefines.h"
 #include "Utils.h"
 #include <QNetworkProxyQuery>
 #include <QNetworkReply>
-
-#define SETTING_KEY_RECENT_FILES       "recentFileList"
-#define SETTING_KEY_CASE_SENSITIVE     "caseSensitive"
-#define SETTING_KEY_HIDE_TIME_GAP      "hideTimeGap"
 
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow),
@@ -18,6 +15,7 @@ MainWindow::MainWindow() :
     mLogDateTimeFmt(DTFMT_DISPLAY),
     mResizeMan(this)
 {
+    CounterNameModel::initSeparators();
     ui->setupUi(this);
     setupFilterComboBox();
     setupNetworkAccessManager();

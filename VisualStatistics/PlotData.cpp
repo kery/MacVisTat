@@ -1,5 +1,5 @@
 #include "PlotData.h"
-#include "Utils.h"
+#include "GlobalDefines.h"
 
 PlotData::PlotData(int offsetFromUtc) :
     mKeyType(ktUnknown),

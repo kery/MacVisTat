@@ -38,6 +38,7 @@ HEADERS += \
     CounterNameModel.h \
     CounterPlot.h \
     DateTimeTicker.h \
+    GlobalDefines.h \
     GzipFile.h \
     MainWindow.h \
     MultiLineInputDialog.h \
