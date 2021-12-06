@@ -11,7 +11,8 @@ public:
     DateTimeTicker(QCPAxis *parentAxis);
 
     int skippedTicks() const;
-    void setDisplayUtc(bool displayUtc);
+    bool isUtcMode() const;
+    void setUtcMode(bool on);
     void setOffsetFromUtc(int offset);
     void setDateTimeVector(QVector<double> &&dtv);
 
@@ -25,7 +26,7 @@ private:
 
     static bool isValidOffsetFromUtc(int offset);
 
-    bool mDisplayUtc;
+    bool mUtcMode;
     int mSkippedTicks;
     int mOffsetFromUtc;
     QString mDateTimeFmt;

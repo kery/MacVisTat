@@ -25,7 +25,6 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     connect(ui->actionCopy, &QAction::triggered, this, &PlotWindow::actionCopyTriggered);
     connect(ui->actionRestore, &QAction::triggered, this, &PlotWindow::actionRestoreTriggered);
     connect(ui->actionShowDelta, &QAction::triggered, this, &PlotWindow::actionShowDeltaTriggered);
-    connect(ui->actionDisplayUtc, &QAction::triggered, this, &PlotWindow::actionDisplayUtcTriggered);
     connect(ui->actionRemoveZeroCounters, &QAction::triggered, this, &PlotWindow::actionRemoveZeroCountersTriggered);
     connect(ui->actionScript, &QAction::triggered, this, &PlotWindow::actionScriptTriggered);
 
@@ -79,7 +78,7 @@ void PlotWindow::actionShowDeltaTriggered(bool checked)
 void PlotWindow::actionDisplayUtcTriggered(bool checked)
 {
     auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
-    ticker->setDisplayUtc(checked);
+    ticker->setUtcMode(checked);
     updatePlotTitle();
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
@@ -396,6 +395,10 @@ void PlotWindow::contextMenuRequested(const QPoint &pos)
     QMenu *menu = new QMenu();
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
+    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
+    QAction *actionDisplayUtc = menu->addAction(QStringLiteral("Display UTC Time"), this, &PlotWindow::actionDisplayUtcTriggered);
+    actionDisplayUtc->setCheckable(true);
+    actionDisplayUtc->setChecked(ticker->isUtcMode());
     QAction *actionShowLegend = menu->addAction(QStringLiteral("Show Legend"), this, &PlotWindow::actionShowLegendTriggered);
     actionShowLegend->setCheckable(true);
     actionShowLegend->setChecked(ui->plot->legend->visible());
@@ -603,10 +606,11 @@ void PlotWindow::updatePlotTitle()
     title += QString::number(ui->plot->graphCount());
     title += ui->plot->graphCount() > 1 ? " Graphs" : " Graph";
 
+    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
     if (ui->actionShowDelta->isChecked()) {
         title += ", Delta";
     }
-    if (ui->actionDisplayUtc->isChecked()) {
+    if (ticker->isUtcMode()) {
         title += ", UTC";
     }
 
