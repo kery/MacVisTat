@@ -712,7 +712,7 @@ CounterGraph *PlotWindow::findNearestGraphData(const QPoint &pos, QCPGraphData &
     const double minKey = xAxis->pixelToCoord(pos.x() - radius);
     const double maxKey = xAxis->pixelToCoord(pos.x() + radius);
 
-    for (int i = ui->plot->graphCount() - 1; i >= 0; --i) {
+    for (int i = 0; i < ui->plot->graphCount(); ++i) {
         CounterGraph *graph = ui->plot->graph(i);
         if (!graph->visible()) {
             continue;
