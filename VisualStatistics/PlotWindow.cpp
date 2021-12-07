@@ -317,6 +317,11 @@ void PlotWindow::actionReverseSelectionTriggered()
 
 void PlotWindow::actionRemoveSelectedGraphsTriggered()
 {
+    int answer = showQuestionMsgBox(this, QStringLiteral("Do you want to remove the selected graphs?"));
+    if (answer != QMessageBox::Yes) {
+        return;
+    }
+
     QVector<CounterGraph*> graphsToRemove;
     for (int i = 0; i < ui->plot->graphCount(); ++i) {
         CounterGraph *graph = ui->plot->graph(i);
@@ -731,6 +736,7 @@ CounterGraph *PlotWindow::findNearestGraphData(const QPoint &pos, QCPGraphData &
             QPointF dataPos(xAxis->coordToPixel(iter->key), yAxis->coordToPixel(iter->value));
             double distance = pointDistance(pos, dataPos);
             if (distance < radius && distance < minDistance) {
+                minDistance = distance;
                 resultGraph = graph;
                 data = *iter;
             }
