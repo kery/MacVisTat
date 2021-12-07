@@ -5,11 +5,17 @@
 #include <QtConcurrent>
 
 CounterFileParser::CounterFileParser(QWidget *parent) :
-    mParent(parent)
+    mParent(parent),
+    mOffsetFromUtc(std::numeric_limits<int>::max())
 {
 }
 
-QString CounterFileParser::parseHeader(const QString &path, QVector<QString> &names, int &offsetFromUtc)
+int CounterFileParser::offsetFromUtc() const
+{
+    return mOffsetFromUtc;
+}
+
+QString CounterFileParser::parseHeader(const QString &path, QVector<QString> &names)
 {
     ProgressDialog dlg(mParent);
     dlg.setDescription(QStringLiteral("Parsing counter file header..."));
@@ -17,7 +23,7 @@ QString CounterFileParser::parseHeader(const QString &path, QVector<QString> &na
     dlg.setCancelButtonVisible(false);
 
     QString error;
-    auto runner = std::bind(parseHeaderInternal, std::ref(path), std::ref(offsetFromUtc), std::ref(error));
+    auto runner = std::bind(parseHeaderInternal, std::ref(path), std::ref(mOffsetFromUtc), std::ref(error));
 
     QFutureWatcher<std::string> watcher;
     QObject::connect(&watcher, &QFutureWatcher<std::string>::finished, &dlg, &ProgressDialog::accept);
@@ -86,9 +92,10 @@ std::string CounterFileParser::parseHeaderInternal(const QString &path, int &off
     }
 
     if (header[11] != ';') {
-        offsetFromUtc = atoi(header.c_str() + 11);
-    } else {
-        offsetFromUtc = std::numeric_limits<int>::max();
+        int offsetSeconds = atoi(header.c_str() + 11);
+        if (isValidOffsetFromUtc(offsetSeconds)) {
+            offsetFromUtc = offsetSeconds;
+        }
     }
 
     return header;
@@ -255,4 +262,11 @@ void CounterFileParser::splitHeader(const char *str, QVector<QString> &out)
     if (*str) {
         out.append(QString(str));
     }
+}
+
+bool CounterFileParser::isValidOffsetFromUtc(int offset)
+{
+    // https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
+    // >= -12:00 <= +14:00
+    return offset >= -(12 * 3600) && offset <= (14 * 3600);
 }

@@ -11,12 +11,16 @@ public:
     DateTimeTicker(QCPAxis *parentAxis);
 
     int skippedTicks() const;
-    bool isUtcMode() const;
-    void setUtcMode(bool on);
+    bool utcDisplay() const;
+    void setUtcDisplay(bool on);
     void setOffsetFromUtc(int offset);
     void setDateTimeVector(QVector<double> &&dtv);
+    bool setBeginDateTime(const QDateTime &dateTime);
+    bool setEndDateTime(const QDateTime &dateTime);
 
 signals:
+    void beginDateTimeChanged(const QDateTime &dateTime);
+    void endDateTimeChanged(const QDateTime &dateTime);
     void skippedTicksChanged(int skipped);
 
 private:
@@ -24,14 +28,16 @@ private:
     virtual QString getTickLabel(double tick, const QLocale &locale, QChar formatChar, int precision) override;
     virtual QVector<double> createTickVector(double tickStep, const QCPRange &range) override;
 
-    static bool isValidOffsetFromUtc(int offset);
+    QDateTime dateTimeFromKey(double key) const;
+    double dateTimeToKey(const QDateTime &dateTime) const;
 
-    bool mUtcMode;
+    bool mUtcDisplay;
     int mSkippedTicks;
     int mOffsetFromUtc;
     QString mDateTimeFmt;
     QCPAxis *mParentAxis;
     QVector<double> mDateTimeVector;
+    QDateTime mBeginDateTime, mEndDateTime;
 };
 
 #endif // DATETIMETICKER_H

@@ -2,7 +2,7 @@
 #include "GlobalDefines.h"
 
 DateTimeTicker::DateTimeTicker(QCPAxis *parentAxis) :
-    mUtcMode(false),
+    mUtcDisplay(false),
     mSkippedTicks(-1),
     mOffsetFromUtc(0),
     mDateTimeFmt(DTFMT_DISPLAY),
@@ -16,26 +16,44 @@ int DateTimeTicker::skippedTicks() const
     return mSkippedTicks;
 }
 
-bool DateTimeTicker::isUtcMode() const
+bool DateTimeTicker::utcDisplay() const
 {
-    return mUtcMode;
+    return mUtcDisplay;
 }
 
-void DateTimeTicker::setUtcMode(bool on)
+void DateTimeTicker::setUtcDisplay(bool on)
 {
-    mUtcMode = on;
+    mUtcDisplay = on;
 }
 
 void DateTimeTicker::setOffsetFromUtc(int offset)
 {
-    if (isValidOffsetFromUtc(offset)) {
-        mOffsetFromUtc = offset;
-    }
+    mOffsetFromUtc = offset;
 }
 
 void DateTimeTicker::setDateTimeVector(QVector<double> &&dtv)
 {
     mDateTimeVector.swap(dtv);
+}
+
+bool DateTimeTicker::setBeginDateTime(const QDateTime &dateTime)
+{
+    double key = dateTimeToKey(dateTime);
+    if (key > -1) {
+        mParentAxis->setRangeLower(key);
+        return true;
+    }
+    return false;
+}
+
+bool DateTimeTicker::setEndDateTime(const QDateTime &dateTime)
+{
+    double key = dateTimeToKey(dateTime);
+    if (key > -1) {
+        mParentAxis->setRangeUpper(key);
+        return true;
+    }
+    return false;
 }
 
 int DateTimeTicker::getSubTickCount(double tickStep)
@@ -49,35 +67,21 @@ QString DateTimeTicker::getTickLabel(double tick, const QLocale &locale, QChar f
     Q_UNUSED(locale)
     Q_UNUSED(formatChar)
     Q_UNUSED(precision)
-    QDateTime dateTime;
-    if (mDateTimeVector.isEmpty()) {
-        dateTime = QDateTime::fromSecsSinceEpoch(tick);
-    } else {
-        int index = static_cast<int>(tick);
-        if (index >= 0 && index < mDateTimeVector.size()) {
-            dateTime = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
-        }
-    }
-    if (!dateTime.isNull()) {
-        if (mUtcMode) {
-            dateTime.setOffsetFromUtc(mOffsetFromUtc);
-            dateTime = dateTime.toUTC();
-        }
-        return dateTime.toString(mDateTimeFmt);
-    }
-    return QString();
+    QDateTime dateTime = dateTimeFromKey(tick);
+    return dateTime.toString(mDateTimeFmt);
 }
 
 QVector<double> DateTimeTicker::createTickVector(double tickStep, const QCPRange &range)
 {
     Q_UNUSED(tickStep)
     QVector<double> result;
+    QDateTime beginDateTime, endDateTime;
     QCustomPlot *plot = mParentAxis->parentPlot();
     if (plot->graphCount() > 0 && plot->graph(0)->dataCount() > 0) {
         QSharedPointer<QCPGraphDataContainer> data = plot->graph(0)->data();
         double fontHeight = QFontMetricsF(mParentAxis->tickLabelFont()).height();
         double prePos = -fontHeight;
-        auto iterBegin = data->findBegin(range.lower, false), iterEnd = data->findBegin(range.upper, false);
+        auto iterBegin = data->findBegin(range.lower, false), iterEnd = data->findEnd(range.upper, false);
         for (auto iter = iterBegin; iter != iterEnd; ++iter) {
             double curPos = mParentAxis->coordToPixel(iter->key);
             if (curPos - prePos >= fontHeight) {
@@ -85,18 +89,64 @@ QVector<double> DateTimeTicker::createTickVector(double tickStep, const QCPRange
                 prePos = curPos;
             }
         }
+
         int skippedTicks = iterEnd - iterBegin - result.size();
         if (skippedTicks != mSkippedTicks) {
             mSkippedTicks = skippedTicks;
             emit skippedTicksChanged(mSkippedTicks);
         }
+
+        if (!result.isEmpty()) {
+            beginDateTime = dateTimeFromKey(iterBegin->key);
+        }
+        if (iterBegin != iterEnd) {
+            endDateTime = dateTimeFromKey((iterEnd - 1)->key);
+        }
+        if (beginDateTime != mBeginDateTime || beginDateTime.timeSpec() != mBeginDateTime.timeSpec()) {
+            mBeginDateTime = beginDateTime;
+            emit beginDateTimeChanged(mBeginDateTime);
+        }
+        if (endDateTime != mEndDateTime || endDateTime.timeSpec() != mEndDateTime.timeSpec()) {
+            mEndDateTime = endDateTime;
+            emit endDateTimeChanged(mEndDateTime);
+        }
     }
     return result;
 }
 
-bool DateTimeTicker::isValidOffsetFromUtc(int offset)
+QDateTime DateTimeTicker::dateTimeFromKey(double key) const
 {
-    // https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
-    // >= -12:00 <= +14:00
-    return offset >= -(12 * 3600) && offset <= (14 * 3600);
+    QDateTime dateTime;
+    if (mDateTimeVector.isEmpty()) {
+        dateTime = QDateTime::fromSecsSinceEpoch(key);
+    } else {
+        int index = static_cast<int>(key);
+        if (index >= 0 && index < mDateTimeVector.size()) {
+            dateTime = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
+        }
+    }
+    if (!dateTime.isNull() && mUtcDisplay) {
+        dateTime.setOffsetFromUtc(mOffsetFromUtc);
+        return dateTime.toUTC();
+    }
+    return dateTime;
+}
+
+double DateTimeTicker::dateTimeToKey(const QDateTime &dateTime) const
+{
+    QDateTime localTime;
+    if (dateTime.timeSpec() == Qt::UTC) {
+        localTime = dateTime.toOffsetFromUtc(mOffsetFromUtc);
+        localTime.setTimeSpec(Qt::LocalTime);
+    } else {
+        localTime = dateTime;
+    }
+    if (mDateTimeVector.isEmpty()) {
+        return localTime.toSecsSinceEpoch();
+    }
+    auto iter = std::upper_bound(mDateTimeVector.constBegin(), mDateTimeVector.constEnd(), localTime.toSecsSinceEpoch());
+    if (iter != mDateTimeVector.end()) {
+        return iter - mDateTimeVector.begin() - 1;
+    }
+    return -1;
 }

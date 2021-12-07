@@ -20,6 +20,7 @@ PlotWindow::PlotWindow(PlotData &plotData) :
 {
     ui->setupUi(this);
     setupPlot();
+    setupDateTimeEdits();
 
     mValueTip = new ValueTipItem(ui->plot);
 
@@ -80,7 +81,7 @@ void PlotWindow::actionShowDeltaTriggered(bool checked)
 void PlotWindow::actionDisplayUtcTriggered(bool checked)
 {
     auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
-    ticker->setUtcMode(checked);
+    ticker->setUtcDisplay(checked);
     updatePlotTitle();
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
@@ -402,10 +403,6 @@ void PlotWindow::contextMenuRequested(const QPoint &pos)
     QMenu *menu = new QMenu();
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
-    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
-    QAction *actionDisplayUtc = menu->addAction(QStringLiteral("Display UTC Time"), this, &PlotWindow::actionDisplayUtcTriggered);
-    actionDisplayUtc->setCheckable(true);
-    actionDisplayUtc->setChecked(ticker->isUtcMode());
     QAction *actionShowLegend = menu->addAction(QStringLiteral("Show Legend"), this, &PlotWindow::actionShowLegendTriggered);
     actionShowLegend->setCheckable(true);
     actionShowLegend->setChecked(ui->plot->legend->visible());
@@ -424,6 +421,11 @@ void PlotWindow::contextMenuRequested(const QPoint &pos)
         static_cast<int>(Qt::AlignBottom | Qt::AlignCenter));
     menuMoveLegend->addAction(QStringLiteral("Bottom Right"), this, &PlotWindow::actionMoveLegendTriggered)->setData(
         static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
+
+    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
+    QAction *actionDisplayUtc = menu->addAction(QStringLiteral("Display UTC Time"), this, &PlotWindow::actionDisplayUtcTriggered);
+    actionDisplayUtc->setCheckable(true);
+    actionDisplayUtc->setChecked(ticker->utcDisplay());
 
     menu->addSeparator();
 
@@ -493,6 +495,38 @@ void PlotWindow::plotMouseMove(QMouseEvent *event)
     }
 }
 
+void PlotWindow::axisBeginDateTimeChanged(const QDateTime &dateTime)
+{
+    const QSignalBlocker blocker(mDtEditBegin);
+    mDtEditBegin->setTimeSpec(dateTime.timeSpec());
+    mDtEditBegin->setDateTime(dateTime);
+}
+
+void PlotWindow::axisEndDateTimeChanged(const QDateTime &dateTime)
+{
+    const QSignalBlocker blocker(mDtEditEnd);
+    mDtEditEnd->setTimeSpec(dateTime.timeSpec());
+    mDtEditEnd->setDateTime(dateTime);
+}
+
+void PlotWindow::editBeginDateTimeChanged(const QDateTime &dateTime)
+{
+    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
+    const QSignalBlocker blocker(ticker.data());
+    if (ticker->setBeginDateTime(dateTime)) {
+        ui->plot->replot(QCustomPlot::rpImmediateRefresh);
+    }
+}
+
+void PlotWindow::editEndDateTimeChanged(const QDateTime &dateTime)
+{
+    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
+    const QSignalBlocker blocker(ticker.data());
+    if (ticker->setEndDateTime(dateTime)) {
+        ui->plot->replot(QCustomPlot::rpImmediateRefresh);
+    }
+}
+
 void PlotWindow::setupPlot()
 {
     QColor color(70, 50, 200);
@@ -533,6 +567,29 @@ void PlotWindow::setupPlot()
     connect(ui->plot, &CounterPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
     connect(ui->plot, &CounterPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequested);
     connect(ui->plot, &CounterPlot::mouseMove, this, &PlotWindow::plotMouseMove);
+}
+
+void PlotWindow::setupDateTimeEdits()
+{
+    QWidget *spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    ui->toolBar->addWidget(spacer);
+    mDtEditBegin = new QDateTimeEdit();
+    mDtEditBegin->setDisplayFormat(DTFMT_DISPLAY);
+    ui->toolBar->addWidget(mDtEditBegin);
+    spacer = new QWidget();
+    spacer->setMinimumWidth(5);
+    spacer->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+    ui->toolBar->addWidget(spacer);
+    mDtEditEnd = new QDateTimeEdit();
+    mDtEditEnd->setDisplayFormat(DTFMT_DISPLAY);
+    ui->toolBar->addWidget(mDtEditEnd);
+
+    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
+    connect(ticker.data(), &DateTimeTicker::beginDateTimeChanged, this, &PlotWindow::axisBeginDateTimeChanged);
+    connect(ticker.data(), &DateTimeTicker::endDateTimeChanged, this, &PlotWindow::axisEndDateTimeChanged);
+    connect(mDtEditBegin, &QDateTimeEdit::dateTimeChanged, this, &PlotWindow::editBeginDateTimeChanged);
+    connect(mDtEditEnd, &QDateTimeEdit::dateTimeChanged, this, &PlotWindow::editEndDateTimeChanged);
 }
 
 void PlotWindow::initGraphs()
@@ -617,7 +674,7 @@ void PlotWindow::updatePlotTitle()
     if (ui->actionShowDelta->isChecked()) {
         title += ", Delta";
     }
-    if (ticker->isUtcMode()) {
+    if (ticker->utcDisplay()) {
         title += ", UTC";
     }
 

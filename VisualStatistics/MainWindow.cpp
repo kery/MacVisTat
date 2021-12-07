@@ -645,9 +645,10 @@ bool MainWindow::parseCounterFileHeader(const QString &path)
 {
     QVector<QString> counterNames;
     CounterFileParser parser(this);
-    QString error = parser.parseHeader(path, counterNames, mOffsetFromUtc);
+    QString error = parser.parseHeader(path, counterNames);
     if (error.isEmpty()) {
         CounterNameModel *model = qobject_cast<CounterNameModel*>(ui->counterNameView->model());
+        mOffsetFromUtc = parser.offsetFromUtc();
         model->setCounterNames(counterNames);
         ui->moduleNameView->addItems(model->moduleNames());
 
@@ -697,8 +698,8 @@ void MainWindow::parseCounterFileData(bool multiWnd)
         }
     }
 
-    CounterFileParser parser(this);
     CounterDataMap dataMap;
+    CounterFileParser parser(this);
     QString error = parser.parseData(mCounterFilePath, inm, dataMap);
     if (error.isEmpty()) {
         QSettings setting;

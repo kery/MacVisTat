@@ -43,9 +43,14 @@ private slots:
     void skippedTicksChanged(int skipped);
     void contextMenuRequested(const QPoint &pos);
     void plotMouseMove(QMouseEvent *event);
+    void axisBeginDateTimeChanged(const QDateTime &dateTime);
+    void axisEndDateTimeChanged(const QDateTime &dateTime);
+    void editBeginDateTimeChanged(const QDateTime &dateTime);
+    void editEndDateTimeChanged(const QDateTime &dateTime);
 
 private:
     void setupPlot();
+    void setupDateTimeEdits();
     void initGraphs();
     void adjustYAxisRange();
     void highlightTimeGap();
@@ -65,6 +70,7 @@ private:
 
     Ui::PlotWindow *ui;
     ValueTipItem *mValueTip;
+    QDateTimeEdit *mDtEditBegin, *mDtEditEnd;
     PlotData mPlotData;
     ColorPool mColorPool;
     int mLastSelLegItemIndex;
