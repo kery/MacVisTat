@@ -716,9 +716,15 @@ void MainWindow::parseCounterFileData(bool multiWnd)
 
 void MainWindow::processPlotData(PlotData &plotData, bool multiWnd)
 {
-    if (multiWnd && plotData.dataCount() > 1) {
+    if (multiWnd && plotData.size() > 1) {
+        QSettings setting;
+        bool ignoreConstant = setting.value(SETTING_KEY_IGNORE_CONSTANT, true).toBool();
         std::unique_ptr<PlotData[]> plotDataPtr = plotData.split();
-        for (int i = 0; i < plotData.dataCount(); ++i) {
+        for (int i = 0; i < plotData.size(); ++i) {
+            if (ignoreConstant && CounterData::isConstant(plotDataPtr[i].firstCounterData())) {
+                appendInfoLog("ignored constant counter " + plotDataPtr[i].firstCounterName());
+                continue;
+            }
             processPlotData(plotDataPtr[i], false);
         }
     } else {

@@ -9,6 +9,7 @@ CONFIG += c++11
 SOURCES += \
     ColorPool.cpp \
     CommentItem.cpp \
+    CounterData.cpp \
     CounterFileParser.cpp \
     CounterGraph.cpp \
     CounterLegendItem.cpp \
@@ -32,6 +33,7 @@ SOURCES += \
 HEADERS += \
     ColorPool.h \
     CommentItem.h \
+    CounterData.h \
     CounterFileParser.h \
     CounterGraph.h \
     CounterLegendItem.h \

@@ -1,22 +1,6 @@
 #include "CounterGraph.h"
 #include "CounterNameModel.h"
 
-void CounterData::dummyDeleter(QCPGraphDataContainer *data)
-{
-    Q_UNUSED(data)
-    // Do nothing
-}
-
-bool CounterData::isAllZero(QSharedPointer<QCPGraphDataContainer> data)
-{
-    for (auto iter = data->begin(), end = data->end(); iter != end; ++iter) {
-        if (!qIsNaN(iter->value) && !qFuzzyCompare(iter->value, 0.0)) {
-            return false;
-        }
-    }
-    return true;
-}
-
 CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
     QCPGraph(keyAxis, valueAxis),
     mSuspectKeys(nullptr)

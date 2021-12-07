@@ -1,8 +1,9 @@
 #include "CounterNameModel.h"
-#include "CounterGraph.h"
 #include "GzipFile.h"
 #include "GlobalDefines.h"
 #include "libcsv/csv.h"
+#include <QSet>
+#include <QSettings>
 
 QChar CounterNameModel::sModuleSeparator;
 QChar CounterNameModel::sGroupSeparator;

@@ -3,15 +3,6 @@
 
 #include "qcustomplot/qcustomplot.h"
 
-struct CounterData
-{
-    QSet<double> suspectKeys;
-    QCPGraphDataContainer data;
-
-    static void dummyDeleter(QCPGraphDataContainer *data);
-    static bool isAllZero(QSharedPointer<QCPGraphDataContainer> data);
-};
-
 class CounterGraph : public QCPGraph
 {
     Q_OBJECT

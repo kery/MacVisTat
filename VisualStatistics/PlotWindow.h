@@ -7,6 +7,7 @@
 
 namespace Ui { class PlotWindow; }
 
+class CounterGraph;
 class ValueTipItem;
 class CommentItem;
 

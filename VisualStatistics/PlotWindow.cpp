@@ -1,5 +1,7 @@
 #include "PlotWindow.h"
 #include "ui_PlotWindow.h"
+#include "CounterGraph.h"
+#include "CounterData.h"
 #include "DateTimeTicker.h"
 #include "ValueTipItem.h"
 #include "CommentItem.h"
@@ -65,7 +67,7 @@ void PlotWindow::actionShowDeltaTriggered(bool checked)
 {
     for (int i = 0; i < ui->plot->graphCount(); ++i) {
         CounterGraph *graph = ui->plot->graph(i);
-        graph->setData(mPlotData.graphData(graph->name(), checked));
+        graph->setData(mPlotData.counterData(graph->name(), checked));
     }
 
     ui->plot->yAxis->rescale();
@@ -194,7 +196,7 @@ void PlotWindow::actionAddAggregateGraphTriggered()
     if (graphName.isEmpty()) {
         return;
     }
-    QSharedPointer<QCPGraphDataContainer> newData = mPlotData.addGraphData(graphName);
+    QSharedPointer<QCPGraphDataContainer> newData = mPlotData.addCounterData(graphName);
     if (!newData) {
         showErrorMsgBox(this, QStringLiteral("Graph name \"%1\" already exists!").arg(graphName));
         return;
@@ -538,7 +540,7 @@ void PlotWindow::initGraphs()
         graph->setDisplayName(pair.second);
         graph->setName(name);
         graph->setPen(QPen(mColorPool.getColor()));
-        graph->setData(mPlotData.graphData(name));
+        graph->setData(mPlotData.counterData(name));
         graph->setSuspectKeys(mPlotData.suspectKeys(name));
     }
 
@@ -656,7 +658,7 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
     if (graphs.isEmpty()) { return; }
 
     for (CounterGraph *graph : graphs) {
-        mPlotData.removeGraphData(graph->name());
+        mPlotData.removeCounterData(graph->name());
         if (mValueTip->tracerGraph() == graph) {
             mValueTip->hideWithAnimation();
             mValueTip->setTracerGraph(nullptr);

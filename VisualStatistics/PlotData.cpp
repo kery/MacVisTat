@@ -22,7 +22,7 @@ QVector<double> PlotData::dateTimeVector() const
     return mDateTimeVector;
 }
 
-int PlotData::dataCount() const
+int PlotData::size() const
 {
     return mDataMap.size();
 }
@@ -92,7 +92,23 @@ QList<QString> PlotData::counterNames() const
     return mDataMap.keys();
 }
 
-QSharedPointer<QCPGraphDataContainer> PlotData::graphData(const QString &name, bool delta)
+QString PlotData::firstCounterName() const
+{
+    if (mDataMap.isEmpty()) {
+        return QString();
+    }
+    return mDataMap.firstKey();
+}
+
+QSharedPointer<QCPGraphDataContainer> PlotData::firstCounterData()
+{
+    if (mDataMap.isEmpty()) {
+        return QSharedPointer<QCPGraphDataContainer>();
+    }
+    return QSharedPointer<QCPGraphDataContainer>(&mDataMap.first().data, CounterData::dummyDeleter);
+}
+
+QSharedPointer<QCPGraphDataContainer> PlotData::counterData(const QString &name, bool delta)
 {
     if (!mDataMap.contains(name)) {
         return QSharedPointer<QCPGraphDataContainer>();
@@ -117,7 +133,7 @@ QSharedPointer<QCPGraphDataContainer> PlotData::graphData(const QString &name, b
     return QSharedPointer<QCPGraphDataContainer>(&mDataMap[name].data, CounterData::dummyDeleter);
 }
 
-QSharedPointer<QCPGraphDataContainer> PlotData::addGraphData(const QString &name)
+QSharedPointer<QCPGraphDataContainer> PlotData::addCounterData(const QString &name)
 {
     if (mDataMap.contains(name)) {
         return QSharedPointer<QCPGraphDataContainer>();
@@ -133,7 +149,7 @@ QSet<double> *PlotData::suspectKeys(const QString &name)
     return nullptr;
 }
 
-void PlotData::removeGraphData(const QString &name)
+void PlotData::removeCounterData(const QString &name)
 {
     auto iter = mDataMap.find(name);
     if (iter != mDataMap.end()) {
