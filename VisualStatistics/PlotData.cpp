@@ -27,7 +27,7 @@ int PlotData::size() const
     return mDataMap.size();
 }
 
-QString PlotData::dateTimeString(double key)
+QDateTime PlotData::dateTimeFromKey(double key)
 {
     QDateTime dateTime;
     if (mKeyType == ktDateTime) {
@@ -38,7 +38,7 @@ QString PlotData::dateTimeString(double key)
             dateTime = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
         }
     }
-    return dateTime.toString(DTFMT_DISPLAY);
+    return dateTime;
 }
 
 double PlotData::getSampleInterval() const

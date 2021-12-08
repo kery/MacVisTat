@@ -422,10 +422,9 @@ void PlotWindow::contextMenuRequested(const QPoint &pos)
     menuMoveLegend->addAction(QStringLiteral("Bottom Right"), this, &PlotWindow::actionMoveLegendTriggered)->setData(
         static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
 
-    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
     QAction *actionDisplayUtc = menu->addAction(QStringLiteral("Display UTC Time"), this, &PlotWindow::actionDisplayUtcTriggered);
     actionDisplayUtc->setCheckable(true);
-    actionDisplayUtc->setChecked(ticker->utcDisplay());
+    actionDisplayUtc->setChecked(utcDisplay());
 
     menu->addSeparator();
 
@@ -490,7 +489,12 @@ void PlotWindow::plotMouseMove(QMouseEvent *event)
             mValueTip->setTracerPen(graph->pen());
             mValueTip->setTracerGraph(graph);
         }
-        mValueTip->setValueInfo(graph->name(), mPlotData.dateTimeString(data.key), QString::number(data.value, 'f', 2), graph->isSuspect(data.key));
+        QDateTime dateTime = mPlotData.dateTimeFromKey(data.key);
+        if (utcDisplay()) {
+            dateTime.setOffsetFromUtc(mPlotData.offsetFromUtc());
+            dateTime = dateTime.toUTC();
+        }
+        mValueTip->setValueInfo(graph->name(), dateTime, QString::number(data.value, 'f', 2), graph->isSuspect(data.key));
         mValueTip->showWithAnimation();
     }
 }
@@ -670,16 +674,21 @@ void PlotWindow::updatePlotTitle()
     title += QString::number(ui->plot->graphCount());
     title += ui->plot->graphCount() > 1 ? " Graphs" : " Graph";
 
-    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
     if (ui->actionShowDelta->isChecked()) {
         title += ", Delta";
     }
-    if (ticker->utcDisplay()) {
+    if (utcDisplay()) {
         title += ", UTC";
     }
 
     title += ')';
     ui->plot->xAxis2->setLabel(title);
+}
+
+bool PlotWindow::utcDisplay() const
+{
+    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
+    return ticker->utcDisplay();
 }
 
 QString PlotWindow::defaultSaveFileName() const

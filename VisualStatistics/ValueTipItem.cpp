@@ -1,5 +1,6 @@
 #include "ValueTipItem.h"
 #include "CounterGraph.h"
+#include "GlobalDefines.h"
 
 #define TRACER_SIZE 10.0
 
@@ -89,14 +90,17 @@ void ValueTipItem::setTracerPen(const QPen &pen)
     mTracer->setSelectedBrush(color);
 }
 
-void ValueTipItem::setValueInfo(const QString &name, const QString &dateTime, const QString &value, bool suspect)
+void ValueTipItem::setValueInfo(const QString &name, const QDateTime &dateTime, const QString &value, bool suspect)
 {
     mGraphName = name;
     mGraphValue = value;
 
     QString text = name;
     text += '\n';
-    text += dateTime;
+    text += dateTime.toString(DTFMT_DISPLAY);
+    if (dateTime.timeSpec() == Qt::UTC) {
+        text += " (UTC)";
+    }
     text += '\n';
     text += value;
     if (suspect) {

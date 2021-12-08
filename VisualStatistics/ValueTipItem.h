@@ -21,7 +21,7 @@ public:
     double tracerGraphKey() const;
     void setTracerGraphKey(double key);
     void setTracerPen(const QPen &pen);
-    void setValueInfo(const QString &name, const QString &dateTime, const QString &value, bool suspect);
+    void setValueInfo(const QString &name, const QDateTime &dateTime, const QString &value, bool suspect);
     void showWithAnimation();
     void hideWithAnimation();
 

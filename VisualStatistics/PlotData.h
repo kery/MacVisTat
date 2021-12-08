@@ -24,7 +24,7 @@ public:
     int offsetFromUtc() const;
     QVector<double> dateTimeVector() const;
     int size() const;
-    QString dateTimeString(double key);
+    QDateTime dateTimeFromKey(double key);
     double getSampleInterval() const;
     void setCounterDataMap(KeyType keyType, CounterDataMap &dataMap);
     QList<QString> counterNames() const;

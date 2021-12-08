@@ -56,6 +56,7 @@ private:
     void highlightTimeGap();
     void updateWindowTitle();
     void updatePlotTitle();
+    bool utcDisplay() const;
     QString defaultSaveFileName() const;
     QString getInputComment(const QString &text);
     QVector<CommentItem*> commentItemsOfGraph(CounterGraph *graph) const;
