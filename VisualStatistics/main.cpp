@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "CounterName.h"
 #include <QFile>
 #include <QStyleFactory>
 #include <QApplication>
@@ -23,6 +24,7 @@ int main(int argc, char *argv[])
     // informations
     QCoreApplication::setOrganizationName("Nokia");
     QCoreApplication::setApplicationName("VisualStatistics");
+    CounterName::initSeparators();
 
     // Close stdin so that calling lua functions, which reads stdin, from
     // script window will not hang UI thread.

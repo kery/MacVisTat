@@ -7,6 +7,7 @@
 #include <QNetworkAccessManager>
 #include <array>
 #include "ResizeManager.h"
+#include "CounterDescription.h"
 
 namespace Ui { class MainWindow; }
 
@@ -78,7 +79,7 @@ private:
     bool parseCounterFileHeader(const QString &path);
     void parseCounterFileData(bool multiWnd);
     void processPlotData(PlotData &plotData, bool multiWnd);
-    PlotWindow *createPlotWindow(PlotData &plotData) const;
+    PlotWindow *createPlotWindow(PlotData &plotData);
 
     enum LogLevel {
         llInfo,
@@ -109,7 +110,7 @@ private:
 
     Ui::MainWindow *ui;
     int mOffsetFromUtc;
-    QLabel *mCntNameInfoLabel;
+    QLabel *mStatusBarLabel;
     bool mCaseSensitive;
     QString mCounterFilePath;
     QString mLogDateTimeFmt;
@@ -118,6 +119,7 @@ private:
     QFileSystemWatcher mFilterFileWatcher;
     ResizeManager mResizeMan;
     QNetworkAccessManager mNetMan;
+    CounterDescription mCounterDesc;
 };
 
 #endif // MAINWINDOW_H

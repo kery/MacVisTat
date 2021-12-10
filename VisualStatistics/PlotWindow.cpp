@@ -6,6 +6,7 @@
 #include "ValueTipItem.h"
 #include "CommentItem.h"
 #include "MultiLineInputDialog.h"
+#include "CounterName.h"
 #include "CounterNameModel.h"
 #include "Utils.h"
 #include "GlobalDefines.h"
@@ -41,6 +42,11 @@ PlotWindow::PlotWindow(PlotData &plotData) :
 PlotWindow::~PlotWindow()
 {
     delete ui;
+}
+
+void PlotWindow::setCounterDescription(CounterDescription *desc)
+{
+    ui->plot->setCounterDescription(desc);
 }
 
 void PlotWindow::actionSaveTriggered()
@@ -600,7 +606,7 @@ void PlotWindow::initGraphs()
 {
     const QList<QString> counterNames = mPlotData.counterNames();
     for (const QString &name : counterNames) {
-        auto pair = CounterNameModel::separateModuleName(name);
+        auto pair = CounterName::separateModuleName(name);
         CounterGraph *graph = ui->plot->addGraph();
         graph->setModuleName(pair.first);
         graph->setDisplayName(pair.second);
@@ -649,7 +655,7 @@ void PlotWindow::updateWindowTitle()
     QStringList strList;
     bool appendEllipsis = false;
     for (int i = 0; i < ui->plot->graphCount(); ++i) {
-        QString objName = CounterNameModel::getObjectName(ui->plot->graph(i)->name());
+        QString objName = CounterName::getObjectName(ui->plot->graph(i)->name());
         if (!strList.contains(objName)) {
             if (strList.size() < 3){
                 strList.append(objName);

@@ -5,6 +5,8 @@
 
 class CounterGraph;
 class CommentItem;
+class CounterLegendItem;
+class CounterDescription;
 
 class CounterPlot : public QCustomPlot
 {
@@ -24,6 +26,7 @@ public:
     QList<CounterGraph*> selectedGraphs() const;
     CommentItem *commentItemAt(const QPointF &pos, bool onlyVisible) const;
     bool pointInVisibleLegend(const QPoint &pos);
+    void setCounterDescription(CounterDescription *desc);
 
 private:
     virtual void resizeEvent(QResizeEvent *event) override;
@@ -32,13 +35,16 @@ private:
     virtual void wheelEvent(QWheelEvent *event) override;
     virtual void dragEnterEvent(QDragEnterEvent *event) override;
     virtual void dropEvent(QDropEvent *event) override;
+    virtual bool event(QEvent *event) override;
 
     void invalidateDragStartPos();
     bool hasValidDragStartPos() const;
     int calcLegendPixmapHeight(QPoint &hotSpot);
+    CounterLegendItem *legendItemAt(const QPoint &pos) const;
 
     QPoint mDragStartPos;
     CommentItem *mCommentItem;
+    CounterDescription *mCounterDesc;
 };
 
 #endif // COUNTERPLOT_H

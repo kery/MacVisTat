@@ -10,6 +10,7 @@ namespace Ui { class PlotWindow; }
 class CounterGraph;
 class ValueTipItem;
 class CommentItem;
+class CounterDescription;
 
 class PlotWindow : public QMainWindow
 {
@@ -18,6 +19,8 @@ class PlotWindow : public QMainWindow
 public:
     PlotWindow(PlotData &plotData);
     ~PlotWindow();
+
+    void setCounterDescription(CounterDescription *desc);
 
 private slots:
     void actionSaveTriggered();

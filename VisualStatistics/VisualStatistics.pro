@@ -10,9 +10,11 @@ SOURCES += \
     ColorPool.cpp \
     CommentItem.cpp \
     CounterData.cpp \
+    CounterDescription.cpp \
     CounterFileParser.cpp \
     CounterGraph.cpp \
     CounterLegendItem.cpp \
+    CounterName.cpp \
     CounterNameModel.cpp \
     CounterPlot.cpp \
     DateTimeTicker.cpp \
@@ -34,9 +36,11 @@ HEADERS += \
     ColorPool.h \
     CommentItem.h \
     CounterData.h \
+    CounterDescription.h \
     CounterFileParser.h \
     CounterGraph.h \
     CounterLegendItem.h \
+    CounterName.h \
     CounterNameModel.h \
     CounterPlot.h \
     DateTimeTicker.h \

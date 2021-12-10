@@ -11,7 +11,6 @@ public:
     CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis);
 
     void setPen(const QPen &pen);
-
     QString moduleName() const;
     void setModuleName(const QString &moduleName);
     QString displayName() const;

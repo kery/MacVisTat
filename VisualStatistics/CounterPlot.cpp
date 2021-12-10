@@ -1,6 +1,7 @@
 #include "CounterPlot.h"
 #include "CounterGraph.h"
 #include "CounterLegendItem.h"
+#include "CounterDescription.h"
 #include "DateTimeTicker.h"
 #include "CommentItem.h"
 
@@ -115,6 +116,11 @@ CommentItem *CounterPlot::commentItemAt(const QPointF &pos, bool onlyVisible) co
 bool CounterPlot::pointInVisibleLegend(const QPoint &pos)
 {
     return legend->visible() && legend->selectTest(pos, false) > 0;
+}
+
+void CounterPlot::setCounterDescription(CounterDescription *desc)
+{
+    mCounterDesc = desc;
 }
 
 void CounterPlot::resizeEvent(QResizeEvent *event)
@@ -277,6 +283,23 @@ void CounterPlot::dropEvent(QDropEvent *event)
     }
 }
 
+bool CounterPlot::event(QEvent *event)
+{
+    if (event->type() == QEvent::ToolTip) {
+        QHelpEvent *helpEvent = static_cast<QHelpEvent*>(event);
+        if (pointInVisibleLegend(helpEvent->pos())) {
+            if (CounterLegendItem *item = legendItemAt(helpEvent->pos())) {
+                QToolTip::showText(helpEvent->globalPos(),
+                                   mCounterDesc->getDescription(item->plottable()->name()));
+            }
+        } else {
+            QToolTip::hideText();
+        }
+        return true;
+    }
+    return QCustomPlot::event(event);
+}
+
 void CounterPlot::invalidateDragStartPos()
 {
     mDragStartPos.setX(-1);
@@ -306,4 +329,15 @@ int CounterPlot::calcLegendPixmapHeight(QPoint &hotSpot)
     }
 
     return h1 + h2;
+}
+
+CounterLegendItem *CounterPlot::legendItemAt(const QPoint &pos) const
+{
+    for (int i = 0; i < legend->itemCount(); ++i) {
+        CounterLegendItem *item = qobject_cast<CounterLegendItem*>(legend->item(i));
+        if (item->selectTest(pos, false) > 0) {
+            return item;
+        }
+    }
+    return nullptr;
 }

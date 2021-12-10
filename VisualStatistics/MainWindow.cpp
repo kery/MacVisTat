@@ -11,11 +11,10 @@
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow),
     mOffsetFromUtc(0),
-    mCntNameInfoLabel(new QLabel(this)),
+    mStatusBarLabel(new QLabel(this)),
     mLogDateTimeFmt(DTFMT_DISPLAY),
     mResizeMan(this)
 {
-    CounterNameModel::initSeparators();
     ui->setupUi(this);
     setupFilterComboBox();
     setupNetworkAccessManager();
@@ -27,8 +26,9 @@ MainWindow::MainWindow() :
     ui->splitterVer->setStretchFactor(1, 0);
 
     CounterNameModel *model = new CounterNameModel(this);
+    model->setCounterDescription(&mCounterDesc);
     ui->counterNameView->setModel(model);
-    ui->statusBar->addPermanentWidget(mCntNameInfoLabel);
+    ui->statusBar->addPermanentWidget(mStatusBarLabel);
     updateCounterNameCountInfo();
 
     // Some editors' (e.g. VSCode) behavior is to save file first with 0 length and then with the actual content, so
@@ -203,7 +203,7 @@ void MainWindow::updateCounterNameCountInfo()
     int total = model->totalCount();
     int matched = model->matchedCount();
     int displayed = model->rowCount();
-    mCntNameInfoLabel->setText(QStringLiteral("Counter:%1 Matched:%2 Displayed:%3").arg(total).arg(matched).arg(displayed));
+    mStatusBarLabel->setText(QStringLiteral("Counter:%1 Matched:%2 Displayed:%3").arg(total).arg(matched).arg(displayed));
 }
 
 void MainWindow::updateFilterPattern()
@@ -302,8 +302,7 @@ void MainWindow::downloadCounterDescriptionFinished()
         }
     }
 
-    CounterNameModel *model = qobject_cast<CounterNameModel*>(ui->counterNameView->model());
-    model->parseCounterDescription(file.fileName());
+    mCounterDesc.load(file.fileName());
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -735,10 +734,11 @@ void MainWindow::processPlotData(PlotData &plotData, bool multiWnd)
     }
 }
 
-PlotWindow *MainWindow::createPlotWindow(PlotData &plotData) const
+PlotWindow *MainWindow::createPlotWindow(PlotData &plotData)
 {
     PlotWindow *plotWnd = new PlotWindow(plotData);
     plotWnd->setAttribute(Qt::WA_DeleteOnClose);
+    plotWnd->setCounterDescription(&mCounterDesc);
     plotWnd->resize((mResizeMan.screenSize() * 0.75).toSize());
     connect(this, &MainWindow::aboutToBeClosed, plotWnd, &PlotWindow::close);
     return plotWnd;

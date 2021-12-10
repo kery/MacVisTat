@@ -1,30 +1,7 @@
 #include "CounterNameModel.h"
-#include "GzipFile.h"
-#include "GlobalDefines.h"
-#include "libcsv/csv.h"
+#include "CounterName.h"
+#include "CounterDescription.h"
 #include <QSet>
-#include <QSettings>
-
-QChar CounterNameModel::sModuleSeparator;
-QChar CounterNameModel::sGroupSeparator;
-QChar CounterNameModel::sIndexesSeparator;
-
-CounterId::CounterId(const QString &module, const QString &group, const QString &object) :
-    mModule(module),
-    mGroup(group),
-    mObject(object)
-{
-}
-
-bool CounterId::operator==(const CounterId &other) const
-{
-    return other.mModule == mModule && other.mGroup == mGroup && other.mObject == mObject;
-}
-
-uint qHash(const CounterId &cid, uint seed)
-{
-    return qHash(cid.mModule, seed) ^ qHash(cid.mModule, seed) ^ qHash(cid.mObject, seed);
-}
 
 CounterNameModel::CounterNameModel(QObject *parent) :
     QAbstractListModel(parent),
@@ -38,6 +15,11 @@ CounterNameModel::~CounterNameModel()
     if (mJitStack) {
         pcre_jit_stack_free(mJitStack);
     }
+}
+
+void CounterNameModel::setCounterDescription(CounterDescription *desc)
+{
+    mCounterDesc = desc;
 }
 
 void CounterNameModel::setCounterNames(QVector<QString> &names)
@@ -56,7 +38,7 @@ QStringList CounterNameModel::moduleNames() const
 {
     QSet<QString> result;
     for (const QString &counterName : mCounterNames) {
-        QString moduleName = getModuleName(counterName);
+        QString moduleName = CounterName::getModuleName(counterName);
         if (!moduleName.isEmpty()) {
             result.insert(moduleName);
         }
@@ -243,30 +225,6 @@ int CounterNameModel::totalCount() const
     return mCounterNames.size();
 }
 
-void CounterNameModel::parseCounterDescription(const QString &path)
-{
-    GzipFile reader;
-    if (!reader.open(path, GzipFile::ReadOnly)) {
-        return;
-    }
-
-    CsvCallbackUserData ud;
-    ud.columns.reserve(4);
-    ud.description = &mCounterDescription;
-
-    struct csv_parser parser;
-    csv_init(&parser, CSV_STRICT | CSV_STRICT_FINI | CSV_EMPTY_IS_NULL);
-
-    std::string line;
-    reader.readLineKeepCrLf(line); // Consume the header line
-    while (reader.readLineKeepCrLf(line)) {
-        csv_parse(&parser, line.c_str(), line.length(), libcsvCbEndOfField, libcsvCbEndOfRow, &ud);
-    }
-
-    csv_fini(&parser, libcsvCbEndOfField, libcsvCbEndOfRow, &ud);
-    csv_free(&parser);
-}
-
 bool CounterNameModel::canFetchMore(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
@@ -295,91 +253,13 @@ QVariant CounterNameModel::data(const QModelIndex &index, int role) const
         if (role == Qt::DisplayRole) {
             return mCounterNames[mMatchedIndexes[index.row()]];
         } else if (role == Qt::StatusTipRole) {
-            CounterId cid = getCounterId(mCounterNames[mMatchedIndexes[index.row()]]);
-            auto iter = mCounterDescription.find(cid);
-            if (iter != mCounterDescription.end()) {
-                return iter.value();
-            }
+            return mCounterDesc->getDescription(mCounterNames[mMatchedIndexes[index.row()]]);
         } else if (role == IndexRole) {
             // Skip the first 2 columns (##date;time;) in CSV file.
             return mMatchedIndexes[index.row()] + 2;
         }
     }
     return QVariant();
-}
-
-void CounterNameModel::initSeparators()
-{
-    QSettings setting;
-    sModuleSeparator = setting.value(SETTING_KEY_MODULE_SEP, ',').toChar();
-    sGroupSeparator = setting.value(SETTING_KEY_GROUP_SEP, ',').toChar();
-    sIndexesSeparator = setting.value(SETTING_KEY_INDEXES_SEP, ',').toChar();
-}
-
-QString CounterNameModel::getModuleName(const QString &name)
-{
-    int index = name.indexOf(sModuleSeparator);
-    if (index > 0) {
-        return name.left(index);
-    }
-    return QString();
-}
-
-QString CounterNameModel::getObjectName(const QString &name)
-{
-    return name.mid(name.lastIndexOf(sIndexesSeparator) + 1);
-}
-
-QPair<QString, QString> CounterNameModel::separateModuleName(const QString &name)
-{
-    QPair<QString, QString> result;
-    int index = name.indexOf(sModuleSeparator);
-    if (index > 0) {
-        result.first = name.left(index);
-        result.second = name.mid(index + 1);
-    } else {
-        result.second = name;
-    }
-    return result;
-}
-
-void CounterNameModel::libcsvCbEndOfField(void *field, size_t len, void *ud)
-{
-    auto ccud = static_cast<CsvCallbackUserData*>(ud);
-    ccud->columns.append(field ? QString::fromLatin1(static_cast<const char*>(field), static_cast<int>(len)) : QString());
-}
-
-void CounterNameModel::libcsvCbEndOfRow(int, void *ud)
-{
-    auto ccud = static_cast<CsvCallbackUserData*>(ud);
-    if (ccud->columns.size() == 4) {
-        CounterId cid(ccud->columns[0], ccud->columns[1], ccud->columns[2]);
-        ccud->description->insert(cid, ccud->columns[3]);
-    }
-    ccud->columns.clear();
-}
-
-CounterId CounterNameModel::getCounterId(const QString &name)
-{
-    QString module, group, object;
-    int pos1 = name.indexOf(sModuleSeparator);
-    if (pos1 != -1) {
-        module = name.mid(0, pos1);
-        pos1 = name.indexOf(QLatin1String("GroupName="), pos1);
-        if (pos1 != -1) {
-            pos1 += 10;
-            int pos2 = name.indexOf(sGroupSeparator, pos1);
-            if (pos2 != -1) {
-                group = name.mid(pos1, pos2 - pos1);
-            }
-        }
-        // NRD counter has no GroupName, so we continue to get the KPI-KCI Object field
-        pos1 = name.lastIndexOf(sIndexesSeparator);
-        if (pos1 != -1) {
-            object = name.mid(pos1 + 1);
-        }
-    }
-    return CounterId(module, group, object);
 }
 
 bool CounterNameModel::moduleNameTest(const QVector<QString> &moduleNames, const QString &name)
@@ -389,7 +269,7 @@ bool CounterNameModel::moduleNameTest(const QVector<QString> &moduleNames, const
     }
     for (const QString &moduleName : moduleNames) {
         if (name.length() > moduleName.length() + 1 &&
-            name[moduleName.length()] == sModuleSeparator &&
+            name[moduleName.length()] == CounterName::sModuleSeparator &&
             name.startsWith(moduleName))
         {
             return true;

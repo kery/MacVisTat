@@ -10,7 +10,7 @@ class CounterLegendItem : public QCPPlottableLegendItem
 public:
     CounterLegendItem(QCPLegend *parent, QCPAbstractPlottable *plottable);
 
-protected:
+private:
     virtual void draw(QCPPainter *painter) override;
 };
 
