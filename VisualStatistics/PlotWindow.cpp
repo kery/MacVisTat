@@ -801,7 +801,9 @@ CounterGraph *PlotWindow::findNearestGraphData(const QPoint &pos, QCPGraphData &
         for (auto iter = dataContainer->findBegin(minKey); iter != dataContainer->end() && iter->key < maxKey; ++iter) {
             QPointF dataPos(xAxis->coordToPixel(iter->key), yAxis->coordToPixel(iter->value));
             double distance = pointDistance(pos, dataPos);
-            if (distance < radius && distance < minDistance) {
+            // Update the stored distance and graph even current distance equals to it since the graphs that have higher
+            // index are drawn on top of the graphs that have lower index.
+            if (distance < radius && (distance < minDistance || qFuzzyCompare(distance, minDistance))) {
                 minDistance = distance;
                 resultGraph = graph;
                 data = *iter;

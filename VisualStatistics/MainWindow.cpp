@@ -67,7 +67,7 @@ MainWindow::MainWindow() :
     startCheckUpdateTask();
     startUsageReport();
 #endif
-    startFetchCounterDescriptionTask();
+    startDownloadCounterDescriptionTask();
 }
 
 MainWindow::~MainWindow()
@@ -285,7 +285,7 @@ void MainWindow::filterFileChanged()
     appendInfoLog(QStringLiteral("finished reloading favorite filters"));
 }
 
-void MainWindow::fetchCounterDescriptionFinished()
+void MainWindow::downloadCounterDescriptionFinished()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
     reply->deleteLater();
@@ -530,9 +530,10 @@ _return_:
     if (!ui->menuFilter->isEmpty()) {
         ui->menuFilter->addSeparator();
     }
-    ui->menuFilter->addAction(QStringLiteral("Clear Filter History"), this, &MainWindow::actionClearFilterHistoryTriggered);
-    QAction *action = ui->menuFilter->addAction(QStringLiteral("Edit Favorite Filters"), this, &MainWindow::actionEditFilterFileTriggered);
-    action->setStatusTip(QStringLiteral("Open favorite filter file for edit"));
+    QAction *actionClear = ui->menuFilter->addAction(QStringLiteral("Clear Filter History"), this, &MainWindow::actionClearFilterHistoryTriggered);
+    actionClear->setStatusTip(QStringLiteral("Clear filter history"));
+    QAction *actionEdit = ui->menuFilter->addAction(QStringLiteral("Edit Favorite Filters"), this, &MainWindow::actionEditFilterFileTriggered);
+    actionEdit->setStatusTip(QStringLiteral("Open favorite filter file for edit"));
 }
 
 void MainWindow::addFilterAction(QMenu *menu, const QString &line)
@@ -600,11 +601,11 @@ void MainWindow::startCheckUpdateTask()
     // TODO
 }
 
-void MainWindow::startFetchCounterDescriptionTask()
+void MainWindow::startDownloadCounterDescriptionTask()
 {
     QNetworkRequest request(url(upCounterDescription));
     QNetworkReply *reply = mNetMan.get(request);
-    connect(reply, &QNetworkReply::finished, this, &MainWindow::fetchCounterDescriptionFinished);
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::downloadCounterDescriptionFinished);
 }
 
 void MainWindow::startUsageReport()

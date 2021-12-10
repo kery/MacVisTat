@@ -49,7 +49,7 @@ private slots:
     void logTextEditCtxMenuRequest(const QPoint &pos);
     void listViewCtxMenuRequest(const QPoint &pos);
     void filterFileChanged();
-    void fetchCounterDescriptionFinished();
+    void downloadCounterDescriptionFinished();
 
 private:
     virtual bool eventFilter(QObject *obj, QEvent *event) override;
@@ -72,7 +72,7 @@ private:
     void adjustFilterHistoryOrder();
     void setupNetworkAccessManager();
     void startCheckUpdateTask();
-    void startFetchCounterDescriptionTask();
+    void startDownloadCounterDescriptionTask();
     void startUsageReport();
     void openCounterFile(const QString &path);
     bool parseCounterFileHeader(const QString &path);

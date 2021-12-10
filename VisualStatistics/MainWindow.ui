@@ -114,7 +114,7 @@
      <x>0</x>
      <y>0</y>
      <width>1152</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -189,6 +189,9 @@
    <property name="toolTip">
     <string>Open CSV format counter file</string>
    </property>
+   <property name="statusTip">
+    <string>Open CSV format counter file</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
@@ -197,12 +200,18 @@
    <property name="text">
     <string>Close</string>
    </property>
+   <property name="statusTip">
+    <string>Close</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
    </property>
   </action>
   <action name="actionExit">
    <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="statusTip">
     <string>Exit</string>
    </property>
    <property name="shortcut">
@@ -215,6 +224,9 @@
      <normaloff>:/images/help.png</normaloff>:/images/help.png</iconset>
    </property>
    <property name="text">
+    <string>Help</string>
+   </property>
+   <property name="statusTip">
     <string>Help</string>
    </property>
    <property name="shortcut">
@@ -232,6 +244,9 @@
    <property name="toolTip">
     <string>Plot in a single window</string>
    </property>
+   <property name="statusTip">
+    <string>Plot in a single window</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
    </property>
@@ -247,6 +262,9 @@
    <property name="toolTip">
     <string>Plot separately in multiple windows</string>
    </property>
+   <property name="statusTip">
+    <string>Plot separately in multiple windows</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
    </property>
@@ -254,6 +272,9 @@
   <action name="actionAbout">
    <property name="text">
     <string>About...</string>
+   </property>
+   <property name="statusTip">
+    <string>About</string>
    </property>
   </action>
   <action name="actionClearFilterHistory">
@@ -272,15 +293,24 @@
    <property name="toolTip">
     <string>Convert XML format KPI/KCI files</string>
    </property>
+   <property name="statusTip">
+    <string>Convert XML format KPI/KCI files</string>
+   </property>
   </action>
   <action name="actionChangeLog">
    <property name="text">
     <string>Change Log...</string>
    </property>
+   <property name="statusTip">
+    <string>Change Log</string>
+   </property>
   </action>
   <action name="actionOptions">
    <property name="text">
     <string>Options...</string>
+   </property>
+   <property name="statusTip">
+    <string>Options</string>
    </property>
   </action>
  </widget>
