@@ -11,6 +11,7 @@ public:
     CounterLegendItem(QCPLegend *parent, QCPAbstractPlottable *plottable);
 
 private:
+    virtual QSize minimumOuterSizeHint() const override;
     virtual void draw(QCPPainter *painter) override;
 };
 

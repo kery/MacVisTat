@@ -24,7 +24,7 @@ public:
     int write(const char *buf, unsigned int len);
     int write(const std::string &str);
     bool eof() const;
-    const char *error() const;
+    const char * error() const;
     int progress() const;
 
 private:

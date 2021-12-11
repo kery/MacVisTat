@@ -27,6 +27,9 @@ void CounterGraph::setModuleName(const QString &moduleName)
 
 QString CounterGraph::displayName() const
 {
+    if (mDisplayName.isEmpty()) {
+        return mName;
+    }
     return mDisplayName;
 }
 

@@ -87,7 +87,7 @@ bool GzipFile::eof() const
     return gzeof(mGzFile) != 0;
 }
 
-const char *GzipFile::error() const
+const char * GzipFile::error() const
 {
     return gzerror(mGzFile, nullptr);
 }

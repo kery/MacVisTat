@@ -56,13 +56,13 @@ QString CounterDescription::getDescription(const QString &name) const
 
 void CounterDescription::libcsvCbEndOfField(void *field, size_t len, void *ud)
 {
-    auto ccud = static_cast<CallbackUserData*>(ud);
-    ccud->columns.append(field ? QString::fromLatin1(static_cast<const char*>(field), static_cast<int>(len)) : QString());
+    auto ccud = static_cast<CallbackUserData *>(ud);
+    ccud->columns.append(field ? QString::fromLatin1(static_cast<const char *>(field), static_cast<int>(len)) : QString());
 }
 
 void CounterDescription::libcsvCbEndOfRow(int, void *ud)
 {
-    auto ccud = static_cast<CallbackUserData*>(ud);
+    auto ccud = static_cast<CallbackUserData *>(ud);
     if (ccud->columns.size() == 4) {
         CounterId cid(ccud->columns[0], ccud->columns[1], ccud->columns[2]);
         ccud->descHash->insert(cid, ccud->columns[3]);

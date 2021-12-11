@@ -43,19 +43,19 @@ void ValueTipItem::setSelected(bool selected)
     mTracer->setSelected(selected);
 }
 
-CounterGraph *ValueTipItem::tracerGraph() const
+CounterGraph * ValueTipItem::tracerGraph() const
 {
-    return qobject_cast<CounterGraph*>(mTracer->graph());
+    return qobject_cast<CounterGraph *>(mTracer->graph());
 }
 
-QCPItemPosition *ValueTipItem::tracerPosition() const
+QCPItemPosition * ValueTipItem::tracerPosition() const
 {
     return mTracer->position;
 }
 
 void ValueTipItem::setTracerGraph(CounterGraph *graph)
 {
-    CounterGraph *preGraph = qobject_cast<CounterGraph*>(mTracer->graph());
+    CounterGraph *preGraph = qobject_cast<CounterGraph *>(mTracer->graph());
     if (preGraph != nullptr) {
         disconnect(mTracer, &QCPItemTracer::selectionChanged, preGraph, &CounterGraph::setSelected);
         disconnect(preGraph, QOverload<bool>::of(&CounterGraph::selectionChanged), mTracer, &QCPItemTracer::setSelected);

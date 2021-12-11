@@ -16,15 +16,15 @@ public:
     CounterPlot(QWidget *parent = nullptr);
     ~CounterPlot();
 
-    CounterGraph *addGraph();
-    CounterGraph *graph(int index) const;
+    CounterGraph * addGraph();
+    CounterGraph * graph(int index) const;
     bool removeGraph(CounterGraph *graph);
     bool removeGraph(int index);
     int clearGraphs();
     bool hasSelectedGraphs() const;
     int selectedGraphCount() const;
-    QList<CounterGraph*> selectedGraphs() const;
-    CommentItem *commentItemAt(const QPointF &pos, bool onlyVisible) const;
+    QList<CounterGraph *> selectedGraphs() const;
+    CommentItem * commentItemAt(const QPointF &pos, bool onlyVisible) const;
     bool pointInVisibleLegend(const QPoint &pos);
     void setCounterDescription(CounterDescription *desc);
 
@@ -40,7 +40,7 @@ private:
     void invalidateDragStartPos();
     bool hasValidDragStartPos() const;
     int calcLegendPixmapHeight(QPoint &hotSpot);
-    CounterLegendItem *legendItemAt(const QPoint &pos) const;
+    CounterLegendItem * legendItemAt(const QPoint &pos) const;
 
     QPoint mDragStartPos;
     CommentItem *mCommentItem;

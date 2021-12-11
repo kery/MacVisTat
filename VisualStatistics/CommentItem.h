@@ -15,7 +15,7 @@ public:
 
     QSizeF size() const;
     void setGraphAndKey(CounterGraph *graph, double key);
-    CounterGraph *graph() const;
+    CounterGraph * graph() const;
     void updateLineStartAnchor();
     void setVisible(bool on);
 

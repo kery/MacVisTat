@@ -23,16 +23,18 @@ public:
     KeyType keyType() const;
     int offsetFromUtc() const;
     QVector<double> dateTimeVector() const;
-    int size() const;
-    QDateTime dateTimeFromKey(double key);
+    int dataCount() const;
+    QDateTime dateTimeFromKey(double key) const;
+    QDateTime dateTimeFromIndex(int index) const;
     double getSampleInterval() const;
     void setCounterDataMap(KeyType keyType, CounterDataMap &dataMap);
     QList<QString> counterNames() const;
     QString firstCounterName() const;
+    bool contains(const QString &name) const;
     QSharedPointer<QCPGraphDataContainer> firstCounterData();
     QSharedPointer<QCPGraphDataContainer> counterData(const QString &name, bool delta = false);
     QSharedPointer<QCPGraphDataContainer> addCounterData(const QString &name);
-    QSet<double> *suspectKeys(const QString &name);
+    QSet<double> * suspectKeys(const QString &name);
     void removeCounterData(const QString &name);
     // Here we can't use QVector because PlotData is not copyable.
     // Use unique_ptr since QSharedPointer doesn't support array.

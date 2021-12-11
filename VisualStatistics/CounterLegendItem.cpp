@@ -6,18 +6,29 @@ CounterLegendItem::CounterLegendItem(QCPLegend *parent, QCPAbstractPlottable *pl
 {
 }
 
+QSize CounterLegendItem::minimumOuterSizeHint() const
+{
+    QSize result(0, 0);
+    QFontMetrics fontMetrics(getFont());
+    QSize iconSize = mParentLegend->iconSize();
+    CounterGraph *graph = qobject_cast<CounterGraph *>(mPlottable);
+    QRect textRect = fontMetrics.boundingRect(0, 0, 0, iconSize.height(), Qt::TextSingleLine | Qt::AlignVCenter | Qt::TextDontClip,
+                                              graph->displayName());
+    result.setWidth(iconSize.width() + mParentLegend->iconTextPadding() + textRect.width());
+    result.setHeight(qMax(textRect.height(), iconSize.height()));
+    result.rwidth() += mMargins.left() + mMargins.right();
+    result.rheight() += mMargins.top() + mMargins.bottom();
+    return result;
+}
+
 void CounterLegendItem::draw(QCPPainter *painter)
 {
-    CounterGraph *graph = qobject_cast<CounterGraph*>(mPlottable);
-    if (graph == nullptr) {
-        QCPPlottableLegendItem::draw(painter);
-        return;
-    }
     painter->setFont(getFont());
     painter->setPen(QPen(getTextColor()));
     QSize iconSize = mParentLegend->iconSize();
     QRect textRect = mRect.adjusted(iconSize.width() + mParentLegend->iconTextPadding(), 0, 0, 0);
-    painter->drawText(textRect, Qt::TextSingleLine | Qt::AlignVCenter, graph->name());
+    CounterGraph *graph = qobject_cast<CounterGraph *>(mPlottable);
+    painter->drawText(textRect, Qt::TextSingleLine | Qt::AlignVCenter | Qt::TextDontClip, graph->displayName());
     // draw icon:
     QRect iconRect(QPoint(0, 0), iconSize);
     iconRect.moveCenter(mRect.center());

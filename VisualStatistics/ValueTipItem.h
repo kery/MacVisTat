@@ -15,8 +15,8 @@ public:
     QString graphName() const;
     QString graphValue() const;
     void setSelected(bool selected);
-    CounterGraph *tracerGraph() const;
-    QCPItemPosition *tracerPosition() const;
+    CounterGraph * tracerGraph() const;
+    QCPItemPosition * tracerPosition() const;
     void setTracerGraph(CounterGraph *graph);
     double tracerGraphKey() const;
     void setTracerGraphKey(double key);

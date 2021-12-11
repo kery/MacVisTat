@@ -8,6 +8,7 @@
 #include "MultiLineInputDialog.h"
 #include "CounterName.h"
 #include "CounterNameModel.h"
+#include "ScriptWindow.h"
 #include "Utils.h"
 #include "GlobalDefines.h"
 
@@ -106,6 +107,22 @@ void PlotWindow::actionRemoveZeroCountersTriggered()
 
 void PlotWindow::actionScriptTriggered()
 {
+    ScriptWindow *scriptWnd = findChild<ScriptWindow*>(QStringLiteral("ScriptWindow"), Qt::FindDirectChildrenOnly);
+    if (scriptWnd) {
+        if (scriptWnd->isMinimized()) {
+            scriptWnd->showNormal();
+        }
+    } else {
+        scriptWnd = new ScriptWindow(this);
+        QString err = scriptWnd->initialize();
+        if (err.isEmpty()) {
+            scriptWnd->setAttribute(Qt::WA_DeleteOnClose);
+            scriptWnd->showNormal();
+        } else {
+            delete scriptWnd;
+            showErrorMsgBox(this, QStringLiteral("Initialize script window failed!"), err);
+        }
+    }
 }
 
 void PlotWindow::actionShowLegendTriggered(bool checked)
@@ -116,7 +133,7 @@ void PlotWindow::actionShowLegendTriggered(bool checked)
 
 void PlotWindow::actionMoveLegendTriggered()
 {
-    QAction *action = qobject_cast<QAction*>(sender());
+    QAction *action = qobject_cast<QAction *>(sender());
     int align = action->data().toInt();
     QCPLayoutInset *inset = ui->plot->axisRect()->insetLayout();
     inset->setInsetPlacement(0, QCPLayoutInset::ipBorderAligned);
@@ -157,7 +174,7 @@ void PlotWindow::actionAddCommentTriggered()
         mValueTip->hideWithAnimation();
         mValueTip->setTracerGraph(nullptr);
     } else {
-        QAction *action = qobject_cast<QAction*>(sender());
+        QAction *action = qobject_cast<QAction *>(sender());
         QPointF pos = action->data().toPoint();
         pos.setX(ui->plot->xAxis->pixelToCoord(pos.x()));
         pos.setY(ui->plot->yAxis->pixelToCoord(pos.y()));
@@ -169,8 +186,8 @@ void PlotWindow::actionAddCommentTriggered()
 
 void PlotWindow::actionEditCommentTriggered()
 {
-    QAction *action = qobject_cast<QAction*>(sender());
-    CommentItem *ci = static_cast<CommentItem*>(action->data().value<void*>());
+    QAction *action = qobject_cast<QAction *>(sender());
+    CommentItem *ci = static_cast<CommentItem *>(action->data().value<void*>());
     QString comment = getInputComment(ci->text());
     if (comment.isEmpty()) {
         return;
@@ -182,8 +199,8 @@ void PlotWindow::actionEditCommentTriggered()
 
 void PlotWindow::actionRemoveCommentTriggered()
 {
-    QAction *action = qobject_cast<QAction*>(sender());
-    CommentItem *ci = static_cast<CommentItem*>(action->data().value<void*>());
+    QAction *action = qobject_cast<QAction *>(sender());
+    CommentItem *ci = static_cast<CommentItem *>(action->data().value<void*>());
     ui->plot->removeItem(ci);
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
@@ -254,13 +271,11 @@ void PlotWindow::actionAddAggregateGraphTriggered()
     newData->set(sumDataVector, true);
 
     CounterGraph *newGraph = ui->plot->addGraph();
-    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
     newGraph->setDisplayName(graphName);
     newGraph->setName(graphName);
     newGraph->setPen(QPen(mColorPool.getColor()));
     newGraph->setData(newData);
     newGraph->setSuspectKeys(suspectKeys);
-    newGraph->setScatterVisible(ticker->skippedTicks() == 0);
 
     updateWindowTitle();
     updatePlotTitle();
@@ -399,7 +414,7 @@ void PlotWindow::skippedTicksChanged(int skipped)
 {
     bool visible = skipped == 0;
     for (int i = 0, graphCount = ui->plot->graphCount(); i < graphCount; ++i) {
-        CounterGraph *graph = qobject_cast<CounterGraph*>(ui->plot->graph(i));
+        CounterGraph *graph = qobject_cast<CounterGraph *>(ui->plot->graph(i));
         graph->setScatterVisible(visible);
     }
 }
@@ -539,38 +554,13 @@ void PlotWindow::editEndDateTimeChanged(const QDateTime &dateTime)
 
 void PlotWindow::setupPlot()
 {
-    QColor color(70, 50, 200);
-    QPen pen(Qt::DashLine);
-    pen.setColor(color);
-    ui->plot->selectionRect()->setPen(pen);
-    color.setAlpha(30);
-    ui->plot->selectionRect()->setBrush(color);
-
-    QCPLegend *legend = ui->plot->legend;
-    color = legend->brush().color();
-    color.setAlpha(200);
-    legend->setIconSize(15, 8);
-    legend->setBrush(QBrush(color));
-    legend->setSelectableParts(QCPLegend::spItems);
-    legend->setVisible(true);
-
-    QSharedPointer<DateTimeTicker> ticker(new DateTimeTicker(ui->plot->xAxis));
+    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
     ticker->setOffsetFromUtc(mPlotData.offsetFromUtc());
     if (mPlotData.keyType() == PlotData::ktIndex) {
         ticker->setDateTimeVector(mPlotData.dateTimeVector());
     }
     connect(ticker.data(), &DateTimeTicker::skippedTicksChanged, this, &PlotWindow::skippedTicksChanged);
 
-    ui->plot->axisRect()->setupFullAxesBox();
-    ui->plot->xAxis2->setTicks(false);
-    ui->plot->xAxis2->setTickLabels(false);
-    ui->plot->yAxis2->setTicks(false);
-    ui->plot->yAxis2->setTickLabels(false);
-    ui->plot->xAxis->setTicker(ticker);
-    ui->plot->setNoAntialiasingOnDrag(true);
-    ui->plot->setAutoAddPlottableToLegend(false);
-    ui->plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectPlottables |
-                              QCP::iSelectAxes | QCP::iSelectLegend | QCP::iSelectItems);
     ui->plot->addLayer(ValueTipItem::layerName(), ui->plot->layer(QStringLiteral("axes")));
     ui->plot->layer(ValueTipItem::layerName())->setMode(QCPLayer::lmBuffered);
 
@@ -718,11 +708,11 @@ QString PlotWindow::getInputComment(const QString &text)
     return dlg.textValue();
 }
 
-QVector<CommentItem*> PlotWindow::commentItemsOfGraph(CounterGraph *graph) const
+QVector<CommentItem *> PlotWindow::commentItemsOfGraph(CounterGraph *graph) const
 {
     QVector<CommentItem*> ciVector;
     for (int i = ui->plot->itemCount() - 1; i >= 0; --i) {
-        CommentItem *ci = qobject_cast<CommentItem*>(ui->plot->item(i));
+        CommentItem *ci = qobject_cast<CommentItem *>(ui->plot->item(i));
         if (ci && ci->graph() == graph) {
             ciVector.append(ci);
         }
@@ -774,19 +764,19 @@ int PlotWindow::graphIndex(CounterGraph *graph) const
     return -1;
 }
 
-CounterGraph *PlotWindow::prevGraph(CounterGraph *graph) const
+CounterGraph * PlotWindow::prevGraph(CounterGraph *graph) const
 {
     int index = graphIndex(graph);
     return index <= 0 ? nullptr : ui->plot->graph(index - 1);
 }
 
-CounterGraph *PlotWindow::nextGraph(CounterGraph *graph) const
+CounterGraph * PlotWindow::nextGraph(CounterGraph *graph) const
 {
     int nextIndex = graphIndex(graph) + 1;
     return nextIndex == 0 || nextIndex >= ui->plot->graphCount() ? nullptr : ui->plot->graph(nextIndex);
 }
 
-CounterGraph *PlotWindow::findNearestGraphData(const QPoint &pos, QCPGraphData &data) const
+CounterGraph * PlotWindow::findNearestGraphData(const QPoint &pos, QCPGraphData &data) const
 {
     CounterGraph *resultGraph = nullptr;
     double minDistance = std::numeric_limits<double>::max();

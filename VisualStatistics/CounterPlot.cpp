@@ -12,6 +12,31 @@ CounterPlot::CounterPlot(QWidget *parent) :
     QCustomPlot(parent),
     mCommentItem(nullptr)
 {
+    QColor color(70, 50, 200);
+    QPen pen(Qt::DashLine);
+    QSharedPointer<DateTimeTicker> ticker(new DateTimeTicker(xAxis));
+    pen.setColor(color);
+    selectionRect()->setPen(pen);
+    color.setAlpha(30);
+    selectionRect()->setBrush(color);
+    axisRect()->setupFullAxesBox();
+    xAxis2->setTicks(false);
+    xAxis2->setTickLabels(false);
+    yAxis2->setTicks(false);
+    yAxis2->setTickLabels(false);
+    xAxis->setTicker(ticker);
+    color = legend->brush().color();
+    color.setAlpha(200);
+    legend->setIconSize(15, 8);
+    legend->setBrush(QBrush(color));
+    legend->setSelectableParts(QCPLegend::spItems);
+    legend->setVisible(true);
+
+    setNoAntialiasingOnDrag(true);
+    setAutoAddPlottableToLegend(false);
+    setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectPlottables |
+                    QCP::iSelectAxes | QCP::iSelectLegend | QCP::iSelectItems);
+
     setAcceptDrops(true);
     invalidateDragStartPos();
 }
@@ -21,19 +46,21 @@ CounterPlot::~CounterPlot()
     clearGraphs();
 }
 
-CounterGraph *CounterPlot::addGraph()
+CounterGraph * CounterPlot::addGraph()
 {
+    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(xAxis->ticker());
     CounterGraph *graph = new CounterGraph(xAxis, yAxis);
     CounterLegendItem *item = new CounterLegendItem(legend, graph);
+    graph->setScatterVisible(ticker->skippedTicks() == 0);
     legend->addItem(item);
     connect(item, &QCPPlottableLegendItem::selectionChanged, graph, &CounterGraph::setSelected);
     connect(graph, QOverload<bool>::of(&CounterGraph::selectionChanged), item, &QCPPlottableLegendItem::setSelected);
     return graph;
 }
 
-CounterGraph *CounterPlot::graph(int index) const
+CounterGraph * CounterPlot::graph(int index) const
 {
-    return qobject_cast<CounterGraph*>(QCustomPlot::graph(index));
+    return qobject_cast<CounterGraph *>(QCustomPlot::graph(index));
 }
 
 // The call of setFillOrder in QCPLegend::removeItem takes a lot of time, to prevent it from been called
@@ -89,17 +116,17 @@ int CounterPlot::selectedGraphCount() const
     return result;
 }
 
-QList<CounterGraph*> CounterPlot::selectedGraphs() const
+QList<CounterGraph *> CounterPlot::selectedGraphs() const
 {
     QList<CounterGraph*> result;
     const QList<QCPGraph*> graphs = QCustomPlot::selectedGraphs();
     for (QCPGraph *graph : graphs) {
-        result.append(qobject_cast<CounterGraph*>(graph));
+        result.append(qobject_cast<CounterGraph *>(graph));
     }
     return result;
 }
 
-CommentItem *CounterPlot::commentItemAt(const QPointF &pos, bool onlyVisible) const
+CommentItem * CounterPlot::commentItemAt(const QPointF &pos, bool onlyVisible) const
 {
     for (int i = itemCount() - 1; i >= 0 ; --i) {
         CommentItem *ci = qobject_cast<CommentItem *>(item(i));
@@ -286,7 +313,7 @@ void CounterPlot::dropEvent(QDropEvent *event)
 bool CounterPlot::event(QEvent *event)
 {
     if (event->type() == QEvent::ToolTip) {
-        QHelpEvent *helpEvent = static_cast<QHelpEvent*>(event);
+        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
         if (pointInVisibleLegend(helpEvent->pos())) {
             if (CounterLegendItem *item = legendItemAt(helpEvent->pos())) {
                 QToolTip::showText(helpEvent->globalPos(),
@@ -331,10 +358,10 @@ int CounterPlot::calcLegendPixmapHeight(QPoint &hotSpot)
     return h1 + h2;
 }
 
-CounterLegendItem *CounterPlot::legendItemAt(const QPoint &pos) const
+CounterLegendItem * CounterPlot::legendItemAt(const QPoint &pos) const
 {
     for (int i = 0; i < legend->itemCount(); ++i) {
-        CounterLegendItem *item = qobject_cast<CounterLegendItem*>(legend->item(i));
+        CounterLegendItem *item = qobject_cast<CounterLegendItem *>(legend->item(i));
         if (item->selectTest(pos, false) > 0) {
             return item;
         }

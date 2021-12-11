@@ -97,20 +97,20 @@ void MainWindow::actionCloseTriggered()
     mCounterFilePath.clear();
     updateWindowTitle();
     ui->moduleNameView->clear();
-    CounterNameModel *model = qobject_cast<CounterNameModel*>(ui->counterNameView->model());
+    CounterNameModel *model = qobject_cast<CounterNameModel *>(ui->counterNameView->model());
     model->clear();
 }
 
 void MainWindow::actionRecentFileTriggered()
 {
-    QAction *action = qobject_cast<QAction*>(sender());
+    QAction *action = qobject_cast<QAction *>(sender());
     QString path = action->data().toString();
     openCounterFile(path);
 }
 
 void MainWindow::actionFilterTriggered()
 {
-    QAction *action = qobject_cast<QAction*>(sender());
+    QAction *action = qobject_cast<QAction *>(sender());
     QString filterText = action->data().toString();
     if (filterText.isEmpty()) {
         ui->filterComboBox->lineEdit()->setText(action->text());
@@ -122,7 +122,7 @@ void MainWindow::actionFilterTriggered()
 
 void MainWindow::actionClearFilterHistoryTriggered()
 {
-    int answer = showQuestionMsgBox(this, QStringLiteral("Do you want to clear filter history?"), QString(), false);
+    int answer = showQuestionMsgBox(this, QStringLiteral("Do you want to clear filter history?"));
     if (answer == QMessageBox::Yes) {
         ui->filterComboBox->clear();
     }
@@ -199,7 +199,7 @@ void MainWindow::caseSensitiveButtonClicked(bool checked)
 
 void MainWindow::updateCounterNameCountInfo()
 {
-    CounterNameModel *model = qobject_cast<CounterNameModel*>(ui->counterNameView->model());
+    CounterNameModel *model = qobject_cast<CounterNameModel *>(ui->counterNameView->model());
     int total = model->totalCount();
     int matched = model->matchedCount();
     int displayed = model->rowCount();
@@ -215,7 +215,7 @@ void MainWindow::updateFilterPattern()
         moduleNames.append(item->text());
     }
 
-    CounterNameModel *model = qobject_cast<CounterNameModel*>(ui->counterNameView->model());
+    CounterNameModel *model = qobject_cast<CounterNameModel *>(ui->counterNameView->model());
     QString error = model->setFilterPattern(moduleNames, ui->filterComboBox->lineEdit()->text(), mCaseSensitive);
     if (!error.isEmpty()) {
         appendErrorLog(error);
@@ -262,7 +262,7 @@ void MainWindow::listViewCtxMenuRequest(const QPoint &pos)
 {
     QMenu *menu = new QMenu();
     menu->setAttribute(Qt::WA_DeleteOnClose);
-    QListView *view = qobject_cast<QListView*>(sender());
+    QListView *view = qobject_cast<QListView *>(sender());
     menu->addAction(QStringLiteral("Copy Selected"), this, [view](){
         const QModelIndexList indexes = view->selectionModel()->selectedIndexes();
         if (!indexes.isEmpty()) {
@@ -287,7 +287,7 @@ void MainWindow::filterFileChanged()
 
 void MainWindow::downloadCounterDescriptionFinished()
 {
-    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     reply->deleteLater();
 
     QFile file(filePath(fpCounterDescription));
@@ -312,7 +312,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         const int horizontalMargin = 2;
 
         QPoint pos = ui->filterComboBox->lineEdit()->pos();
-        const QSize &size = static_cast<QResizeEvent*>(event)->size();
+        const QSize &size = static_cast<QResizeEvent *>(event)->size();
         const int leftMargin = size.width() - pos.x() - horizontalMargin;
         ui->filterComboBox->lineEdit()->setTextMargins(leftMargin, 0, 0, 0);
     }
@@ -407,7 +407,7 @@ void MainWindow::connectClearButtonSignal()
 {
     QLineEdit *lineEdit = ui->filterComboBox->lineEdit();
     for (QObject *child : lineEdit->children()) {
-        QAction *action = qobject_cast<QAction*>(child);
+        QAction *action = qobject_cast<QAction *>(child);
         // "_q_qlineeditclearaction" is defined in qlineedit.cpp
         if (action && action->objectName() == "_q_qlineeditclearaction") {
             connect(action, &QAction::triggered, this, &MainWindow::updateFilterPattern, Qt::QueuedConnection);
@@ -647,7 +647,7 @@ bool MainWindow::parseCounterFileHeader(const QString &path)
     CounterFileParser parser(this);
     QString error = parser.parseHeader(path, counterNames);
     if (error.isEmpty()) {
-        CounterNameModel *model = qobject_cast<CounterNameModel*>(ui->counterNameView->model());
+        CounterNameModel *model = qobject_cast<CounterNameModel *>(ui->counterNameView->model());
         mOffsetFromUtc = parser.offsetFromUtc();
         model->setCounterNames(counterNames);
         ui->moduleNameView->addItems(model->moduleNames());
@@ -671,7 +671,7 @@ void MainWindow::parseCounterFileData(bool multiWnd)
         return;
     }
 
-    CounterNameModel *model = qobject_cast<CounterNameModel*>(ui->counterNameView->model());
+    CounterNameModel *model = qobject_cast<CounterNameModel *>(ui->counterNameView->model());
     const QModelIndexList selectedIndexes = ui->counterNameView->selectionModel()->selectedIndexes();
     int numGraphs = selectedIndexes.isEmpty() ? model->rowCount() : selectedIndexes.size();
     if (numGraphs <= 0) {
@@ -717,11 +717,11 @@ void MainWindow::parseCounterFileData(bool multiWnd)
 
 void MainWindow::processPlotData(PlotData &plotData, bool multiWnd)
 {
-    if (multiWnd && plotData.size() > 1) {
+    if (multiWnd && plotData.dataCount() > 1) {
         QSettings setting;
         bool ignoreConstant = setting.value(SETTING_KEY_IGNORE_CONSTANT, true).toBool();
         std::unique_ptr<PlotData[]> plotDataPtr = plotData.split();
-        for (int i = 0; i < plotData.size(); ++i) {
+        for (int i = 0; i < plotData.dataCount(); ++i) {
             if (ignoreConstant && CounterData::isConstant(plotDataPtr[i].firstCounterData())) {
                 appendInfoLog("ignored constant counter " + plotDataPtr[i].firstCounterName());
                 continue;

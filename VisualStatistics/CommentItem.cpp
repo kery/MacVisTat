@@ -10,10 +10,13 @@ CommentItem::CommentItem(QCustomPlot *parent) :
 
 CommentItem::~CommentItem()
 {
-    if (mTracer != nullptr) {
+    // If this comment item object is destroyed in QCustomPlot::clearItems, mTracer and
+    // mLine will be destroyed before this object. So, it's necessary to use hasItem to
+    // check they still exist.
+    if (mTracer != nullptr && mParentPlot->hasItem(mTracer)) {
         mParentPlot->removeItem(mTracer);
     }
-    if (mLine != nullptr) {
+    if (mLine != nullptr && mParentPlot->hasItem(mLine)) {
         mParentPlot->removeItem(mLine);
     }
 }
@@ -43,10 +46,10 @@ void CommentItem::setGraphAndKey(CounterGraph *graph, double key)
     mLine->setPen(pen);
 }
 
-CounterGraph *CommentItem::graph() const
+CounterGraph * CommentItem::graph() const
 {
     if (mTracer != nullptr) {
-        return qobject_cast<CounterGraph*>(mTracer->graph());
+        return qobject_cast<CounterGraph *>(mTracer->graph());
     }
     return nullptr;
 }

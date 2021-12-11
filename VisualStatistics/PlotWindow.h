@@ -62,13 +62,13 @@ private:
     bool utcDisplay() const;
     QString defaultSaveFileName() const;
     QString getInputComment(const QString &text);
-    QVector<CommentItem*> commentItemsOfGraph(CounterGraph *graph) const;
+    QVector<CommentItem *> commentItemsOfGraph(CounterGraph *graph) const;
     void removeGraphs(const QVector<CounterGraph*> &graphs);
     int legendItemIndex(QCPAbstractLegendItem *item) const;
     int graphIndex(CounterGraph *graph) const;
-    CounterGraph *prevGraph(CounterGraph *graph) const;
-    CounterGraph *nextGraph(CounterGraph *graph) const;
-    CounterGraph *findNearestGraphData(const QPoint &pos, QCPGraphData &data) const;
+    CounterGraph * prevGraph(CounterGraph *graph) const;
+    CounterGraph * nextGraph(CounterGraph *graph) const;
+    CounterGraph * findNearestGraphData(const QPoint &pos, QCPGraphData &data) const;
 
     virtual void keyPressEvent(QKeyEvent *event);
 
@@ -78,6 +78,8 @@ private:
     PlotData mPlotData;
     ColorPool mColorPool;
     int mLastSelLegItemIndex;
+
+    friend class LuaEnvironment;
 };
 
 #endif // PLOTWINDOW_H

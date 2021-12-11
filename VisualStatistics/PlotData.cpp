@@ -22,23 +22,39 @@ QVector<double> PlotData::dateTimeVector() const
     return mDateTimeVector;
 }
 
-int PlotData::size() const
+int PlotData::dataCount() const
 {
     return mDataMap.size();
 }
 
-QDateTime PlotData::dateTimeFromKey(double key)
+QDateTime PlotData::dateTimeFromKey(double key) const
 {
-    QDateTime dateTime;
+    QDateTime result;
     if (mKeyType == ktDateTime) {
-        dateTime = QDateTime::fromSecsSinceEpoch(key);
+        result = QDateTime::fromSecsSinceEpoch(key);
     } else {
         int index = static_cast<int>(key);
         if (index >= 0 && index < mDateTimeVector.size()) {
-            dateTime = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
+            result = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
         }
     }
-    return dateTime;
+    return result;
+}
+
+QDateTime PlotData::dateTimeFromIndex(int index) const
+{
+    QDateTime result;
+    if (mKeyType == ktDateTime) {
+        const QCPGraphDataContainer &data = mDataMap.first().data;
+        if (index >= 0 && index < data.size()) {
+            result = QDateTime::fromSecsSinceEpoch(data.at(index)->key);
+        }
+    } else {
+        if (index >= 0 && index < mDateTimeVector.size()) {
+            result = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
+        }
+    }
+    return result;
 }
 
 double PlotData::getSampleInterval() const
@@ -100,6 +116,11 @@ QString PlotData::firstCounterName() const
     return mDataMap.firstKey();
 }
 
+bool PlotData::contains(const QString &name) const
+{
+    return mDataMap.contains(name);
+}
+
 QSharedPointer<QCPGraphDataContainer> PlotData::firstCounterData()
 {
     if (mDataMap.isEmpty()) {
@@ -141,7 +162,7 @@ QSharedPointer<QCPGraphDataContainer> PlotData::addCounterData(const QString &na
     return QSharedPointer<QCPGraphDataContainer>(&mDataMap[name].data, CounterData::dummyDeleter);
 }
 
-QSet<double> *PlotData::suspectKeys(const QString &name)
+QSet<double> * PlotData::suspectKeys(const QString &name)
 {
     if (mDataMap.contains(name)) {
         return &mDataMap[name].suspectKeys;
