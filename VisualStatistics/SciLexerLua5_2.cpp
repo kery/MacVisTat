@@ -74,8 +74,8 @@ const char * SciLexerLua5_2::keywords(int set) const
     if (set == 6) {
         // plot functions
         return
-            "plot.graph_count plot.graph_name plot.get_lastkey plot.get_value plot.get_dt "
-            "plot.get_dtstr plot.set_selected plot.add_graph plot.update";
+            "plot.graph_count plot.graph_name plot.get_lastkey plot.get_value "
+            "plot.add_graph plot.update";
     }
 
     return 0;

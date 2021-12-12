@@ -20,8 +20,6 @@ public:
     void setSuspectKeys(const QSet<double> *suspectKeys);
     bool isSuspect(double key);
 
-    static const QPainterPath &suspectPainterPath();
-
 public slots:
     void setSelected(bool selected);
 

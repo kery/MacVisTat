@@ -156,9 +156,8 @@ int LuaEnvironment::addGraph(lua_State *L)
     }
 
     QSharedPointer<QCPGraphDataContainer> data = plotWnd->mPlotData.firstCounterData();
-    QVector<QCPGraphData> dataVector;
-    dataVector.resize(data->size());
-    for (int i = 0; i < data->size(); ++i) {
+    QVector<QCPGraphData> dataVector(data->size());
+    for (int i = 0; i < dataVector.size(); ++i) {
         dataVector[i].key = data->at(i)->key;
         dataVector[i].value = NAN;
     }

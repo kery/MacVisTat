@@ -3,10 +3,9 @@
 
 CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
     QCPGraph(keyAxis, valueAxis),
-    mSuspectKeys(nullptr)
+    mSuspectKeys(nullptr),
+    mSuspectScatterStyle(QCPScatterStyle::ssCross)
 {
-    mSuspectScatterStyle.setBrush(Qt::white);
-    mSuspectScatterStyle.setCustomPath(suspectPainterPath());
 }
 
 void CounterGraph::setPen(const QPen &pen)
@@ -56,24 +55,6 @@ void CounterGraph::setSuspectKeys(const QSet<double> *suspectKeys)
 bool CounterGraph::isSuspect(double key)
 {
     return mSuspectKeys->contains(key);
-}
-
-const QPainterPath &CounterGraph::suspectPainterPath()
-{
-    static QPainterPath path;
-    if (path.isEmpty()) {
-        QFont font(QStringLiteral("Courier New"));
-        font.setPointSizeF(6.0);
-        path.addText(0, 0, font, QStringLiteral("?"));
-
-        QRectF rect = path.boundingRect();
-        QRectF square = rect.united(rect.transposed());
-        square.moveCenter(rect.center());
-        square = square.marginsAdded(QMarginsF(2, 2, 2, 2));
-        path.addEllipse(square);
-        path.translate(-rect.width()/2, rect.height()/2);
-    }
-    return path;
 }
 
 void CounterGraph::setSelected(bool selected)
