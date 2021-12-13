@@ -2,6 +2,7 @@
 #include "ProgressDialog.h"
 #include "GzipFile.h"
 #include "GlobalDefines.h"
+#include "Utils.h"
 #include <QtConcurrent>
 
 CounterFileParser::CounterFileParser(QWidget *parent) :
@@ -262,11 +263,4 @@ void CounterFileParser::splitHeader(const char *str, QVector<QString> &out)
     if (*str) {
         out.append(QString(str));
     }
-}
-
-bool CounterFileParser::isValidOffsetFromUtc(int offset)
-{
-    // https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
-    // >= -12:00 <= +14:00
-    return offset >= -(12 * 3600) && offset <= (14 * 3600);
 }

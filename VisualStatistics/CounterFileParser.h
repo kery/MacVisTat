@@ -22,7 +22,6 @@ private:
     static QString parseDataInternal(const QString &path, const IndexNameMap &inm,
                                      const volatile bool &working, ProgressDialog &dlg, CounterDataMap &cmd);
     static void splitHeader(const char *str, QVector<QString> &out);
-    static bool isValidOffsetFromUtc(int offset);
 
     QWidget *mParent;
     int mOffsetFromUtc;

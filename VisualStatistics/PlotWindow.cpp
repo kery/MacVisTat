@@ -22,6 +22,7 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     mLastSelLegItemIndex(-1)
 {
     ui->setupUi(this);
+    if (!isValidOffsetFromUtc(mPlotData.offsetFromUtc())) { ui->actionDisplayUtc->setEnabled(false); }
     setupPlot();
     setupDateTimeEdits();
 
