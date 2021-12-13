@@ -3,6 +3,9 @@
 
 #define APP_NAME "Visual Statistics"
 
+#define DATE_FMT_EXPORT "yyyy-MM-dd"
+#define TIME_FMT_EXPORT "HH:mm:ss"
+
 #define DTFMT_DISPLAY     "yyyy-MM-dd HH:mm:ss"
 #define DTFMT_IN_CSV      "dd.MM.yyyy;HH:mm:ss"
 #define DTFMT_IN_CSV_LEN  19

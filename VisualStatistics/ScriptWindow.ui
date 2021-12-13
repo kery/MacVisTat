@@ -68,7 +68,7 @@
   <action name="actionOpen">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
+     <normaloff>:/images/plus.png</normaloff>:/images/plus.png</iconset>
    </property>
    <property name="text">
     <string>Open</string>

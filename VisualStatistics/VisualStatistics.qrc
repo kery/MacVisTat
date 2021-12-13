@@ -13,7 +13,8 @@
         <file>images/remove.png</file>
         <file>images/csv.png</file>
         <file>images/copy.png</file>
-        <file>images/open.png</file>
+        <file>images/export.png</file>
+        <file>images/utc.png</file>
         <file>qss/default.qss</file>
     </qresource>
 </RCC>

@@ -25,6 +25,7 @@ public:
 private slots:
     void actionSaveTriggered();
     void actionCopyTriggered();
+    void actionExportToCsvTriggered();
     void actionRestoreTriggered();
     void actionShowDeltaTriggered(bool checked);
     void actionDisplayUtcTriggered(bool checked);
@@ -59,7 +60,6 @@ private:
     void highlightTimeGap();
     void updateWindowTitle();
     void updatePlotTitle();
-    bool utcDisplay() const;
     QString defaultSaveFileName() const;
     QString getInputComment(const QString &text);
     QVector<CommentItem *> commentItemsOfGraph(CounterGraph *graph) const;

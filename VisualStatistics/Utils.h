@@ -3,6 +3,8 @@
 
 #include <QMessageBox>
 
+std::string doubleToStdString(double value);
+
 double pointDistance(const QPointF &pt1, const QPointF &pt2);
 
 int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info = QString(),

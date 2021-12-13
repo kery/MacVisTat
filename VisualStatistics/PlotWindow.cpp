@@ -11,6 +11,7 @@
 #include "ScriptWindow.h"
 #include "Utils.h"
 #include "GlobalDefines.h"
+#include "libcsv/csv.h"
 
 #define WND_TITLE_SEP ", "
 
@@ -28,7 +29,9 @@ PlotWindow::PlotWindow(PlotData &plotData) :
 
     connect(ui->actionSave, &QAction::triggered, this, &PlotWindow::actionSaveTriggered);
     connect(ui->actionCopy, &QAction::triggered, this, &PlotWindow::actionCopyTriggered);
+    connect(ui->actionExportToCsv, &QAction::triggered, this, &PlotWindow::actionExportToCsvTriggered);
     connect(ui->actionRestore, &QAction::triggered, this, &PlotWindow::actionRestoreTriggered);
+    connect(ui->actionDisplayUtc, &QAction::triggered, this, &PlotWindow::actionDisplayUtcTriggered);
     connect(ui->actionShowDelta, &QAction::triggered, this, &PlotWindow::actionShowDeltaTriggered);
     connect(ui->actionRemoveZeroCounters, &QAction::triggered, this, &PlotWindow::actionRemoveZeroCountersTriggered);
     connect(ui->actionScript, &QAction::triggered, this, &PlotWindow::actionScriptTriggered);
@@ -52,7 +55,8 @@ void PlotWindow::setCounterDescription(CounterDescription *desc)
 
 void PlotWindow::actionSaveTriggered()
 {
-    QString path = QFileDialog::getSaveFileName(this, QStringLiteral("Save As Image"), defaultSaveFileName(),
+    QString path = QFileDialog::getSaveFileName(this, ui->actionSave->text(),
+                                                defaultSaveFileName(),
                                                 QStringLiteral("PNG File (*.png)"));
     if (!path.isEmpty()) {
         ui->plot->savePng(path);
@@ -62,6 +66,69 @@ void PlotWindow::actionSaveTriggered()
 void PlotWindow::actionCopyTriggered()
 {
     QApplication::clipboard()->setPixmap(ui->plot->toPixmap());
+}
+
+void PlotWindow::actionExportToCsvTriggered()
+{
+    if (ui->plot->graphCount() == 0) {
+        return;
+    }
+    QString path = QFileDialog::getSaveFileName(this, ui->actionExportToCsv->text(),
+                                                defaultSaveFileName(),
+                                                QStringLiteral("CSV File (*.csv)"));
+    if (path.isEmpty()) {
+        return;
+    }
+
+    QString localPath = QDir::toNativeSeparators(path);
+    FILE *file = fopen(localPath.toLocal8Bit().data(), "wb");
+    if (file == nullptr) {
+        showErrorMsgBox(this, strerror(errno));
+        return;
+    }
+
+    std::vector<std::string> headers;
+    headers.push_back("Date");
+    headers.push_back("Time");
+    for (int i = 0; i < ui->plot->graphCount(); ++i) {
+        CounterGraph *graph = ui->plot->graph(i);
+        if (!graph->visible()) {
+            continue;
+        }
+        headers.push_back(graph->displayName().toStdString());
+    }
+    for (const std::string &str : headers) {
+        csv_fwrite(file, str.c_str(), str.length());
+        fputc(',', file);
+    }
+    fseek(file, -1, SEEK_CUR);
+    fputc('\n', file);
+
+    for (int i = 0; ; ++i) {
+        QDateTime dateTime = mPlotData.dateTimeFromIndex(i);
+        if (dateTime.isNull()) { break; }
+        std::string str = dateTime.date().toString(DATE_FMT_EXPORT).toStdString();
+        csv_fwrite(file, str.c_str(), str.length());
+        fputc(',', file);
+        str = dateTime.time().toString(TIME_FMT_EXPORT).toStdString();
+        csv_fwrite(file, str.c_str(), str.length());
+        fputc(',', file);
+
+        for (int j = 0; j < ui->plot->graphCount(); ++j) {
+            CounterGraph *graph = ui->plot->graph(j);
+            if (!graph->visible()) {
+                continue;
+            }
+            auto iter = graph->data()->at(i);
+            str = doubleToStdString(iter->value);
+            csv_fwrite(file, str.c_str(), str.length());
+            fputc(',', file);
+        }
+        fseek(file, -1, SEEK_CUR);
+        fputc('\n', file);
+    }
+
+    fclose(file);
 }
 
 void PlotWindow::actionRestoreTriggered()
@@ -443,10 +510,6 @@ void PlotWindow::contextMenuRequested(const QPoint &pos)
     menuMoveLegend->addAction(QStringLiteral("Bottom Right"), this, &PlotWindow::actionMoveLegendTriggered)->setData(
         static_cast<int>(Qt::AlignBottom | Qt::AlignRight));
 
-    QAction *actionDisplayUtc = menu->addAction(QStringLiteral("Display UTC Time"), this, &PlotWindow::actionDisplayUtcTriggered);
-    actionDisplayUtc->setCheckable(true);
-    actionDisplayUtc->setChecked(utcDisplay());
-
     menu->addSeparator();
 
     QAction *actionAddComment = menu->addAction(QStringLiteral("Add Comment"), this, &PlotWindow::actionAddCommentTriggered);
@@ -511,7 +574,7 @@ void PlotWindow::plotMouseMove(QMouseEvent *event)
             mValueTip->setTracerGraph(graph);
         }
         QDateTime dateTime = mPlotData.dateTimeFromKey(data.key);
-        if (utcDisplay()) {
+        if (ui->actionDisplayUtc->isChecked()) {
             dateTime.setOffsetFromUtc(mPlotData.offsetFromUtc());
             dateTime = dateTime.toUTC();
         }
@@ -673,18 +736,12 @@ void PlotWindow::updatePlotTitle()
     if (ui->actionShowDelta->isChecked()) {
         title += ", Delta";
     }
-    if (utcDisplay()) {
+    if (ui->actionDisplayUtc->isChecked()) {
         title += ", UTC";
     }
 
     title += ')';
     ui->plot->xAxis2->setLabel(title);
-}
-
-bool PlotWindow::utcDisplay() const
-{
-    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
-    return ticker->utcDisplay();
 }
 
 QString PlotWindow::defaultSaveFileName() const

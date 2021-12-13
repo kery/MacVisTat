@@ -54,7 +54,10 @@
    </attribute>
    <addaction name="actionSave"/>
    <addaction name="actionCopy"/>
+   <addaction name="actionExportToCsv"/>
+   <addaction name="separator"/>
    <addaction name="actionRestore"/>
+   <addaction name="actionDisplayUtc"/>
    <addaction name="actionShowDelta"/>
    <addaction name="actionRemoveZeroCounters"/>
    <addaction name="actionScript"/>
@@ -138,6 +141,33 @@
    </property>
    <property name="toolTip">
     <string>Remove Zero Counters</string>
+   </property>
+  </action>
+  <action name="actionExportToCsv">
+   <property name="icon">
+    <iconset resource="VisualStatistics.qrc">
+     <normaloff>:/images/export.png</normaloff>:/images/export.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export to CSV</string>
+   </property>
+   <property name="toolTip">
+    <string>Export to CSV</string>
+   </property>
+  </action>
+  <action name="actionDisplayUtc">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="VisualStatistics.qrc">
+     <normaloff>:/images/utc.png</normaloff>:/images/utc.png</iconset>
+   </property>
+   <property name="text">
+    <string>Display UTC</string>
+   </property>
+   <property name="toolTip">
+    <string>Display UTC Time</string>
    </property>
   </action>
  </widget>

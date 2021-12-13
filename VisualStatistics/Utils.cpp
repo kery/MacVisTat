@@ -1,5 +1,15 @@
 #include "Utils.h"
 #include "GlobalDefines.h"
+#include <sstream>
+
+std::string doubleToStdString(double value)
+{
+    if (qIsNaN(value)) { return std::string(); }
+
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
 
 double pointDistance(const QPointF &pt1, const QPointF &pt2)
 {
