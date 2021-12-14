@@ -26,7 +26,7 @@ private slots:
     void actionSaveTriggered();
     void actionCopyTriggered();
     void actionExportToCsvTriggered();
-    void actionRestoreTriggered();
+    void actionRescaleTriggered();
     void actionShowDeltaTriggered(bool checked);
     void actionDisplayUtcTriggered(bool checked);
     void actionRemoveZeroCountersTriggered();

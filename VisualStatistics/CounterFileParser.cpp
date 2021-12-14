@@ -73,14 +73,14 @@ std::string CounterFileParser::parseHeaderInternal(const QString &path, int &off
     GzipFile fileReader;
     if (!fileReader.open(path, GzipFile::ReadOnly)) {
         error = "failed to open ";
-        error += path;
+        error += QDir::toNativeSeparators(path);
         return std::string();
     }
 
     std::string header;
     if (!fileReader.readLine(header)) {
         error = "failed to read ";
-        error += path;
+        error += QDir::toNativeSeparators(path);
         return std::string();
     }
 
@@ -88,7 +88,7 @@ std::string CounterFileParser::parseHeaderInternal(const QString &path, int &off
         strcmp(header.c_str() + header.length() - 2, "##"))
     {
         error = "invalid header format in ";
-        error += path;
+        error += QDir::toNativeSeparators(path);
         return std::string();
     }
 
@@ -123,7 +123,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
     GzipFile reader;
     if (!reader.open(path, GzipFile::ReadOnly)) {
         QString error("failed to open ");
-        error += path;
+        error += QDir::toNativeSeparators(path);
         return error;
     }
 
@@ -131,7 +131,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
     std::string line;
     if (!reader.readLine(line)) {
         QString error("failed to read header from ");
-        error += path;
+        error += QDir::toNativeSeparators(path);
         return error;
     }
 
@@ -145,7 +145,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
     int bytes = reader.read(buffer.data(), bufferSize);
     if (bytes <= 0) {
         QString error("failed to read data from ");
-        error += path;
+        error += QDir::toNativeSeparators(path);
         return error;
     }
 

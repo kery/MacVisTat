@@ -28,15 +28,11 @@ QString CounterName::getObjectName(const QString &name)
     return name.mid(name.lastIndexOf(sIndexesSeparator) + 1);
 }
 
-QPair<QString, QString> CounterName::separateModuleName(const QString &name)
+QString CounterName::trimModuleName(const QString &name)
 {
-    QPair<QString, QString> result;
     int index = name.indexOf(sModuleSeparator);
     if (index > 0) {
-        result.first = name.left(index);
-        result.second = name.mid(index + 1);
-    } else {
-        result.second = name;
+        return name.mid(index + 1);
     }
-    return result;
+    return name;
 }

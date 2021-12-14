@@ -43,7 +43,6 @@ MainWindow::MainWindow() :
     connect(ui->moduleNameView, &QListWidget::itemSelectionChanged, this, &MainWindow::updateModuleNameColor);
     connect(ui->counterNameView, &QListView::customContextMenuRequested, this, &MainWindow::listViewCtxMenuRequest);
     connect(ui->moduleNameView, &QListWidget::customContextMenuRequested, this, &MainWindow::listViewCtxMenuRequest);
-    connect(ui->logTextEdit, &QPlainTextEdit::customContextMenuRequested, this, &MainWindow::logTextEditCtxMenuRequest);
     connect(model, &CounterNameModel::rowsInserted, this, &MainWindow::updateCounterNameCountInfo);
     connect(model, &CounterNameModel::modelReset, this, &MainWindow::updateCounterNameCountInfo);
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::actionOpenTriggered);
@@ -247,15 +246,6 @@ void MainWindow::updateModuleNameColor()
     for (int i = 0; i < ui->moduleNameView->count(); ++i) {
         ui->moduleNameView->item(i)->setForeground(hasSelection ? Qt::gray : qvariant_cast<QBrush>(QVariant()));
     }
-}
-
-void MainWindow::logTextEditCtxMenuRequest(const QPoint &pos)
-{
-    QMenu *menu = ui->logTextEdit->createStandardContextMenu();
-    menu->setAttribute(Qt::WA_DeleteOnClose);
-    menu->addSeparator();
-    menu->addAction(QStringLiteral("Clear"), ui->logTextEdit, &QPlainTextEdit::clear);
-    menu->popup(ui->logTextEdit->mapToGlobal(pos));
 }
 
 void MainWindow::listViewCtxMenuRequest(const QPoint &pos)

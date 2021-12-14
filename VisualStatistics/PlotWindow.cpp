@@ -31,7 +31,7 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     connect(ui->actionSave, &QAction::triggered, this, &PlotWindow::actionSaveTriggered);
     connect(ui->actionCopy, &QAction::triggered, this, &PlotWindow::actionCopyTriggered);
     connect(ui->actionExportToCsv, &QAction::triggered, this, &PlotWindow::actionExportToCsvTriggered);
-    connect(ui->actionRestore, &QAction::triggered, this, &PlotWindow::actionRestoreTriggered);
+    connect(ui->actionRescale, &QAction::triggered, this, &PlotWindow::actionRescaleTriggered);
     connect(ui->actionDisplayUtc, &QAction::triggered, this, &PlotWindow::actionDisplayUtcTriggered);
     connect(ui->actionShowDelta, &QAction::triggered, this, &PlotWindow::actionShowDeltaTriggered);
     connect(ui->actionRemoveZeroCounters, &QAction::triggered, this, &PlotWindow::actionRemoveZeroCountersTriggered);
@@ -136,7 +136,7 @@ void PlotWindow::actionExportToCsvTriggered()
     fclose(file);
 }
 
-void PlotWindow::actionRestoreTriggered()
+void PlotWindow::actionRescaleTriggered()
 {
     ui->plot->rescaleAxes();
     adjustYAxisRange();
@@ -343,7 +343,6 @@ void PlotWindow::actionAddAggregateGraphTriggered()
     newData->set(sumDataVector, true);
 
     CounterGraph *newGraph = ui->plot->addGraph();
-    newGraph->setDisplayName(graphName);
     newGraph->setName(graphName);
     newGraph->setPen(QPen(mColorPool.getColor()));
     newGraph->setData(newData);
@@ -664,11 +663,9 @@ void PlotWindow::initGraphs()
 {
     const QList<QString> counterNames = mPlotData.counterNames();
     for (const QString &name : counterNames) {
-        auto pair = CounterName::separateModuleName(name);
         CounterGraph *graph = ui->plot->addGraph();
-        graph->setModuleName(pair.first);
-        graph->setDisplayName(pair.second);
         graph->setName(name);
+        graph->setShortName(CounterName::trimModuleName(name));
         graph->setPen(QPen(mColorPool.getColor()));
         graph->setData(mPlotData.counterData(name));
         graph->setSuspectKeys(mPlotData.suspectKeys(name));

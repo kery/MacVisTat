@@ -78,30 +78,12 @@
         </layout>
        </widget>
       </widget>
-      <widget class="QPlainTextEdit" name="logTextEdit">
+      <widget class="LogTextEdit" name="logTextEdit">
        <property name="minimumSize">
         <size>
          <width>0</width>
          <height>30</height>
         </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Consolas</family>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="contextMenuPolicy">
-        <enum>Qt::CustomContextMenu</enum>
-       </property>
-       <property name="lineWrapMode">
-        <enum>QPlainTextEdit::NoWrap</enum>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-       <property name="maximumBlockCount">
-        <number>100</number>
        </property>
       </widget>
      </widget>
@@ -114,7 +96,7 @@
      <x>0</x>
      <y>0</y>
      <width>1152</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -315,6 +297,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>LogTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header>LogTextEdit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="VisualStatistics.qrc"/>
  </resources>

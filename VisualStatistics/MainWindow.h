@@ -47,7 +47,6 @@ private slots:
     void filterEditReturnPressed();
     void counterNameViewDoubleClicked(const QModelIndex &index);
     void updateModuleNameColor();
-    void logTextEditCtxMenuRequest(const QPoint &pos);
     void listViewCtxMenuRequest(const QPoint &pos);
     void filterFileChanged();
     void downloadCounterDescriptionFinished();

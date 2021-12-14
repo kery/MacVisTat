@@ -22,6 +22,7 @@ SOURCES += \
     CounterPlot.cpp \
     DateTimeTicker.cpp \
     GzipFile.cpp \
+    LogTextEdit.cpp \
     LuaEnvironment.cpp \
     MultiLineInputDialog.cpp \
     PlotData.cpp \
@@ -85,6 +86,7 @@ HEADERS += \
     DateTimeTicker.h \
     GlobalDefines.h \
     GzipFile.h \
+    LogTextEdit.h \
     LuaEnvironment.h \
     MainWindow.h \
     MultiLineInputDialog.h \

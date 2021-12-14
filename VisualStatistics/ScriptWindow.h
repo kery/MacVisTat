@@ -21,7 +21,6 @@ public:
 
 private slots:
     void actionRunTriggered();
-    void actionClearLogTriggered();
     void actionOpenTriggered();
     void actionSaveTriggered();
 

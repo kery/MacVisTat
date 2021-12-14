@@ -14,27 +14,14 @@ void CounterGraph::setPen(const QPen &pen)
     mSelectionDecorator->setPen(pen);
 }
 
-QString CounterGraph::moduleName() const
-{
-    return mModuleName;
-}
-
-void CounterGraph::setModuleName(const QString &moduleName)
-{
-    mModuleName = moduleName;
-}
-
 QString CounterGraph::displayName() const
 {
-    if (mDisplayName.isEmpty()) {
-        return mName;
-    }
-    return mDisplayName;
+    return mShortName.isEmpty() ? mName : mShortName;
 }
 
-void CounterGraph::setDisplayName(const QString &displayName)
+void CounterGraph::setShortName(const QString &name)
 {
-    mDisplayName = displayName;
+    mShortName = name;
 }
 
 void CounterGraph::setScatterVisible(bool visible)

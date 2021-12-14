@@ -17,7 +17,6 @@ ScriptWindow::ScriptWindow(QWidget *parent) :
     ui->splitter->setCollapsible(0, false);
 
     connect(ui->actionRun, &QAction::triggered, this, &ScriptWindow::actionRunTriggered);
-    connect(ui->actionClearLog, &QAction::triggered, this, &ScriptWindow::actionClearLogTriggered);
     connect(ui->actionOpen, &QAction::triggered, this, &ScriptWindow::actionOpenTriggered);
     connect(ui->actionSave, &QAction::triggered, this, &ScriptWindow::actionSaveTriggered);
 
@@ -48,11 +47,6 @@ void ScriptWindow::actionRunTriggered()
     if (!err.isEmpty()) {
         ui->logTextEdit->appendPlainText(err);
     }
-}
-
-void ScriptWindow::actionClearLogTriggered()
-{
-    ui->logTextEdit->clear();
 }
 
 void ScriptWindow::actionOpenTriggered()
