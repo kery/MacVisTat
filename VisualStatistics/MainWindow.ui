@@ -145,7 +145,6 @@
     </property>
     <addaction name="actionPlot"/>
     <addaction name="actionPlotSeparately"/>
-    <addaction name="actionClearSelection"/>
     <addaction name="separator"/>
     <addaction name="actionOptions"/>
    </widget>
@@ -176,7 +175,6 @@
    <addaction name="actionXmlToCsv"/>
    <addaction name="actionPlot"/>
    <addaction name="actionPlotSeparately"/>
-   <addaction name="actionClearSelection"/>
    <addaction name="actionHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -313,18 +311,6 @@
    </property>
    <property name="statusTip">
     <string>Options</string>
-   </property>
-  </action>
-  <action name="actionClearSelection">
-   <property name="icon">
-    <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/images/clear-selection.png</normaloff>:/images/clear-selection.png</iconset>
-   </property>
-   <property name="text">
-    <string>Clear Selection</string>
-   </property>
-   <property name="statusTip">
-    <string>Clear Selection</string>
    </property>
   </action>
  </widget>
