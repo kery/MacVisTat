@@ -108,6 +108,10 @@ void PlotWindow::actionExportToCsvTriggered()
     for (int i = 0; ; ++i) {
         QDateTime dateTime = mPlotData.dateTimeFromIndex(i);
         if (dateTime.isNull()) { break; }
+        if (ui->actionDisplayUtc->isChecked()) {
+            dateTime.setOffsetFromUtc(mPlotData.offsetFromUtc());
+            dateTime = dateTime.toUTC();
+        }
         std::string str = dateTime.date().toString(DATE_FMT_EXPORT).toStdString();
         csv_fwrite(file, str.c_str(), str.length());
         fputc(',', file);

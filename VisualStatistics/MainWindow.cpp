@@ -51,6 +51,7 @@ MainWindow::MainWindow() :
     connect(ui->actionClose, &QAction::triggered, this, &MainWindow::actionCloseTriggered);
     connect(ui->actionPlot, &QAction::triggered, this, &MainWindow::actionPlotTriggered);
     connect(ui->actionPlotSeparately, &QAction::triggered, this, &MainWindow::actionPlotSeparatelyTriggered);
+    connect(ui->actionClearSelection, &QAction::triggered, this, &MainWindow::actionClearSelectionTriggered);
     connect(ui->actionOptions, &QAction::triggered, this, &MainWindow::actionOptionsTriggered);
     connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::actionHelpTriggered);
     connect(ui->actionChangeLog, &QAction::triggered, this, &MainWindow::actionChangeLogTriggered);
@@ -168,6 +169,12 @@ void MainWindow::actionPlotTriggered()
 void MainWindow::actionPlotSeparatelyTriggered()
 {
     parseCounterFileData(true);
+}
+
+void MainWindow::actionClearSelectionTriggered()
+{
+    ui->counterNameView->clearSelection();
+    ui->moduleNameView->clearSelection();
 }
 
 void MainWindow::actionOptionsTriggered()

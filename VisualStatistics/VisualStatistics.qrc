@@ -15,6 +15,7 @@
         <file>images/copy.png</file>
         <file>images/export.png</file>
         <file>images/utc.png</file>
+        <file>images/clear-selection.png</file>
         <file>qss/default.qss</file>
     </qresource>
 </RCC>
