@@ -2,7 +2,6 @@
 #define MULTILINEINPUTDIALOG_H
 
 #include <QInputDialog>
-
 #include "ResizeManager.h"
 
 class MultiLineInputDialog : public QInputDialog

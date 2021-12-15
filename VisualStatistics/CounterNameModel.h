@@ -2,7 +2,7 @@
 #define COUNTERNAMEMODEL_H
 
 #include <QAbstractListModel>
-#include "pcre/pcre.h"
+#include <pcre.h>
 
 class CounterDescription;
 

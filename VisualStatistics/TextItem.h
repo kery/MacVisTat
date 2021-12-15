@@ -1,7 +1,7 @@
 #ifndef TEXTITEM_H
 #define TEXTITEM_H
 
-#include "qcustomplot/qcustomplot.h"
+#include <qcustomplot.h>
 
 class TextItem : public QCPItemText
 {

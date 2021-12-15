@@ -1,7 +1,7 @@
 #ifndef COUNTERDATA_H
 #define COUNTERDATA_H
 
-#include "qcustomplot/qcustomplot.h"
+#include <qcustomplot.h>
 
 struct CounterData
 {

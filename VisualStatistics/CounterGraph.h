@@ -1,7 +1,7 @@
 #ifndef COUNTERGRAPH_H
 #define COUNTERGRAPH_H
 
-#include "qcustomplot/qcustomplot.h"
+#include <qcustomplot.h>
 
 class CounterGraph : public QCPGraph
 {

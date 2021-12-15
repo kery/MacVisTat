@@ -22,6 +22,7 @@ SOURCES += \
     CounterPlot.cpp \
     DateTimeTicker.cpp \
     GzipFile.cpp \
+    KpiKciFileParser.cpp \
     LogTextEdit.cpp \
     LuaEnvironment.cpp \
     MultiLineInputDialog.cpp \
@@ -86,6 +87,7 @@ HEADERS += \
     DateTimeTicker.h \
     GlobalDefines.h \
     GzipFile.h \
+    KpiKciFileParser.h \
     LogTextEdit.h \
     LuaEnvironment.h \
     MainWindow.h \
@@ -101,6 +103,7 @@ HEADERS += \
     ValueTipItem.h \
     Version.h \
     libcsv/csv.h \
+    libexpat/expat/lib/expat.h \
     lua/lapi.h \
     lua/lauxlib.h \
     lua/lcode.h \
@@ -134,7 +137,9 @@ FORMS += \
     ProgressDialog.ui \
     ScriptWindow.ui
 
-LIBS += -L$$PWD/pcre/ -lpcre
+INCLUDEPATH += libcsv/ libexpat/expat/lib/ lua/ pcre/ qcustomplot/
+
+LIBS += -L$$PWD/pcre/ -lpcre -L$$PWD/../build-libexpat/Release/ -llibexpat
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

@@ -11,7 +11,7 @@
 #include "ScriptWindow.h"
 #include "Utils.h"
 #include "GlobalDefines.h"
-#include "libcsv/csv.h"
+#include <csv.h>
 
 #define WND_TITLE_SEP ", "
 

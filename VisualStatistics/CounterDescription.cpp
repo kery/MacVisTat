@@ -1,7 +1,7 @@
 #include "CounterDescription.h"
 #include "CounterName.h"
 #include "GzipFile.h"
-#include "libcsv/csv.h"
+#include <csv.h>
 
 CounterId::CounterId(const QString &module, const QString &group, const QString &object) :
     mModule(module),
