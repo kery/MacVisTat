@@ -9,6 +9,7 @@ CONFIG += c++11 qscintilla2
 DEFINES += _CRT_SECURE_NO_WARNINGS
 
 SOURCES += \
+    AboutDialog.cpp \
     Application.cpp \
     AutoCompletionSrcPlotAPIs.cpp \
     ChangeLogDialog.cpp \
@@ -75,6 +76,7 @@ SOURCES += \
     qcustomplot/qcustomplot.cpp
 
 HEADERS += \
+    AboutDialog.h \
     Application.h \
     AutoCompletionSrcPlotAPIs.h \
     ChangeLogDialog.h \
@@ -134,6 +136,7 @@ HEADERS += \
     qcustomplot/qcustomplot.h
 
 FORMS += \
+    AboutDialog.ui \
     ChangeLogDialog.ui \
     MainWindow.ui \
     PlotWindow.ui \

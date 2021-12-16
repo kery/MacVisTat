@@ -6,6 +6,7 @@
 #include "CounterFileParser.h"
 #include "KpiKciFileParser.h"
 #include "ChangeLogDialog.h"
+#include "AboutDialog.h"
 #include "GlobalDefines.h"
 #include "Utils.h"
 #include <QNetworkReply>
@@ -204,7 +205,8 @@ void MainWindow::actionChangeLogTriggered()
 
 void MainWindow::actionAboutTriggered()
 {
-    // TODO
+    AboutDialog dlg(this);
+    dlg.exec();
 }
 
 void MainWindow::caseSensitiveButtonClicked(bool checked)
