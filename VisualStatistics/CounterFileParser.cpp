@@ -49,7 +49,7 @@ QString CounterFileParser::parseHeader(const QString &path, QVector<QString> &na
     return QString();
 }
 
-QString CounterFileParser::parseData(const QString &path, const IndexNameMap &inm, CounterDataMap &cdm)
+QString CounterFileParser::parseData(const QString &path, const IndexNameMap &inm, CounterDataMap &cdm, bool &canceled)
 {
     volatile bool working = true;
 
@@ -65,7 +65,8 @@ QString CounterFileParser::parseData(const QString &path, const IndexNameMap &in
 
     dlg.exec();
     watcher.waitForFinished();
-    return working ? watcher.result() : QStringLiteral("canceled");
+    canceled = working == false;
+    return watcher.result();
 }
 
 std::string CounterFileParser::parseHeaderInternal(const QString &path, int &offsetFromUtc, QString &error)

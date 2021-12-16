@@ -15,7 +15,7 @@ public:
     int offsetFromUtc() const;
 
     QString parseHeader(const QString &path, QVector<QString> &names);
-    QString parseData(const QString &path, const IndexNameMap &inm, CounterDataMap &cdm);
+    QString parseData(const QString &path, const IndexNameMap &inm, CounterDataMap &cdm, bool &canceled);
 
 private:
     static std::string parseHeaderInternal(const QString &path, int &offsetFromUtc, QString &error);

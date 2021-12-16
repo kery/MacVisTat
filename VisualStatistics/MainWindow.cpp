@@ -3,6 +3,7 @@
 #include "PlotWindow.h"
 #include "CounterNameModel.h"
 #include "CounterFileParser.h"
+#include "KpiKciFileParser.h"
 #include "GlobalDefines.h"
 #include "Utils.h"
 #include <QNetworkProxyQuery>
@@ -88,7 +89,23 @@ void MainWindow::actionOpenTriggered()
 
 void MainWindow::actionXmlToCsvTriggered()
 {
-    // TODO
+    QFileDialog dlg(this);
+    dlg.setFileMode(QFileDialog::ExistingFiles);
+    dlg.setNameFilter(QStringLiteral("KPI/KCI File (*.xml *xml.gz)"));
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    QVector<QString> errors, paths = dlg.selectedFiles().toVector();
+    KpiKciFileParser parser(this);
+    QString outPath = parser.convertToCsv(paths, errors);
+    for (const QString &err : qAsConst(errors)) {
+        appendErrorLog(err);
+    }
+    if (outPath.isEmpty()) { return; }
+
+    actionCloseTriggered();
+    openCounterFile(outPath);
 }
 
 void MainWindow::actionCloseTriggered()
@@ -202,7 +219,7 @@ void MainWindow::updateCounterNameCountInfo()
     int total = model->totalCount();
     int matched = model->matchedCount();
     int displayed = model->rowCount();
-    mStatusBarLabel->setText(QStringLiteral("Counter:%1 Matched:%2 Displayed:%3").arg(total).arg(matched).arg(displayed));
+    mStatusBarLabel->setText(QStringLiteral("Counter:%1, Matched:%2, Displayed:%3").arg(total).arg(matched).arg(displayed));
 }
 
 void MainWindow::updateFilterPattern()
@@ -688,10 +705,13 @@ void MainWindow::parseCounterFileData(bool multiWnd)
         }
     }
 
+    bool canceled;
     CounterDataMap dataMap;
     CounterFileParser parser(this);
-    QString error = parser.parseData(mCounterFilePath, inm, dataMap);
-    if (error.isEmpty()) {
+    QString error = parser.parseData(mCounterFilePath, inm, dataMap, canceled);
+    if (!error.isEmpty()) {
+        appendErrorLog(error);
+    } else if (!canceled) {
         QSettings setting;
         PlotData::KeyType keyType = PlotData::ktDateTime;
         if (setting.value(SETTING_KEY_HIDE_TIME_GAP, false).toBool()) {
@@ -700,8 +720,6 @@ void MainWindow::parseCounterFileData(bool multiWnd)
         PlotData plotData(mOffsetFromUtc);
         plotData.setCounterDataMap(keyType, dataMap);
         processPlotData(plotData, multiWnd);
-    } else {
-        appendErrorLog(error);
     }
 }
 

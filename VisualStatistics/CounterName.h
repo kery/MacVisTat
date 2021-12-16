@@ -1,7 +1,6 @@
 #ifndef COUNTERNAME_H
 #define COUNTERNAME_H
 
-#include <QPair>
 #include <QString>
 
 class CounterName
