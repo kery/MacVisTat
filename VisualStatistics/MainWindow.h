@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QFileSystemWatcher>
-#include <QNetworkAccessManager>
+#include <QProcess>
 #include <array>
 #include "ResizeManager.h"
 #include "CounterDescription.h"
@@ -50,6 +50,8 @@ private slots:
     void listViewCtxMenuRequest(const QPoint &pos);
     void filterFileChanged();
     void downloadCounterDescriptionFinished();
+    void checkUpdateFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void checkUpdateFailed(QProcess::ProcessError error);
 
 private:
     virtual bool eventFilter(QObject *obj, QEvent *event) override;
@@ -70,9 +72,9 @@ private:
     void loadFilterHistory();
     void saveFilterHistory();
     void adjustFilterHistoryOrder();
-    void startCheckUpdateTask();
-    void startDownloadCounterDescriptionTask();
-    void startUsageReport();
+    void checkUpdate();
+    void downloadCounterDescription();
+    void usageReport();
     void openCounterFile(const QString &path);
     bool parseCounterFileHeader(const QString &path);
     void parseCounterFileData(bool multiWnd);
@@ -94,6 +96,7 @@ private:
         fpFavoriteFilter,
         fpFilterHistory,
         fpCounterDescription,
+        fpMaintenanceTool,
     };
 
     static QString filePath(FilePath fp);

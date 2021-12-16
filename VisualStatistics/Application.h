@@ -17,6 +17,7 @@ public:
         upHelp,
         upCounterDescription,
         upChangeLog,
+        upUsageReport,
         upRoot,
     };
 

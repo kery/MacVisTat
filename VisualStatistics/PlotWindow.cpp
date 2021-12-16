@@ -628,7 +628,7 @@ void PlotWindow::setupPlot()
     }
     connect(ticker.data(), &DateTimeTicker::skippedTicksChanged, this, &PlotWindow::skippedTicksChanged);
 
-    ui->plot->addLayer(ValueTipItem::layerName(), ui->plot->layer(QStringLiteral("axes")));
+    ui->plot->addLayer(ValueTipItem::layerName(), ui->plot->layer(QStringLiteral("legend")));
     ui->plot->layer(ValueTipItem::layerName())->setMode(QCPLayer::lmBuffered);
 
     connect(ui->plot, &CounterPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);

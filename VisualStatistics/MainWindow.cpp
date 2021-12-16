@@ -9,6 +9,8 @@
 #include "AboutDialog.h"
 #include "GlobalDefines.h"
 #include "Utils.h"
+#include "Version.h"
+#include <QHostInfo>
 #include <QNetworkReply>
 
 MainWindow::MainWindow() :
@@ -65,10 +67,10 @@ MainWindow::MainWindow() :
     loadFilterHistory();
 
 #ifdef DEPLOY_VISUALSTAT
-    startCheckUpdateTask();
-    startUsageReport();
+    checkUpdate();
+    usageReport();
 #endif
-    startDownloadCounterDescriptionTask();
+    downloadCounterDescription();
 }
 
 MainWindow::~MainWindow()
@@ -314,6 +316,39 @@ void MainWindow::downloadCounterDescriptionFinished()
     }
 
     mCounterDesc.load(file.fileName());
+}
+
+void MainWindow::checkUpdateFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    sender()->deleteLater();
+
+    if (exitStatus != QProcess::NormalExit) {
+        appendWarnLog(QStringLiteral("updater crashed"));
+        return;
+    }
+
+    // exitCode != 0 indicates that there is no update available
+    // or failed to check update
+    if (exitCode != 0) {
+        return;
+    }
+
+    ChangeLogDialog dlg(this, true);
+    if (dlg.exec() == QDialog::Accepted) {
+        QProcess::startDetached(filePath(fpMaintenanceTool), QStringList() << "--updater" << "--proxy");
+        QApplication::exit();
+    }
+}
+
+void MainWindow::checkUpdateFailed(QProcess::ProcessError error)
+{
+    // Don't worry about the deleteLater of QProcess will be called twice in case both finished and
+    // errorOccurred signals are emitted. Because deleteLater has below note:
+    // It is safe to call this function more than once; when the first deferred deletion event is
+    // delivered, any pending events for the object are removed from the event queue.
+    sender()->deleteLater();
+
+    appendWarnLog(QStringLiteral("updater failed with error code %1").arg(error));
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -597,12 +632,15 @@ void MainWindow::adjustFilterHistoryOrder()
     }
 }
 
-void MainWindow::startCheckUpdateTask()
+void MainWindow::checkUpdate()
 {
-    // TODO
+    QProcess *process = new QProcess();
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &MainWindow::checkUpdateFinished);
+    connect(process, &QProcess::errorOccurred, this, &MainWindow::checkUpdateFailed);
+    process->start(filePath(fpMaintenanceTool), QStringList() << "--checkupdates" << "--proxy");
 }
 
-void MainWindow::startDownloadCounterDescriptionTask()
+void MainWindow::downloadCounterDescription()
 {
     Application *app = Application::instance();
     QUrl url = app->getUrl(Application::upCounterDescription);
@@ -611,9 +649,29 @@ void MainWindow::startDownloadCounterDescriptionTask()
     connect(reply, &QNetworkReply::finished, this, &MainWindow::downloadCounterDescriptionFinished);
 }
 
-void MainWindow::startUsageReport()
+void MainWindow::usageReport()
 {
-    // TODO
+    QByteArray hostNameHash = QCryptographicHash::hash(QHostInfo::localHostName().toLatin1(),
+                                                       QCryptographicHash::Md5);
+    QByteArray postData("host=");
+    postData += hostNameHash.toHex();
+    postData += "&pt=";
+    postData += QSysInfo::productType();
+
+    QByteArray userName = qgetenv("USERNAME");
+    if (!userName.isEmpty()) {
+        postData += "-";
+        postData += userName;
+    }
+
+    postData += "&ver=";
+    postData += VER_FILEVERSION_STR;
+
+    Application *app = Application::instance();
+    QNetworkRequest request(app->getUrl(Application::upUsageReport));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    QNetworkReply *reply = app->networkAccessManager().post(request, postData);
+    connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
 }
 
 void MainWindow::openCounterFile(const QString &path)
@@ -785,15 +843,18 @@ void MainWindow::appendErrorLog(const QString &text)
 
 QString MainWindow::filePath(FilePath fp)
 {
-    QDir home = QDir::home();
+    QDir dir = QDir::home();
 
     switch (fp) {
     case fpFavoriteFilter:
-        return home.filePath(QStringLiteral(".vstat_filter_favorite.txt"));
+        return dir.filePath(QStringLiteral(".vstat_filter_favorite.txt"));
     case fpFilterHistory:
-        return home.filePath(QStringLiteral(".vstat_filter_hist"));
+        return dir.filePath(QStringLiteral(".vstat_filter_hist"));
     case fpCounterDescription:
-        return home.filePath(QStringLiteral(".vstat_stat_desc"));
+        return dir.filePath(QStringLiteral(".vstat_stat_desc"));
+    case fpMaintenanceTool:
+        dir.setPath(QApplication::applicationDirPath());
+        return dir.absoluteFilePath(QStringLiteral("maintenancetool.exe"));
     }
 
     return QString();

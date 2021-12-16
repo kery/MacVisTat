@@ -27,6 +27,8 @@ QUrl Application::getUrl(UrlPath up)
         return root.resolved(QStringLiteral("/counters.desc"));
     case upChangeLog:
         return root.resolved(QStringLiteral("/changelog.txt"));
+    case upUsageReport:
+        return root.resolved(QStringLiteral("/report"));
     case upRoot:
         break;
     }
