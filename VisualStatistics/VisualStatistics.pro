@@ -103,7 +103,6 @@ HEADERS += \
     ValueTipItem.h \
     Version.h \
     libcsv/csv.h \
-    libexpat/expat/lib/expat.h \
     lua/lapi.h \
     lua/lauxlib.h \
     lua/lcode.h \
@@ -128,7 +127,6 @@ HEADERS += \
     lua/lundump.h \
     lua/lvm.h \
     lua/lzio.h \
-    pcre/pcre.h \
     qcustomplot/qcustomplot.h
 
 FORMS += \
@@ -137,9 +135,9 @@ FORMS += \
     ProgressDialog.ui \
     ScriptWindow.ui
 
-INCLUDEPATH += libcsv/ libexpat/expat/lib/ lua/ pcre/ qcustomplot/
+INCLUDEPATH += libcsv/ lua/ qcustomplot/ ../build-pcre2/ libexpat/expat/lib/
 
-LIBS += -L$$PWD/pcre/ -lpcre -L$$PWD/../build-libexpat/Release/ -llibexpat
+LIBS += -L../build-pcre2/Release/ -lpcre2-8 -L../build-libexpat/Release/ -llibexpat
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

@@ -7,3 +7,6 @@
 [submodule "VisualStatistics/libexpat"]
 	path = VisualStatistics/libexpat
 	url = https://github.com/libexpat/libexpat.git
+[submodule "VisualStatistics/pcre2"]
+	path = VisualStatistics/pcre2
+	url = https://github.com/PhilipHazel/pcre2.git

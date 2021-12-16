@@ -6,15 +6,14 @@
 CounterNameModel::CounterNameModel(QObject *parent) :
     QAbstractListModel(parent),
     mFetchedCount(0),
-    mJitStack(pcre_jit_stack_alloc(32 * 1024, 1024 * 1024))
+    mJitStack(pcre2_jit_stack_create(32 * 1024, 1024 * 1024, nullptr))
 {
 }
 
 CounterNameModel::~CounterNameModel()
 {
-    if (mJitStack) {
-        pcre_jit_stack_free(mJitStack);
-    }
+    // If its argument is NULL, this function returns immediately, without doing anything.
+    pcre2_jit_stack_free(mJitStack);
 }
 
 void CounterNameModel::setCounterDescription(CounterDescription *desc)
@@ -71,10 +70,15 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
         firstPattern.remove(0, 1);
     }
 
-    const char *err;
-    int errOffset;
+    int errCode;
+    PCRE2_SIZE errOffset;
     QByteArray baStr = firstPattern.toLocal8Bit();
-    pcre *re = pcre_compile(baStr.data(), caseSensitive ? 0 : PCRE_CASELESS, &err, &errOffset, NULL);
+    pcre2_code *re = pcre2_compile((PCRE2_SPTR)baStr.data(),
+                                   baStr.size(),
+                                   caseSensitive ? 0 : PCRE2_CASELESS,
+                                   &errCode,
+                                   &errOffset,
+                                   nullptr);
     if (!re) {
         error = "invalid regular expression '";
         error += firstPattern;
@@ -82,12 +86,10 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
         return error;
     }
 
-    const int OVECCOUNT = 30;
-    int ovector[OVECCOUNT];
-    pcre_extra *extra = NULL;
-    extra = pcre_study(re, PCRE_STUDY_EXTRA_NEEDED | PCRE_STUDY_JIT_COMPILE, &err);
-    // pcre_assign_jit_stack() does nothing unless the extra argument is non-NULL
-    pcre_assign_jit_stack(extra, NULL, mJitStack);
+    pcre2_match_data *matchData = pcre2_match_data_create_from_pattern(re, nullptr);
+    pcre2_match_context *matchCtx = pcre2_match_context_create(nullptr);
+    pcre2_jit_stack_assign(matchCtx, nullptr, mJitStack);
+    pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
 
     beginResetModel();
 
@@ -100,9 +102,7 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
                     continue;
                 }
                 baStr = counterName.toLocal8Bit();
-                if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                  0, 0, ovector, OVECCOUNT, mJitStack) == PCRE_ERROR_NOMATCH)
-                {
+                if (pcre2_match(re, (PCRE2_SPTR)baStr.data(), baStr.size(), 0, 0, matchData, matchCtx) < 0) {
                     mMatchedIndexes.append(i);
                 }
             }
@@ -113,16 +113,10 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
                     continue;
                 }
                 baStr = counterName.toLocal8Bit();
-                if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                  0, 0, ovector, OVECCOUNT, mJitStack) != PCRE_ERROR_NOMATCH)
-                {
+                if (pcre2_match(re, (PCRE2_SPTR)baStr.data(), baStr.size(), 0, 0, matchData, matchCtx) >= 0) {
                     mMatchedIndexes.append(i);
                 }
             }
-        }
-        pcre_free(re);
-        if (extra) {
-            pcre_free_study(extra);
         }
     } else {
         QSet<int> tempIndexes;
@@ -133,9 +127,7 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
                     continue;
                 }
                 baStr = counterName.toLocal8Bit();
-                if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                  0, 0, ovector, OVECCOUNT, mJitStack) == PCRE_ERROR_NOMATCH)
-                {
+                if (pcre2_match(re, (PCRE2_SPTR)baStr.data(), baStr.size(), 0, 0, matchData, matchCtx) < 0) {
                     tempIndexes.insert(i);
                 }
             }
@@ -146,17 +138,15 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
                     continue;
                 }
                 baStr = counterName.toLocal8Bit();
-                if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                  0, 0, ovector, OVECCOUNT, mJitStack) != PCRE_ERROR_NOMATCH)
-                {
+                if (pcre2_match(re, (PCRE2_SPTR)baStr.data(), baStr.size(), 0, 0, matchData, matchCtx) >= 0) {
                     tempIndexes.insert(i);
                 }
             }
         }
-        pcre_free(re);
-        if (extra) {
-            pcre_free_study(extra);
-        }
+        pcre2_match_data_free(matchData);
+        matchData = nullptr;
+        pcre2_code_free(re);
+        re = nullptr;
 
         for (auto iter = patterns.begin() + 1; iter != patterns.end(); ++iter) {
             invert = iter->startsWith('!');
@@ -164,24 +154,27 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
                 iter->remove(0, 1);
             }
             baStr = iter->toLocal8Bit();
-            re = pcre_compile(baStr.data(), caseSensitive ? 0 : PCRE_CASELESS, &err, &errOffset, NULL);
+            re = pcre2_compile((PCRE2_SPTR)baStr.data(),
+                               baStr.size(),
+                               caseSensitive ? 0 : PCRE2_CASELESS,
+                               &errCode,
+                               &errOffset,
+                               nullptr);
             if (!re) {
                 error = "invalid regular expression '";
                 error += *iter;
+                error += "'";
                 break;
             }
 
-            extra = pcre_study(re, PCRE_STUDY_EXTRA_NEEDED | PCRE_STUDY_JIT_COMPILE, &err);
-            // pcre_assign_jit_stack() does nothing unless the extra argument is non-NULL
-            pcre_assign_jit_stack(extra, NULL, mJitStack);
+            matchData = pcre2_match_data_create_from_pattern(re, nullptr);
+            pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
 
             if (invert) {
                 for (auto iter = tempIndexes.begin(); iter != tempIndexes.end();) {
                     const QString &counterName = mCounterNames[*iter];
                     baStr = counterName.toLocal8Bit();
-                    if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                      0, 0, ovector, OVECCOUNT, mJitStack) != PCRE_ERROR_NOMATCH)
-                    {
+                    if (pcre2_match(re, (PCRE2_SPTR)baStr.data(), baStr.size(), 0, 0, matchData, matchCtx) >= 0) {
                         iter = tempIndexes.erase(iter);
                     } else {
                         ++iter;
@@ -191,18 +184,12 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
                 for (auto iter = tempIndexes.begin(); iter != tempIndexes.end();) {
                     const QString &counterName = mCounterNames[*iter];
                     baStr = counterName.toLocal8Bit();
-                    if (pcre_jit_exec(re, extra, baStr.data(), counterName.length(),
-                                      0, 0, ovector, OVECCOUNT, mJitStack) != PCRE_ERROR_NOMATCH)
-                    {
+                    if (pcre2_match(re, (PCRE2_SPTR)baStr.data(), baStr.size(), 0, 0, matchData, matchCtx) >= 0) {
                         ++iter;
                     } else {
                         iter = tempIndexes.erase(iter);
                     }
                 }
-            }
-            pcre_free(re);
-            if (extra) {
-                pcre_free_study(extra);
             }
         }
 
@@ -212,6 +199,9 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
     mFetchedCount = 0;
     endResetModel();
 
+    pcre2_match_context_free(matchCtx);
+    pcre2_match_data_free(matchData);
+    pcre2_code_free(re);
     return error;
 }
 

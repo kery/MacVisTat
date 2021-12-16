@@ -2,7 +2,8 @@
 #define COUNTERNAMEMODEL_H
 
 #include <QAbstractListModel>
-#include <pcre.h>
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 
 class CounterDescription;
 
@@ -38,7 +39,7 @@ private:
     QVector<int> mMatchedIndexes;
     QVector<QString> mCounterNames;
     CounterDescription *mCounterDesc;
-    pcre_jit_stack *mJitStack;
+    pcre2_jit_stack *mJitStack;
 };
 
 #endif // COUNTERNAMEMODEL_H
