@@ -70,7 +70,6 @@ private:
     void loadFilterHistory();
     void saveFilterHistory();
     void adjustFilterHistoryOrder();
-    void setupNetworkAccessManager();
     void startCheckUpdateTask();
     void startDownloadCounterDescriptionTask();
     void startUsageReport();
@@ -91,19 +90,12 @@ private:
     void appendWarnLog(const QString &text);
     void appendErrorLog(const QString &text);
 
-    enum UrlPath {
-        upHelp,
-        upCounterDescription,
-        upRoot,
-    };
-
     enum FilePath {
         fpFavoriteFilter,
         fpFilterHistory,
         fpCounterDescription,
     };
 
-    static QUrl url(UrlPath up);
     static QString filePath(FilePath fp);
     static int trimLeadingSpace(QString &str);
 
@@ -117,7 +109,6 @@ private:
     QTimer mFilterMenuReloadTimer;
     QFileSystemWatcher mFilterFileWatcher;
     ResizeManager mResizeMan;
-    QNetworkAccessManager mNetMan;
     CounterDescription mCounterDesc;
 };
 

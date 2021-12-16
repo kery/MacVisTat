@@ -1,12 +1,13 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
+#include "Application.h"
 #include "PlotWindow.h"
 #include "CounterNameModel.h"
 #include "CounterFileParser.h"
 #include "KpiKciFileParser.h"
+#include "ChangeLogDialog.h"
 #include "GlobalDefines.h"
 #include "Utils.h"
-#include <QNetworkProxyQuery>
 #include <QNetworkReply>
 
 MainWindow::MainWindow() :
@@ -18,7 +19,6 @@ MainWindow::MainWindow() :
 {
     ui->setupUi(this);
     setupFilterComboBox();
-    setupNetworkAccessManager();
     updateWindowTitle();
 
     ui->splitterHor->setStretchFactor(0, 0);
@@ -192,12 +192,14 @@ void MainWindow::actionOptionsTriggered()
 
 void MainWindow::actionHelpTriggered()
 {
-    QDesktopServices::openUrl(url(upHelp));
+    QUrl url = Application::instance()->getUrl(Application::upHelp);
+    QDesktopServices::openUrl(url);
 }
 
 void MainWindow::actionChangeLogTriggered()
 {
-    // TODO
+    ChangeLogDialog dlg(this, false);
+    dlg.exec();
 }
 
 void MainWindow::actionAboutTriggered()
@@ -593,15 +595,6 @@ void MainWindow::adjustFilterHistoryOrder()
     }
 }
 
-void MainWindow::setupNetworkAccessManager()
-{
-    QNetworkProxyQuery npq(url(upRoot));
-    QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(npq);
-    if (!proxies.isEmpty()) {
-        mNetMan.setProxy(proxies[0]);
-    }
-}
-
 void MainWindow::startCheckUpdateTask()
 {
     // TODO
@@ -609,8 +602,10 @@ void MainWindow::startCheckUpdateTask()
 
 void MainWindow::startDownloadCounterDescriptionTask()
 {
-    QNetworkRequest request(url(upCounterDescription));
-    QNetworkReply *reply = mNetMan.get(request);
+    Application *app = Application::instance();
+    QUrl url = app->getUrl(Application::upCounterDescription);
+    QNetworkRequest request(url);
+    QNetworkReply *reply = app->networkAccessManager().get(request);
     connect(reply, &QNetworkReply::finished, this, &MainWindow::downloadCounterDescriptionFinished);
 }
 
@@ -784,21 +779,6 @@ void MainWindow::appendWarnLog(const QString &text)
 void MainWindow::appendErrorLog(const QString &text)
 {
     ui->logTextEdit->appendHtml(formatLog(text, llError));
-}
-
-QUrl MainWindow::url(UrlPath up)
-{
-    QUrl root(QStringLiteral("http://sdu.int.nokia-sbell.com:4099/"));
-
-    switch (up) {
-    case upHelp:
-        return root.resolved(QStringLiteral("/help.html"));
-    case upCounterDescription:
-        return root.resolved(QStringLiteral("/counters.desc"));
-    case upRoot:
-        break;
-    }
-    return root;
 }
 
 QString MainWindow::filePath(FilePath fp)

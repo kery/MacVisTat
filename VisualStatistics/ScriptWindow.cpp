@@ -20,7 +20,7 @@ ScriptWindow::ScriptWindow(QWidget *parent) :
     connect(ui->actionOpen, &QAction::triggered, this, &ScriptWindow::actionOpenTriggered);
     connect(ui->actionSave, &QAction::triggered, this, &ScriptWindow::actionSaveTriggered);
 
-    setWindowTitle(QStringLiteral("Script Window - new.lua[*]"));
+    setWindowTitle(QStringLiteral("Script - new.lua[*]"));
 }
 
 ScriptWindow::~ScriptWindow()
@@ -226,5 +226,5 @@ bool ScriptWindow::saveAs()
 void ScriptWindow::setCurrentFile(const QString &path)
 {
     mScriptFile = path;
-    setWindowTitle(QStringLiteral("Script Window - %1[*]").arg(QDir::toNativeSeparators(path)));
+    setWindowTitle(QStringLiteral("Script - %1[*]").arg(QDir::toNativeSeparators(path)));
 }
