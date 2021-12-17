@@ -24,6 +24,7 @@ SOURCES += \
     CounterNameModel.cpp \
     CounterPlot.cpp \
     DateTimeTicker.cpp \
+    FileDialog.cpp \
     GzipFile.cpp \
     KpiKciFileParser.cpp \
     LogTextEdit.cpp \
@@ -92,6 +93,7 @@ HEADERS += \
     CounterNameModel.h \
     CounterPlot.h \
     DateTimeTicker.h \
+    FileDialog.h \
     GlobalDefines.h \
     GzipFile.h \
     KpiKciFileParser.h \

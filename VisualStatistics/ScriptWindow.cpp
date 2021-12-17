@@ -1,5 +1,6 @@
 #include "ScriptWindow.h"
 #include "ui_ScriptWindow.h"
+#include "FileDialog.h"
 #include "AutoCompletionSrcPlotAPIs.h"
 #include "SciLexerLua5_2.h"
 #include "GlobalDefines.h"
@@ -55,7 +56,7 @@ void ScriptWindow::actionOpenTriggered()
         return;
     }
 
-    QString path = QFileDialog::getOpenFileName(this, APP_NAME, QString(), QStringLiteral("Lua File (*.lua)"));
+    QString path = FileDialog::getOpenFileName(this, QStringLiteral("Lua File (*.lua)"));
     if (path.isEmpty()) {
         return;
     }
@@ -211,7 +212,7 @@ bool ScriptWindow::saveFile(const QString &path)
 
 bool ScriptWindow::saveAs()
 {
-    QString path = QFileDialog::getSaveFileName(this);
+    QString path = FileDialog::getSaveFileName(this, QString(), QStringLiteral("Lua File (*.lua)"));
     if (path.isEmpty()) {
         return false;
     }

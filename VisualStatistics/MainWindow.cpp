@@ -9,6 +9,7 @@
 #include "AboutDialog.h"
 #include "OptionsDialog.h"
 #include "GlobalDefines.h"
+#include "FileDialog.h"
 #include "Utils.h"
 #include "Version.h"
 #include <QHostInfo>
@@ -81,7 +82,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::actionOpenTriggered()
 {
-    QFileDialog dlg(this);
+    FileDialog dlg(this);
     dlg.setFileMode(QFileDialog::ExistingFile);
     dlg.setNameFilter(QStringLiteral("Counter File (*.csv *.csv.gz)"));
 
@@ -93,7 +94,7 @@ void MainWindow::actionOpenTriggered()
 
 void MainWindow::actionXmlToCsvTriggered()
 {
-    QFileDialog dlg(this);
+    FileDialog dlg(this);
     dlg.setFileMode(QFileDialog::ExistingFiles);
     dlg.setNameFilter(QStringLiteral("KPI/KCI File (*.xml *xml.gz)"));
     if (dlg.exec() != QDialog::Accepted) {

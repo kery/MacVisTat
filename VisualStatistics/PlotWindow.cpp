@@ -9,6 +9,7 @@
 #include "CounterName.h"
 #include "CounterNameModel.h"
 #include "ScriptWindow.h"
+#include "FileDialog.h"
 #include "Utils.h"
 #include "GlobalDefines.h"
 #include <csv.h>
@@ -56,9 +57,7 @@ void PlotWindow::setCounterDescription(CounterDescription *desc)
 
 void PlotWindow::actionSaveTriggered()
 {
-    QString path = QFileDialog::getSaveFileName(this, ui->actionSave->text(),
-                                                defaultSaveFileName(),
-                                                QStringLiteral("PNG File (*.png)"));
+    QString path = FileDialog::getSaveFileName(this, defaultSaveFileName(), QStringLiteral("PNG File (*.png)"));
     if (!path.isEmpty()) {
         ui->plot->savePng(path);
     }
@@ -74,9 +73,7 @@ void PlotWindow::actionExportToCsvTriggered()
     if (ui->plot->graphCount() == 0) {
         return;
     }
-    QString path = QFileDialog::getSaveFileName(this, ui->actionExportToCsv->text(),
-                                                defaultSaveFileName(),
-                                                QStringLiteral("CSV File (*.csv)"));
+    QString path = FileDialog::getSaveFileName(this, defaultSaveFileName(), QStringLiteral("CSV File (*.csv)"));
     if (path.isEmpty()) {
         return;
     }

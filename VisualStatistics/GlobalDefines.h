@@ -18,5 +18,6 @@
 #define SETTING_KEY_HIDE_TIME_GAP   "hideTimeGap"
 #define SETTING_KEY_CASE_SENSITIVE  "caseSensitive"
 #define SETTING_KEY_RECENT_FILES    "recentFileList"
+#define SETTING_KEY_OPENDLG_DIR     "openDialogDir"
 
 #endif // GLOBALDEFINES_H
