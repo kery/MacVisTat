@@ -745,10 +745,15 @@ void PlotWindow::updatePlotTitle()
 
 QString PlotWindow::defaultSaveFileName() const
 {
-    QString wndTitle = windowTitle();
-    QStringList strList = wndTitle.split(WND_TITLE_SEP, QString::SkipEmptyParts);
-    if (!strList.isEmpty() && strList.last().endsWith(QLatin1String("..."))) {
-        strList.last().chop(3);
+    QStringList strList;
+    for (int i = 0; i < ui->plot->graphCount(); ++i) {
+        CounterGraph *graph = ui->plot->graph(i);
+        if (!graph->visible()) { continue; }
+        QString objName = CounterName::getObjectName(graph->name());
+        if (!strList.contains(objName)) {
+            strList.append(objName);
+            if (strList.size() == 3){ break; }
+        }
     }
     return strList.join('_');
 }

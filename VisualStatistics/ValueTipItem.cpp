@@ -2,7 +2,7 @@
 #include "CounterGraph.h"
 #include "GlobalDefines.h"
 
-#define TRACER_SIZE 10.0
+#define TRACER_SIZE 12.0
 
 ValueTipItem::ValueTipItem(QCustomPlot *plot) :
     TextItem(plot),
@@ -81,7 +81,7 @@ void ValueTipItem::setTracerGraphKey(double key)
 void ValueTipItem::setTracerPen(const QPen &pen)
 {
     QColor color = pen.color();
-    QPen borderPen(color.darker(128));
+    QPen borderPen(color.darker());
     borderPen.setWidth(2);
 
     mTracer->setPen(borderPen);
