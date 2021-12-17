@@ -2,6 +2,31 @@
 
 ## Build dependencies
 
+### Build breakpad
+```
+# Comment out the test related dependencies in breakpad\src\client\windows\breakpad_client.gyp
+        # './unittests/client_tests.gyp:*',
+        # './unittests/testing.gyp:*',
+        # './tests/crash_generation_app/crash_generation_app.gyp:*',
+
+# Clone gyp to somewhere
+git clone https://chromium.googlesource.com/external/gyp
+
+# Open Visual Studio Command Prompt and add gyp to PATH
+set PATH=<gyp dir>;%PATH%
+
+cd VisualStatistics\breakpad
+gyp.bat --no-circular-check src\client\windows\breakpad_client.gyp -Dwin_release_RuntimeLibrary=2 -Dwin_debug_RuntimeLibrary=3
+
+# Runtime library values:
+# 0: /MT
+# 1: /MTd
+# 2: /MD
+# 3: /MDd
+
+msbuild /m /p:Configuration=Release /p:Platform=x64 src\client\windows\breakpad_client.sln
+```
+
 ### Build libexpat
 ```
 mkdir build-libexpat

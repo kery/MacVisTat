@@ -1,8 +1,11 @@
 #include "MainWindow.h"
 #include "CounterName.h"
 #include "Application.h"
+#include <exception_handler.h>
 #include <QFile>
+#include <QDir>
 #include <QStyleFactory>
+#include <Shlwapi.h>
 
 static void loadStyleSheet(QApplication &app)
 {
@@ -10,6 +13,42 @@ static void loadStyleSheet(QApplication &app)
     if (file.open(QFile::ReadOnly)) {
         app.setStyleSheet(file.readAll());
     }
+}
+
+static wchar_t crashReporterPath[MAX_PATH];
+static wchar_t uploaderUrl[MAX_PATH];
+
+static void initCrashReporterPathAndUploaderUrl(const Application &app)
+{
+    GetModuleFileNameW(NULL, crashReporterPath, MAX_PATH);
+    PathRemoveFileSpecW(crashReporterPath);
+    PathAppendW(crashReporterPath, L"CrashReporter.exe");
+
+    std::wstring urlStr = app.getUrl(Application::upUpload).toString().toStdWString();
+    wcscpy(uploaderUrl, urlStr.c_str());
+}
+
+static bool minidumpCallback(const wchar_t* dump_path,
+                             const wchar_t* minidump_id,
+                             void* /*context*/,
+                             EXCEPTION_POINTERS* /*exinfo*/,
+                             MDRawAssertionInfo* /*assertion*/,
+                             bool succeeded)
+{
+    if (succeeded) {
+        wchar_t param[MAX_PATH];
+        wcscpy_s(param, L"--file \"");
+        wcscat_s(param, dump_path);
+        if (dump_path[wcslen(dump_path) - 1] != L'/') {
+            wcscat_s(param, L"/");
+        }
+        wcscat_s(param, minidump_id);
+        wcscat_s(param, L".dmp\" --url ");
+        wcscat_s(param, uploaderUrl);
+
+        ShellExecuteW(NULL, NULL, crashReporterPath, param, NULL, SW_SHOW);
+    }
+    return succeeded;
 }
 
 int main(int argc, char *argv[])
@@ -20,8 +59,6 @@ int main(int argc, char *argv[])
 
     // Call these functions so that we can use default constructor of
     // QSettings.
-    // Should be called before getAppDataDir since it use these
-    // informations
     Application::setOrganizationName("Nokia");
     Application::setApplicationName("VisualStatistics");
     CounterName::initSeparators();
@@ -30,6 +67,15 @@ int main(int argc, char *argv[])
     // script window will not hang UI thread.
     fclose(stdin);
 
+    initCrashReporterPathAndUploaderUrl(app);
+    google_breakpad::ExceptionHandler eh(QDir::tempPath().toStdWString(),
+                                         nullptr,
+                                         minidumpCallback,
+                                         nullptr,
+                                         google_breakpad::ExceptionHandler::HANDLER_ALL,
+                                         MiniDumpNormal,
+                                         static_cast<wchar_t *>(nullptr),
+                                         nullptr);
     MainWindow mainWnd;
     mainWnd.show();
     return app.exec();

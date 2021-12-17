@@ -21,6 +21,8 @@ QUrl Application::getUrl(UrlPath up)
     QUrl root(QStringLiteral("http://sdu.int.nokia-sbell.com:4099/"));
 
     switch (up) {
+    case upRoot:
+        break;
     case upHelp:
         return root.resolved(QStringLiteral("/help.html"));
     case upCounterDescription:
@@ -29,8 +31,8 @@ QUrl Application::getUrl(UrlPath up)
         return root.resolved(QStringLiteral("/changelog.txt"));
     case upUsageReport:
         return root.resolved(QStringLiteral("/report"));
-    case upRoot:
-        break;
+    case upUpload:
+        return root.resolved(QStringLiteral("/upload"));
     }
     return root;
 }

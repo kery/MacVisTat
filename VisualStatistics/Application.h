@@ -14,11 +14,12 @@ public:
     QNetworkAccessManager & networkAccessManager();
 
     enum UrlPath {
+        upRoot,
         upHelp,
         upCounterDescription,
         upChangeLog,
         upUsageReport,
-        upRoot,
+        upUpload,
     };
 
     static QUrl getUrl(UrlPath up);
