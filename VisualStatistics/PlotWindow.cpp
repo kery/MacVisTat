@@ -37,6 +37,7 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     connect(ui->actionRemoveZeroCounters, &QAction::triggered, this, &PlotWindow::actionRemoveZeroCountersTriggered);
     connect(ui->actionScript, &QAction::triggered, this, &PlotWindow::actionScriptTriggered);
 
+    setFocus(); // If not call this, the QDateTimeEdit will have focus
     initGraphs();
     highlightTimeGap();
     updateWindowTitle();

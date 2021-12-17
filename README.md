@@ -1,3 +1,19 @@
+# Counter file format
+
+The "offset from utc" in header line is optional. Counter values are also optional.
+```
+##date;time[offset from utc];counter1;...;countern##
+dd.MM.yyyy;HH:mm:ss;value1;...;valuen
+dd.MM.yyyy;HH:mm:ss;;...;valuen
+```
+
+Sample
+```
+##date;time28800;counter1;counter2;counter3##
+17.12.2021;19:50:00;12;38;19
+17.12.2021;19.55;00;18;;23
+```
+
 # Build
 
 ## Build dependencies
