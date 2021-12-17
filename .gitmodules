@@ -10,3 +10,6 @@
 [submodule "VisualStatistics/pcre2"]
 	path = VisualStatistics/pcre2
 	url = https://github.com/PhilipHazel/pcre2.git
+[submodule "VisualStatistics/breakpad"]
+	path = VisualStatistics/breakpad
+	url = https://chromium.googlesource.com/breakpad/breakpad
