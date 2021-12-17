@@ -430,7 +430,7 @@ void KpiKciFileParser::writeHeader(const InfoIdMap &iim, const std::string &offs
         }
         counterName.erase(counterName.end() - measInfoId.length(), counterName.end());
 
-        int newProgress = ++infoIdIndex / iim.size() * 100;
+        int newProgress = ++infoIdIndex / static_cast<int>(iim.size()) * 100;
         if (newProgress > progress) {
             progress = newProgress;
             QMetaObject::invokeMethod(&dlg, "setValue", Qt::QueuedConnection, Q_ARG(int, progress));

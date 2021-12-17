@@ -7,6 +7,7 @@
 #include "KpiKciFileParser.h"
 #include "ChangeLogDialog.h"
 #include "AboutDialog.h"
+#include "OptionsDialog.h"
 #include "GlobalDefines.h"
 #include "Utils.h"
 #include "Version.h"
@@ -191,6 +192,8 @@ void MainWindow::actionPlotSeparatelyTriggered()
 
 void MainWindow::actionOptionsTriggered()
 {
+    OptionsDialog dlg(this);
+    dlg.exec();
 }
 
 void MainWindow::actionHelpTriggered()

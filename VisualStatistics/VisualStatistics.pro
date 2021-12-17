@@ -29,6 +29,7 @@ SOURCES += \
     LogTextEdit.cpp \
     LuaEnvironment.cpp \
     MultiLineInputDialog.cpp \
+    OptionsDialog.cpp \
     PlotData.cpp \
     PlotWindow.cpp \
     ProgressDialog.cpp \
@@ -98,6 +99,7 @@ HEADERS += \
     LuaEnvironment.h \
     MainWindow.h \
     MultiLineInputDialog.h \
+    OptionsDialog.h \
     PlotData.h \
     PlotWindow.h \
     ProgressDialog.h \
@@ -139,6 +141,7 @@ FORMS += \
     AboutDialog.ui \
     ChangeLogDialog.ui \
     MainWindow.ui \
+    OptionsDialog.ui \
     PlotWindow.ui \
     ProgressDialog.ui \
     ScriptWindow.ui
