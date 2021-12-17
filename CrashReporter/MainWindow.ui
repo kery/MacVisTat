@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>345</width>
-    <height>336</height>
+    <width>451</width>
+    <height>187</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,16 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QTextBrowser" name="textBrowser"/>
+       <widget class="QPlainTextEdit" name="textEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="plainText">
+         <string>An unhandled exception occurred, which cause the program exit unexpectedly.
+
+Do you want to upload the core dump file to help the fix of this issue?</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QDialogButtonBox" name="buttonBox">

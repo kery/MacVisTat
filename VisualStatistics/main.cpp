@@ -16,16 +16,16 @@ static void loadStyleSheet(QApplication &app)
 }
 
 static wchar_t crashReporterPath[MAX_PATH];
-static wchar_t uploaderUrl[MAX_PATH];
+static wchar_t uploadUrl[MAX_PATH];
 
-static void initCrashReporterPathAndUploaderUrl(const Application &app)
+static void initCrashReporterPathAndUploadUrl(const Application &app)
 {
     GetModuleFileNameW(NULL, crashReporterPath, MAX_PATH);
     PathRemoveFileSpecW(crashReporterPath);
     PathAppendW(crashReporterPath, L"CrashReporter.exe");
 
     std::wstring urlStr = app.getUrl(Application::upUpload).toString().toStdWString();
-    wcscpy(uploaderUrl, urlStr.c_str());
+    wcscpy(uploadUrl, urlStr.c_str());
 }
 
 static bool minidumpCallback(const wchar_t* dump_path,
@@ -44,7 +44,7 @@ static bool minidumpCallback(const wchar_t* dump_path,
         }
         wcscat_s(param, minidump_id);
         wcscat_s(param, L".dmp\" --url ");
-        wcscat_s(param, uploaderUrl);
+        wcscat_s(param, uploadUrl);
 
         ShellExecuteW(NULL, NULL, crashReporterPath, param, NULL, SW_SHOW);
     }
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     // script window will not hang UI thread.
     fclose(stdin);
 
-    initCrashReporterPathAndUploaderUrl(app);
+    initCrashReporterPathAndUploadUrl(app);
     google_breakpad::ExceptionHandler eh(QDir::tempPath().toStdWString(),
                                          nullptr,
                                          minidumpCallback,

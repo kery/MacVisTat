@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -33,7 +34,7 @@ func (d dirWithStat) Open(name string) (http.File, error) {
 	return file, err
 }
 
-func userReportHandler(w http.ResponseWriter, r *http.Request) {
+func usageReportHandler(w http.ResponseWriter, r *http.Request) {
 	hostName := r.PostFormValue("host")
 	productType := r.PostFormValue("pt")
 	version := r.PostFormValue("ver")
@@ -65,13 +66,38 @@ func fileStatHandler(w http.ResponseWriter, r *http.Request) {
 	tw.Flush()
 }
 
+func uploadHandler(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(1024 * 1024 * 10); err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+	defer file.Close()
+
+	dstFile, err := os.Create(header.Filename)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+	defer dstFile.Close()
+
+	if _, err = io.Copy(dstFile, file); err != nil {
+		w.Write([]byte(err.Error()))
+	}
+}
+
 func main() {
 	fileStat = make(map[string]uint32)
 
 	fs := http.FileServer(dirWithStat("."))
 	http.Handle("/", fs)
-	http.HandleFunc("/report", userReportHandler)
+	http.HandleFunc("/report", usageReportHandler)
 	http.HandleFunc("/fstat", fileStatHandler)
+	http.HandleFunc("/upload", uploadHandler)
 
 	http.ListenAndServe(":4099", nil)
 }

@@ -1,5 +1,6 @@
-#include "mainwindow.h"
+#include "MainWindow.h"
 #include <QApplication>
+#include <QFileInfo>
 #include <QCommandLineParser>
 
 int main(int argc, char *argv[])
@@ -7,34 +8,24 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     QCommandLineParser parser;
+    QCommandLineOption fileOption("file");
+    QCommandLineOption urlOption("url");
 
-    QCommandLineOption fileOption(QStringLiteral("file"));
-    QCommandLineOption versionOption(QStringLiteral("version"));
-    QCommandLineOption ftpDirOption(QStringLiteral("ftpdir"));
-    QCommandLineOption ftpUserOption(QStringLiteral("ftpuser"));
-    QCommandLineOption ftpPwdOption(QStringLiteral("ftppwd"));
-    // This option wants a value, so set value name otherwise the value will
+    // These options want a value, so set value name. Otherwise the value will
     // not be parsed
-    fileOption.setValueName(QStringLiteral("file"));
-    versionOption.setValueName(QStringLiteral("version"));
-    ftpDirOption.setValueName(QStringLiteral("ftpdir"));
-    ftpUserOption.setValueName(QStringLiteral("ftpuser"));
-    ftpPwdOption.setValueName(QStringLiteral("ftppwd"));
+    fileOption.setValueName("file");
+    urlOption.setValueName("url");
+
     parser.addOption(fileOption);
-    parser.addOption(versionOption);
-    parser.addOption(ftpDirOption);
-    parser.addOption(ftpUserOption);
-    parser.addOption(ftpPwdOption);
+    parser.addOption(urlOption);
 
     parser.process(a);
     QString dumpFile = parser.value(fileOption);
-    if (dumpFile.isEmpty()) {
+    if (!QFileInfo::exists(dumpFile)) {
         return 1;
     }
 
-    MainWindow w(dumpFile, parser.value(versionOption), parser.value(ftpDirOption),
-                 parser.value(ftpUserOption), parser.value(ftpPwdOption));
-    w.show();
-
+    MainWindow mainWnd(dumpFile, parser.value(urlOption));
+    mainWnd.show();
     return a.exec();
 }
