@@ -146,8 +146,9 @@ FORMS += \
 INCLUDEPATH += libcsv/ lua/ qcustomplot/ ../build-pcre2/ libexpat/expat/lib/
 INCLUDEPATH += breakpad/src/ breakpad/src/client/windows/handler/
 
-LIBS += -L../build-pcre2/Release/ -lpcre2-8 -L../build-libexpat/Release/ -llibexpat
-LIBS += -L$$PWD/breakpad/src/client/windows/Release/lib/ -lexception_handler -lcrash_generation_client -lcommon
+LIBS += -L../build-pcre2/Release/ -lpcre2-8
+LIBS += -L../build-libexpat/Release/ -llibexpat
+LIBS += -L../build-breakpad/lib/ -lexception_handler -lcrash_generation_client -lcommon
 LIBS += -lShlwapi
 
 # Default rules for deployment.

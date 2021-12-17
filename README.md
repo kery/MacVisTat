@@ -15,8 +15,7 @@ git clone https://chromium.googlesource.com/external/gyp
 # Open Visual Studio Command Prompt and add gyp to PATH
 set PATH=<gyp dir>;%PATH%
 
-cd VisualStatistics\breakpad
-gyp.bat --no-circular-check src\client\windows\breakpad_client.gyp -Dwin_release_RuntimeLibrary=2 -Dwin_debug_RuntimeLibrary=3
+gyp.bat --no-circular-check breakpad\src\client\windows\breakpad_client.gyp -Dwin_release_RuntimeLibrary=2 -Dwin_debug_RuntimeLibrary=3
 
 # Runtime library values:
 # 0: /MT
@@ -24,7 +23,8 @@ gyp.bat --no-circular-check src\client\windows\breakpad_client.gyp -Dwin_release
 # 2: /MD
 # 3: /MDd
 
-msbuild /m /p:Configuration=Release /p:Platform=x64 src\client\windows\breakpad_client.sln
+# Trailing slash of OutDir is mandatory
+msbuild /m /p:Configuration=Release /p:Platform=x64 /p:OutDir=%CD%\..\build-breakpad\ breakpad\src\client\windows\breakpad_client.sln
 ```
 
 ### Build libexpat
