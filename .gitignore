@@ -1,5 +1,3 @@
 build-*
 *.pro.user
-installer/installer/packages/crashreporter/data/
-installer/installer/packages/dlls/data/
-installer/installer/packages/visualstatistics/data/
+installer/installer/repository/

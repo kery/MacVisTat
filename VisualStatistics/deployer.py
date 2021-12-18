@@ -80,8 +80,6 @@ def copy_target_file():
     src = os.path.join(src, "build-VisualStatistics-Deploy", "VisualStatistics.exe")
     dest = proj_root_dir()
     dest = os.path.join(dest, "installer", "installer", "packages", "visualstatistics", "data")
-    if not os.path.exists(dest):
-        os.makedirs(dest)
     shutil.copy(src, dest)
 
 def update_repository():
