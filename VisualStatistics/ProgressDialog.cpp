@@ -61,7 +61,16 @@ void ProgressDialog::cancelButtonClicked()
     emit canceling();
 }
 
+// Ignore keyboard event, especially the Esc, to prevent it from
+// being closed. When Esc pressed, closeEvent will not be called.
+// This is documented in QDialog page.
 void ProgressDialog::keyPressEvent(QKeyEvent *event)
+{
+    event->ignore();
+}
+
+// Ignore close event, e.g. Alt+F4
+void ProgressDialog::closeEvent(QCloseEvent *event)
 {
     event->ignore();
 }

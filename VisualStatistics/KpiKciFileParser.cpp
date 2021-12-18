@@ -36,6 +36,7 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
     QObject::connect(&sortWatcher, &QFutureWatcher<void>::finished, &dlg, &ProgressDialog::accept);
     sortWatcher.setFuture(QtConcurrent::run(std::bind(sortFiles, std::ref(paths), std::ref(errors))));
     dlg.exec();
+    sortWatcher.waitForFinished();
 
     if (paths.isEmpty()) { return QString(); }
 
@@ -55,6 +56,7 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
     hdrWatcher.setFuture(QtConcurrent::mappedReduced(paths, std::bind(parseHeader, std::placeholders::_1, std::ref(working)),
                                                      mergeHeaderResult));
     dlg.exec();
+    hdrWatcher.waitForFinished();
 
     if (hdrWatcher.isCanceled()) { return QString(); }
 
@@ -87,6 +89,7 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
                                                           std::ref(writer),
                                                           std::ref(indexMap))));
     dlg.exec();
+    writeHdrWatcher.waitForFinished();
 
     if (!working) { return QString(); }
 
@@ -105,6 +108,7 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
         std::bind(writeData, std::placeholders::_1, std::placeholders::_2, std::ref(writer)),
         QtConcurrent::OrderedReduce | QtConcurrent::SequentialReduce));
     dlg.exec();
+    dataWatcher.waitForFinished();
 
     if (dataWatcher.isCanceled()) { return QString(); }
 

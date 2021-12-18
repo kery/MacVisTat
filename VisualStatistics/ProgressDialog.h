@@ -40,6 +40,7 @@ private slots:
 
 private:
     virtual void keyPressEvent(QKeyEvent *event) override;
+    virtual void closeEvent(QCloseEvent *event) override;
     virtual bool event(QEvent *event) override;
 
     Ui::ProgressDialog *ui;
