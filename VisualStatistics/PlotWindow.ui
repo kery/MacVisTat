@@ -56,7 +56,7 @@
    <addaction name="actionCopy"/>
    <addaction name="actionExportToCsv"/>
    <addaction name="separator"/>
-   <addaction name="actionRescale"/>
+   <addaction name="actionRestore"/>
    <addaction name="actionShowDelta"/>
    <addaction name="actionDisplayUtc"/>
    <addaction name="actionRemoveZeroCounters"/>
@@ -77,19 +77,16 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionRescale">
+  <action name="actionRestore">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/images/rescale.png</normaloff>:/images/rescale.png</iconset>
+     <normaloff>:/images/restore.png</normaloff>:/images/restore.png</iconset>
    </property>
    <property name="text">
-    <string>Rescale</string>
+    <string>Restore</string>
    </property>
    <property name="toolTip">
-    <string>Rescale</string>
-   </property>
-   <property name="shortcut">
-    <string>Esc</string>
+    <string>Restore</string>
    </property>
   </action>
   <action name="actionShowDelta">
@@ -110,7 +107,7 @@
   <action name="actionCopy">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/images/copy.png</normaloff>:/images/copy.png</iconset>
+     <normaloff>:/images/copy-image.png</normaloff>:/images/copy-image.png</iconset>
    </property>
    <property name="text">
     <string>Copy</string>

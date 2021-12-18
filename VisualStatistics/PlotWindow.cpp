@@ -32,7 +32,7 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     connect(ui->actionSave, &QAction::triggered, this, &PlotWindow::actionSaveTriggered);
     connect(ui->actionCopy, &QAction::triggered, this, &PlotWindow::actionCopyTriggered);
     connect(ui->actionExportToCsv, &QAction::triggered, this, &PlotWindow::actionExportToCsvTriggered);
-    connect(ui->actionRescale, &QAction::triggered, this, &PlotWindow::actionRescaleTriggered);
+    connect(ui->actionRestore, &QAction::triggered, this, &PlotWindow::actionRestoreTriggered);
     connect(ui->actionDisplayUtc, &QAction::triggered, this, &PlotWindow::actionDisplayUtcTriggered);
     connect(ui->actionShowDelta, &QAction::triggered, this, &PlotWindow::actionShowDeltaTriggered);
     connect(ui->actionRemoveZeroCounters, &QAction::triggered, this, &PlotWindow::actionRemoveZeroCountersTriggered);
@@ -133,7 +133,7 @@ void PlotWindow::actionExportToCsvTriggered()
     fclose(file);
 }
 
-void PlotWindow::actionRescaleTriggered()
+void PlotWindow::actionRestoreTriggered()
 {
     ui->plot->rescaleAxes();
     adjustYAxisRange();
@@ -696,6 +696,7 @@ void PlotWindow::highlightTimeGap()
         if (diff >= interval * 1.5) {
             QCPItemStraightLine *line = new QCPItemStraightLine(ui->plot);
             line->setPen(pen);
+            line->setSelectable(false);
             line->point1->setCoords(i, 0);
             line->point2->setCoords(i, 1);
         }

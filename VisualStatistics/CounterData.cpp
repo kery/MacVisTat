@@ -1,8 +1,7 @@
 #include "CounterData.h"
 
-void CounterData::dummyDeleter(QCPGraphDataContainer *data)
+void CounterData::dummyDeleter(QCPGraphDataContainer * /*data*/)
 {
-    Q_UNUSED(data)
     // Do nothing
 }
 

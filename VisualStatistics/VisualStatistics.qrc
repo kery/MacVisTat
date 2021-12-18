@@ -6,12 +6,12 @@
         <file>images/plus.png</file>
         <file>images/help.png</file>
         <file>images/minus.png</file>
-        <file>images/rescale.png</file>
+        <file>images/restore.png</file>
         <file>images/play.png</file>
         <file>images/script.png</file>
         <file>images/remove.png</file>
-        <file>images/csv.png</file>
-        <file>images/copy.png</file>
+        <file>images/to-csv.png</file>
+        <file>images/copy-image.png</file>
         <file>images/export.png</file>
         <file>images/utc.png</file>
         <file>qss/default.qss</file>

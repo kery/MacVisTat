@@ -53,7 +53,7 @@ MainWindow::MainWindow() :
     connect(model, &CounterNameModel::modelReset, this, &MainWindow::updateCounterNameCountInfo);
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::actionOpenTriggered);
     connect(ui->actionXmlToCsv, &QAction::triggered, this, &MainWindow::actionXmlToCsvTriggered);
-    connect(ui->actionClose, &QAction::triggered, this, &MainWindow::actionCloseTriggered);
+    connect(ui->actionCloseFile, &QAction::triggered, this, &MainWindow::actionCloseFileTriggered);
     connect(ui->actionPlot, &QAction::triggered, this, &MainWindow::actionPlotTriggered);
     connect(ui->actionPlotSeparately, &QAction::triggered, this, &MainWindow::actionPlotSeparatelyTriggered);
     connect(ui->actionOptions, &QAction::triggered, this, &MainWindow::actionOptionsTriggered);
@@ -109,11 +109,11 @@ void MainWindow::actionXmlToCsvTriggered()
     }
     if (outPath.isEmpty()) { return; }
 
-    actionCloseTriggered();
+    actionCloseFileTriggered();
     openCounterFile(outPath);
 }
 
-void MainWindow::actionCloseTriggered()
+void MainWindow::actionCloseFileTriggered()
 {
     mCounterFilePath.clear();
     updateWindowTitle();
@@ -215,9 +215,8 @@ void MainWindow::actionAboutTriggered()
     dlg.exec();
 }
 
-void MainWindow::caseSensitiveButtonClicked(bool checked)
+void MainWindow::caseSensitiveButtonClicked(bool /*checked*/)
 {
-    Q_UNUSED(checked);
     mCaseSensitive = !mCaseSensitive;
     updateCaseSensitiveButtonFont();
     updateFilterPattern();
@@ -392,9 +391,8 @@ void MainWindow::dropEvent(QDropEvent *event)
     }
 }
 
-void MainWindow::closeEvent(QCloseEvent *event)
+void MainWindow::closeEvent(QCloseEvent * /*event*/)
 {
-    Q_UNUSED(event);
     emit aboutToBeClosed();
 
     saveFilterHistory();
@@ -683,7 +681,7 @@ void MainWindow::openCounterFile(const QString &path)
     QString nativePath = QDir::toNativeSeparators(path);
     if (!mCounterFilePath.isEmpty()) {
         if (mCounterFilePath.compare(nativePath, Qt::CaseInsensitive)) {
-            actionCloseTriggered();
+            actionCloseFileTriggered();
         } else {
             return;
         }

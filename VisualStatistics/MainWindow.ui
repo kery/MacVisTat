@@ -96,7 +96,7 @@
      <x>0</x>
      <y>0</y>
      <width>1152</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -108,7 +108,7 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionXmlToCsv"/>
-    <addaction name="actionClose"/>
+    <addaction name="actionCloseFile"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -178,12 +178,12 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="actionClose">
+  <action name="actionCloseFile">
    <property name="text">
-    <string>Close</string>
+    <string>Close File</string>
    </property>
    <property name="statusTip">
-    <string>Close</string>
+    <string>Close File</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -267,16 +267,16 @@
   <action name="actionXmlToCsv">
    <property name="icon">
     <iconset resource="VisualStatistics.qrc">
-     <normaloff>:/images/csv.png</normaloff>:/images/csv.png</iconset>
+     <normaloff>:/images/to-csv.png</normaloff>:/images/to-csv.png</iconset>
    </property>
    <property name="text">
     <string>XML to CSV...</string>
    </property>
    <property name="toolTip">
-    <string>Convert XML format KPI/KCI files</string>
+    <string>Convert KPI/KCI files to CSV format</string>
    </property>
    <property name="statusTip">
-    <string>Convert XML format KPI/KCI files</string>
+    <string>Convert KPI/KCI files to CSV format</string>
    </property>
   </action>
   <action name="actionChangeLog">

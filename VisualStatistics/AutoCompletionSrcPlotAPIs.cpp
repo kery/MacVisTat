@@ -48,17 +48,12 @@ void AutoCompletionSrcPlotAPIs::updateAutoCompletionList(const QStringList &cont
     }
 }
 
-void AutoCompletionSrcPlotAPIs::autoCompletionSelected(const QString &selection)
+void AutoCompletionSrcPlotAPIs::autoCompletionSelected(const QString &/*selection*/)
 {
-    Q_UNUSED(selection)
 }
 
-QStringList AutoCompletionSrcPlotAPIs::callTips(const QStringList &context, int commas, QsciScintilla::CallTipsStyle style, QList< int > &shifts)
+QStringList AutoCompletionSrcPlotAPIs::callTips(const QStringList &context, int /*commas*/, QsciScintilla::CallTipsStyle /*style*/, QList< int > &/*shifts*/)
 {
-    Q_UNUSED(commas)
-    Q_UNUSED(style)
-    Q_UNUSED(shifts)
-
     QStringList list;
 
     if (context.size() != 3 || context.first() != "plot") {

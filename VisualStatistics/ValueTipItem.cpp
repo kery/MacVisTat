@@ -2,7 +2,7 @@
 #include "CounterGraph.h"
 #include "GlobalDefines.h"
 
-#define TRACER_SIZE 12.0
+#define TRACER_SIZE 10.0
 
 ValueTipItem::ValueTipItem(QCustomPlot *plot) :
     TextItem(plot),
@@ -138,9 +138,8 @@ void ValueTipItem::setVisible(bool on)
     mTracer->setVisible(on);
 }
 
-void ValueTipItem::animValueChange(const QVariant &value)
+void ValueTipItem::animValueChange(const QVariant &/*value*/)
 {
-    Q_UNUSED(value)
     mLayer->replot();
 }
 

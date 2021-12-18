@@ -215,15 +215,13 @@ int CounterNameModel::totalCount() const
     return mCounterNames.size();
 }
 
-bool CounterNameModel::canFetchMore(const QModelIndex &parent) const
+bool CounterNameModel::canFetchMore(const QModelIndex &/*parent*/) const
 {
-    Q_UNUSED(parent);
     return mFetchedCount < mMatchedIndexes.size();
 }
 
-void CounterNameModel::fetchMore(const QModelIndex &parent)
+void CounterNameModel::fetchMore(const QModelIndex &/*parent*/)
 {
-    Q_UNUSED(parent);
     int newCount = qMin(mFetchedCount + 100, mMatchedIndexes.size());
 
     beginInsertRows(QModelIndex(), mFetchedCount, newCount - 1);
@@ -231,9 +229,8 @@ void CounterNameModel::fetchMore(const QModelIndex &parent)
     endInsertRows();
 }
 
-int CounterNameModel::rowCount(const QModelIndex &parent) const
+int CounterNameModel::rowCount(const QModelIndex &/*parent*/) const
 {
-    Q_UNUSED(parent);
     return mFetchedCount;
 }
 

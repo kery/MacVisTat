@@ -150,9 +150,8 @@ void CounterPlot::setCounterDescription(CounterDescription *desc)
     mCounterDesc = desc;
 }
 
-void CounterPlot::resizeEvent(QResizeEvent *event)
+void CounterPlot::resizeEvent(QResizeEvent * /*event*/)
 {
-    Q_UNUSED(event);
     setViewport(rect());
     // DateTimeTicker's createTickVector method depends on geometry of the axis rect, so call
     // updateLayout to update it.

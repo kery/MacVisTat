@@ -97,9 +97,8 @@ void CommentItem::setVisible(bool on)
     TextItem::setVisible(on);
 }
 
-double CommentItem::selectTest(const QPointF &pos, bool onlySelectable, QVariant *details) const
+double CommentItem::selectTest(const QPointF &pos, bool onlySelectable, QVariant * /*details*/) const
 {
-    Q_UNUSED(details)
     if (onlySelectable && !mSelectable) { return -1; }
 
     // The rect may be rotated, so we transform the actual clicked pos to the rotated

@@ -56,24 +56,19 @@ bool DateTimeTicker::setEndDateTime(const QDateTime &dateTime)
     return false;
 }
 
-int DateTimeTicker::getSubTickCount(double tickStep)
+int DateTimeTicker::getSubTickCount(double /*tickStep*/)
 {
-    Q_UNUSED(tickStep)
     return 0;
 }
 
-QString DateTimeTicker::getTickLabel(double tick, const QLocale &locale, QChar formatChar, int precision)
+QString DateTimeTicker::getTickLabel(double tick, const QLocale &/*locale*/, QChar /*formatChar*/, int /*precision*/)
 {
-    Q_UNUSED(locale)
-    Q_UNUSED(formatChar)
-    Q_UNUSED(precision)
     QDateTime dateTime = dateTimeFromKey(tick);
     return dateTime.toString(mDateTimeFmt);
 }
 
-QVector<double> DateTimeTicker::createTickVector(double tickStep, const QCPRange &range)
+QVector<double> DateTimeTicker::createTickVector(double /*tickStep*/, const QCPRange &range)
 {
-    Q_UNUSED(tickStep)
     QVector<double> result;
     QDateTime beginDateTime, endDateTime;
     QCustomPlot *plot = mParentAxis->parentPlot();

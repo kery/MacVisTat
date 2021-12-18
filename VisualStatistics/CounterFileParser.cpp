@@ -40,7 +40,7 @@ QString CounterFileParser::parseHeader(const QString &path, QVector<QString> &na
     const char *ptr = strchr(header.c_str() + 11, ';');
     if (ptr == nullptr) {
         error = "no counter in ";
-        error += path;
+        error += QDir::toNativeSeparators(path);
         return error;
     }
 

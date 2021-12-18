@@ -29,7 +29,7 @@ signals:
 private slots:
     void actionOpenTriggered();
     void actionXmlToCsvTriggered();
-    void actionCloseTriggered();
+    void actionCloseFileTriggered();
     void actionRecentFileTriggered();
     void actionFilterTriggered();
     void actionClearFilterHistoryTriggered();
