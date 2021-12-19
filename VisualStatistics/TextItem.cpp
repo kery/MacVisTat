@@ -3,13 +3,13 @@
 TextItem::TextItem(QCustomPlot *plot) :
     QCPItemText(plot)
 {
-    QLinearGradient lg(0, 0, 0, 1);
-    lg.setCoordinateMode(QGradient::ObjectBoundingMode);
-    lg.setColorAt(0, Qt::white);
-    lg.setColorAt(1, QColor(250, 250, 250));
+    QLinearGradient gradiend(0, 0, 0, 1);
+    gradiend.setCoordinateMode(QGradient::ObjectBoundingMode);
+    gradiend.setColorAt(0, Qt::white);
+    gradiend.setColorAt(1, QColor(250, 250, 250));
 
     setPen(QPen(QColor(160, 160, 160)));
-    setBrush(lg);
+    setBrush(gradiend);
     setPadding(QMargins(6, 4, 6, 4));
     setTextAlignment(Qt::AlignLeft);
     setAntialiased(false);

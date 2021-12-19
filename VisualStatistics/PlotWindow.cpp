@@ -10,6 +10,7 @@
 #include "CounterNameModel.h"
 #include "ScriptWindow.h"
 #include "FileDialog.h"
+#include "BalloonTip.h"
 #include "Utils.h"
 #include "GlobalDefines.h"
 #include <csv.h>
@@ -172,6 +173,30 @@ void PlotWindow::actionRemoveZeroCountersTriggered()
         }
     }
     removeGraphs(graphsToRemove);
+
+    QPoint balPos = QCursor::pos();
+    QString balText = QString::number(graphsToRemove.size());
+    balText.prepend('-');
+    BalloonTip *balloon = new BalloonTip();
+    balloon->setText(balText);
+    balloon->move(balPos);
+    balloon->show();
+
+    QVariantAnimation *anim = new QVariantAnimation();
+    anim->setDuration(1000);
+    anim->setStartValue(QVariant(1.0));
+    anim->setEndValue(QVariant(0.0));
+
+    connect(anim, &QVariantAnimation::valueChanged, [balloon, balPos](const QVariant &value) {
+        double v = value.toDouble();
+        QPoint newPos(balPos.x(), balPos.y() - (1 - v) * 50);
+        balloon->move(newPos);
+        balloon->setWindowOpacity(v);
+    });
+    connect(anim, &QVariantAnimation::finished, [balloon]() {
+        balloon->deleteLater();
+    });
+    anim->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 void PlotWindow::actionScriptTriggered()
@@ -235,9 +260,7 @@ void PlotWindow::actionAddCommentTriggered()
             pos.ry() -= ciSize.height() / 2;
         }
 
-        pos.setX(ui->plot->xAxis->pixelToCoord(pos.x()));
-        pos.setY(ui->plot->yAxis->pixelToCoord(pos.y()));
-        ci->position->setCoords(pos);
+        ci->position->setPixelPosition(pos);
         ci->setGraphAndKey(mValueTip->tracerGraph(), mValueTip->tracerGraphKey());
         ci->updateLineStartAnchor();
         mValueTip->hideWithAnimation();
@@ -245,9 +268,7 @@ void PlotWindow::actionAddCommentTriggered()
     } else {
         QAction *action = qobject_cast<QAction *>(sender());
         QPointF pos = action->data().toPoint();
-        pos.setX(ui->plot->xAxis->pixelToCoord(pos.x()));
-        pos.setY(ui->plot->yAxis->pixelToCoord(pos.y()));
-        ci->position->setCoords(pos);
+        ci->position->setPixelPosition(pos);
     }
 
     ui->plot->replot(QCustomPlot::rpQueuedReplot);

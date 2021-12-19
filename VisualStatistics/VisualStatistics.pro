@@ -12,6 +12,7 @@ SOURCES += \
     AboutDialog.cpp \
     Application.cpp \
     AutoCompletionSrcPlotAPIs.cpp \
+    BalloonTip.cpp \
     ChangeLogDialog.cpp \
     ColorPool.cpp \
     CommentItem.cpp \
@@ -81,6 +82,7 @@ HEADERS += \
     AboutDialog.h \
     Application.h \
     AutoCompletionSrcPlotAPIs.h \
+    BalloonTip.h \
     ChangeLogDialog.h \
     ColorPool.h \
     CommentItem.h \

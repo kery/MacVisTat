@@ -58,8 +58,8 @@
    <addaction name="separator"/>
    <addaction name="actionRestore"/>
    <addaction name="actionShowDelta"/>
-   <addaction name="actionDisplayUtc"/>
    <addaction name="actionRemoveZeroCounters"/>
+   <addaction name="actionDisplayUtc"/>
    <addaction name="actionScript"/>
   </widget>
   <action name="actionSave">

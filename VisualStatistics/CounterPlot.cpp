@@ -302,7 +302,7 @@ void CounterPlot::dropEvent(QDropEvent *event)
         dataStream >> offset;
 
         QPointF newPos = event->pos() - offset;
-        mCommentItem->position->setCoords(xAxis->pixelToCoord(newPos.x()), yAxis->pixelToCoord(newPos.y()));
+        mCommentItem->position->setPixelPosition(newPos);
         mCommentItem->updateLineStartAnchor();
 
         replot(rpQueuedReplot);
