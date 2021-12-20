@@ -28,6 +28,7 @@ private:
     {
         InfoIdMap infoIdMap;
         QVector<QString> errors;
+        QVector<QString> failedPaths;
 
         HeaderResult();
     };
@@ -88,6 +89,7 @@ private:
     static QString getAttribute(const QString &path, XML_StartElementHandler handler);
     static const char * getMeasInfoId(const char **atts);
     static std::string getOffsetFromUtc(const QString &path);
+    static QString toIsoDateFormat(QString &&dateTime, const QStringRef &offsetFromUtc);
     static void getBeginTime_handler(void *ud, const char *name, const char **atts);
     static QString getBeginTime(const QString &path);
     static void getEndTime_handler(void *ud, const char *name, const char **atts);
@@ -111,6 +113,8 @@ private:
     static void character_dataHandler(void *ud, const char *s, int len);
     static DataResult parseData(const QString &path, const IndexMap &indexMap, volatile const bool &working);
     static void writeData(DataResult &finalResult, const DataResult &intermResult, GzipFile &writer);
+
+    static QRegularExpression mRegExpTypeA, mRegExpTypeC;
 
     QWidget *mParent;
 };

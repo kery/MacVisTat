@@ -9,6 +9,7 @@ BalloonTip::BalloonTip() :
     setWindowFlag(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
+    // Make cursor pass through this widget.
     setWindowFlag(Qt::WindowTransparentForInput);
 }
 
@@ -26,13 +27,13 @@ QSize BalloonTip::sizeHint() const
 void BalloonTip::paintEvent(QPaintEvent * /*event*/)
 {
     QPainter painter(this);
-    QLinearGradient gradiend(0, 0, 0, 1);
-    gradiend.setCoordinateMode(QGradient::ObjectBoundingMode);
-    gradiend.setColorAt(0, Qt::white);
-    gradiend.setColorAt(1, QColor(250, 250, 250));
+    QLinearGradient gradient(0, 0, 0, 1);
+    gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+    gradient.setColorAt(0, Qt::white);
+    gradient.setColorAt(1, QColor(250, 250, 250));
 
     painter.save();
-    painter.setBrush(gradiend);
+    painter.setBrush(gradient);
     painter.setPen(QColor(160, 160, 160));
     painter.drawRoundedRect(rect().adjusted(0, 0, -1, -1), 2, 2);
     painter.restore();

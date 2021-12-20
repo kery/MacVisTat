@@ -153,10 +153,15 @@ FORMS += \
 INCLUDEPATH += libcsv/ lua/ qcustomplot/ ../build-pcre2/ libexpat/expat/lib/
 INCLUDEPATH += breakpad/src/ breakpad/src/client/windows/handler/
 
+LIBS += -lShlwapi
 LIBS += -L../build-pcre2/Release/ -lpcre2-8
 LIBS += -L../build-libexpat/Release/ -llibexpat
-LIBS += -L../build-breakpad/lib/ -lexception_handler -lcrash_generation_client -lcommon
-LIBS += -lShlwapi
+CONFIG(debug, debug|release) {
+    LIBS += -L../build-breakpad-Debug/lib/
+} else {
+    LIBS += -L../build-breakpad-Release/lib/
+}
+LIBS += -lexception_handler -lcrash_generation_client -lcommon
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

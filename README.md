@@ -1,5 +1,4 @@
 # Counter file format
-
 The "offset from utc" in header line is optional. Counter values are also optional.
 ```
 ##date;time[offset from utc];counter1;...;countern##
@@ -7,7 +6,7 @@ dd.MM.yyyy;HH:mm:ss;value1;...;valuen
 dd.MM.yyyy;HH:mm:ss;;...;valuen
 ```
 
-Example
+Example:
 ```
 ##date;time28800;counter1;counter2;counter3##
 17.12.2021;19:50:00;12;38;19
@@ -17,6 +16,20 @@ Example
 # Build
 
 ## Build dependencies
+The following steps need MSVC compiler, so they should be execute in the Visual Studio Command Prompt CLI window.
+
+### Build QScintilla
+Download QScintilla from https://riverbankcomputing.com/software/qscintilla/download and follow the instructions in doc\html\index.html to compile and install.
+
+For example:
+```
+cd src
+qmake CONFIG+=staticlib
+nmake
+nmake install
+```
+
+And then add `CONFIG += qscintilla2` to application's .pro file.
 
 ### Build breakpad
 ```
@@ -28,8 +41,8 @@ Example
 # Clone gyp to somewhere
 git clone https://chromium.googlesource.com/external/gyp
 
-# Open Visual Studio Command Prompt and add gyp to PATH
-set PATH=<gyp dir>;%PATH%
+# Add gyp to Path
+set Path=<gyp dir>;%Path%
 
 gyp.bat --no-circular-check breakpad\src\client\windows\breakpad_client.gyp -Dwin_release_RuntimeLibrary=2 -Dwin_debug_RuntimeLibrary=3
 
@@ -39,8 +52,11 @@ gyp.bat --no-circular-check breakpad\src\client\windows\breakpad_client.gyp -Dwi
 # 2: /MD
 # 3: /MDd
 
-# Trailing slash of OutDir is mandatory
-msbuild /m /p:Configuration=Release /p:Platform=x64 /p:OutDir=%CD%\..\build-breakpad\ breakpad\src\client\windows\breakpad_client.sln
+# Trailing slash of OutDir is mandatory.
+# Build Release version
+msbuild /m /p:Configuration=Release /p:Platform=x64 /p:OutDir=%CD%\..\build-breakpad-Release\ breakpad\src\client\windows\breakpad_client.sln
+# Build Debug version
+msbuild /m /p:Configuration=Debug /p:Platform=x64 /p:OutDir=%CD%\..\build-breakpad-Debug\ breakpad\src\client\windows\breakpad_client.sln
 ```
 
 ### Build libexpat

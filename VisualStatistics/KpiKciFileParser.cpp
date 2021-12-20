@@ -8,6 +8,7 @@
 KpiKciFileParser::HeaderResult::HeaderResult()
 {
     errors.reserve(1);
+    failedPaths.reserve(1);
 }
 
 KpiKciFileParser::MeasData::MeasData(size_t size) :
@@ -19,6 +20,9 @@ KpiKciFileParser::DataResult::DataResult()
 {
     errors.reserve(1);
 }
+
+QRegularExpression KpiKciFileParser::mRegExpTypeA("A(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{4})[+-]\\d{4}(_-.+?)?(_.+?)?(_-_\\d+?)?.xml(.gz)?");
+QRegularExpression KpiKciFileParser::mRegExpTypeC("C(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{8}\\.\\d{4})[+-]\\d{4}(_-.+?)?(_.+?)?(_-_\\d+)?.xml(.gz)?");
 
 KpiKciFileParser::KpiKciFileParser(QWidget *parent) :
     mParent(parent)
@@ -63,12 +67,15 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
     HeaderResult hdrResult = hdrWatcher.result();
     errors.append(hdrResult.errors);
     if (hdrResult.infoIdMap.empty()) { return QString(); }
+    for (const QString &failedPath : qAsConst(hdrResult.failedPaths)) {
+        paths.removeOne(failedPath);
+    }
 
     GzipFile writer;
     QString outPath = getOutputPath(paths);
     if (!writer.open(outPath, GzipFile::WriteOnly)) {
         errors.append("failed to open ");
-        errors.last() += outPath;
+        errors.last() += QDir::toNativeSeparators(outPath);
         return QString();
     }
 
@@ -167,6 +174,16 @@ std::string KpiKciFileParser::getOffsetFromUtc(const QString &path)
     return std::string();
 }
 
+QString KpiKciFileParser::toIsoDateFormat(QString &&dateTime, const QStringRef &offsetFromUtc)
+{
+    QString result(std::move(dateTime));
+    result.insert(4, '-').insert(7, '-').replace(10, 1, 'T').insert(13, ':');
+    result.append(offsetFromUtc.left(3));
+    result.append(':');
+    result.append(offsetFromUtc.right(2));
+    return result;
+}
+
 void KpiKciFileParser::getBeginTime_handler(void *ud, const char *name, const char **atts)
 {
     if (strcmp(name, "measCollec")) { return; }
@@ -179,6 +196,22 @@ void KpiKciFileParser::getBeginTime_handler(void *ud, const char *name, const ch
 
 QString KpiKciFileParser::getBeginTime(const QString &path)
 {
+    QString fileName = QFileInfo(path).fileName();
+    if (fileName.startsWith('A')) {
+        QRegularExpressionMatch match = mRegExpTypeA.match(path);
+        if (match.hasMatch()) {
+            QString beginTime = match.captured(1);
+            QStringRef offsetFromUtc = match.capturedRef(2);
+            return toIsoDateFormat(std::move(beginTime), offsetFromUtc);
+        }
+    } else if (fileName.startsWith('C')) {
+        QRegularExpressionMatch match = mRegExpTypeC.match(path);
+        if (match.hasMatch()) {
+            QString beginTime = match.captured(1);
+            QStringRef offsetFromUtc = match.capturedRef(2);
+            return toIsoDateFormat(std::move(beginTime), offsetFromUtc);
+        }
+    }
     return getAttribute(path, getBeginTime_handler);
 }
 
@@ -194,6 +227,23 @@ void KpiKciFileParser::getEndTime_handler(void *ud, const char *name, const char
 
 QString KpiKciFileParser::getEndTime(const QString &path)
 {
+    QString fileName = QFileInfo(path).fileName();
+    if (fileName.startsWith('A')) {
+        QRegularExpressionMatch match = mRegExpTypeA.match(path);
+        if (match.hasMatch()) {
+            QString dateTime = match.captured(1);
+            dateTime.replace(9, 4, match.captured(3));
+            QStringRef offsetFromUtc = match.capturedRef(2);
+            return toIsoDateFormat(std::move(dateTime), offsetFromUtc);
+        }
+    } else if (fileName.startsWith('C')) {
+        QRegularExpressionMatch match = mRegExpTypeC.match(path);
+        if (match.hasMatch()) {
+            QString endTime = match.captured(3);
+            QStringRef offsetFromUtc = match.capturedRef(2);
+            return toIsoDateFormat(std::move(endTime), offsetFromUtc);
+        }
+    }
     return getAttribute(path, getEndTime_handler);
 }
 
@@ -251,17 +301,21 @@ QString KpiKciFileParser::getManagedElement(const QString &path)
 QString KpiKciFileParser::getUniqueIdFromFileName(const QString &path)
 {
     QStringRef uniqueId;
-    QRegularExpression regExpTypeA("A\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{4}[+-]\\d{4}(_-[^_]+)?(_[^_]+)?(_-_[^_])?.xml(.gz)?");
-    QRegularExpressionMatch match = regExpTypeA.match(path);
-    if (match.hasMatch()) {
-        uniqueId = match.capturedRef(2);
-    } else {
-        QRegularExpression regExpTypeC("C\\d{8}\\.\\d{4}[+-]\\d{4}-\\d{8}\\.\\d{4}[+-]\\d{4}(_-[^_]+)?(_[^_]+)?(_-_[^_])?.xml(.gz)?");
-        match = regExpTypeC.match(path);
+    // Must valid during uniqueId's lifetime so we declare it here rather than the if block.
+    QRegularExpressionMatch match;
+    QString fileName = QFileInfo(path).fileName();
+    if (fileName.startsWith('A')) {
+        match = mRegExpTypeA.match(path);
         if (match.hasMatch()) {
-            uniqueId = match.capturedRef(2);
+            uniqueId = match.capturedRef(5);
+        }
+    } else if (fileName.startsWith('C')) {
+        match = mRegExpTypeC.match(path);
+        if (match.hasMatch()) {
+            uniqueId = match.capturedRef(5);
         }
     }
+    if (uniqueId.isEmpty()) { return QString("Unknown"); }
     return uniqueId.mid(1).toString();
 }
 
@@ -291,16 +345,9 @@ QString KpiKciFileParser::getOutputPath(const QVector<QString> &paths)
     QDateTime dtFirstEndTime = QDateTime::fromString(firstEndTime, Qt::ISODate);
     QDateTime dtEndTime = QDateTime::fromString(endTime, Qt::ISODate);
 
-    QString fileName;
-    if (nodeName.isEmpty()) {
-        fileName = QStringLiteral("%1-%2.csv.gz").arg(dtFirstEndTime.toString(DTFMT_IN_FILENAME),
-                                                      dtEndTime.toString(DTFMT_IN_FILENAME));
-    } else {
-        fileName = QStringLiteral("%1__%2-%3.csv.gz").arg(nodeName,
-                                                          dtFirstEndTime.toString(DTFMT_IN_FILENAME),
-                                                          dtEndTime.toString(DTFMT_IN_FILENAME));
-    }
-
+    QString fileName = QStringLiteral("%1_%2-%3.csv.gz").arg(nodeName,
+                                                             dtFirstEndTime.toString(DTFMT_IN_FILENAME),
+                                                             dtEndTime.toString(DTFMT_IN_FILENAME));
     QFileInfo fileInfo(paths.first());
     return fileInfo.absoluteDir().absoluteFilePath(fileName);
 }
@@ -321,7 +368,7 @@ void KpiKciFileParser::startElement_headerHandler(void *ud, const char *name, co
             }
         } else {
             userData->result->errors.append(QStringLiteral("measObjLdn is missing in file %1:%2")
-                                            .arg(*userData->path)
+                                            .arg(QDir::toNativeSeparators(*userData->path))
                                             .arg(XML_GetCurrentLineNumber(userData->parser)));
             XML_StopParser(userData->parser, XML_FALSE);
         }
@@ -365,6 +412,7 @@ void KpiKciFileParser::mergeHeaderResult(HeaderResult &finalResult, const Header
         }
     } else {
         finalResult.errors.append(intermResult.errors);
+        finalResult.failedPaths.append(intermResult.failedPaths);
     }
 }
 
@@ -375,6 +423,7 @@ KpiKciFileParser::HeaderResult KpiKciFileParser::parseHeader(const QString &path
     if (!reader.open(path, GzipFile::ReadOnly)) {
         result.errors.append("failed to open ");
         result.errors.last() += QDir::toNativeSeparators(path);
+        result.failedPaths.append(path);
         return result;
     }
 
@@ -396,9 +445,10 @@ KpiKciFileParser::HeaderResult KpiKciFileParser::parseHeader(const QString &path
         int isFinal = len < BUFSIZ;
         if (XML_Parse(parser, buf, len, isFinal) == XML_STATUS_ERROR) {
             result.errors.append(QStringLiteral("failed to parse header in file %1:%2: %3")
-                                 .arg(path)
+                                 .arg(QDir::toNativeSeparators(path))
                                  .arg(XML_GetCurrentLineNumber(parser))
                                  .arg(XML_ErrorString(XML_GetErrorCode(parser))));
+            result.failedPaths.append(path);
             break;
         }
     }
@@ -456,7 +506,7 @@ void KpiKciFileParser::startElement_dataHandler(void *ud, const char *name, cons
             userData->attP = attP;
         } else {
             userData->result->errors.append(QStringLiteral("no 'p' attribute in file %1:%2")
-                                            .arg(*userData->path)
+                                            .arg(QDir::toNativeSeparators(*userData->path))
                                             .arg(XML_GetCurrentLineNumber(userData->parser)));
             XML_StopParser(userData->parser, XML_FALSE);
         }
@@ -468,7 +518,7 @@ void KpiKciFileParser::startElement_dataHandler(void *ud, const char *name, cons
             userData->attP = attP;
         } else {
             userData->result->errors.append(QStringLiteral("no 'p' attribute in file %1:%2")
-                                            .arg(*userData->path)
+                                            .arg(QDir::toNativeSeparators(*userData->path))
                                             .arg(XML_GetCurrentLineNumber(userData->parser)));
             XML_StopParser(userData->parser, XML_FALSE);
         }
@@ -489,7 +539,7 @@ void KpiKciFileParser::startElement_dataHandler(void *ud, const char *name, cons
             }
         } else {
             userData->result->errors.append(QStringLiteral("invalid date time format in file %1:%2")
-                                            .arg(*userData->path)
+                                            .arg(QDir::toNativeSeparators(*userData->path))
                                             .arg(XML_GetCurrentLineNumber(userData->parser)));
             XML_StopParser(userData->parser, XML_FALSE);
         }
@@ -580,7 +630,7 @@ KpiKciFileParser::DataResult KpiKciFileParser::parseData(const QString &path, co
         int isFinal = len < BUFSIZ;
         if (XML_Parse(parser, buf, len, isFinal) == XML_STATUS_ERROR) {
             result.errors.append(QStringLiteral("failed to parse data in file %1:%2: %3")
-                                 .arg(path)
+                                 .arg(QDir::toNativeSeparators(path))
                                  .arg(XML_GetCurrentLineNumber(parser))
                                  .arg(XML_ErrorString(XML_GetErrorCode(parser))));
             break;
