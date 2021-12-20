@@ -469,7 +469,7 @@ void MainWindow::updateWindowTitle()
     QString title(APP_NAME);
     if (!mCounterFilePath.isEmpty()) {
         title += " - ";
-        title += mCounterFilePath;
+        title += QDir::toNativeSeparators(mCounterFilePath);
     }
     setWindowTitle(title);
 }
@@ -678,16 +678,15 @@ void MainWindow::usageReport()
 
 void MainWindow::openCounterFile(const QString &path)
 {
-    QString nativePath = QDir::toNativeSeparators(path);
     if (!mCounterFilePath.isEmpty()) {
-        if (mCounterFilePath.compare(nativePath, Qt::CaseInsensitive)) {
+        if (mCounterFilePath.compare(path, Qt::CaseInsensitive)) {
             actionCloseFileTriggered();
         } else {
             return;
         }
     }
     if (parseCounterFileHeader(path)) {
-        mCounterFilePath = nativePath;
+        mCounterFilePath = path;
         updateWindowTitle();
         ui->filterComboBox->setFocus();
 
