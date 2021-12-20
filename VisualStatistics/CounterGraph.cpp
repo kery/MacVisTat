@@ -44,6 +44,24 @@ bool CounterGraph::isSuspect(double key)
     return mSuspectKeys->contains(key);
 }
 
+QCPRange CounterGraph::getKeyRange(bool &foundRange, QCP::SignDomain /*inSignDomain*/) const
+{
+    if (mDataContainer->isEmpty()) {
+        foundRange = false;
+        return QCPRange();
+    }
+    foundRange = true;
+
+    // Always return the full range of keys no matter the value is NAN or not.
+    QCPRange result;
+    auto iter = mDataContainer->begin();
+    result.lower = iter->key;
+
+    iter = mDataContainer->end() - 1;
+    result.upper = iter->key;
+    return result;
+}
+
 void CounterGraph::setSelected(bool selected)
 {
     setSelection(selected ? QCPDataSelection(QCPDataRange(0, 1)) : QCPDataSelection());

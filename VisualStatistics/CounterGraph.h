@@ -18,6 +18,8 @@ public:
     void setSuspectKeys(const QSet<double> *suspectKeys);
     bool isSuspect(double key);
 
+    virtual QCPRange getKeyRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth) const override;
+
 public slots:
     void setSelected(bool selected);
 
