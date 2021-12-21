@@ -250,7 +250,7 @@ FORMS += \
 INCLUDEPATH += ../build-pcre2/ libexpat/expat/lib/
 INCLUDEPATH += breakpad/src/ breakpad/src/client/windows/handler/
 
-LIBS += -lShlwapi
+LIBS += -lShlwapi -lUser32
 LIBS += -L../build-pcre2/Release/ -lpcre2-8
 LIBS += -L../build-libexpat/Release/ -llibexpat
 CONFIG(debug, debug|release) {

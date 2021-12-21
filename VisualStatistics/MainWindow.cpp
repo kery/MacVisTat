@@ -104,6 +104,7 @@ void MainWindow::actionXmlToCsvTriggered()
     QVector<QString> errors, paths = dlg.selectedFiles().toVector();
     KpiKciFileParser parser(this);
     QString outPath = parser.convertToCsv(paths, errors);
+    if (!errors.isEmpty()) { MessageBeep(MB_ICONWARNING); }
     for (const QString &err : qAsConst(errors)) {
         appendErrorLog(err);
     }
@@ -724,6 +725,7 @@ bool MainWindow::parseCounterFileHeader(const QString &path)
         }
         return true;
     }
+    MessageBeep(MB_ICONERROR);
     appendErrorLog(error);
     return false;
 }
@@ -766,6 +768,7 @@ void MainWindow::parseCounterFileData(bool multiWnd)
     CounterFileParser parser(this);
     QString error = parser.parseData(mCounterFilePath, inm, dataMap, canceled);
     if (!error.isEmpty()) {
+        MessageBeep(MB_ICONERROR);
         appendErrorLog(error);
     } else if (!canceled) {
         QSettings setting;
