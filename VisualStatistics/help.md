@@ -56,7 +56,7 @@ Returns the last key of the plot, i.e. the last coordinate of the *x* axis. The 
 function plot.get_value(graph, key, default)
 ```
 
-Returns the value of a graph at 'key'. The first parameter 'graph' is the index of the graph in legend box, the index starts from 0.  If the value of 'key' does not exist, the third optional parameter 'default' will be returned. If the 'default' is not given, a nil will be returned.
+Returns the value of a graph at 'key'. The first parameter 'graph' is the index of the graph in legend box, the index starts from 0.  If the value of 'key' does not exist, the third optional parameter 'default' will be returned. If the 'default' is not given, a `NaN` will be returned.
 
 ```lua
 function plot.add_graph(name, data, r, g, b)
