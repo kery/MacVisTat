@@ -198,14 +198,14 @@ QString KpiKciFileParser::getBeginTime(const QString &path)
 {
     QString fileName = QFileInfo(path).fileName();
     if (fileName.startsWith('A')) {
-        QRegularExpressionMatch match = mRegExpTypeA.match(path);
+        QRegularExpressionMatch match = mRegExpTypeA.match(fileName);
         if (match.hasMatch()) {
             QString beginTime = match.captured(1);
             QStringRef offsetFromUtc = match.capturedRef(2);
             return toIsoDateFormat(std::move(beginTime), offsetFromUtc);
         }
     } else if (fileName.startsWith('C')) {
-        QRegularExpressionMatch match = mRegExpTypeC.match(path);
+        QRegularExpressionMatch match = mRegExpTypeC.match(fileName);
         if (match.hasMatch()) {
             QString beginTime = match.captured(1);
             QStringRef offsetFromUtc = match.capturedRef(2);
@@ -229,7 +229,7 @@ QString KpiKciFileParser::getEndTime(const QString &path)
 {
     QString fileName = QFileInfo(path).fileName();
     if (fileName.startsWith('A')) {
-        QRegularExpressionMatch match = mRegExpTypeA.match(path);
+        QRegularExpressionMatch match = mRegExpTypeA.match(fileName);
         if (match.hasMatch()) {
             QString dateTime = match.captured(1);
             dateTime.replace(9, 4, match.captured(3));
@@ -237,7 +237,7 @@ QString KpiKciFileParser::getEndTime(const QString &path)
             return toIsoDateFormat(std::move(dateTime), offsetFromUtc);
         }
     } else if (fileName.startsWith('C')) {
-        QRegularExpressionMatch match = mRegExpTypeC.match(path);
+        QRegularExpressionMatch match = mRegExpTypeC.match(fileName);
         if (match.hasMatch()) {
             QString endTime = match.captured(3);
             QStringRef offsetFromUtc = match.capturedRef(2);
@@ -305,12 +305,12 @@ QString KpiKciFileParser::getUniqueIdFromFileName(const QString &path)
     QRegularExpressionMatch match;
     QString fileName = QFileInfo(path).fileName();
     if (fileName.startsWith('A')) {
-        match = mRegExpTypeA.match(path);
+        match = mRegExpTypeA.match(fileName);
         if (match.hasMatch()) {
             uniqueId = match.capturedRef(5);
         }
     } else if (fileName.startsWith('C')) {
-        match = mRegExpTypeC.match(path);
+        match = mRegExpTypeC.match(fileName);
         if (match.hasMatch()) {
             uniqueId = match.capturedRef(5);
         }

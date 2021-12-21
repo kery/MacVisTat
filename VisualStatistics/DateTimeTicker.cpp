@@ -1,5 +1,7 @@
 #include "DateTimeTicker.h"
 #include "GlobalDefines.h"
+#include "QCustomPlot/src/core.h"
+#include "QCustomPlot/src/plottables/plottable-graph.h"
 
 DateTimeTicker::DateTimeTicker(QCPAxis *parentAxis) :
     mUtcDisplay(false),

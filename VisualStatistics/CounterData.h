@@ -1,7 +1,8 @@
 #ifndef COUNTERDATA_H
 #define COUNTERDATA_H
 
-#include <qcustomplot.h>
+#include "QCustomPlot/src/datacontainer.h"
+#include "QCustomPlot/src/plottables/plottable-graph.h"
 
 struct CounterData
 {

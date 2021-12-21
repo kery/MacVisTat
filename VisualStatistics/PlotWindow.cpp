@@ -13,7 +13,10 @@
 #include "BalloonTip.h"
 #include "Utils.h"
 #include "GlobalDefines.h"
-#include <csv.h>
+#include "libcsv/csv.h"
+#include "QCustomPlot/src/items/item-straightline.h"
+#include "QCustomPlot/src/layoutelements/layoutelement-legend.h"
+#include "QCustomPlot/src/layoutelements/layoutelement-axisrect.h"
 
 #define WND_TITLE_SEP ", "
 

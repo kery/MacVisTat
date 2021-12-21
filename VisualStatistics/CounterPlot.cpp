@@ -4,6 +4,8 @@
 #include "CounterDescription.h"
 #include "DateTimeTicker.h"
 #include "CommentItem.h"
+#include "QCustomPlot/src/selectionrect.h"
+#include "QCustomPlot/src/layoutelements/layoutelement-axisrect.h"
 
 #define MIME_TYPE_LEGEND_DRAGGING  "application/visualstat-legend"
 #define MIME_TYPE_COMMENT_DRAGGING "application/visualstat-comment"

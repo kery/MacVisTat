@@ -1,5 +1,7 @@
 #include "CommentItem.h"
 #include "CounterGraph.h"
+#include "QCustomPlot/src/items/item-tracer.h"
+#include "QCustomPlot/src/items/item-line.h"
 
 CommentItem::CommentItem(QCustomPlot *parent) :
     TextItem(parent),

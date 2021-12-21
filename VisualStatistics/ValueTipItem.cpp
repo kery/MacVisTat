@@ -1,6 +1,7 @@
 #include "ValueTipItem.h"
 #include "CounterGraph.h"
 #include "GlobalDefines.h"
+#include "QCustomPlot/src/items/item-tracer.h"
 
 #define TRACER_SIZE 10.0
 

@@ -13,3 +13,6 @@
 [submodule "VisualStatistics/breakpad"]
 	path = VisualStatistics/breakpad
 	url = https://chromium.googlesource.com/breakpad/breakpad
+[submodule "VisualStatistics/QCustomPlot"]
+	path = VisualStatistics/QCustomPlot
+	url = https://gitlab.com/DerManu/QCustomPlot.git

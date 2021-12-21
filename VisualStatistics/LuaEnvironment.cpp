@@ -6,7 +6,6 @@
 #include "DateTimeTicker.h"
 #include "PlotData.h"
 #include "GlobalDefines.h"
-#include <qcustomplot.h>
 
 char LuaEnvironment::sKeyScriptWnd;
 

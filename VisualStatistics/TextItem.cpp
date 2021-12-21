@@ -1,4 +1,5 @@
 #include "TextItem.h"
+#include "QCustomPlot/src/painter.h"
 
 TextItem::TextItem(QCustomPlot *plot) :
     QCPItemText(plot)

@@ -1,7 +1,9 @@
 #ifndef DATETIMETICKER_H
 #define DATETIMETICKER_H
 
-#include <qcustomplot.h>
+#include "QCustomPlot/src/axis/axisticker.h"
+
+class QCPAxis;
 
 class DateTimeTicker : public QObject, public QCPAxisTicker
 {

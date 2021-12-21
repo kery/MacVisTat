@@ -4,6 +4,7 @@
 #include "TextItem.h"
 
 class CounterGraph;
+class QCPItemTracer;
 
 class ValueTipItem : public TextItem
 {

@@ -4,6 +4,8 @@
 #include "TextItem.h"
 
 class CounterGraph;
+class QCPItemTracer;
+class QCPItemLine;
 
 class CommentItem : public TextItem
 {
