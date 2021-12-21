@@ -66,10 +66,14 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
 
     HeaderResult hdrResult = hdrWatcher.result();
     errors.append(hdrResult.errors);
-    if (hdrResult.infoIdMap.empty()) { return QString(); }
+    if (hdrResult.infoIdMap.empty()) {
+        errors.append(QString("there is no counter in selected KPI/KCI files"));
+        return QString();
+    }
     for (const QString &failedPath : qAsConst(hdrResult.failedPaths)) {
         paths.removeOne(failedPath);
     }
+    if (paths.isEmpty()) { return QString(); }
 
     GzipFile writer;
     QString outPath = getOutputPath(paths);
