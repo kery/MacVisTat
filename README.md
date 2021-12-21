@@ -16,13 +16,13 @@ Example:
 # Build
 
 ## Build dependencies
-The following steps need MSVC compiler, so they should be execute in the Visual Studio Command Prompt CLI window.
+The following steps need MSVC compiler, so they should be executed in the Visual Studio Command Prompt CLI window.
 
 ### Build QScintilla
 Download QScintilla from https://riverbankcomputing.com/software/qscintilla/download and follow the instructions in doc\html\index.html to compile and install.
 
 For example:
-```
+```powershell
 cd src
 qmake CONFIG+=staticlib
 nmake
@@ -32,7 +32,7 @@ nmake install
 And then add `CONFIG += qscintilla2` to application's .pro file.
 
 ### Build breakpad
-```
+```powershell
 # Comment out the test related dependencies in breakpad\src\client\windows\breakpad_client.gyp
         # './unittests/client_tests.gyp:*',
         # './unittests/testing.gyp:*',
@@ -60,7 +60,7 @@ msbuild /m /p:Configuration=Debug /p:Platform=x64 /p:OutDir=%CD%\..\build-breakp
 ```
 
 ### Build libexpat
-```
+```powershell
 mkdir build-libexpat
 cd build-libexpat
 cmake ..\VisualStatistics\libexpat\expat -G "Visual Studio 15 2017 Win64"
@@ -68,7 +68,7 @@ msbuild /m /t:expat /p:Configuration=Release /p:Platform=x64 expat.sln
 ```
 
 ### Build pcre2
-```
+```powershell
 mkdir build-pcre2
 cd build-pcre2
 cmake ..\VisualStatistics\pcre2 -G "Visual Studio 15 2017 Win64" -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_SUPPORT_JIT=ON
