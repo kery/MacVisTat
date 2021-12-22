@@ -13,7 +13,7 @@ MainWindow::MainWindow(const QString &path, const QString &url) :
     mUrl(url)
 {
     ui->setupUi(this);
-    setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint);
+    setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &MainWindow::buttonBoxAccepted);
 }
 

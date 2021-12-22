@@ -257,6 +257,9 @@ CONFIG(debug, debug|release) {
     LIBS += -L../build-breakpad-Debug/lib/
 } else {
     LIBS += -L../build-breakpad-Release/lib/
+
+    QMAKE_CXXFLAGS_RELEASE += /Zi
+    QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
 }
 LIBS += -lexception_handler -lcrash_generation_client -lcommon
 
