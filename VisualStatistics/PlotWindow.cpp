@@ -306,15 +306,18 @@ void PlotWindow::actionAddAggregateGraphTriggered()
         suspectKeys->unite(*graph->suspectKeys());
         for (int i = 0; i < data->size(); ++i) {
             sumDataVector[i].key = data->at(i)->key;
-            sumDataVector[i].value = data->at(i)->value;
+            if (!qIsNaN(data->at(i)->value)) {
+                sumDataVector[i].value = data->at(i)->value;
+            }
         }
-
         for (int i = 1; i < selectedGraphs.size(); ++i) {
             CounterGraph *graph = selectedGraphs[i];
             QSharedPointer<QCPGraphDataContainer> data = graph->data();
             suspectKeys->unite(*graph->suspectKeys());
             for (int j = 0; j < data->size(); ++j) {
-                sumDataVector[j].value += data->at(j)->value;
+                if (!qIsNaN(data->at(j)->value)) {
+                    sumDataVector[j].value += data->at(j)->value;
+                }
             }
         }
     } else {
@@ -325,15 +328,18 @@ void PlotWindow::actionAddAggregateGraphTriggered()
         suspectKeys->unite(*graph->suspectKeys());
         for (int i = 0; i < data->size(); ++i) {
             sumDataVector[i].key = data->at(i)->key;
-            sumDataVector[i].value = data->at(i)->value;
+            if (!qIsNaN(data->at(i)->value)) {
+                sumDataVector[i].value = data->at(i)->value;
+            }
         }
-
         for (int i = 1; i < ui->plot->graphCount(); ++i) {
             CounterGraph *graph = ui->plot->graph(i);
             QSharedPointer<QCPGraphDataContainer> data = graph->data();
             suspectKeys->unite(*graph->suspectKeys());
             for (int j = 0; j < data->size(); ++j) {
-                sumDataVector[j].value += data->at(j)->value;
+                if (!qIsNaN(data->at(j)->value)) {
+                    sumDataVector[j].value += data->at(j)->value;
+                }
             }
         }
     }
