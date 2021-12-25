@@ -9,7 +9,6 @@ public:
     static void initSeparators();
     static QString getModuleName(const QString &name);
     static QString getObjectName(const QString &name);
-    static QString trimModuleName(const QString &name);
 
     // Module              Group                           Indexes                                                      KPI/KCI Object
     // -------------------,-------------------------------,------------------------------------------------------------,--------------

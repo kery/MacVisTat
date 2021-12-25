@@ -14,16 +14,6 @@ void CounterGraph::setPen(const QPen &pen)
     mSelectionDecorator->setPen(pen);
 }
 
-QString CounterGraph::displayName() const
-{
-    return mShortName.isEmpty() ? mName : mShortName;
-}
-
-void CounterGraph::setShortName(const QString &name)
-{
-    mShortName = name;
-}
-
 void CounterGraph::setScatterVisible(bool visible)
 {
     mScatterStyle.setShape(visible ? QCPScatterStyle::ssDisc : QCPScatterStyle::ssNone);

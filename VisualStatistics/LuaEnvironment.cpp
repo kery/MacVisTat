@@ -98,7 +98,7 @@ int LuaEnvironment::graphName(lua_State *L)
     CounterPlot *plot = plotWindow(L)->ui->plot;
     luaL_argcheck(L, graphIndex >= 0 && graphIndex < plot->graphCount(), 1, "graph index out of range");
 
-    QString name = plot->graph(graphIndex)->displayName();
+    QString name = plot->graph(graphIndex)->name();
     lua_pushstring(L, name.toStdString().c_str());
     return 1;
 }

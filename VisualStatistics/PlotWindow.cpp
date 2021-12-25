@@ -97,7 +97,7 @@ void PlotWindow::actionExportToCsvTriggered()
         if (!graph->visible()) {
             continue;
         }
-        headers.push_back(graph->displayName().toStdString());
+        headers.push_back(graph->name().toStdString());
     }
     for (const std::string &str : headers) {
         csv_fwrite(file, str.c_str(), str.length());
@@ -668,7 +668,6 @@ void PlotWindow::initGraphs()
     for (const QString &name : counterNames) {
         CounterGraph *graph = ui->plot->addGraph();
         graph->setName(name);
-        graph->setShortName(CounterName::trimModuleName(name));
         graph->setPen(QPen(mColorPool.getColor()));
         graph->setData(mPlotData.counterData(name));
         graph->setSuspectKeys(mPlotData.suspectKeys(name));

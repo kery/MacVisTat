@@ -27,12 +27,3 @@ QString CounterName::getObjectName(const QString &name)
 {
     return name.mid(name.lastIndexOf(sIndexesSeparator) + 1);
 }
-
-QString CounterName::trimModuleName(const QString &name)
-{
-    int index = name.indexOf(sModuleSeparator);
-    if (index > 0) {
-        return name.mid(index + 1);
-    }
-    return name;
-}

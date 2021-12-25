@@ -10,7 +10,7 @@ QSize CounterLegendItem::minimumOuterSizeHint() const
 {
     QFontMetrics fontMetrics(getFont());
     CounterGraph *graph = qobject_cast<CounterGraph *>(mPlottable);
-    QSize result = fontMetrics.size(Qt::TextSingleLine | Qt::AlignVCenter, graph->displayName());
+    QSize result = fontMetrics.size(Qt::TextSingleLine | Qt::AlignVCenter, graph->name());
     QSize iconSize = mParentLegend->iconSize();
 
     result.rwidth() += iconSize.width() + mParentLegend->iconTextPadding() + mMargins.left() + mMargins.right();
@@ -29,7 +29,7 @@ void CounterLegendItem::draw(QCPPainter *painter)
     QSize iconSize = mParentLegend->iconSize();
     QRect iconRect(QPoint(0, 0), iconSize);
     QRect textRect = mRect.adjusted(iconSize.width() + mParentLegend->iconTextPadding(), 0, 0, 0);
-    painter->drawText(textRect, Qt::TextSingleLine | Qt::AlignVCenter, graph->displayName());
+    painter->drawText(textRect, Qt::TextSingleLine | Qt::AlignVCenter, graph->name());
     iconRect.moveCenter(mRect.center());
     iconRect.moveLeft(mRect.left());
     graph->drawLegendIcon(painter, iconRect);

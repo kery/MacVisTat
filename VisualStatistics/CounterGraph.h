@@ -11,8 +11,6 @@ public:
     CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis);
 
     void setPen(const QPen &pen);
-    QString displayName() const;
-    void setShortName(const QString &name);
     void setScatterVisible(bool visible);
     const QSet<double> *suspectKeys() const;
     void setSuspectKeys(const QSet<double> *suspectKeys);
@@ -28,7 +26,6 @@ private:
     virtual void draw(QCPPainter *painter) override;
     virtual void drawLegendIcon(QCPPainter *painter, const QRectF &rect) const override;
 
-    QString mShortName;
     const QSet<double> *mSuspectKeys;
     QCPScatterStyle mSuspectScatterStyle;
 
