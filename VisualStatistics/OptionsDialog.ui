@@ -29,6 +29,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="abortConvOnFailureCheckBox">
+     <property name="text">
+      <string>Abort the conversion if any KPI/KCI file conversion fails</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

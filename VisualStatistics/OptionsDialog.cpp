@@ -3,8 +3,13 @@
 #include "GlobalDefines.h"
 #include <QSettings>
 
+bool OptionsDialog::sDefIgnoreConstant = true;
+bool OptionsDialog::sDefHideTimeGap = true;
+bool OptionsDialog::sDefAbortConvOnFailure = true;
+
 QString OptionsDialog::sKeyIgnoreConstant("ignoreConstant");
 QString OptionsDialog::sKeyHideTimeGap("hideTimeGap");
+QString OptionsDialog::sKeyAbortConvOnFailure("abortConvOnFailure");
 
 OptionsDialog::OptionsDialog(QWidget *parent) :
     QDialog(parent),
@@ -15,11 +20,13 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint);
 
     QSettings setting;
-    ui->ignoreConstCheckBox->setChecked(setting.value(sKeyIgnoreConstant, true).toBool());
-    ui->hideTimeGapCheckBox->setChecked(setting.value(sKeyHideTimeGap, false).toBool());
+    ui->ignoreConstCheckBox->setChecked(setting.value(sKeyIgnoreConstant, sDefIgnoreConstant).toBool());
+    ui->hideTimeGapCheckBox->setChecked(setting.value(sKeyHideTimeGap, sDefHideTimeGap).toBool());
+    ui->abortConvOnFailureCheckBox->setChecked(setting.value(sKeyAbortConvOnFailure, sDefAbortConvOnFailure).toBool());
 
     connect(ui->ignoreConstCheckBox, &QCheckBox::stateChanged, this, &OptionsDialog::ignoreConstChkBoxStateChanged);
     connect(ui->hideTimeGapCheckBox, &QCheckBox::stateChanged, this, &OptionsDialog::hideTimeGapChkBoxStateChanged);
+    connect(ui->abortConvOnFailureCheckBox, &QCheckBox::stateChanged, this, &OptionsDialog::abortConvOnFailureChkBoxStateChanged);
 }
 
 OptionsDialog::~OptionsDialog()
@@ -43,4 +50,10 @@ void OptionsDialog::hideTimeGapChkBoxStateChanged(int state)
 {
     QSettings setting;
     setting.setValue(sKeyHideTimeGap, state == Qt::Checked);
+}
+
+void OptionsDialog::abortConvOnFailureChkBoxStateChanged(int state)
+{
+    QSettings setting;
+    setting.setValue(sKeyAbortConvOnFailure, state == Qt::Checked);
 }

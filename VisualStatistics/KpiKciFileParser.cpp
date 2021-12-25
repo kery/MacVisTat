@@ -2,6 +2,7 @@
 #include "ProgressDialog.h"
 #include "CounterName.h"
 #include "GzipFile.h"
+#include "OptionsDialog.h"
 #include "GlobalDefines.h"
 #include <QtConcurrent>
 
@@ -31,18 +32,23 @@ KpiKciFileParser::KpiKciFileParser(QWidget *parent) :
 
 QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString> &errors)
 {
+    QSettings setting;
+    bool abortConvOnFailure = setting.value(OptionsDialog::sKeyAbortConvOnFailure, OptionsDialog::sDefAbortConvOnFailure).toBool();
+
     ProgressDialog dlg(mParent);
     dlg.setDescription(QStringLiteral("Sorting KPI/KCI files..."));
     dlg.setUndeterminable();
     dlg.setCancelButtonVisible(false);
 
+    QVector<QString> sortErrors;
     QFutureWatcher<void> sortWatcher;
     QObject::connect(&sortWatcher, &QFutureWatcher<void>::finished, &dlg, &ProgressDialog::accept);
-    sortWatcher.setFuture(QtConcurrent::run(std::bind(sortFiles, std::ref(paths), std::ref(errors))));
+    sortWatcher.setFuture(QtConcurrent::run(std::bind(sortFiles, std::ref(paths), std::ref(sortErrors))));
     dlg.exec();
     sortWatcher.waitForFinished();
 
-    if (paths.isEmpty()) { return QString(); }
+    sortErrors.swap(errors);
+    if ((abortConvOnFailure && !errors.isEmpty()) || paths.isEmpty()) { return QString(); }
 
     volatile bool working = true;
     dlg.setDescription(QStringLiteral("Parsing counter names from KPI/KCI files..."));
@@ -66,6 +72,7 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
 
     HeaderResult hdrResult = hdrWatcher.result();
     errors.append(hdrResult.errors);
+    if (abortConvOnFailure && !hdrResult.errors.isEmpty()) { return QString(); }
     if (hdrResult.infoIdMap.empty()) {
         errors.append(QString("there is no counter in selected KPI/KCI files"));
         return QString();
@@ -125,6 +132,11 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
 
     DataResult dataResult = dataWatcher.result();
     errors.append(dataResult.errors);
+    if (abortConvOnFailure && !dataResult.errors.isEmpty()) {
+        writer.close();
+        QFile::remove(outPath);
+        return QString();
+    }
     return outPath;
 }
 

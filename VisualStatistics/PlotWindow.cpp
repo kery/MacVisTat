@@ -22,7 +22,6 @@
 
 PlotWindow::PlotWindow(PlotData &plotData) :
     ui(new Ui::PlotWindow),
-    mValueTip(nullptr),
     mPlotData(std::move(plotData)),
     mLastSelLegItemIndex(-1)
 {
@@ -30,7 +29,6 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     if (!isValidOffsetFromUtc(mPlotData.offsetFromUtc())) { ui->actionDisplayUtc->setEnabled(false); }
     setupPlot();
     setupDateTimeEdits();
-
     mValueTip = new ValueTipItem(ui->plot);
 
     connect(ui->actionSave, &QAction::triggered, this, &PlotWindow::actionSaveTriggered);

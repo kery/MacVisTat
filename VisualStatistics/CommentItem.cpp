@@ -42,6 +42,7 @@ void CommentItem::setGraphAndKey(CounterGraph *graph, double key)
     mLine = new QCPItemLine(mParentPlot);
     mLine->end->setParentAnchor(mTracer->position);
     mLine->setHead(QCPLineEnding::esSpikeArrow);
+    mLine->setSelectable(false);
 
     QPen pen = mLine->pen();
     pen.setStyle(Qt::DashLine);
@@ -58,9 +59,7 @@ CounterGraph * CommentItem::graph() const
 
 void CommentItem::updateLineStartAnchor()
 {
-    if (mLine == nullptr) {
-        return;
-    }
+    if (mLine == nullptr) { return; }
 
     QPointF tracerPos = mTracer->position->pixelPosition();
     QSizeF ciSize = size();
@@ -93,9 +92,7 @@ void CommentItem::updateLineStartAnchor()
 
 void CommentItem::setVisible(bool on)
 {
-    if (mLine) {
-        mLine->setVisible(on);
-    }
+    if (mLine) { mLine->setVisible(on); }
     TextItem::setVisible(on);
 }
 
