@@ -131,9 +131,7 @@ QSharedPointer<QCPGraphDataContainer> PlotData::firstCounterData()
 
 QSharedPointer<QCPGraphDataContainer> PlotData::counterData(const QString &name, bool delta)
 {
-    if (!mDataMap.contains(name)) {
-        return QSharedPointer<QCPGraphDataContainer>();
-    }
+    if (!mDataMap.contains(name)) { return QSharedPointer<QCPGraphDataContainer>(); }
 
     if (delta) {
         const QCPGraphDataContainer &originalData = mDataMap[name].data;
@@ -141,7 +139,7 @@ QSharedPointer<QCPGraphDataContainer> PlotData::counterData(const QString &name,
         QSharedPointer<QCPGraphDataContainer> deltaData(new QCPGraphDataContainer());
 
         if (iterBegin != iterEnd) {
-            deltaData->add(QCPGraphData(iterBegin->key, 0));
+            deltaData->add(QCPGraphData(iterBegin->key, NAN));
         }
         for (auto iter = iterBegin + 1; iter != iterEnd; ++iter) {
             deltaData->add(QCPGraphData(iter->key, iter->value - (iter - 1)->value));

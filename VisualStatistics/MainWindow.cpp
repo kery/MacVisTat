@@ -96,7 +96,7 @@ void MainWindow::actionXmlToCsvTriggered()
 {
     FileDialog dlg(this);
     dlg.setFileMode(QFileDialog::ExistingFiles);
-    dlg.setNameFilter(QStringLiteral("KPI/KCI File (*.xml *.xml.gz)"));
+    dlg.setNameFilters({QStringLiteral("KPI/KCI File (*.xml.gz)"), QStringLiteral("KPI/KCI File (*.xml)")});
     if (dlg.exec() != QDialog::Accepted) {
         return;
     }
@@ -773,7 +773,7 @@ void MainWindow::parseCounterFileData(bool multiWnd)
     } else if (!canceled) {
         QSettings setting;
         PlotData::KeyType keyType = PlotData::ktDateTime;
-        if (setting.value(SETTING_KEY_HIDE_TIME_GAP, false).toBool()) {
+        if (setting.value(OptionsDialog::sKeyHideTimeGap, false).toBool()) {
             keyType = PlotData::ktIndex;
         }
         PlotData plotData(mOffsetFromUtc);
@@ -786,7 +786,7 @@ void MainWindow::processPlotData(PlotData &plotData, bool multiWnd)
 {
     if (multiWnd && plotData.dataCount() > 1) {
         QSettings setting;
-        bool ignoreConstant = setting.value(SETTING_KEY_IGNORE_CONSTANT, true).toBool();
+        bool ignoreConstant = setting.value(OptionsDialog::sKeyIgnoreConstant, true).toBool();
         std::unique_ptr<PlotData[]> plotDataPtr = plotData.split();
         for (int i = 0; i < plotData.dataCount(); ++i) {
             if (ignoreConstant && CounterData::isConstant(plotDataPtr[i].firstCounterData())) {

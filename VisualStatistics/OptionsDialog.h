@@ -14,13 +14,17 @@ public:
     OptionsDialog(QWidget *parent);
     ~OptionsDialog();
 
-private slots:
-    void ignoreConstChkBoxStateChanged(int state);
-    void hideTimeGapChkBoxStateChanged(int state);
-
 private:
     virtual bool event(QEvent *event) override;
 
+    Q_SLOT void ignoreConstChkBoxStateChanged(int state);
+    Q_SLOT void hideTimeGapChkBoxStateChanged(int state);
+
+public:
+    static QString sKeyIgnoreConstant;
+    static QString sKeyHideTimeGap;
+
+private:
     Ui::OptionsDialog *ui;
     ResizeManager mResizeMan;
 };

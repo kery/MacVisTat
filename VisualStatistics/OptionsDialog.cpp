@@ -3,6 +3,9 @@
 #include "GlobalDefines.h"
 #include <QSettings>
 
+QString OptionsDialog::sKeyIgnoreConstant("ignoreConstant");
+QString OptionsDialog::sKeyHideTimeGap("hideTimeGap");
+
 OptionsDialog::OptionsDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::OptionsDialog),
@@ -12,8 +15,8 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint);
 
     QSettings setting;
-    ui->ignoreConstCheckBox->setChecked(setting.value(SETTING_KEY_IGNORE_CONSTANT, true).toBool());
-    ui->hideTimeGapCheckBox->setChecked(setting.value(SETTING_KEY_HIDE_TIME_GAP, false).toBool());
+    ui->ignoreConstCheckBox->setChecked(setting.value(sKeyIgnoreConstant, true).toBool());
+    ui->hideTimeGapCheckBox->setChecked(setting.value(sKeyHideTimeGap, false).toBool());
 
     connect(ui->ignoreConstCheckBox, &QCheckBox::stateChanged, this, &OptionsDialog::ignoreConstChkBoxStateChanged);
     connect(ui->hideTimeGapCheckBox, &QCheckBox::stateChanged, this, &OptionsDialog::hideTimeGapChkBoxStateChanged);
@@ -24,20 +27,20 @@ OptionsDialog::~OptionsDialog()
     delete ui;
 }
 
+bool OptionsDialog::event(QEvent *event)
+{
+    mResizeMan.resizeWidgetFromCharWidth(event, 100, 0.5);
+    return QDialog::event(event);
+}
+
 void OptionsDialog::ignoreConstChkBoxStateChanged(int state)
 {
     QSettings setting;
-    setting.setValue(SETTING_KEY_IGNORE_CONSTANT, state == Qt::Checked);
+    setting.setValue(sKeyIgnoreConstant, state == Qt::Checked);
 }
 
 void OptionsDialog::hideTimeGapChkBoxStateChanged(int state)
 {
     QSettings setting;
-    setting.setValue(SETTING_KEY_HIDE_TIME_GAP, state == Qt::Checked);
-}
-
-bool OptionsDialog::event(QEvent *event)
-{
-    mResizeMan.resizeWidgetFromCharWidth(event, 100, 0.5);
-    return QDialog::event(event);
+    setting.setValue(sKeyHideTimeGap, state == Qt::Checked);
 }
