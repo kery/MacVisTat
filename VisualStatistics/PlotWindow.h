@@ -23,6 +23,8 @@ public:
     void setCounterDescription(CounterDescription *desc);
     void addGraphsFromOtherPlotWindow(QObject *src);
 
+    Q_SLOT void setYAxis2DraggableZoomable(int state);
+
 private slots:
     void actionSaveTriggered();
     void actionCopyTriggered();

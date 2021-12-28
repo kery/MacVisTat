@@ -807,6 +807,7 @@ PlotWindow *MainWindow::createPlotWindow(PlotData &plotData)
     plotWnd->setCounterDescription(&mCounterDesc);
     plotWnd->resize((mResizeMan.screenSize() * 0.75).toSize());
     connect(this, &MainWindow::aboutToBeClosed, plotWnd, &PlotWindow::close);
+    connect(this, &MainWindow::yAxis2DraggableZoomableStateChanged, plotWnd, &PlotWindow::setYAxis2DraggableZoomable);
     return plotWnd;
 }
 

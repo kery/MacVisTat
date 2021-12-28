@@ -33,10 +33,6 @@ CounterPlot::CounterPlot(QWidget *parent) :
     legend->setSelectableParts(QCPLegend::spItems);
     legend->setVisible(true);
 
-    QList<QCPAxis *> axes = {xAxis, yAxis, yAxis2};
-    axisRect()->setRangeDragAxes(axes);
-    axisRect()->setRangeZoomAxes(axes);
-
     setNoAntialiasingOnDrag(true);
     setAutoAddPlottableToLegend(false);
     setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iMultiSelect | QCP::iSelectPlottables |

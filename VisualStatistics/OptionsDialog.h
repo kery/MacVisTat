@@ -19,15 +19,18 @@ private:
 
     Q_SLOT void ignoreConstChkBoxStateChanged(int state);
     Q_SLOT void hideTimeGapChkBoxStateChanged(int state);
+    Q_SLOT void yAxis2DraggableZoomableChkBoxStateChanged(int state);
     Q_SLOT void abortConvOnFailureChkBoxStateChanged(int state);
 
 public:
     static bool sDefIgnoreConstant;
     static bool sDefHideTimeGap;
+    static bool sDefYAxis2DraggableZoomable;
     static bool sDefAbortConvOnFailure;
 
     static QString sKeyIgnoreConstant;
     static QString sKeyHideTimeGap;
+    static QString sKeyYAxis2DraggableZoomable;
     static QString sKeyAbortConvOnFailure;
 
 private:

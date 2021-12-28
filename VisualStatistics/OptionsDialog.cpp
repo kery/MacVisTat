@@ -1,14 +1,17 @@
 #include "OptionsDialog.h"
 #include "ui_OptionsDialog.h"
 #include "GlobalDefines.h"
+#include "MainWindow.h"
 #include <QSettings>
 
 bool OptionsDialog::sDefIgnoreConstant = true;
 bool OptionsDialog::sDefHideTimeGap = true;
+bool OptionsDialog::sDefYAxis2DraggableZoomable = false;
 bool OptionsDialog::sDefAbortConvOnFailure = true;
 
 QString OptionsDialog::sKeyIgnoreConstant("ignoreConstant");
 QString OptionsDialog::sKeyHideTimeGap("hideTimeGap");
+QString OptionsDialog::sKeyYAxis2DraggableZoomable("yAxis2DraggableZoomable");
 QString OptionsDialog::sKeyAbortConvOnFailure("abortConvOnFailure");
 
 OptionsDialog::OptionsDialog(QWidget *parent) :
@@ -22,10 +25,13 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     QSettings setting;
     ui->ignoreConstCheckBox->setChecked(setting.value(sKeyIgnoreConstant, sDefIgnoreConstant).toBool());
     ui->hideTimeGapCheckBox->setChecked(setting.value(sKeyHideTimeGap, sDefHideTimeGap).toBool());
+    ui->yAxis2DraggableZoomableCheckBox->setChecked(setting.value(sKeyYAxis2DraggableZoomable, sDefYAxis2DraggableZoomable).toBool());
     ui->abortConvOnFailureCheckBox->setChecked(setting.value(sKeyAbortConvOnFailure, sDefAbortConvOnFailure).toBool());
 
     connect(ui->ignoreConstCheckBox, &QCheckBox::stateChanged, this, &OptionsDialog::ignoreConstChkBoxStateChanged);
     connect(ui->hideTimeGapCheckBox, &QCheckBox::stateChanged, this, &OptionsDialog::hideTimeGapChkBoxStateChanged);
+    connect(ui->yAxis2DraggableZoomableCheckBox, &QCheckBox::stateChanged, this, &OptionsDialog::yAxis2DraggableZoomableChkBoxStateChanged);
+    connect(ui->yAxis2DraggableZoomableCheckBox, &QCheckBox::stateChanged, qobject_cast<MainWindow *>(parent), &MainWindow::yAxis2DraggableZoomableStateChanged);
     connect(ui->abortConvOnFailureCheckBox, &QCheckBox::stateChanged, this, &OptionsDialog::abortConvOnFailureChkBoxStateChanged);
 }
 
@@ -50,6 +56,12 @@ void OptionsDialog::hideTimeGapChkBoxStateChanged(int state)
 {
     QSettings setting;
     setting.setValue(sKeyHideTimeGap, state == Qt::Checked);
+}
+
+void OptionsDialog::yAxis2DraggableZoomableChkBoxStateChanged(int state)
+{
+    QSettings setting;
+    setting.setValue(sKeyYAxis2DraggableZoomable, state == Qt::Checked);
 }
 
 void OptionsDialog::abortConvOnFailureChkBoxStateChanged(int state)

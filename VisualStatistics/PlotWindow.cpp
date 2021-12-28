@@ -13,6 +13,7 @@
 #include "BalloonTip.h"
 #include "Utils.h"
 #include "GlobalDefines.h"
+#include "OptionsDialog.h"
 #include "libcsv/csv.h"
 #include "QCustomPlot/src/items/item-straightline.h"
 #include "QCustomPlot/src/layoutelements/layoutelement-legend.h"
@@ -106,6 +107,16 @@ void PlotWindow::addGraphsFromOtherPlotWindow(QObject *src)
         ui->plot->updateYAxesTickVisible();
         ui->plot->replot(QCustomPlot::rpQueuedReplot);
     }
+}
+
+void PlotWindow::setYAxis2DraggableZoomable(int state)
+{
+    QList<QCPAxis *> axes = { ui->plot->xAxis, ui->plot->yAxis };
+    if (state == Qt::Checked) {
+        axes.append(ui->plot->yAxis2);
+    }
+    ui->plot->axisRect()->setRangeDragAxes(axes);
+    ui->plot->axisRect()->setRangeZoomAxes(axes);
 }
 
 void PlotWindow::actionSaveTriggered()
@@ -671,6 +682,10 @@ void PlotWindow::editEndDateTimeChanged(const QDateTime &dateTime)
 
 void PlotWindow::setupPlot()
 {
+    QSettings setting;
+    bool draggableZoomable = setting.value(OptionsDialog::sKeyYAxis2DraggableZoomable, OptionsDialog::sDefYAxis2DraggableZoomable).toBool();
+    setYAxis2DraggableZoomable(draggableZoomable ? Qt::Checked : Qt::Unchecked);
+
     auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
     ticker->setOffsetFromUtc(mPlotData.offsetFromUtc());
     if (mPlotData.keyType() == PlotData::ktIndex) {

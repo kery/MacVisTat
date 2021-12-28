@@ -25,6 +25,7 @@ public:
 
 signals:
     void aboutToBeClosed();
+    void yAxis2DraggableZoomableStateChanged(int state);
 
 private slots:
     void actionOpenTriggered();
