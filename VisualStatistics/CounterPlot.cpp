@@ -383,7 +383,8 @@ void CounterPlot::dropEvent(QDropEvent *event)
         // Use QSignalMapper to pass event source as the parameter of slot when QTimer::timeout emitted.
         QSignalMapper *signalMapper = new QSignalMapper(tempTimer);
         // If the source of the drag operation is a widget in this application, event->source() returns
-        // that source; otherwise it returns 0.
+        // that source; otherwise it returns 0 (however this will not happen since we only acceptProposedAction
+        // when the source is not nullptr).
         signalMapper->setMapping(tempTimer, event->source());
         connect(tempTimer, &QTimer::timeout, signalMapper, QOverload<void>::of(&QSignalMapper::map));
         connect(tempTimer, &QTimer::timeout, tempTimer, &QTimer::deleteLater);

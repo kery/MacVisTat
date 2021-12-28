@@ -161,7 +161,7 @@ void ScriptWindow::setupAutoCompletion(QsciScintilla *editor)
 bool ScriptWindow::maybeSave()
 {
     if (ui->scriptTextEdit->isModified()) {
-        int answer = showQuestionMsgBox(this, QStringLiteral("The script has been modified. Do you want to save your changes?"), QString(),
+        int answer = showQuestionMsgBox(this, QStringLiteral("The script has been modified. Do you want to save your changes?"),
                                         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
         if (answer == QMessageBox::Yes) {
             if (mScriptFile.isEmpty()) {
@@ -180,7 +180,7 @@ void ScriptWindow::loadFile(const QString &path)
 {
     QFile file(path);
     if (!file.open(QFile::ReadOnly)) {
-        showErrorMsgBox(this, QString("Cannot read file: %1").arg(file.errorString()));
+        showErrorMsgBox(this, QStringLiteral("Failed to read file!"), file.errorString());
         return;
     }
 
@@ -197,7 +197,7 @@ bool ScriptWindow::saveFile(const QString &path)
 {
     QFile file(path);
     if (!file.open(QFile::WriteOnly)) {
-        showErrorMsgBox(this, QString("Cannot write file: %1").arg(file.errorString()));
+        showErrorMsgBox(this, QString("Failed to write file!"), file.errorString());
         return false;
     }
 

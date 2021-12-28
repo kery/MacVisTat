@@ -60,13 +60,13 @@ void PlotWindow::setCounterDescription(CounterDescription *desc)
 
 void PlotWindow::addGraphsFromOtherPlotWindow(QObject *src)
 {
-    if (src == nullptr) {
-        showErrorMsgBox(this, QStringLiteral("Can't add graphs from different process!"));
-        return;
-    }
     PlotWindow *srcWnd = qobject_cast<PlotWindow *>(src);
     if (mPlotData.dataCount() != srcWnd->mPlotData.dataCount()) {
-        showErrorMsgBox(this, QStringLiteral("Can't add graphs which have different keys!"));
+        showErrorMsgBox(this, QStringLiteral("Can't add graphs which have different number of keys!"));
+        return;
+    }
+    if (mPlotData.keyType() != srcWnd->mPlotData.keyType()) {
+        showErrorMsgBox(this, QStringLiteral("Can't add graphs which have different type of key!"));
         return;
     }
 
@@ -79,7 +79,7 @@ void PlotWindow::addGraphsFromOtherPlotWindow(QObject *src)
         QString graphName = graph->name();
         QSharedPointer<QCPGraphDataContainer> dstData = mPlotData.addCounterData(graphName);
         if (!dstData) {
-            showErrorMsgBox(this, QStringLiteral("Stopped adding graphs, \"%1\" already exists!").arg(graphName));
+            showErrorMsgBox(this, QStringLiteral("Stopped adding graphs, graph already exists!"), QString(), graphName);
             break;
         }
 
@@ -145,7 +145,7 @@ void PlotWindow::actionExportToCsvTriggered()
     QString localPath = QDir::toNativeSeparators(path);
     FILE *file = fopen(localPath.toLocal8Bit().data(), "wb");
     if (file == nullptr) {
-        showErrorMsgBox(this, strerror(errno));
+        showErrorMsgBox(this, QStringLiteral("Failed to open CSV file for writing!"), QString(strerror(errno)));
         return;
     }
 
@@ -350,7 +350,7 @@ void PlotWindow::actionAddAggregateGraphTriggered()
     }
     QSharedPointer<QCPGraphDataContainer> newData = mPlotData.addCounterData(graphName);
     if (!newData) {
-        showErrorMsgBox(this, QStringLiteral("Graph name \"%1\" already exists!").arg(graphName));
+        showErrorMsgBox(this, QStringLiteral("Graph name already exists!"), QString(), graphName);
         return;
     }
 

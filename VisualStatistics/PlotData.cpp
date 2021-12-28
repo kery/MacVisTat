@@ -68,21 +68,13 @@ QDateTime PlotData::dateTimeFromIndex(int index) const
 double PlotData::getSampleInterval() const
 {
     double interval = std::numeric_limits<double>::max();
-    switch (mKeyType) {
-    case ktDateTime:
-        // TODO
-        Q_ASSERT(false);
-        break;
-    case ktIndex:
+    if (mKeyType == ktIndex) {
         for (int i = 1; i < mDateTimeVector.size(); ++i) {
             double diff = mDateTimeVector[i] - mDateTimeVector[i - 1];
             if (diff < interval) {
                 interval = diff;
             }
         }
-        break;
-    default:
-        break;
     }
     return interval;
 }

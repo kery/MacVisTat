@@ -23,26 +23,32 @@ bool isValidOffsetFromUtc(int offset)
     return offset >= -(12 * 3600) && offset <= (14 * 3600);
 }
 
-int showQuestionMsgBox(QWidget *parent, const QString &text, const QString &info,
+int showQuestionMsgBox(QWidget *parent, const QString &text,
                        QMessageBox::StandardButtons buttons,
-                       QMessageBox::StandardButton def)
+                       QMessageBox::StandardButton def,
+                       const QString &info,
+                       const QString &detail)
 {
     QMessageBox msgBox(parent);
     msgBox.setWindowTitle(APP_NAME);
     msgBox.setIcon(QMessageBox::Question);
-    msgBox.setInformativeText(info);
     msgBox.setText(text);
+    msgBox.setInformativeText(info);
+    msgBox.setDetailedText(detail);
     msgBox.setStandardButtons(buttons);
     msgBox.setDefaultButton(def);
     return msgBox.exec();
 }
 
-void showErrorMsgBox(QWidget *parent, const QString &text, const QString &info)
+void showErrorMsgBox(QWidget *parent, const QString &text,
+                     const QString &info,
+                     const QString &detail)
 {
     QMessageBox msgBox(parent);
     msgBox.setWindowTitle(APP_NAME);
     msgBox.setIcon(QMessageBox::Critical);
-    msgBox.setInformativeText(info);
     msgBox.setText(text);
+    msgBox.setInformativeText(info);
+    msgBox.setDetailedText(detail);
     msgBox.exec();
 }
