@@ -26,13 +26,13 @@ public:
     void showWithAnimation();
     void hideWithAnimation();
 
-    static QString layerName();
+    static const QString sLayerName;
 
 private:
     void setVisible(bool on);
 
-    Q_SLOT void animValueChange(const QVariant &value);
-    Q_SLOT void animFinished();
+    Q_SLOT void animationValueChange(const QVariant &value);
+    Q_SLOT void animationFinished();
 
     virtual void draw(QCPPainter *painter) override;
 

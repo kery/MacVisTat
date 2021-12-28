@@ -339,7 +339,10 @@ void CounterPlot::dragEnterEvent(QDragEnterEvent *event)
          event->mimeData()->hasFormat(sMimeTypeDragComment)))
     {
         event->acceptProposedAction();
-    } else if (event->source() != window() && event->mimeData()->hasFormat(sMimeTypeDragPlot)) {
+    } else if (event->source() != nullptr &&
+               event->source() != window() &&
+               event->mimeData()->hasFormat(sMimeTypeDragPlot))
+    {
         event->acceptProposedAction();
     }
 }

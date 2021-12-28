@@ -678,8 +678,8 @@ void PlotWindow::setupPlot()
     }
     connect(ticker.data(), &DateTimeTicker::skippedTicksChanged, this, &PlotWindow::skippedTicksChanged);
 
-    ui->plot->addLayer(ValueTipItem::layerName(), ui->plot->legend->layer());
-    ui->plot->layer(ValueTipItem::layerName())->setMode(QCPLayer::lmBuffered);
+    ui->plot->addLayer(ValueTipItem::sLayerName, ui->plot->legend->layer());
+    ui->plot->layer(ValueTipItem::sLayerName)->setMode(QCPLayer::lmBuffered);
 
     connect(ui->plot, &CounterPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
     connect(ui->plot, &CounterPlot::customContextMenuRequested, this, &PlotWindow::contextMenuRequested);

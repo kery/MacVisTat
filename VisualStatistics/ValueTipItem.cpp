@@ -5,16 +5,18 @@
 
 #define TRACER_SIZE 10.0
 
+const QString ValueTipItem::sLayerName("valuetip");
+
 ValueTipItem::ValueTipItem(QCustomPlot *plot) :
     TextItem(plot),
     mTracer(new QCPItemTracer(plot))
 {
     setVisible(false);
 
-    mTracer->setLayer(layerName());
+    mTracer->setLayer(sLayerName);
     mTracer->setStyle(QCPItemTracer::tsCircle);
 
-    setLayer(layerName());
+    setLayer(sLayerName);
     setPositionAlignment(Qt::AlignLeft | Qt::AlignTop);
     position->setParentAnchor(mTracer->position);
 
@@ -25,8 +27,8 @@ ValueTipItem::ValueTipItem(QCustomPlot *plot) :
     mAnimation.setEndValue(TRACER_SIZE);
     mAnimation.setEasingCurve(QEasingCurve::OutQuad);
 
-    connect(&mAnimation, &QPropertyAnimation::valueChanged, this, &ValueTipItem::animValueChange);
-    connect(&mAnimation, &QPropertyAnimation::finished, this, &ValueTipItem::animFinished);
+    connect(&mAnimation, &QPropertyAnimation::valueChanged, this, &ValueTipItem::animationValueChange);
+    connect(&mAnimation, &QPropertyAnimation::finished, this, &ValueTipItem::animationFinished);
 }
 
 QString ValueTipItem::graphName() const
@@ -128,23 +130,18 @@ void ValueTipItem::hideWithAnimation()
     }
 }
 
-QString ValueTipItem::layerName()
-{
-    return QString("valuetip");
-}
-
 void ValueTipItem::setVisible(bool on)
 {
     QCPItemText::setVisible(on);
     mTracer->setVisible(on);
 }
 
-void ValueTipItem::animValueChange(const QVariant &/*value*/)
+void ValueTipItem::animationValueChange(const QVariant &/*value*/)
 {
     mLayer->replot();
 }
 
-void ValueTipItem::animFinished()
+void ValueTipItem::animationFinished()
 {
     if (mAnimation.direction() == QAbstractAnimation::Backward) {
         setVisible(false);
