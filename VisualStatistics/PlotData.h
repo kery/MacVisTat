@@ -23,6 +23,7 @@ public:
     KeyType keyType() const;
     int offsetFromUtc() const;
     QVector<double> dateTimeVector() const;
+    int size() const;
     int dataCount() const;
     QDateTime dateTimeFromKey(double key) const;
     QDateTime dateTimeFromIndex(int index) const;

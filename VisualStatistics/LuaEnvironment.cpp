@@ -141,7 +141,7 @@ int LuaEnvironment::addGraph(lua_State *L)
     luaL_argcheck(L, !plotWnd->mPlotData.contains(name), 1, "graph name already exists");
     luaL_checktype(L, 2, LUA_TTABLE);
 
-    if (plotWnd->mPlotData.dataCount() == 0) {
+    if (plotWnd->mPlotData.size() == 0) {
         luaL_error(L, "cannot add graph if currently plot is empty");
     }
 
@@ -176,6 +176,7 @@ int LuaEnvironment::addGraph(lua_State *L)
     newData->set(dataVector, true);
 
     CounterGraph *newGraph = plotWnd->ui->plot->addGraph();
+    plotWnd->ui->plot->updateYAxesTickVisible();
     newGraph->setName(name);
     newGraph->setData(newData);
     newGraph->setPen(QPen(color));
@@ -191,8 +192,7 @@ int LuaEnvironment::updatePlot(lua_State *L)
     PlotWindow *plotWnd = plotWindow(L);
     int rescaleY = lua_toboolean(L, 1);
     if (rescaleY) {
-        plotWnd->ui->plot->yAxis->rescale();
-        plotWnd->adjustYAxisRange();
+        plotWnd->ui->plot->rescaleYAxes();
     }
     plotWnd->ui->plot->replot(QCustomPlot::rpQueuedReplot);
     return 0;

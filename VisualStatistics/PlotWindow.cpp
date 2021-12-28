@@ -57,6 +57,57 @@ void PlotWindow::setCounterDescription(CounterDescription *desc)
     ui->plot->setCounterDescription(desc);
 }
 
+void PlotWindow::addGraphsFromOtherPlotWindow(QObject *src)
+{
+    if (src == nullptr) {
+        showErrorMsgBox(this, QStringLiteral("Can't add graphs from different process!"));
+        return;
+    }
+    PlotWindow *srcWnd = qobject_cast<PlotWindow *>(src);
+    if (mPlotData.dataCount() != srcWnd->mPlotData.dataCount()) {
+        showErrorMsgBox(this, QStringLiteral("Can't add graphs which have different keys!"));
+        return;
+    }
+
+    int numAdded = 0;
+    QVector<QCPGraphData> dataVector(mPlotData.dataCount());
+    for (int i = 0; i < srcWnd->ui->plot->graphCount(); ++i) {
+        CounterGraph *graph = srcWnd->ui->plot->graph(i);
+        if (!graph->visible()) { continue; }
+
+        QString graphName = graph->name();
+        QSharedPointer<QCPGraphDataContainer> dstData = mPlotData.addCounterData(graphName);
+        if (!dstData) {
+            showErrorMsgBox(this, QStringLiteral("Stopped adding graphs, \"%1\" already exists!").arg(graphName));
+            break;
+        }
+
+        ++numAdded;
+        QSet<double> *suspectKeys = mPlotData.suspectKeys(graphName);
+        *suspectKeys = *graph->suspectKeys();
+
+        QSharedPointer<QCPGraphDataContainer> srcData = graph->data();
+        for (int i = 0; i < dataVector.size(); ++i) {
+            dataVector[i] = *srcData->at(i);
+        }
+        dstData->set(dataVector, true);
+
+        CounterGraph *newGraph = ui->plot->addGraph(false);
+        newGraph->setName(graphName);
+        newGraph->setPen(graph->pen());
+        newGraph->setData(dstData);
+        newGraph->setSuspectKeys(suspectKeys);
+    }
+
+    if (numAdded > 0) {
+        updateWindowTitle();
+        updatePlotTitle();
+        ui->plot->rescaleYAxes();
+        ui->plot->updateYAxesTickVisible();
+        ui->plot->replot(QCustomPlot::rpQueuedReplot);
+    }
+}
+
 void PlotWindow::actionSaveTriggered()
 {
     QString path = FileDialog::getSaveFileName(this, defaultSaveFileName(), QStringLiteral("PNG File (*.png)"));
@@ -137,8 +188,8 @@ void PlotWindow::actionExportToCsvTriggered()
 
 void PlotWindow::actionRestoreTriggered()
 {
-    ui->plot->rescaleAxes();
-    adjustYAxisRange();
+    ui->plot->rescaleXAxis();
+    ui->plot->rescaleYAxes();
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
@@ -149,8 +200,7 @@ void PlotWindow::actionShowDeltaTriggered(bool checked)
         graph->setData(mPlotData.counterData(graph->name(), checked));
     }
 
-    ui->plot->yAxis->rescale();
-    adjustYAxisRange();
+    ui->plot->rescaleYAxes();
     updatePlotTitle();
     mValueTip->hideWithAnimation();
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
@@ -351,8 +401,8 @@ void PlotWindow::actionAddAggregateGraphTriggered()
 
     updateWindowTitle();
     updatePlotTitle();
-    ui->plot->yAxis->rescale();
-    adjustYAxisRange();
+    ui->plot->rescaleYAxes();
+    ui->plot->updateYAxesTickVisible();
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
@@ -471,8 +521,7 @@ void PlotWindow::selectionChanged()
         }
 
         if (QApplication::keyboardModifiers() & Qt::AltModifier) {
-            ui->plot->yAxis->rescale(true);
-            adjustYAxisRange();
+            ui->plot->rescaleYAxes(true);
         }
     }
 
@@ -629,7 +678,7 @@ void PlotWindow::setupPlot()
     }
     connect(ticker.data(), &DateTimeTicker::skippedTicksChanged, this, &PlotWindow::skippedTicksChanged);
 
-    ui->plot->addLayer(ValueTipItem::layerName(), ui->plot->layer(QStringLiteral("legend")));
+    ui->plot->addLayer(ValueTipItem::layerName(), ui->plot->legend->layer());
     ui->plot->layer(ValueTipItem::layerName())->setMode(QCPLayer::lmBuffered);
 
     connect(ui->plot, &CounterPlot::selectionChangedByUser, this, &PlotWindow::selectionChanged);
@@ -671,18 +720,10 @@ void PlotWindow::initGraphs()
         graph->setSuspectKeys(mPlotData.suspectKeys(name));
     }
 
-    ui->plot->rescaleAxes();
-    adjustYAxisRange();
+    ui->plot->rescaleXAxis();
+    ui->plot->rescaleYAxes();
+    ui->plot->updateYAxesTickVisible();
     ui->plot->replot(QCustomPlot::rpQueuedReplot);
-}
-
-void PlotWindow::adjustYAxisRange()
-{
-    QCPRange range = ui->plot->yAxis->range();
-    double delta = range.size() * 0.01;
-    range.lower -= delta;
-    range.upper += delta;
-    ui->plot->yAxis->setRange(range);
 }
 
 void PlotWindow::highlightTimeGap()
@@ -805,6 +846,7 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
         updateWindowTitle();
         updatePlotTitle();
         selectionChanged();
+        ui->plot->updateYAxesTickVisible();
         ui->plot->replot(QCustomPlot::rpQueuedReplot);
     }
 
@@ -869,7 +911,7 @@ CounterGraph * PlotWindow::findNearestGraphData(const QPoint &pos, QCPGraphData 
 {
     CounterGraph *resultGraph = nullptr;
     double minDistance = std::numeric_limits<double>::max();
-    QCPAxis *xAxis = ui->plot->xAxis, *yAxis = ui->plot->yAxis;
+    QCPAxis *xAxis = ui->plot->xAxis;
     const double radius = 10;
     const double minKey = xAxis->pixelToCoord(pos.x() - radius);
     const double maxKey = xAxis->pixelToCoord(pos.x() + radius);
@@ -884,7 +926,7 @@ CounterGraph * PlotWindow::findNearestGraphData(const QPoint &pos, QCPGraphData 
             continue;
         }
         for (auto iter = dataContainer->findBegin(minKey); iter != dataContainer->end() && iter->key < maxKey; ++iter) {
-            QPointF dataPos(xAxis->coordToPixel(iter->key), yAxis->coordToPixel(iter->value));
+            QPointF dataPos = graph->coordsToPixels(iter->key, iter->value);
             double distance = pointDistance(pos, dataPos);
             // Update the stored distance and graph even current distance equals to it since the graphs that have higher
             // index are drawn on top of the graphs that have lower index.

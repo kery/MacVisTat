@@ -11,7 +11,10 @@ CounterGraph::CounterGraph(QCPAxis *keyAxis, QCPAxis *valueAxis) :
 void CounterGraph::setPen(const QPen &pen)
 {
     mPen = pen;
-    mSelectionDecorator->setPen(pen);
+    if (!isLeftValueAxis()) {
+        mPen.setStyle(Qt::DashLine);
+    }
+    mSelectionDecorator->setPen(mPen);
 }
 
 void CounterGraph::setScatterVisible(bool visible)
@@ -32,6 +35,11 @@ void CounterGraph::setSuspectKeys(const QSet<double> *suspectKeys)
 bool CounterGraph::isSuspect(double key)
 {
     return mSuspectKeys->contains(key);
+}
+
+bool CounterGraph::isLeftValueAxis() const
+{
+    return valueAxis() == parentPlot()->yAxis;
 }
 
 QCPRange CounterGraph::getKeyRange(bool &foundRange, QCP::SignDomain /*inSignDomain*/) const
@@ -187,5 +195,9 @@ void CounterGraph::draw(QCPPainter *painter)
 
 void CounterGraph::drawLegendIcon(QCPPainter *painter, const QRectF &rect) const
 {
-    painter->fillRect(rect, mPen.color());
+    QBrush brush(mPen.color());
+    if (!isLeftValueAxis()) {
+        brush.setStyle(Qt::Dense4Pattern);
+    }
+    painter->fillRect(rect, brush);
 }

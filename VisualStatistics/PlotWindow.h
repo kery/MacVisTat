@@ -21,6 +21,7 @@ public:
     ~PlotWindow();
 
     void setCounterDescription(CounterDescription *desc);
+    void addGraphsFromOtherPlotWindow(QObject *src);
 
 private slots:
     void actionSaveTriggered();
@@ -56,7 +57,6 @@ private:
     void setupPlot();
     void setupDateTimeEdits();
     void initGraphs();
-    void adjustYAxisRange();
     void highlightTimeGap();
     void updateWindowTitle();
     void updatePlotTitle();

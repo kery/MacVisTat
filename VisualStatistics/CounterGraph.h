@@ -15,6 +15,7 @@ public:
     const QSet<double> *suspectKeys() const;
     void setSuspectKeys(const QSet<double> *suspectKeys);
     bool isSuspect(double key);
+    bool isLeftValueAxis() const;
 
     virtual QCPRange getKeyRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth) const override;
 

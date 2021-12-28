@@ -4,11 +4,13 @@
 #include "CounterDescription.h"
 #include "DateTimeTicker.h"
 #include "CommentItem.h"
+#include "PlotWindow.h"
 #include "QCustomPlot/src/selectionrect.h"
 #include "QCustomPlot/src/layoutelements/layoutelement-axisrect.h"
 
-#define MIME_TYPE_LEGEND_DRAGGING  "application/visualstat-legend"
-#define MIME_TYPE_COMMENT_DRAGGING "application/visualstat-comment"
+QString CounterPlot::sMimeTypeDragLegend("drag-legend");
+QString CounterPlot::sMimeTypeDragComment("drag-comment");
+QString CounterPlot::sMimeTypeDragPlot("drag-plot");
 
 CounterPlot::CounterPlot(QWidget *parent) :
     QCustomPlot(parent),
@@ -23,9 +25,6 @@ CounterPlot::CounterPlot(QWidget *parent) :
     selectionRect()->setBrush(color);
     axisRect()->setupFullAxesBox();
     xAxis2->setTicks(false);
-    xAxis2->setTickLabels(false);
-    yAxis2->setTicks(false);
-    yAxis2->setTickLabels(false);
     xAxis->setTicker(ticker);
     color = legend->brush().color();
     color.setAlpha(200);
@@ -33,6 +32,10 @@ CounterPlot::CounterPlot(QWidget *parent) :
     legend->setBrush(QBrush(color));
     legend->setSelectableParts(QCPLegend::spItems);
     legend->setVisible(true);
+
+    QList<QCPAxis *> axes = {xAxis, yAxis, yAxis2};
+    axisRect()->setRangeDragAxes(axes);
+    axisRect()->setRangeZoomAxes(axes);
 
     setNoAntialiasingOnDrag(true);
     setAutoAddPlottableToLegend(false);
@@ -48,12 +51,13 @@ CounterPlot::~CounterPlot()
     clearGraphs();
 }
 
-CounterGraph * CounterPlot::addGraph()
+CounterGraph * CounterPlot::addGraph(bool leftValueAxis)
 {
+    CounterGraph *graph = new CounterGraph(xAxis, leftValueAxis ? yAxis : yAxis2);
     auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(xAxis->ticker());
-    CounterGraph *graph = new CounterGraph(xAxis, yAxis);
-    CounterLegendItem *item = new CounterLegendItem(legend, graph);
     graph->setScatterVisible(ticker->skippedTicks() == 0);
+
+    CounterLegendItem *item = new CounterLegendItem(legend, graph);
     legend->addItem(item);
     connect(item, &QCPPlottableLegendItem::selectionChanged, graph, &CounterGraph::setSelected);
     connect(graph, QOverload<bool>::of(&CounterGraph::selectionChanged), item, &QCPPlottableLegendItem::setSelected);
@@ -94,9 +98,53 @@ bool CounterPlot::removeGraph(int index)
 int CounterPlot::clearGraphs()
 {
     int c = mGraphs.size();
-    for (int i = c - 1; i >= 0; --i)
-      removeGraph(i);
+    for (int i = c - 1; i >= 0; --i) {
+        removeGraph(i);
+    }
     return c;
+}
+
+void CounterPlot::updateYAxesTickVisible()
+{
+    bool leftTickVisible = false, rightTickVisible = false;
+    for (int i = 0; i < graphCount(); ++i) {
+        CounterGraph *cg = graph(i);
+        if (cg->isLeftValueAxis()) {
+            leftTickVisible = true;
+        } else {
+            rightTickVisible = true;
+        }
+        if (leftTickVisible && rightTickVisible) {
+            break;
+        }
+    }
+
+    yAxis->setTicks(leftTickVisible);
+    yAxis->setTickLabels(leftTickVisible);
+    yAxis2->setTicks(rightTickVisible);
+    yAxis2->setTickLabels(rightTickVisible);
+}
+
+void CounterPlot::rescaleXAxis(bool onlyVisiblePlottables)
+{
+    xAxis->rescale(onlyVisiblePlottables);
+}
+
+void CounterPlot::rescaleYAxes(bool onlyVisiblePlottables)
+{
+    yAxis->rescale(onlyVisiblePlottables);
+    QCPRange range = yAxis->range();
+    double delta = range.size() * 0.01;
+    range.lower -= delta;
+    range.upper += delta;
+    yAxis->setRange(range);
+
+    yAxis2->rescale(onlyVisiblePlottables);
+    range = yAxis2->range();
+    delta = range.size() * 0.01;
+    range.lower -= delta;
+    range.upper += delta;
+    yAxis2->setRange(range);
 }
 
 bool CounterPlot::hasSelectedGraphs() const
@@ -174,7 +222,9 @@ void CounterPlot::mousePressEvent(QMouseEvent *event)
             mMousePressPos = event->pos();
             return;
         }
-        if ((mCommentItem = commentItemAt(event->pos(), true)) != nullptr) {
+        if ((mCommentItem = commentItemAt(event->pos(), true)) != nullptr ||
+            QApplication::keyboardModifiers() & Qt::ShiftModifier)
+        {
             mDragStartPos = event->pos();
             return;
         }
@@ -217,7 +267,7 @@ void CounterPlot::mouseMoveEvent(QMouseEvent *event)
         dataStream << mDragStartPos - rect.topLeft();
 
         QMimeData *mimeData = new QMimeData();
-        mimeData->setData(MIME_TYPE_LEGEND_DRAGGING, itemData);
+        mimeData->setData(sMimeTypeDragLegend, itemData);
 
         QDrag *drag = new QDrag(this);
         drag->setMimeData(mimeData);
@@ -234,13 +284,25 @@ void CounterPlot::mouseMoveEvent(QMouseEvent *event)
         dataStream << mDragStartPos - mCommentItem->position->pixelPosition().toPoint();
 
         QMimeData *mimeData = new QMimeData();
-        mimeData->setData(MIME_TYPE_COMMENT_DRAGGING, itemData);
+        mimeData->setData(sMimeTypeDragComment, itemData);
 
         QDrag *drag = new QDrag(this);
         drag->setMimeData(mimeData);
         drag->setPixmap(pixmap);
         drag->setHotSpot(hotSpot);
         drag->exec();
+    } else if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
+        QPixmap pixmap = toPixmap();
+        double scaleRatio = double(160) / pixmap.width();
+
+        QMimeData *mimeData = new QMimeData();
+        mimeData->setData(sMimeTypeDragPlot, QByteArray()); // The data part is useless
+
+        QDrag *drag = new QDrag(window());
+        drag->setMimeData(mimeData);
+        drag->setPixmap(pixmap.scaledToWidth(160, Qt::SmoothTransformation));
+        drag->setHotSpot(event->pos() * scaleRatio);
+        drag->exec(Qt::CopyAction);
     }
 }
 
@@ -273,17 +335,19 @@ void CounterPlot::wheelEvent(QWheelEvent *event)
 void CounterPlot::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->source() == this &&
-        (event->mimeData()->hasFormat(MIME_TYPE_LEGEND_DRAGGING) ||
-         event->mimeData()->hasFormat(MIME_TYPE_COMMENT_DRAGGING)))
+        (event->mimeData()->hasFormat(sMimeTypeDragLegend) ||
+         event->mimeData()->hasFormat(sMimeTypeDragComment)))
     {
+        event->acceptProposedAction();
+    } else if (event->source() != window() && event->mimeData()->hasFormat(sMimeTypeDragPlot)) {
         event->acceptProposedAction();
     }
 }
 
 void CounterPlot::dropEvent(QDropEvent *event)
 {
-    if (event->mimeData()->hasFormat(MIME_TYPE_LEGEND_DRAGGING)) {
-        QByteArray itemData = event->mimeData()->data(MIME_TYPE_LEGEND_DRAGGING);
+    if (event->mimeData()->hasFormat(sMimeTypeDragLegend)) {
+        QByteArray itemData = event->mimeData()->data(sMimeTypeDragLegend);
         QDataStream dataStream(&itemData, QIODevice::ReadOnly);
         QPoint offset;
         dataStream >> offset;
@@ -297,8 +361,8 @@ void CounterPlot::dropEvent(QDropEvent *event)
                                        (newPos.y() - insetLayoutRect.top())/insetLayoutRect.height(),
                                        0, 0));
         replot(rpQueuedReplot);
-    } else if (event->mimeData()->hasFormat(MIME_TYPE_COMMENT_DRAGGING)) {
-        QByteArray itemData = event->mimeData()->data(MIME_TYPE_COMMENT_DRAGGING);
+    } else if (event->mimeData()->hasFormat(sMimeTypeDragComment)) {
+        QByteArray itemData = event->mimeData()->data(sMimeTypeDragComment);
         QDataStream dataStream(&itemData, QIODevice::ReadOnly);
         QPoint offset;
         dataStream >> offset;
@@ -308,6 +372,25 @@ void CounterPlot::dropEvent(QDropEvent *event)
         mCommentItem->updateLineStartAnchor();
 
         replot(rpQueuedReplot);
+    } else if (event->mimeData()->hasFormat(sMimeTypeDragPlot)) {
+        // We don't call the corresponding handler in this dropEvent, because the handler may block this
+        // event (e.g. calling QMessageBox::exec) which may cause some problems. Instead, we do the actual
+        // work in the next iteration of the event loop.
+        PlotWindow *plotWnd = qobject_cast<PlotWindow *>(window());
+        QTimer *tempTimer = new QTimer();
+        tempTimer->setInterval(0);
+        tempTimer->setSingleShot(true);
+
+        // Use QSignalMapper to pass event source as the parameter of slot when QTimer::timeout emitted.
+        QSignalMapper *signalMapper = new QSignalMapper(tempTimer);
+        // If the source of the drag operation is a widget in this application, event->source() returns
+        // that source; otherwise it returns 0.
+        signalMapper->setMapping(tempTimer, event->source());
+        connect(tempTimer, &QTimer::timeout, signalMapper, QOverload<void>::of(&QSignalMapper::map));
+        connect(tempTimer, &QTimer::timeout, tempTimer, &QTimer::deleteLater);
+        connect(signalMapper, QOverload<QObject *>::of(&QSignalMapper::mapped), plotWnd, &PlotWindow::addGraphsFromOtherPlotWindow);
+
+        tempTimer->start();
     }
 }
 

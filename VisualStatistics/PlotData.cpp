@@ -22,9 +22,17 @@ QVector<double> PlotData::dateTimeVector() const
     return mDateTimeVector;
 }
 
-int PlotData::dataCount() const
+int PlotData::size() const
 {
     return mDataMap.size();
+}
+
+int PlotData::dataCount() const
+{
+    if (mDataMap.isEmpty()) {
+        return 0;
+    }
+    return mDataMap.first().data.size();
 }
 
 QDateTime PlotData::dateTimeFromKey(double key) const

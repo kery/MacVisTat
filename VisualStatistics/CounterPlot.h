@@ -16,11 +16,14 @@ public:
     CounterPlot(QWidget *parent = nullptr);
     ~CounterPlot();
 
-    CounterGraph * addGraph();
+    CounterGraph * addGraph(bool leftValueAxis=true);
     CounterGraph * graph(int index) const;
     bool removeGraph(CounterGraph *graph);
     bool removeGraph(int index);
     int clearGraphs();
+    void updateYAxesTickVisible();
+    void rescaleXAxis(bool onlyVisiblePlottables=false);
+    void rescaleYAxes(bool onlyVisiblePlottables=false);
     bool hasSelectedGraphs() const;
     int selectedGraphCount() const;
     QList<CounterGraph *> selectedGraphs() const;
@@ -36,6 +39,10 @@ private:
     virtual void dragEnterEvent(QDragEnterEvent *event) override;
     virtual void dropEvent(QDropEvent *event) override;
     virtual bool event(QEvent *event) override;
+
+    static QString sMimeTypeDragLegend;
+    static QString sMimeTypeDragComment;
+    static QString sMimeTypeDragPlot;
 
     void invalidateDragStartPos();
     bool hasValidDragStartPos() const;
