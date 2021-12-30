@@ -244,15 +244,11 @@ void KpiKciFileParser::getEndTime_handler(void *ud, const char *name, const char
 QString KpiKciFileParser::getEndTime(const QString &path)
 {
     QString fileName = QFileInfo(path).fileName();
-    if (fileName.startsWith('A')) {
-        QRegularExpressionMatch match = mRegExpTypeA.match(fileName);
-        if (match.hasMatch()) {
-            QString dateTime = match.captured(1);
-            dateTime.replace(9, 4, match.captured(3));
-            QStringRef offsetFromUtc = match.capturedRef(2);
-            return toIsoDateFormat(std::move(dateTime), offsetFromUtc);
-        }
-    } else if (fileName.startsWith('C')) {
+    // Date part of end time is not present in file name when type is "A" and
+    // the file may cross two days (e.g. 23:45:00 ~ 00:00:00), in such case the
+    // date is the day after the date in begin time. To simplify, get the end time
+    // from file content in case type is "A".
+    if (fileName.startsWith('C')) {
         QRegularExpressionMatch match = mRegExpTypeC.match(fileName);
         if (match.hasMatch()) {
             QString endTime = match.captured(3);
