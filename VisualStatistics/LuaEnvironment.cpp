@@ -190,10 +190,7 @@ int LuaEnvironment::addGraph(lua_State *L)
 int LuaEnvironment::updatePlot(lua_State *L)
 {
     PlotWindow *plotWnd = plotWindow(L);
-    int rescaleY = lua_toboolean(L, 1);
-    if (rescaleY) {
-        plotWnd->ui->plot->rescaleYAxes();
-    }
+    plotWnd->ui->plot->rescaleYAxes();
     plotWnd->ui->plot->replot(QCustomPlot::rpQueuedReplot);
     return 0;
 }

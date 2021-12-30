@@ -25,10 +25,9 @@ AutoCompletionSrcPlotAPIs::AutoCompletionSrcPlotAPIs(QsciLexer *lexer) :
         "elements' index is represented as the key of the graph. The optional parameters\n"
         "'r', 'g', 'b' will be used as the color of the graph.",
 
-        "update(rescaleY)\n"
-        "Refreshes the plot. It is necessary to call this function after adding one or\n"
-        "more new graphs. If the optional parameter 'rescaleY' is set to true then the y axis\n"
-        "will be rescaled if necessary."
+        "update()\n"
+        "Updates the plot. It is necessary to call this function after adding one or\n"
+        "more new graphs."
     }
 {
     for (const QString &apiInfo : qAsConst(mApiInfos)) {

@@ -65,10 +65,10 @@ function plot.add_graph(name, data, r, g, b)
 Adds a new graph in plot window with 'name'. The parameter 'data' is an array, the elements' index is represented as the key of the graph. The optional parameters *r*, *g*, *b* will be used as the color of the graph.
 
 ```lua
-function plot.update(rescaleY)
+function plot.update()
 ```
 
-Refreshes the plot area. It is necessary to call this function after adding one or more new graphs. If the optional parameter 'rescaleY' is set to `true` then the *y* axis will be rescaled if necessary.
+Updates the plot. It is necessary to call this function after adding one or more new graphs.
 
 ```lua
 function print(text)
