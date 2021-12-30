@@ -88,7 +88,7 @@ for key=0, plot.get_lastkey() do
     data[key] = plot.get_value(0, key, 0) + plot.get_value(1, key, 0)
 end
 plot.add_graph("graph_sum", data)
-plot.update(true)
+plot.update()
 ```
 
 Add a new graph with blue color and its values are the first graph's value divided by 1000.
@@ -99,6 +99,6 @@ for key=0, plot.get_lastkey() do
     data[key] = plot.get_value(0, key, 0)/1000
 end
 plot.add_graph("divide_1000", data, 0, 0, 255)
-plot.update(true)
+plot.update()
 ```
 

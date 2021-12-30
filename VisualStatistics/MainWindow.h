@@ -34,7 +34,7 @@ private slots:
     void actionRecentFileTriggered();
     void actionFilterTriggered();
     void actionClearFilterHistoryTriggered();
-    void actionEditFilterFileTriggered();
+    void actionEditFilterMenuTriggered();
     void actionPlotTriggered();
     void actionPlotSeparatelyTriggered();
     void actionOptionsTriggered();
@@ -49,7 +49,7 @@ private slots:
     void counterNameViewDoubleClicked(const QModelIndex &index);
     void updateModuleNameColor();
     void listViewCtxMenuRequest(const QPoint &pos);
-    void filterFileChanged();
+    void filterMenuFileChanged();
     void downloadCounterDescriptionFinished();
     void checkUpdateFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void checkUpdateFailed(QProcess::ProcessError error);
@@ -68,7 +68,7 @@ private:
     void updateCaseSensitiveButtonFont();
     void initRecentFileActions();
     void updateRecentFileActions(const QStringList &recentFiles);
-    void loadFavoriteFilterMenu();
+    void loadFilterMenu();
     void addFilterAction(QMenu *menu, const QString &line);
     void loadFilterHistory();
     void saveFilterHistory();
@@ -94,7 +94,7 @@ private:
     void appendErrorLog(const QString &text);
 
     enum FilePath {
-        fpFavoriteFilter,
+        fpFilterMenu,
         fpFilterHistory,
         fpCounterDescription,
         fpMaintenanceTool,
@@ -111,7 +111,7 @@ private:
     QString mLogDateTimeFmt;
     std::array<QAction*, 10> mRecentFileActions;
     QTimer mFilterMenuReloadTimer;
-    QFileSystemWatcher mFilterFileWatcher;
+    QFileSystemWatcher mFilterMenuFileWatcher;
     ResizeManager mResizeMan;
     CounterDescription mCounterDesc;
 };

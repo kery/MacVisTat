@@ -60,12 +60,12 @@ MainWindow::MainWindow() :
     connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::actionHelpTriggered);
     connect(ui->actionChangeLog, &QAction::triggered, this, &MainWindow::actionChangeLogTriggered);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::actionAboutTriggered);
-    connect(&mFilterFileWatcher, &QFileSystemWatcher::fileChanged, &mFilterMenuReloadTimer, QOverload<>::of(&QTimer::start));
-    connect(&mFilterMenuReloadTimer, &QTimer::timeout, this, &MainWindow::filterFileChanged);
+    connect(&mFilterMenuFileWatcher, &QFileSystemWatcher::fileChanged, &mFilterMenuReloadTimer, QOverload<>::of(&QTimer::start));
+    connect(&mFilterMenuReloadTimer, &QTimer::timeout, this, &MainWindow::filterMenuFileChanged);
 
     initRecentFileActions();
     updateRecentFileActions(QStringList());
-    loadFavoriteFilterMenu();
+    loadFilterMenu();
     loadFilterHistory();
 
 #ifdef DEPLOY_VISUALSTAT
@@ -149,9 +149,9 @@ void MainWindow::actionClearFilterHistoryTriggered()
     }
 }
 
-void MainWindow::actionEditFilterFileTriggered()
+void MainWindow::actionEditFilterMenuTriggered()
 {
-    QString path = filePath(fpFavoriteFilter);
+    QString path = filePath(fpFilterMenu);
     if (!QFileInfo::exists(path)) {
         QFile file(path);
         if (!file.open(QIODevice::WriteOnly)) {
@@ -174,8 +174,8 @@ void MainWindow::actionEditFilterFileTriggered()
 
     // If the file is deleted or removed, the watching will stop. So, it's better to check if the watching
     // is still working, add it again if not.
-    if (mFilterFileWatcher.files().isEmpty()) {
-        mFilterFileWatcher.addPath(path);
+    if (mFilterMenuFileWatcher.files().isEmpty()) {
+        mFilterMenuFileWatcher.addPath(path);
     }
 
     QDesktopServices::openUrl(path);
@@ -294,11 +294,11 @@ void MainWindow::listViewCtxMenuRequest(const QPoint &pos)
     menu->popup(view->mapToGlobal(pos));
 }
 
-void MainWindow::filterFileChanged()
+void MainWindow::filterMenuFileChanged()
 {
     ui->menuFilter->clear();
-    loadFavoriteFilterMenu();
-    appendInfoLog(QStringLiteral("finished reloading favorite filters"));
+    loadFilterMenu();
+    appendInfoLog(QStringLiteral("finished reloading filter menu"));
 }
 
 void MainWindow::downloadCounterDescriptionFinished()
@@ -527,7 +527,7 @@ void MainWindow::updateRecentFileActions(const QStringList &recentFiles)
     }
 }
 
-void MainWindow::loadFavoriteFilterMenu()
+void MainWindow::loadFilterMenu()
 {
     int numSpaces;
     QStack<int> levelStack;
@@ -535,9 +535,9 @@ void MainWindow::loadFavoriteFilterMenu()
     QString preLine, curLine;
     QTextStream ts;
 
-    QFile file(filePath(fpFavoriteFilter));
+    QFile file(filePath(fpFilterMenu));
     if (!file.open(QIODevice::ReadOnly)) {
-        goto _return_;
+        goto lbReturn;
     }
     ts.setDevice(&file);
 
@@ -573,14 +573,14 @@ void MainWindow::loadFavoriteFilterMenu()
         addFilterAction(menuStack.top(), preLine);
     }
 
-_return_:
+lbReturn:
     if (!ui->menuFilter->isEmpty()) {
         ui->menuFilter->addSeparator();
     }
     QAction *actionClear = ui->menuFilter->addAction(QStringLiteral("Clear Filter History"), this, &MainWindow::actionClearFilterHistoryTriggered);
-    actionClear->setStatusTip(QStringLiteral("Clear filter history"));
-    QAction *actionEdit = ui->menuFilter->addAction(QStringLiteral("Edit Favorite Filters"), this, &MainWindow::actionEditFilterFileTriggered);
-    actionEdit->setStatusTip(QStringLiteral("Open favorite filter file for edit"));
+    actionClear->setStatusTip(actionClear->text());
+    QAction *actionEdit = ui->menuFilter->addAction(QStringLiteral("Edit Filter Menu"), this, &MainWindow::actionEditFilterMenuTriggered);
+    actionEdit->setStatusTip(actionEdit->text());
 }
 
 void MainWindow::addFilterAction(QMenu *menu, const QString &line)
@@ -850,12 +850,12 @@ QString MainWindow::filePath(FilePath fp)
     QDir dir = QDir::home();
 
     switch (fp) {
-    case fpFavoriteFilter:
-        return dir.filePath(QStringLiteral(".vstat_filter_favorite.txt"));
+    case fpFilterMenu:
+        return dir.filePath(QStringLiteral(".vstat_filter_menu.txt"));
     case fpFilterHistory:
         return dir.filePath(QStringLiteral(".vstat_filter_hist"));
     case fpCounterDescription:
-        return dir.filePath(QStringLiteral(".vstat_stat_desc"));
+        return dir.filePath(QStringLiteral(".vstat_counter_desc"));
     case fpMaintenanceTool:
         dir.setPath(QApplication::applicationDirPath());
         return dir.absoluteFilePath(QStringLiteral("maintenancetool.exe"));
