@@ -2,8 +2,8 @@
 <Package>
     <DisplayName>Libraries</DisplayName>
     <Description>Install the required libriaries of VisualStatistics</Description>
-    <Version>1.0.0.2</Version>
-    <ReleaseDate>2019-08-16</ReleaseDate>
+    <Version>1.0.0.3</Version>
+    <ReleaseDate>2022-01-04</ReleaseDate>
     <Default>true</Default>
     <ForcedInstallation>true</ForcedInstallation>
 </Package>
