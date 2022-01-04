@@ -22,13 +22,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="hideTimeGapCheckBox">
-     <property name="text">
-      <string>Use a red dotted line to show the new starting point in x coordinate</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QCheckBox" name="yAxis2DraggableZoomableCheckBox">
      <property name="text">
       <string>Right value axis draggable and zoomable</string>

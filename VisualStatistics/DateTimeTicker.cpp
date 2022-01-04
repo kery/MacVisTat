@@ -3,12 +3,13 @@
 #include "QCustomPlot/src/core.h"
 #include "QCustomPlot/src/plottables/plottable-graph.h"
 
-DateTimeTicker::DateTimeTicker(QCPAxis *parentAxis) :
+DateTimeTicker::DateTimeTicker(QCPAxis *parentAxis, const QVector<double> *dateTimeVector) :
     mUtcDisplay(false),
     mSkippedTicks(-1),
     mOffsetFromUtc(0),
     mDateTimeFmt(DTFMT_DISPLAY),
-    mParentAxis(parentAxis)
+    mParentAxis(parentAxis),
+    mDateTimeVector(dateTimeVector)
 {
     mParentAxis->setTickLabelRotation(90);
 }
@@ -31,11 +32,6 @@ void DateTimeTicker::setUtcDisplay(bool on)
 void DateTimeTicker::setOffsetFromUtc(int offset)
 {
     mOffsetFromUtc = offset;
-}
-
-void DateTimeTicker::setDateTimeVector(QVector<double> &&dtv)
-{
-    mDateTimeVector.swap(dtv);
 }
 
 bool DateTimeTicker::setBeginDateTime(const QDateTime &dateTime)
@@ -114,17 +110,13 @@ QVector<double> DateTimeTicker::createTickVector(double /*tickStep*/, const QCPR
 QDateTime DateTimeTicker::dateTimeFromKey(double key) const
 {
     QDateTime dateTime;
-    if (mDateTimeVector.isEmpty()) {
-        dateTime = QDateTime::fromSecsSinceEpoch(key);
-    } else {
-        int index = static_cast<int>(key);
-        if (index >= 0 && index < mDateTimeVector.size()) {
-            dateTime = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
+    int index = static_cast<int>(key);
+    if (index >= 0 && index < mDateTimeVector->size()) {
+        dateTime = QDateTime::fromSecsSinceEpoch(mDateTimeVector->at(index));
+        if (mUtcDisplay) {
+            dateTime.setOffsetFromUtc(mOffsetFromUtc);
+            return dateTime.toUTC();
         }
-    }
-    if (!dateTime.isNull() && mUtcDisplay) {
-        dateTime.setOffsetFromUtc(mOffsetFromUtc);
-        return dateTime.toUTC();
     }
     return dateTime;
 }
@@ -138,12 +130,9 @@ double DateTimeTicker::dateTimeToKey(const QDateTime &dateTime) const
     } else {
         localTime = dateTime;
     }
-    if (mDateTimeVector.isEmpty()) {
-        return localTime.toSecsSinceEpoch();
-    }
-    auto iter = std::upper_bound(mDateTimeVector.constBegin(), mDateTimeVector.constEnd(), localTime.toSecsSinceEpoch());
-    if (iter != mDateTimeVector.end()) {
-        return iter - mDateTimeVector.begin() - 1;
+    auto iter = std::upper_bound(mDateTimeVector->constBegin(), mDateTimeVector->constEnd(), localTime.toSecsSinceEpoch());
+    if (iter != mDateTimeVector->end()) {
+        return iter - mDateTimeVector->begin() - 1;
     }
     return -1;
 }

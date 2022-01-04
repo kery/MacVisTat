@@ -141,7 +141,7 @@ int LuaEnvironment::addGraph(lua_State *L)
     luaL_argcheck(L, !plotWnd->mPlotData.contains(name), 1, "graph name already exists");
     luaL_checktype(L, 2, LUA_TTABLE);
 
-    if (plotWnd->mPlotData.size() == 0) {
+    if (plotWnd->mPlotData.counterCount() == 0) {
         luaL_error(L, "cannot add graph if currently plot is empty");
     }
 

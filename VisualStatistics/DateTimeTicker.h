@@ -10,13 +10,12 @@ class DateTimeTicker : public QObject, public QCPAxisTicker
     Q_OBJECT
 
 public:
-    DateTimeTicker(QCPAxis *parentAxis);
+    DateTimeTicker(QCPAxis *parentAxis, const QVector<double> *dateTimeVector);
 
     int skippedTicks() const;
     bool utcDisplay() const;
     void setUtcDisplay(bool on);
     void setOffsetFromUtc(int offset);
-    void setDateTimeVector(QVector<double> &&dtv);
     bool setBeginDateTime(const QDateTime &dateTime);
     bool setEndDateTime(const QDateTime &dateTime);
 
@@ -38,7 +37,7 @@ private:
     int mOffsetFromUtc;
     QString mDateTimeFmt;
     QCPAxis *mParentAxis;
-    QVector<double> mDateTimeVector;
+    const QVector<double> *mDateTimeVector;
     QDateTime mBeginDateTime, mEndDateTime;
 };
 

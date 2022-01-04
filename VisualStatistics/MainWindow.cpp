@@ -770,24 +770,19 @@ void MainWindow::parseCounterFileData(bool multiWnd)
         MessageBeep(MB_ICONERROR);
         appendErrorLog(error);
     } else if (!canceled) {
-        QSettings setting;
-        PlotData::KeyType keyType = PlotData::ktDateTime;
-        if (setting.value(OptionsDialog::sKeyHideTimeGap, OptionsDialog::sKeyHideTimeGap).toBool()) {
-            keyType = PlotData::ktIndex;
-        }
         PlotData plotData(mOffsetFromUtc);
-        plotData.setCounterDataMap(keyType, dataMap);
+        plotData.setCounterDataMap(dataMap);
         processPlotData(plotData, multiWnd);
     }
 }
 
 void MainWindow::processPlotData(PlotData &plotData, bool multiWnd)
 {
-    if (multiWnd && plotData.size() > 1) {
+    if (multiWnd && plotData.counterCount() > 1) {
         QSettings setting;
         bool ignoreConstant = setting.value(OptionsDialog::sKeyIgnoreConstant, OptionsDialog::sDefIgnoreConstant).toBool();
         std::unique_ptr<PlotData[]> plotDataPtr = plotData.split();
-        for (int i = 0; i < plotData.size(); ++i) {
+        for (int i = 0; i < plotData.counterCount(); ++i) {
             if (ignoreConstant && CounterData::isConstant(plotDataPtr[i].firstCounterData())) {
                 appendInfoLog("ignored constant counter " + plotDataPtr[i].firstCounterName());
                 continue;

@@ -2,14 +2,8 @@
 #include "GlobalDefines.h"
 
 PlotData::PlotData(int offsetFromUtc) :
-    mKeyType(ktUnknown),
     mOffsetFromUtc(offsetFromUtc)
 {
-}
-
-PlotData::KeyType PlotData::keyType() const
-{
-    return mKeyType;
 }
 
 int PlotData::offsetFromUtc() const
@@ -17,50 +11,23 @@ int PlotData::offsetFromUtc() const
     return mOffsetFromUtc;
 }
 
-QVector<double> PlotData::dateTimeVector() const
-{
-    return mDateTimeVector;
-}
-
-int PlotData::size() const
+int PlotData::counterCount() const
 {
     return mDataMap.size();
 }
 
-int PlotData::dataCount() const
+int PlotData::counterDataCount() const
 {
-    if (mDataMap.isEmpty()) {
-        return 0;
-    }
+    if (mDataMap.isEmpty()) { return 0; }
     return mDataMap.first().data.size();
 }
 
-QDateTime PlotData::dateTimeFromKey(double key) const
+QDateTime PlotData::getDateTime(double key) const
 {
     QDateTime result;
-    if (mKeyType == ktDateTime) {
-        result = QDateTime::fromSecsSinceEpoch(key);
-    } else {
-        int index = static_cast<int>(key);
-        if (index >= 0 && index < mDateTimeVector.size()) {
-            result = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
-        }
-    }
-    return result;
-}
-
-QDateTime PlotData::dateTimeFromIndex(int index) const
-{
-    QDateTime result;
-    if (mKeyType == ktDateTime) {
-        const QCPGraphDataContainer &data = mDataMap.first().data;
-        if (index >= 0 && index < data.size()) {
-            result = QDateTime::fromSecsSinceEpoch(data.at(index)->key);
-        }
-    } else {
-        if (index >= 0 && index < mDateTimeVector.size()) {
-            result = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
-        }
+    int index = static_cast<int>(key);
+    if (index >= 0 && index < mDateTimeVector.size()) {
+        result = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
     }
     return result;
 }
@@ -68,38 +35,33 @@ QDateTime PlotData::dateTimeFromIndex(int index) const
 double PlotData::getSampleInterval() const
 {
     double interval = std::numeric_limits<double>::max();
-    if (mKeyType == ktIndex) {
-        for (int i = 1; i < mDateTimeVector.size(); ++i) {
-            double diff = mDateTimeVector[i] - mDateTimeVector[i - 1];
-            if (diff < interval) {
-                interval = diff;
-            }
+    for (int i = 1; i < mDateTimeVector.size(); ++i) {
+        double diff = mDateTimeVector[i] - mDateTimeVector[i - 1];
+        if (diff < interval) {
+            interval = diff;
         }
     }
     return interval;
 }
 
-void PlotData::setCounterDataMap(KeyType keyType, CounterDataMap &dataMap)
+void PlotData::setCounterDataMap(CounterDataMap &dataMap)
 {
-    if (keyType == ktIndex) {
-        const CounterData &cdata = dataMap.first();
-        mDateTimeVector.resize(cdata.data.size());
-        for (int i = 0; i < mDateTimeVector.size(); ++i) {
-            mDateTimeVector[i] = cdata.data.at(i)->key;
-        }
-        for (CounterData &cdata : dataMap) {
-            QSet<double> sptKeys;
-            for (auto begin = cdata.data.begin(), end = cdata.data.end(), iter = begin; iter != end; ++iter) {
-                int index = iter - begin;
-                if (cdata.suspectKeys.contains(iter->key)) {
-                    sptKeys.insert(index);
-                }
-                iter->key = index;
-            }
-            cdata.suspectKeys.swap(sptKeys);
-        }
+    const CounterData &cdata = dataMap.first();
+    mDateTimeVector.resize(cdata.data.size());
+    for (int i = 0; i < mDateTimeVector.size(); ++i) {
+        mDateTimeVector[i] = cdata.data.at(i)->key;
     }
-    mKeyType = keyType;
+    for (CounterData &cdata : dataMap) {
+        QSet<double> sptKeys;
+        for (auto begin = cdata.data.begin(), iter = begin; iter != cdata.data.end(); ++iter) {
+            int index = iter - begin;
+            if (cdata.suspectKeys.contains(iter->key)) {
+                sptKeys.insert(index);
+            }
+            iter->key = index;
+        }
+        cdata.suspectKeys.swap(sptKeys);
+    }
     mDataMap.swap(dataMap);
 }
 
@@ -108,17 +70,15 @@ QList<QString> PlotData::counterNames() const
     return mDataMap.keys();
 }
 
-QString PlotData::firstCounterName() const
-{
-    if (mDataMap.isEmpty()) {
-        return QString();
-    }
-    return mDataMap.firstKey();
-}
-
 bool PlotData::contains(const QString &name) const
 {
     return mDataMap.contains(name);
+}
+
+QString PlotData::firstCounterName() const
+{
+    if (mDataMap.isEmpty()) { return QString(); }
+    return mDataMap.firstKey();
 }
 
 QSharedPointer<QCPGraphDataContainer> PlotData::firstCounterData()
@@ -181,12 +141,16 @@ std::unique_ptr<PlotData[]> PlotData::split()
     int i = 0;
     std::unique_ptr<PlotData[]> result(new PlotData[mDataMap.size()]);
     for (auto iter = mDataMap.begin(); iter != mDataMap.end(); ++iter, ++i) {
-        result[i].mKeyType = mKeyType;
         result[i].mOffsetFromUtc = mOffsetFromUtc;
         result[i].mDateTimeVector = mDateTimeVector;
         result[i].mDataMap[iter.key()] = std::move(iter.value());
     }
     return result;
+}
+
+const QVector<double> * PlotData::dateTimeVector() const
+{
+    return &mDateTimeVector;
 }
 
 PlotData::PlotData()

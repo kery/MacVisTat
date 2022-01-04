@@ -28,6 +28,7 @@ PlotWindow::PlotWindow(PlotData &plotData) :
 {
     ui->setupUi(this);
     if (!isValidOffsetFromUtc(mPlotData.offsetFromUtc())) { ui->actionDisplayUtc->setEnabled(false); }
+
     setupPlot();
     setupDateTimeEdits();
     mValueTip = new ValueTipItem(ui->plot);
@@ -61,17 +62,13 @@ void PlotWindow::setCounterDescription(CounterDescription *desc)
 void PlotWindow::addGraphsFromOtherPlotWindow(QObject *src)
 {
     PlotWindow *srcWnd = qobject_cast<PlotWindow *>(src);
-    if (mPlotData.dataCount() != srcWnd->mPlotData.dataCount()) {
+    if (mPlotData.counterDataCount() != srcWnd->mPlotData.counterDataCount()) {
         showErrorMsgBox(this, QStringLiteral("Can't add graphs which have different number of keys!"));
-        return;
-    }
-    if (mPlotData.keyType() != srcWnd->mPlotData.keyType()) {
-        showErrorMsgBox(this, QStringLiteral("Can't add graphs which have different type of key!"));
         return;
     }
 
     int numAdded = 0;
-    QVector<QCPGraphData> dataVector(mPlotData.dataCount());
+    QVector<QCPGraphData> dataVector(mPlotData.counterDataCount());
     for (int i = 0; i < srcWnd->ui->plot->graphCount(); ++i) {
         CounterGraph *graph = srcWnd->ui->plot->graph(i);
         if (!graph->visible()) { continue; }
@@ -167,7 +164,7 @@ void PlotWindow::actionExportToCsvTriggered()
     fputc('\n', file);
 
     for (int i = 0; ; ++i) {
-        QDateTime dateTime = mPlotData.dateTimeFromIndex(i);
+        QDateTime dateTime = mPlotData.getDateTime(i);
         if (dateTime.isNull()) { break; }
         if (ui->actionDisplayUtc->isChecked()) {
             dateTime.setOffsetFromUtc(mPlotData.offsetFromUtc());
@@ -638,7 +635,7 @@ void PlotWindow::plotMouseMove(QMouseEvent *event)
             mValueTip->setTracerPen(graph->pen());
             mValueTip->setTracerGraph(graph);
         }
-        QDateTime dateTime = mPlotData.dateTimeFromKey(data.key);
+        QDateTime dateTime = mPlotData.getDateTime(data.key);
         if (ui->actionDisplayUtc->isChecked()) {
             dateTime.setOffsetFromUtc(mPlotData.offsetFromUtc());
             dateTime = dateTime.toUTC();
@@ -686,13 +683,11 @@ void PlotWindow::setupPlot()
     bool draggableZoomable = setting.value(OptionsDialog::sKeyYAxis2DraggableZoomable, OptionsDialog::sDefYAxis2DraggableZoomable).toBool();
     setYAxis2DraggableZoomable(draggableZoomable ? Qt::Checked : Qt::Unchecked);
 
-    auto ticker = qSharedPointerDynamicCast<DateTimeTicker>(ui->plot->xAxis->ticker());
+    DateTimeTicker *ticker = new DateTimeTicker(ui->plot->xAxis, mPlotData.dateTimeVector());
     ticker->setOffsetFromUtc(mPlotData.offsetFromUtc());
-    if (mPlotData.keyType() == PlotData::ktIndex) {
-        ticker->setDateTimeVector(mPlotData.dateTimeVector());
-    }
-    connect(ticker.data(), &DateTimeTicker::skippedTicksChanged, this, &PlotWindow::skippedTicksChanged);
+    connect(ticker, &DateTimeTicker::skippedTicksChanged, this, &PlotWindow::skippedTicksChanged);
 
+    ui->plot->xAxis->setTicker(QSharedPointer<QCPAxisTicker>(ticker));
     ui->plot->addLayer(ValueTipItem::sLayerName, ui->plot->legend->layer());
     ui->plot->layer(ValueTipItem::sLayerName)->setMode(QCPLayer::lmBuffered);
 
@@ -743,15 +738,12 @@ void PlotWindow::initGraphs()
 
 void PlotWindow::highlightTimeGap()
 {
-    if (mPlotData.keyType() != PlotData::ktIndex) {
-        return;
-    }
     QPen pen(Qt::red);
     pen.setStyle(Qt::DotLine);
     double interval = mPlotData.getSampleInterval();
-    QVector<double> dtVector = mPlotData.dateTimeVector();
-    for (int i = 1; i < dtVector.size(); ++i) {
-        double diff = dtVector[i] - dtVector[i - 1];
+    const QVector<double> *dateTimeVector = mPlotData.dateTimeVector();
+    for (int i = 1; i < dateTimeVector->size(); ++i) {
+        double diff = dateTimeVector->at(i) - dateTimeVector->at(i - 1);
         if (diff >= interval * 1.5) {
             QCPItemStraightLine *line = new QCPItemStraightLine(ui->plot);
             line->setPen(pen);

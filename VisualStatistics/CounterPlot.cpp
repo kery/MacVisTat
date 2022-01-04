@@ -18,14 +18,12 @@ CounterPlot::CounterPlot(QWidget *parent) :
 {
     QColor color(70, 50, 200);
     QPen pen(Qt::DashLine);
-    QSharedPointer<DateTimeTicker> ticker(new DateTimeTicker(xAxis));
     pen.setColor(color);
     selectionRect()->setPen(pen);
     color.setAlpha(30);
     selectionRect()->setBrush(color);
     axisRect()->setupFullAxesBox();
     xAxis2->setTicks(false);
-    xAxis->setTicker(ticker);
     color = legend->brush().color();
     color.setAlpha(200);
     legend->setIconSize(15, 8);
