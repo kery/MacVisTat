@@ -22,13 +22,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="yAxis2DraggableZoomableCheckBox">
-     <property name="text">
-      <string>Right value axis draggable and zoomable</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QCheckBox" name="abortConvOnFailureCheckBox">
      <property name="text">
       <string>Abort the conversion if any KPI/KCI file conversion fails</string>

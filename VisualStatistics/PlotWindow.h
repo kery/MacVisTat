@@ -23,8 +23,6 @@ public:
     void setCounterDescription(CounterDescription *desc);
     void addGraphsFromOtherPlotWindow(QObject *src);
 
-    Q_SLOT void setYAxis2DraggableZoomable(int state);
-
 private slots:
     void actionSaveTriggered();
     void actionCopyTriggered();
@@ -60,6 +58,7 @@ private:
     void setupDateTimeEdits();
     void initGraphs();
     void highlightTimeGap();
+    void updateDragZoomAttrs();
     void updateWindowTitle();
     void updatePlotTitle();
     QString defaultSaveFileName() const;

@@ -106,16 +106,6 @@ void PlotWindow::addGraphsFromOtherPlotWindow(QObject *src)
     }
 }
 
-void PlotWindow::setYAxis2DraggableZoomable(int state)
-{
-    QList<QCPAxis *> axes = { ui->plot->xAxis, ui->plot->yAxis };
-    if (state == Qt::Checked) {
-        axes.append(ui->plot->yAxis2);
-    }
-    ui->plot->axisRect()->setRangeDragAxes(axes);
-    ui->plot->axisRect()->setRangeZoomAxes(axes);
-}
-
 void PlotWindow::actionSaveTriggered()
 {
     QString path = FileDialog::getSaveFileName(this, defaultSaveFileName(), QStringLiteral("PNG File (*.png)"));
@@ -486,6 +476,8 @@ void PlotWindow::actionRemoveSelectedGraphsTriggered()
 
 void PlotWindow::selectionChanged()
 {
+    updateDragZoomAttrs();
+
     auto selectedLegendItems = ui->plot->legend->selectedItems();
     if (selectedLegendItems.size() == 1) {
         if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) && mLastSelLegItemIndex >= 0) {
@@ -679,9 +671,7 @@ void PlotWindow::editEndDateTimeChanged(const QDateTime &dateTime)
 
 void PlotWindow::setupPlot()
 {
-    QSettings setting;
-    bool draggableZoomable = setting.value(OptionsDialog::sKeyYAxis2DraggableZoomable, OptionsDialog::sDefYAxis2DraggableZoomable).toBool();
-    setYAxis2DraggableZoomable(draggableZoomable ? Qt::Checked : Qt::Unchecked);
+    updateDragZoomAttrs();
 
     DateTimeTicker *ticker = new DateTimeTicker(ui->plot->xAxis, mPlotData.dateTimeVector());
     ticker->setOffsetFromUtc(mPlotData.offsetFromUtc());
@@ -752,6 +742,36 @@ void PlotWindow::highlightTimeGap()
             line->point2->setCoords(i, 1);
         }
     }
+}
+
+void PlotWindow::updateDragZoomAttrs()
+{
+    QList<QCPAxis *> axes;
+    Qt::Orientations orien;
+    if (ui->plot->xAxis->selectedParts() != QCPAxis::spNone) {
+        orien |= Qt::Horizontal;
+        axes.append(ui->plot->xAxis);
+    }
+    if (ui->plot->yAxis->selectedParts() != QCPAxis::spNone) {
+        orien |= Qt::Vertical;
+        axes.append(ui->plot->yAxis);
+    }
+    if (ui->plot->yAxis2->selectedParts() != QCPAxis::spNone) {
+        orien |= Qt::Vertical;
+        axes.append(ui->plot->yAxis2);
+    }
+    if (!orien) {
+        orien = Qt::Horizontal | Qt::Vertical;
+    }
+    if (axes.isEmpty()) {
+        axes.append(ui->plot->xAxis);
+        axes.append(ui->plot->yAxis);
+        axes.append(ui->plot->yAxis2);
+    }
+    ui->plot->axisRect()->setRangeDrag(orien);
+    ui->plot->axisRect()->setRangeZoom(orien);
+    ui->plot->axisRect()->setRangeDragAxes(axes);
+    ui->plot->axisRect()->setRangeZoomAxes(axes);
 }
 
 void PlotWindow::updateWindowTitle()

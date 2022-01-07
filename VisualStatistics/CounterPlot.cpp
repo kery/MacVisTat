@@ -23,7 +23,11 @@ CounterPlot::CounterPlot(QWidget *parent) :
     color.setAlpha(30);
     selectionRect()->setBrush(color);
     axisRect()->setupFullAxesBox();
+    xAxis->setSelectableParts(QCPAxis::spAxis);
     xAxis2->setTicks(false);
+    xAxis2->setSelectableParts(QCPAxis::spNone);
+    yAxis->setSelectableParts(QCPAxis::spAxis);
+    yAxis2->setSelectableParts(QCPAxis::spAxis);
     color = legend->brush().color();
     color.setAlpha(200);
     legend->setIconSize(15, 8);
@@ -225,18 +229,6 @@ void CounterPlot::mousePressEvent(QMouseEvent *event)
     }
     invalidateDragStartPos();
 
-    Qt::Orientations rangeDrag;
-    if (xAxis->selectedParts() != QCPAxis::spNone || xAxis2->selectedParts() != QCPAxis::spNone) {
-        rangeDrag |= Qt::Horizontal;
-    }
-    if (yAxis->selectedParts() != QCPAxis::spNone || yAxis2->selectedParts() != QCPAxis::spNone) {
-        rangeDrag |= Qt::Vertical;
-    }
-    if (!rangeDrag) {
-        rangeDrag = Qt::Horizontal | Qt::Vertical;
-    }
-    axisRect()->setRangeDrag(rangeDrag);
-
     setSelectionRectMode(event->modifiers() & Qt::ControlModifier ? QCP::srmZoom : QCP::srmNone);
 
     QCustomPlot::mousePressEvent(event);
@@ -302,12 +294,17 @@ void CounterPlot::mouseMoveEvent(QMouseEvent *event)
 
 void CounterPlot::wheelEvent(QWheelEvent *event)
 {
-    if (event->modifiers() & Qt::ControlModifier) {
-        axisRect()->setRangeZoom(Qt::Horizontal);
-    } else if (event->modifiers() & Qt::ShiftModifier) {
-        axisRect()->setRangeZoom(Qt::Vertical);
-    } else {
-        axisRect()->setRangeZoom(Qt::Horizontal | Qt::Vertical);
+    if (xAxis->selectedParts() == QCPAxis::spNone &&
+        yAxis->selectedParts() == QCPAxis::spNone &&
+        yAxis2->selectedParts() == QCPAxis::spNone)
+    {
+        if (event->modifiers() & Qt::ControlModifier) {
+            axisRect()->setRangeZoom(Qt::Horizontal);
+        } else if (event->modifiers() & Qt::ShiftModifier) {
+            axisRect()->setRangeZoom(Qt::Vertical);
+        } else {
+            axisRect()->setRangeZoom(Qt::Horizontal | Qt::Vertical);
+        }
     }
 
     if (legend->rect().contains(event->pos())) {
