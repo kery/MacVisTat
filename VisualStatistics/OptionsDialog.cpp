@@ -21,9 +21,6 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     QSettings setting;
     ui->ignoreConstCheckBox->setChecked(setting.value(sKeyIgnoreConstant, sDefIgnoreConstant).toBool());
     ui->abortConvOnFailureCheckBox->setChecked(setting.value(sKeyAbortConvOnFailure, sDefAbortConvOnFailure).toBool());
-
-    connect(ui->ignoreConstCheckBox, &QCheckBox::stateChanged, this, &OptionsDialog::ignoreConstChkBoxStateChanged);
-    connect(ui->abortConvOnFailureCheckBox, &QCheckBox::stateChanged, this, &OptionsDialog::abortConvOnFailureChkBoxStateChanged);
 }
 
 OptionsDialog::~OptionsDialog()
@@ -37,14 +34,11 @@ bool OptionsDialog::event(QEvent *event)
     return QDialog::event(event);
 }
 
-void OptionsDialog::ignoreConstChkBoxStateChanged(int state)
+void OptionsDialog::accept()
 {
-    QSettings setting;
-    setting.setValue(sKeyIgnoreConstant, state == Qt::Checked);
-}
+    QDialog::accept();
 
-void OptionsDialog::abortConvOnFailureChkBoxStateChanged(int state)
-{
     QSettings setting;
-    setting.setValue(sKeyAbortConvOnFailure, state == Qt::Checked);
+    setting.setValue(sKeyIgnoreConstant, ui->ignoreConstCheckBox->isChecked());
+    setting.setValue(sKeyAbortConvOnFailure, ui->abortConvOnFailureCheckBox->isChecked());
 }

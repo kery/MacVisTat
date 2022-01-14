@@ -16,9 +16,7 @@ public:
 
 private:
     virtual bool event(QEvent *event) override;
-
-    Q_SLOT void ignoreConstChkBoxStateChanged(int state);
-    Q_SLOT void abortConvOnFailureChkBoxStateChanged(int state);
+    virtual void accept() override;
 
 public:
     static bool sDefIgnoreConstant;
