@@ -228,7 +228,7 @@ void MainWindow::updateCounterNameCountInfo()
     int total = model->totalCount();
     int matched = model->matchedCount();
     int displayed = model->rowCount();
-    mStatusBarLabel->setText(QStringLiteral("Counter:%1, Matched:%2, Displayed:%3").arg(total).arg(matched).arg(displayed));
+    mStatusBarLabel->setText(QStringLiteral("Total:%1, Matched:%2, Displayed:%3").arg(total).arg(matched).arg(displayed));
 }
 
 void MainWindow::updateFilterPattern()

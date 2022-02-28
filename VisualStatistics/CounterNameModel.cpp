@@ -222,7 +222,7 @@ bool CounterNameModel::canFetchMore(const QModelIndex &/*parent*/) const
 
 void CounterNameModel::fetchMore(const QModelIndex &/*parent*/)
 {
-    int newCount = qMin(mFetchedCount + 100, mMatchedIndexes.size());
+    int newCount = qMin(mFetchedCount + 1000, mMatchedIndexes.size());
 
     beginInsertRows(QModelIndex(), mFetchedCount, newCount - 1);
     mFetchedCount = newCount;
