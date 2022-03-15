@@ -1,7 +1,9 @@
 #include "ProgressDialog.h"
 #include "ui_ProgressDialog.h"
 #include <QKeyEvent>
+#if defined(Q_OS_WIN)
 #include <QWinTaskbarProgress>
+#endif
 
 ProgressDialog::ProgressDialog(QWidget *parent) :
     QDialog(parent),
@@ -13,14 +15,18 @@ ProgressDialog::ProgressDialog(QWidget *parent) :
 
     connect(ui->cancelButton, &QPushButton::clicked, this, &ProgressDialog::cancelButtonClicked);
 
+#if defined(Q_OS_WIN)
     mTaskbarButton.setWindow(parent->windowHandle());
     mTaskbarProgress = mTaskbarButton.progress();
     mTaskbarProgress->setVisible(true);
+#endif
 }
 
 ProgressDialog::~ProgressDialog()
 {
+#if defined(Q_OS_WIN)
     mTaskbarProgress->setVisible(false);
+#endif
     delete ui;
 }
 
@@ -37,21 +43,27 @@ void ProgressDialog::setCancelButtonVisible(bool visible)
 void ProgressDialog::setUndeterminable()
 {
     ui->progressBar->setRange(0, 0);
+#if defined(Q_OS_WIN)
     mTaskbarProgress->setRange(0, 0);
+#endif
 }
 
 void ProgressDialog::setRange(int min, int max)
 {
     ui->progressBar->setRange(min, max);
     ui->progressBar->setValue(min);
+#if defined(Q_OS_WIN)
     mTaskbarProgress->setRange(min, max);
     mTaskbarProgress->setValue(min);
+#endif
 }
 
 void ProgressDialog::setValue(int value)
 {
     ui->progressBar->setValue(value);
+#if defined(Q_OS_WIN)
     mTaskbarProgress->setValue(value);
+#endif
 }
 
 void ProgressDialog::cancelButtonClicked()

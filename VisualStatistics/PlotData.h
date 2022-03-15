@@ -1,6 +1,7 @@
 #ifndef PLOTDATA_H
 #define PLOTDATA_H
 
+#include <memory>
 #include "CounterData.h"
 
 typedef QMap<QString, CounterData> CounterDataMap;

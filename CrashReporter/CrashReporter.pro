@@ -11,6 +11,12 @@ HEADERS  += MainWindow.h
 
 FORMS    += MainWindow.ui
 
-TARGET = ../CrashReporter
-
 RC_FILE = CrashReporter.rc
+
+win32 {
+    TARGET = ../CrashReporter
+}
+
+unix:!macx {
+    TARGET = CrashReporter
+}

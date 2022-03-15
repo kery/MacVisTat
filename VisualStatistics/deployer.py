@@ -3,12 +3,15 @@ import sys
 import os
 import re
 
+def is_windows():
+    return sys.platform.find("win") >= 0
+
 def proj_root_dir():
     path = os.path.dirname(os.path.realpath(__file__))
     return os.path.dirname(path)
 
 def get_version():
-    proc = subprocess.Popen(["/usr/bin/git", "describe", "--tags", "--exact-match"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(["git", "describe", "--tags", "--exact-match"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
         raise Exception("get tag information failed: " + err)
@@ -34,15 +37,20 @@ def get_package_xml_file():
     return os.path.join(path, "installer", "installer", "packages", "visualstatistics", "meta", "package.xml")
 
 def check_version_existance(ver_info):
-    path = "/visualstat/win/visualstatistics/%s.%s.%s.%scontent.7z" % ver_info
-    cmd_list = ["/usr/bin/ssh", "-o", "StrictHostKeyChecking=no", "root@sdu.int.nokia-sbell.com", "test", "-f", path]
+    path = "/visualstat/"
+    if is_windows():
+        path += "win/"
+    else:
+        path += "linux/"
+    path += "visualstatistics/%s.%s.%s.%scontent.7z" % ver_info
 
+    cmd_list = ["ssh", "-o", "StrictHostKeyChecking=no", "root@sdu.int.nokia-sbell.com", "test", "-f", path]
     proc = subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
+    if proc.returncode < 0:
+        raise Exception("check version existance failed (%d): %s" % (proc.returncode, err))
     if proc.returncode == 0:
         raise Exception("version %s.%s.%s.%s already exists on remote" % ver_info)
-    if proc.returncode != 1:
-        raise Exception("check version existance failed (%d): %s" % (proc.returncode, err))
 
 def update_version_file(ver_info):
     version_file = get_version_file()
@@ -77,7 +85,9 @@ def touch_rc_file():
 
 def copy_target_file():
     src = proj_root_dir()
-    src = os.path.join(src, "build-VisualStatistics-Deploy", "VisualStatistics.exe")
+    src = os.path.join(src, "build-VisualStatistics-Deploy", "VisualStatistics")
+    if  is_windows():
+        src += ".exe"
     dest = proj_root_dir()
     dest = os.path.join(dest, "installer", "installer", "packages", "visualstatistics", "data")
     shutil.copy(src, dest)
@@ -100,20 +110,21 @@ def upload_repositry():
     ver_info = get_version()
     files = "%s*" % ".".join(ver_info)
 
-    path = "../installer/installer/repository/visualstatistics/" + files
-    dest = "root@sdu.int.nokia-sbell.com:/visualstat/win/visualstatistics"
-    proc = subprocess.Popen("/usr/bin/scp -B %s %s" % (path, dest), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    src = os.path.join(proj_root_dir(), "installer", "installer", "repository", "visualstatistics", files)
+    if is_windows():
+        dest = "root@sdu.int.nokia-sbell.com:/visualstat/win/visualstatistics"
+    else:
+        dest = "root@sdu.int.nokia-sbell.com:/visualstat/linux/visualstatistics"
 
+    proc = subprocess.Popen("scp -B %s %s" % (src, dest), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = proc.communicate()
     if proc.returncode != 0:
         raise Exception(err)
 
     print "uploading Updates.xml..."
     dest = os.path.dirname(dest)
-
-    path = "../installer/installer/repository/Updates.xml"
-    proc = subprocess.Popen(["/usr/bin/scp", "-B", path, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
+    src = os.path.join(proj_root_dir(), "installer", "installer", "repository", "Updates.xml")
+    proc = subprocess.Popen(["scp", "-B", src, dest], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
         raise Exception(err)
@@ -122,7 +133,7 @@ def restore_files():
     cwd = os.getcwd()
     os.chdir(proj_root_dir())
 
-    proc = subprocess.Popen(["/usr/bin/git", "checkout", "--", "VisualStatistics/Version.h", "installer/installer/packages/visualstatistics/meta/package.xml"],
+    proc = subprocess.Popen(["git", "checkout", "--", "VisualStatistics/Version.h", "installer/installer/packages/visualstatistics/meta/package.xml"],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate()
     if proc.returncode != 0:
@@ -147,8 +158,9 @@ if __name__ == "__main__":
         update_version_file(ver_info)
         update_package_xml_file(ver_info)
 
-        # touch the rc file to force recompile it
-        touch_rc_file()
+        if is_windows():
+            # touch the rc file to force recompile it
+            touch_rc_file()
     else:
         import shutil
 
@@ -156,4 +168,5 @@ if __name__ == "__main__":
         update_repository()
         upload_repositry()
         restore_files()
-        copy_pdb_file()
+        if is_windows():
+            copy_pdb_file()

@@ -1,12 +1,10 @@
-QT += core gui winextras widgets concurrent network printsupport
+QT += core gui widgets concurrent network printsupport
 
 CONFIG += c++11 qscintilla2
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
-DEFINES += _CRT_SECURE_NO_WARNINGS
 
 SOURCES += \
     AboutDialog.cpp \
@@ -247,30 +245,47 @@ FORMS += \
     ProgressDialog.ui \
     ScriptWindow.ui
 
-INCLUDEPATH += ../build-pcre2/ libexpat/expat/lib/
-INCLUDEPATH += breakpad/src/ breakpad/src/client/windows/handler/
+RESOURCES += \
+    VisualStatistics.qrc
 
-LIBS += -lShlwapi -lUser32
-LIBS += -L../build-pcre2/Release/ -lpcre2-8
-LIBS += -L../build-libexpat/Release/ -llibexpat
-CONFIG(debug, debug|release) {
+INCLUDEPATH += libexpat/expat/lib/ breakpad/src/
+
+win32:CONFIG(debug, debug|release) {
     LIBS += -L../build-breakpad-Debug/lib/
-} else {
+}
+
+win32:CONFIG(release, debug|release) {
     LIBS += -L../build-breakpad-Release/lib/
 
     QMAKE_CXXFLAGS_RELEASE += /Zi
     QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
 }
-LIBS += -lexception_handler -lcrash_generation_client -lcommon
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+win32 {
+    QT += winextras
+    DEFINES += _CRT_SECURE_NO_WARNINGS
+    RC_FILE = VisualStatistics.rc
+    TARGET = ../VisualStatistics
 
-RESOURCES += \
-    VisualStatistics.qrc
+    INCLUDEPATH += ../build-pcre2/
+    INCLUDEPATH += breakpad/src/client/windows/handler/
 
-RC_FILE = VisualStatistics.rc
+    LIBS += -lShlwapi -lUser32
+    LIBS += -L../build-pcre2/Release/
+    LIBS += -L../build-libexpat/Release/ -llibexpat
+    LIBS += -lexception_handler -lcrash_generation_client -lcommon
+}
 
-TARGET = ../VisualStatistics
+unix:!macx {
+    TARGET = VisualStatistics
+
+    INCLUDEPATH += pcre2/src/
+    INCLUDEPATH += breakpad/ breakpad/src/client/linux/handler/
+
+    LIBS += -L$$PWD/pcre2/.libs/
+    LIBS += -L$$PWD/libexpat/expat/lib/.libs/ -lexpat
+    LIBS += -L$$PWD/breakpad/src/client/linux/ -lbreakpad_client
+    LIBS += -lz
+}
+
+LIBS += -lpcre2-8

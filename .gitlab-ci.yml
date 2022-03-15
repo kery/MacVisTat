@@ -1,0 +1,16 @@
+variables:
+  GIT_CLEAN_FLAGS: -ffd
+
+stages:
+  - deploy
+
+linux-deploy:
+  stage: deploy
+  only:
+    - tags
+  script:
+    - python VisualStatistics/deployer.py prebuild
+    - cd build-VisualStatistics-Deploy
+    - qmake ../VisualStatistics/VisualStatistics.pro DEFINES+=DEPLOY_VISUALSTAT
+    - make && cd ..
+    - python VisualStatistics/deployer.py postbuild

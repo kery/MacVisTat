@@ -104,7 +104,9 @@ void MainWindow::actionXmlToCsvTriggered()
     QVector<QString> errors, paths = dlg.selectedFiles().toVector();
     KpiKciFileParser parser(this);
     QString outPath = parser.convertToCsv(paths, errors);
+#if defined(Q_OS_WIN)
     if (!errors.isEmpty()) { MessageBeep(MB_ICONWARNING); }
+#endif
     for (const QString &err : qAsConst(errors)) {
         appendErrorLog(err);
     }
@@ -679,7 +681,11 @@ void MainWindow::usageReport()
 void MainWindow::openCounterFile(const QString &path)
 {
     if (!mCounterFilePath.isEmpty()) {
+#if defined(Q_OS_WIN)
         if (mCounterFilePath.compare(path, Qt::CaseInsensitive)) {
+#else
+        if (mCounterFilePath.compare(path, Qt::CaseSensitive)) {
+#endif
             actionCloseFileTriggered();
         } else {
             return;
@@ -724,7 +730,9 @@ bool MainWindow::parseCounterFileHeader(const QString &path)
         }
         return true;
     }
+#if defined(Q_OS_WIN)
     MessageBeep(MB_ICONERROR);
+#endif
     appendErrorLog(error);
     return false;
 }
@@ -767,7 +775,9 @@ void MainWindow::parseCounterFileData(bool multiWnd)
     CounterFileParser parser(this);
     QString error = parser.parseData(mCounterFilePath, inm, dataMap, canceled);
     if (!error.isEmpty()) {
+#if defined(Q_OS_WIN)
         MessageBeep(MB_ICONERROR);
+#endif
         appendErrorLog(error);
     } else if (!canceled) {
         PlotData plotData(mOffsetFromUtc);

@@ -1,19 +1,13 @@
 #include "MainWindow.h"
 #include "CounterName.h"
 #include "Application.h"
+#include "Utils.h"
 #include <exception_handler.h>
 #include <QFile>
 #include <QDir>
 #include <QStyleFactory>
+#if defined(Q_OS_WIN)
 #include <Shlwapi.h>
-
-static void loadStyleSheet(QApplication &app)
-{
-    QFile file(QStringLiteral(":/qss/default.qss"));
-    if (file.open(QFile::ReadOnly)) {
-        app.setStyleSheet(file.readAll());
-    }
-}
 
 static wchar_t crashReporterPath[MAX_PATH];
 static wchar_t uploadUrl[MAX_PATH];
@@ -22,7 +16,7 @@ static void initCrashReporterPathAndUploadUrl(const Application &app)
 {
     GetModuleFileNameW(NULL, crashReporterPath, MAX_PATH);
     PathRemoveFileSpecW(crashReporterPath);
-    PathAppendW(crashReporterPath, L"CrashReporter.exe");
+    PathAppendW(crashReporterPath, L"CrashReporter.exe"));
 
     std::wstring urlStr = app.getUrl(Application::upUpload).toString().toStdWString();
     wcscpy(uploadUrl, urlStr.c_str());
@@ -50,6 +44,48 @@ static bool minidumpCallback(const wchar_t* dump_path,
     }
     return succeeded;
 }
+#else
+#include "Version.h"
+
+static char crashReporterPath[PATH_MAX];
+static char uploadUrl[PATH_MAX];
+
+static void initCrashReporterPathAndUploadUrl(const Application &app)
+{
+    QString path = QDir(Application::applicationDirPath()).filePath(QStringLiteral("CrashReporter"));
+    strcpy(crashReporterPath, path.toStdString().c_str());
+
+    strcpy(uploadUrl, app.getUrl(Application::upUpload).toString().toStdString().c_str());
+}
+
+static bool minidumpCallback(const google_breakpad::MinidumpDescriptor &descriptor,
+                             void */*context*/,
+                             bool succeeded)
+{
+    if (succeeded) {
+        pid_t pid = sys_fork();
+        if (pid == 0) { // Child process
+            const char * const argv[] = {
+                "CrashReporter",
+                "--file", descriptor.path(),
+                "--url", uploadUrl,
+                "--version", VER_FILEVERSION_STR,
+                nullptr
+            };
+            sys_execv(crashReporterPath, argv);
+        }
+    }
+    return succeeded;
+}
+#endif
+
+static void loadStyleSheet(QApplication &app)
+{
+    QFile file(QStringLiteral(":/qss/default.qss"));
+    if (file.open(QFile::ReadOnly)) {
+        app.setStyleSheet(file.readAll());
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -68,6 +104,8 @@ int main(int argc, char *argv[])
     fclose(stdin);
 
     initCrashReporterPathAndUploadUrl(app);
+
+#if defined(Q_OS_WIN)
     google_breakpad::ExceptionHandler eh(QDir::tempPath().toStdWString(),
                                          nullptr,
                                          minidumpCallback,
@@ -76,7 +114,17 @@ int main(int argc, char *argv[])
                                          MiniDumpNormal,
                                          static_cast<wchar_t *>(nullptr),
                                          nullptr);
+#else
+    google_breakpad::ExceptionHandler(google_breakpad::MinidumpDescriptor(QDir::tempPath().toStdString()),
+                                      nullptr,
+                                      minidumpCallback,
+                                      nullptr,
+                                      true,
+                                      -1);
+#endif
+
     MainWindow mainWnd;
     mainWnd.show();
+
     return app.exec();
 }

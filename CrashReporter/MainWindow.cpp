@@ -4,13 +4,15 @@
 #include <QPushButton>
 #include <QNetworkReply>
 #include <QHttpMultiPart>
+#include <QNetworkProxyQuery>
 #include <QNetworkAccessManager>
 
-MainWindow::MainWindow(const QString &path, const QString &url) :
+MainWindow::MainWindow(const QString &path, const QString &url, const QString &version) :
     QMainWindow(nullptr),
     ui(new Ui::MainWindow),
     mDumpFile(path),
-    mUrl(url)
+    mUrl(url),
+    mVersion(version)
 {
     ui->setupUi(this);
     setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint | Qt::WindowStaysOnTopHint);
@@ -45,7 +47,7 @@ void MainWindow::uploadFinished(QNetworkReply *reply)
 void MainWindow::upload()
 {
     QString dispHeader("form-data; name=\"file\"; filename=\"");
-    dispHeader += mDumpFile.fileName();
+    dispHeader += uploadFileName();
     dispHeader += "\"";
 
     QHttpPart filePart;
@@ -56,8 +58,27 @@ void MainWindow::upload()
     QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
     multiPart->append(filePart);
 
+    QNetworkProxyQuery npq(mUrl);
+    QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(npq);
     QNetworkAccessManager *netMan = new QNetworkAccessManager();
+    if (!proxies.isEmpty()) {
+        netMan->setProxy(proxies[0]);
+    }
     QNetworkReply *reply = netMan->post(QNetworkRequest(mUrl), multiPart);
     multiPart->setParent(reply);
     connect(netMan, &QNetworkAccessManager::finished, this, &MainWindow::uploadFinished);
+}
+
+QString MainWindow::uploadFileName() const
+{
+    QString result = mDumpFile.fileName();
+    if (!mVersion.isEmpty()) {
+        int pos = result.lastIndexOf('.');
+        if (pos >= 0) {
+            result.insert(pos, "_" + mVersion);
+        } else {
+            result.append("_" + mVersion);
+        }
+    }
+    return result;
 }
