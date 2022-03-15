@@ -16,7 +16,7 @@ static void initCrashReporterPathAndUploadUrl(const Application &app)
 {
     GetModuleFileNameW(NULL, crashReporterPath, MAX_PATH);
     PathRemoveFileSpecW(crashReporterPath);
-    PathAppendW(crashReporterPath, L"CrashReporter.exe"));
+    PathAppendW(crashReporterPath, L"CrashReporter.exe");
 
     std::wstring urlStr = app.getUrl(Application::upUpload).toString().toStdWString();
     wcscpy(uploadUrl, urlStr.c_str());
