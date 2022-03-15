@@ -318,6 +318,8 @@ void MainWindow::downloadCounterDescriptionFinished()
             }
             file.close();
         }
+    } else {
+        appendWarnLog("failed to download counter description file: " + reply->errorString());
     }
 
     mCounterDesc.load(file.fileName());
