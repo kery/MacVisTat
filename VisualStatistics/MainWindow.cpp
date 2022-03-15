@@ -862,7 +862,11 @@ QString MainWindow::filePath(FilePath fp)
         return dir.filePath(QStringLiteral(".vstat_counter_desc"));
     case fpMaintenanceTool:
         dir.setPath(QApplication::applicationDirPath());
+#if defined(Q_OS_WIN)
         return dir.absoluteFilePath(QStringLiteral("maintenancetool.exe"));
+#else
+        return dir.absoluteFilePath(QStringLiteral("maintenancetool"));
+#endif
     }
 
     return QString();
