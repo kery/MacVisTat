@@ -381,7 +381,7 @@ void CounterPlot::dropEvent(QDropEvent *event)
         // that source; otherwise it returns 0 (however this will not happen since we only acceptProposedAction
         // when the source is not nullptr).
         signalMapper->setMapping(tempTimer, event->source());
-        connect(tempTimer, &QTimer::timeout, signalMapper, QOverload<void>::of(&QSignalMapper::map));
+        connect(tempTimer, &QTimer::timeout, signalMapper, QOverload<>::of(&QSignalMapper::map));
         connect(tempTimer, &QTimer::timeout, tempTimer, &QTimer::deleteLater);
         connect(signalMapper, QOverload<QObject *>::of(&QSignalMapper::mapped), plotWnd, &PlotWindow::addGraphsFromOtherPlotWindow);
 

@@ -2,7 +2,9 @@
 #define PROGRESSDIALOG_H
 
 #include <QDialog>
+#if defined(Q_OS_WIN)
 #include <QWinTaskbarButton>
+#endif
 #include "ResizeManager.h"
 
 namespace Ui { class ProgressDialog; }
@@ -44,8 +46,10 @@ private:
     virtual bool event(QEvent *event) override;
 
     Ui::ProgressDialog *ui;
+#if defined(Q_OS_WIN)
     QWinTaskbarButton mTaskbarButton;
     QWinTaskbarProgress *mTaskbarProgress;
+#endif
     ResizeManager mResizeMan;
 };
 

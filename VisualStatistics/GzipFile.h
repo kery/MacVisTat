@@ -1,8 +1,13 @@
 #ifndef GZIPFILE_H
 #define GZIPFILE_H
 
+#include <QString>
 #include <string>
+#if defined(Q_OS_WIN)
 #include <QtZlib/zlib.h>
+#else
+#include <zlib.h>
+#endif
 
 class GzipFile
 {

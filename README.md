@@ -13,17 +13,17 @@ Example:
 17.12.2021;19:55:00;18;;23
 ```
 
-# Build
+# Build for Windows
 
 ## Build dependencies
 The following steps need MSVC compiler, so they should be executed in the Visual Studio Command Prompt CLI window.
 
 ### Build QScintilla
-Download QScintilla from https://riverbankcomputing.com/software/qscintilla/download and follow the instructions in doc\html\index.html to compile and install.
+Download QScintilla from https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.6/QScintilla-2.11.6.zip and follow the instructions in doc\html-Qt4Qt5\index.html to compile and install.
 
 For example:
 ```powershell
-cd src
+cd Qt4Qt5
 qmake CONFIG+=staticlib
 nmake
 nmake install
@@ -73,4 +73,43 @@ mkdir build-pcre2
 cd build-pcre2
 cmake ..\VisualStatistics\pcre2 -G "Visual Studio 15 2017 Win64" -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_SUPPORT_JIT=ON
 msbuild /m /t:pcre2-8-shared /p:Configuration=Release /p:Platform=x64 PCRE2.sln
+```
+
+# Build for Linux
+
+## Build dependencies
+
+### Build QScintilla
+Download QScintilla from https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.6/QScintilla-2.11.6.tar.gz and follow the instructions in doc\html-Qt4Qt5\index.html to compile and install.
+
+For example:
+```bash
+cd Qt4Qt5
+qmake CONFIG+=staticlib
+make
+make install
+```
+
+### Build breakpad
+```bash
+cd VisualStatistics/breakpad
+git clone https://chromium.googlesource.com/linux-syscall-support src/third_party/lss
+./configure
+make
+```
+
+### Build libexpat
+```bash
+cd VisualStatistics/libexpat/expat
+./buildconf.sh
+./configure
+make
+```
+
+### Build pcre2
+```bash
+cd VisualStatistics/pcre2
+./autogen.sh
+./configure
+make
 ```

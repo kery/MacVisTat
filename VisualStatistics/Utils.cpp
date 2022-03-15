@@ -1,6 +1,7 @@
 #include "Utils.h"
 #include "GlobalDefines.h"
 #include <sstream>
+#include <cmath>
 
 std::string doubleToStdString(double value)
 {
