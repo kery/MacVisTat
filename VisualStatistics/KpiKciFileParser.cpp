@@ -415,16 +415,9 @@ void KpiKciFileParser::mergeHeaderResult(HeaderResult &finalResult, const Header
             ObjLdnMap &finalObjMap = finalResult.infoIdMap[iter->first];
             for (auto iterInner = iter->second.begin(); iterInner != iter->second.end(); ++iterInner) {
                 std::set<std::string> &measTypes = finalObjMap[iterInner->first];
-                if (measTypes.empty()) {
+                if (measTypes != iterInner->second) {
                     measTypes.insert(iterInner->second.begin(), iterInner->second.end());
-                } else if (measTypes.size() != iterInner->second.size()) {
-                    finalResult.errors.append(QStringLiteral("failed to merge header in %1: '%2' has different number of measType")
-                                              .arg(QDir::toNativeSeparators(intermResult.paths.first()),
-                                                   QString::fromStdString(iterInner->first)));
-                    finalResult.paths.append(intermResult.paths);
                 }
-                // There is another case, i.e. if measTypes.size() != 0 and measTypes.size() == iterInner->second.size()
-                // but the elements are different between measTypes and iterInner->second, then parsing data will fail.
             }
         }
     } else {
