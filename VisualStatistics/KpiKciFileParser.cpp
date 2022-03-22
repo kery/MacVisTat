@@ -9,7 +9,7 @@
 KpiKciFileParser::HeaderResult::HeaderResult()
 {
     errors.reserve(1);
-    failedPaths.reserve(1);
+    paths.reserve(1);
 }
 
 KpiKciFileParser::MeasData::MeasData(size_t size) :
@@ -77,7 +77,7 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
         errors.append(QString("there is no counter in selected KPI/KCI files"));
         return QString();
     }
-    for (const QString &failedPath : qAsConst(hdrResult.failedPaths)) {
+    for (const QString &failedPath : qAsConst(hdrResult.paths)) {
         paths.removeOne(failedPath);
     }
     if (paths.isEmpty()) { return QString(); }
@@ -374,12 +374,10 @@ void KpiKciFileParser::startElement_headerHandler(void *ud, const char *name, co
         const char *measObjLdn = findAttribute("measObjLdn", atts);
         if (measObjLdn != nullptr) {
             ObjLdnMap &objMap = userData->result->infoIdMap[userData->measInfoId];
-            std::vector<std::string> &measTypes = objMap[measObjLdn];
-            if (measTypes.size() < userData->measTypes.size()) {
-                measTypes = userData->measTypes;
-            }
+            std::set<std::string> &measTypes = objMap[measObjLdn];
+            measTypes.insert(userData->measTypes.begin(), userData->measTypes.end());
         } else {
-            userData->result->errors.append(QStringLiteral("measObjLdn is missing in file %1:%2")
+            userData->result->errors.append(QStringLiteral("measObjLdn is missing in %1:%2")
                                             .arg(QDir::toNativeSeparators(*userData->path))
                                             .arg(XML_GetCurrentLineNumber(userData->parser)));
             XML_StopParser(userData->parser, XML_FALSE);
@@ -416,26 +414,34 @@ void KpiKciFileParser::mergeHeaderResult(HeaderResult &finalResult, const Header
         for (auto iter = intermResult.infoIdMap.begin(); iter != intermResult.infoIdMap.end(); ++iter) {
             ObjLdnMap &finalObjMap = finalResult.infoIdMap[iter->first];
             for (auto iterInner = iter->second.begin(); iterInner != iter->second.end(); ++iterInner) {
-                std::vector<std::string> &measTypes = finalObjMap[iterInner->first];
-                if (measTypes.size() < iterInner->second.size()) {
-                    measTypes = iterInner->second;
+                std::set<std::string> &measTypes = finalObjMap[iterInner->first];
+                if (measTypes.empty()) {
+                    measTypes.insert(iterInner->second.begin(), iterInner->second.end());
+                } else if (measTypes.size() != iterInner->second.size()) {
+                    finalResult.errors.append(QStringLiteral("failed to merge header in %1: '%2' has different number of measType")
+                                              .arg(QDir::toNativeSeparators(intermResult.paths.first()),
+                                                   QString::fromStdString(iterInner->first)));
+                    finalResult.paths.append(intermResult.paths);
                 }
+                // There is another case, i.e. if measTypes.size() != 0 and measTypes.size() == iterInner->second.size()
+                // but the elements are different between measTypes and iterInner->second, then parsing data will fail.
             }
         }
     } else {
         finalResult.errors.append(intermResult.errors);
-        finalResult.failedPaths.append(intermResult.failedPaths);
+        finalResult.paths.append(intermResult.paths);
     }
 }
 
 KpiKciFileParser::HeaderResult KpiKciFileParser::parseHeader(const QString &path, volatile const bool &working)
 {
     HeaderResult result;
+    result.paths.append(path);
+
     GzipFile reader;
     if (!reader.open(path, GzipFile::ReadOnly)) {
         result.errors.append("failed to open ");
         result.errors.last() += QDir::toNativeSeparators(path);
-        result.failedPaths.append(path);
         return result;
     }
 
@@ -456,11 +462,10 @@ KpiKciFileParser::HeaderResult KpiKciFileParser::parseHeader(const QString &path
     while (working && result.errors.isEmpty() && (len = reader.read(buf, BUFSIZ)) > 0) {
         int isFinal = len < BUFSIZ;
         if (XML_Parse(parser, buf, len, isFinal) == XML_STATUS_ERROR) {
-            result.errors.append(QStringLiteral("failed to parse header in file %1:%2: %3")
+            result.errors.append(QStringLiteral("failed to parse header in %1:%2: %3")
                                  .arg(QDir::toNativeSeparators(path))
                                  .arg(XML_GetCurrentLineNumber(parser))
                                  .arg(XML_ErrorString(XML_GetErrorCode(parser))));
-            result.failedPaths.append(path);
             break;
         }
     }
@@ -517,7 +522,7 @@ void KpiKciFileParser::startElement_dataHandler(void *ud, const char *name, cons
         if (attP != nullptr) {
             userData->attP = attP;
         } else {
-            userData->result->errors.append(QStringLiteral("no 'p' attribute in file %1:%2")
+            userData->result->errors.append(QStringLiteral("no 'p' attribute in %1:%2")
                                             .arg(QDir::toNativeSeparators(*userData->path))
                                             .arg(XML_GetCurrentLineNumber(userData->parser)));
             XML_StopParser(userData->parser, XML_FALSE);
@@ -529,7 +534,7 @@ void KpiKciFileParser::startElement_dataHandler(void *ud, const char *name, cons
         if (attP != nullptr) {
             userData->attP = attP;
         } else {
-            userData->result->errors.append(QStringLiteral("no 'p' attribute in file %1:%2")
+            userData->result->errors.append(QStringLiteral("no 'p' attribute in %1:%2")
                                             .arg(QDir::toNativeSeparators(*userData->path))
                                             .arg(XML_GetCurrentLineNumber(userData->parser)));
             XML_StopParser(userData->parser, XML_FALSE);
@@ -550,7 +555,7 @@ void KpiKciFileParser::startElement_dataHandler(void *ud, const char *name, cons
                 userData->result->datas.back().endTime = endTime.toString(DTFMT_IN_CSV).toStdString();
             }
         } else {
-            userData->result->errors.append(QStringLiteral("invalid date time format in file %1:%2")
+            userData->result->errors.append(QStringLiteral("invalid date time format in %1:%2")
                                             .arg(QDir::toNativeSeparators(*userData->path))
                                             .arg(XML_GetCurrentLineNumber(userData->parser)));
             XML_StopParser(userData->parser, XML_FALSE);
@@ -574,9 +579,18 @@ void KpiKciFileParser::endElement_dataHandler(void *ud, const char *name)
         counterName += userData->objLdn;
         counterName += CounterName::sIndexesSeparator.toLatin1();
         counterName += measType;
-        int index = userData->indexMap->at(counterName);
-        userData->indexes.push_back(index);
-        userData->result->datas.back().values[index].swap(userData->character);
+
+        auto iter = userData->indexMap->find(counterName);
+        if (iter != userData->indexMap->end()) {
+            int index = iter->second;
+            userData->indexes.push_back(index);
+            userData->result->datas.back().values[index].swap(userData->character);
+        } else {
+            userData->result->errors.append(QStringLiteral("cannot find counter '%1' in %2")
+                                            .arg(QString::fromStdString(counterName),
+                                                 QDir::toNativeSeparators(*userData->path)));
+            XML_StopParser(userData->parser, XML_FALSE);
+        }
     } else if (strcmp(name, "measValue") == 0) {
         if (userData->suspect) {
             userData->suspect = false;
@@ -641,7 +655,7 @@ KpiKciFileParser::DataResult KpiKciFileParser::parseData(const QString &path, co
     while (working && result.errors.isEmpty() && (len = reader.read(buf, BUFSIZ)) > 0) {
         int isFinal = len < BUFSIZ;
         if (XML_Parse(parser, buf, len, isFinal) == XML_STATUS_ERROR) {
-            result.errors.append(QStringLiteral("failed to parse data in file %1:%2: %3")
+            result.errors.append(QStringLiteral("failed to parse data in %1:%2: %3")
                                  .arg(QDir::toNativeSeparators(path))
                                  .arg(XML_GetCurrentLineNumber(parser))
                                  .arg(XML_ErrorString(XML_GetErrorCode(parser))));

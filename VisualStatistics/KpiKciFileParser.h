@@ -4,6 +4,7 @@
 #include <QVector>
 #include <QDateTime>
 #include <map>
+#include <set>
 #include <unordered_map>
 #include <expat.h>
 
@@ -19,7 +20,7 @@ public:
     QString convertToCsv(QVector<QString> &paths, QVector<QString> &errors);
 
 private:
-    typedef std::map<std::string, std::vector<std::string>> ObjLdnMap;
+    typedef std::map<std::string, std::set<std::string>> ObjLdnMap;
     typedef std::map<std::string, ObjLdnMap> InfoIdMap;
     typedef std::unordered_map<std::string, int> IndexMap;
     typedef std::unordered_map<std::string, std::string> MeasTypeMap;
@@ -28,7 +29,7 @@ private:
     {
         InfoIdMap infoIdMap;
         QVector<QString> errors;
-        QVector<QString> failedPaths;
+        QVector<QString> paths;
 
         HeaderResult();
     };
