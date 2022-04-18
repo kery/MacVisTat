@@ -96,7 +96,7 @@ void MainWindow::actionXmlToCsvTriggered()
 {
     FileDialog dlg(this);
     dlg.setFileMode(QFileDialog::ExistingFiles);
-    dlg.setNameFilters({QStringLiteral("KPI/KCI File (*.xml.gz)"), QStringLiteral("KPI/KCI File (*.xml)")});
+    dlg.setNameFilters({QStringLiteral("KPI/KCI File (*.xml.gz)"), QStringLiteral("KPI/KCI File (*.xml)"), QStringLiteral("KPI/KCI File (*)")});
     if (dlg.exec() != QDialog::Accepted) { return; }
 
     actionCloseFileTriggered();
