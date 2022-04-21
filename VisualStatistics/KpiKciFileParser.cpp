@@ -22,8 +22,8 @@ KpiKciFileParser::DataResult::DataResult()
     errors.reserve(1);
 }
 
-QRegularExpression KpiKciFileParser::mRegExpTypeA("A(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{4})[+-]\\d{4}(_-.+?)?(_.+?)?(_-_\\d+?)?.xml(.gz)?");
-QRegularExpression KpiKciFileParser::mRegExpTypeC("C(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{8}\\.\\d{4})[+-]\\d{4}(_-.+?)?(_.+?)?(_-_\\d+)?.xml(.gz)?");
+QRegularExpression KpiKciFileParser::mRegExpTypeA("^A(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{4})[+-]\\d{4}(_-.+?)?(_.+?)?(_-_\\d+?)?(\\.xml(\\.gz)?)?$");
+QRegularExpression KpiKciFileParser::mRegExpTypeC("^C(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{8}\\.\\d{4})[+-]\\d{4}(_-.+?)?(_.+?)?(_-_\\d+?)?(\\.xml(\\.gz)?)?$");
 
 KpiKciFileParser::KpiKciFileParser(QWidget *parent) :
     mParent(parent)
