@@ -10,6 +10,7 @@
 #include "OptionsDialog.h"
 #include "GlobalDefines.h"
 #include "FileDialog.h"
+#include "FilterValidator.h"
 #include "Utils.h"
 #include "Version.h"
 #include <QHostInfo>
@@ -445,6 +446,7 @@ void MainWindow::setupFilterComboBox()
     hLayout->addStretch();
 
     ui->filterComboBox->lineEdit()->setClearButtonEnabled(true);
+    ui->filterComboBox->lineEdit()->setValidator(new FilterValidator(this));
     ui->filterComboBox->lineEdit()->setPlaceholderText(QStringLiteral("regular expression filter"));
     ui->filterComboBox->completer()->setCaseSensitivity(Qt::CaseSensitive);
     ui->filterComboBox->completer()->setCompletionMode(QCompleter::PopupCompletion);
