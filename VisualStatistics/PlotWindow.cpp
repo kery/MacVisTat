@@ -804,11 +804,15 @@ void PlotWindow::updatePlotTitle()
     title += QString::number(ui->plot->graphCount());
     title += ui->plot->graphCount() > 1 ? " Graphs" : " Graph";
 
-    if (ui->actionShowDelta->isChecked()) {
-        title += ", Delta";
-    }
     if (ui->actionDisplayUtc->isChecked()) {
         title += ", UTC";
+    } else if (isValidOffsetFromUtc(mPlotData.offsetFromUtc())) {
+        title += mPlotData.offsetFromUtc() >= 0 ? ", +" : ", -";
+        title += QString::asprintf("%02d:%02d", std::abs(mPlotData.offsetFromUtc() / 3600), std::abs((mPlotData.offsetFromUtc() % 3600) / 60));
+    }
+
+    if (ui->actionShowDelta->isChecked()) {
+        title += ", Delta";
     }
 
     title += ')';
