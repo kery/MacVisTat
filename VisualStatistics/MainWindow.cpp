@@ -24,6 +24,13 @@ MainWindow::MainWindow() :
     mResizeMan(this)
 {
     ui->setupUi(this);
+
+    QStackedLayout *stackedLayout = new QStackedLayout();
+    stackedLayout->addWidget(ui->logTextEdit);
+    stackedLayout->addWidget(ui->counterDescription);
+    ui->stackedWidget->setLayout(stackedLayout);
+    ui->counterNameViewParent->installEventFilter(this);
+
     setupFilterComboBox();
     updateWindowTitle();
 
@@ -361,6 +368,18 @@ void MainWindow::checkUpdateFailed(QProcess::ProcessError error)
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
+    if (obj == ui->counterNameViewParent && event->type() == QEvent::StatusTip) {
+        QStatusTipEvent *statusTipEvent = dynamic_cast<QStatusTipEvent *>(event);
+        QString counterDesc = statusTipEvent->tip();
+        QStackedLayout *stackedLayout = qobject_cast<QStackedLayout *>(ui->stackedWidget->layout());
+        if (counterDesc.isEmpty()) {
+            stackedLayout->setCurrentWidget(ui->logTextEdit);
+        } else {
+            ui->counterDescription->setPlainText(counterDesc);
+            stackedLayout->setCurrentWidget(ui->counterDescription);
+        }
+        return true;
+    }
     if (isCaseSensitiveButtonResizeEvent(obj, event)) {
         // The value is from qlineedit_p.cpp
         const int horizontalMargin = 2;
