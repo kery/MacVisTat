@@ -26,7 +26,7 @@ QUrl Application::getUrl(UrlPath up)
     case upHelp:
         return root.resolved(QStringLiteral("/help.html"));
     case upCounterDescription:
-        return root.resolved(QStringLiteral("/counters.desc"));
+        return root.resolved(QStringLiteral("/counters.zip"));
     case upChangeLog:
         return root.resolved(QStringLiteral("/changelog.txt"));
     case upUsageReport:

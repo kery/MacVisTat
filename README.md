@@ -75,6 +75,20 @@ cmake ..\VisualStatistics\pcre2 -G "Visual Studio 15 2017 Win64" -DBUILD_SHARED_
 msbuild /m /t:pcre2-8-shared /p:Configuration=Release /p:Platform=x64 PCRE2.sln
 ```
 
+### Build QuaZIP
+```powershell
+# Build Release version
+mkdir build-quazip-Release
+cd build-quazip-Release
+qmake INCLUDEPATH+=<QTDIR>\include\QtZlib ..\VisualStatistics\quazip\quazip\quazip.pro
+nmake
+# Build Debug version
+mkdir build-quazip-Debug
+cd build-quazip-Debug
+qmake CONFIG+=debug INCLUDEPATH+=<QTDIR>\include\QtZlib ..\VisualStatistics\quazip\quazip\quazip.pro
+nmake
+```
+
 # Build for Linux
 
 ## Build dependencies

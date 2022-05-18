@@ -178,7 +178,7 @@ const char * KpiKciFileParser::getMeasInfoId(const char **atts)
     if (measInfoId != nullptr) {
         return measInfoId;
     }
-    return "Unknown";
+    return "";
 }
 
 std::string KpiKciFileParser::getOffsetFromUtc(const QString &path)
@@ -327,8 +327,7 @@ QString KpiKciFileParser::getUniqueIdFromFileName(const QString &path)
             uniqueId = match.capturedRef(5);
         }
     }
-    if (uniqueId.isEmpty()) { return QString("Unknown"); }
-    return uniqueId.mid(1).toString();
+    return uniqueId.isEmpty() ? QString() : uniqueId.mid(1).toString();
 }
 
 void KpiKciFileParser::getFirstGranPeriodEndTime_handler(void *ud, const char *name, const char **atts)

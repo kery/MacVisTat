@@ -1,7 +1,8 @@
 #include "CounterDescription.h"
 #include "CounterName.h"
-#include "GzipFile.h"
 #include "libcsv/csv.h"
+#include <quazip.h>
+#include <quazipfile.h>
 
 CounterId::CounterId(const QString &module, const QString &group, const QString &object) :
     mModule(module),
@@ -22,8 +23,8 @@ uint qHash(const CounterId &cid, uint seed)
 
 void CounterDescription::load(const QString &path)
 {
-    GzipFile reader;
-    if (!reader.open(path, GzipFile::ReadOnly)) {
+    QuaZip zip(path);
+    if (!zip.open(QuaZip::mdUnzip)) {
         return;
     }
 
@@ -34,10 +35,16 @@ void CounterDescription::load(const QString &path)
     struct csv_parser parser;
     csv_init(&parser, CSV_STRICT | CSV_STRICT_FINI | CSV_EMPTY_IS_NULL);
 
-    std::string line;
-    reader.readLineKeepCrLf(line); // Consume the header line
-    while (reader.readLineKeepCrLf(line)) {
-        csv_parse(&parser, line.c_str(), line.length(), libcsvCbEndOfField, libcsvCbEndOfRow, &ud);
+    for (bool more = zip.goToFirstFile(); more; more = zip.goToNextFile()) {
+        QuaZipFile zipFile(&zip);
+        if (!zipFile.open(QIODevice::ReadOnly)) {
+            continue;
+        }
+        zipFile.readLine(); // Skip the first header line
+
+        for (QByteArray ba = zipFile.readLine(); !ba.isEmpty(); ba = zipFile.readLine()) {
+            csv_parse(&parser, ba.constData(), ba.size(), libcsvCbEndOfField, libcsvCbEndOfRow, &ud);
+        }
     }
 
     csv_fini(&parser, libcsvCbEndOfField, libcsvCbEndOfRow, &ud);

@@ -250,14 +250,16 @@ FORMS += \
 RESOURCES += \
     VisualStatistics.qrc
 
-INCLUDEPATH += libexpat/expat/lib/ breakpad/src/
+INCLUDEPATH += libexpat/expat/lib/ breakpad/src/ quazip/quazip/
 
 win32:CONFIG(debug, debug|release) {
     LIBS += -L../build-breakpad-Debug/lib/
+    LIBS += -L../build-quazip-Debug/debug/ -lquazipd
 }
 
 win32:CONFIG(release, debug|release) {
     LIBS += -L../build-breakpad-Release/lib/
+    LIBS += -L../build-quazip-Release/release/ -lquazip
 
     QMAKE_CXXFLAGS_RELEASE += /Zi
     QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
@@ -269,7 +271,7 @@ win32 {
     RC_FILE = VisualStatistics.rc
     TARGET = ../VisualStatistics
 
-    INCLUDEPATH += ../build-pcre2/
+    INCLUDEPATH += ../build-pcre2/ $(QTDIR)\include\QtZlib
     INCLUDEPATH += breakpad/src/client/windows/handler/
 
     LIBS += -lShlwapi -lUser32

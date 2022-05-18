@@ -16,3 +16,6 @@
 [submodule "VisualStatistics/QCustomPlot"]
 	path = VisualStatistics/QCustomPlot
 	url = https://gitlab.com/DerManu/QCustomPlot.git
+[submodule "VisualStatistics/quazip"]
+	path = VisualStatistics/quazip
+	url = https://github.com/stachenov/quazip.git

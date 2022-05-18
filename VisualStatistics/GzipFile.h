@@ -3,11 +3,7 @@
 
 #include <QString>
 #include <string>
-#if defined(Q_OS_WIN)
-#include <QtZlib/zlib.h>
-#else
 #include <zlib.h>
-#endif
 
 class GzipFile
 {
@@ -25,7 +21,6 @@ public:
 
     int read(char *buf, unsigned int maxlen);
     bool readLine(std::string &line);
-    bool readLineKeepCrLf(std::string &line);
     int write(const char *buf, unsigned int len);
     int write(const std::string &str);
     bool eof() const;

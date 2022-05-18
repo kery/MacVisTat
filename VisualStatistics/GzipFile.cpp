@@ -58,20 +58,6 @@ bool GzipFile::readLine(std::string &line)
     return !line.empty() || gzeof(mGzFile) == 0;
 }
 
-bool GzipFile::readLineKeepCrLf(std::string &line)
-{
-    line.clear();
-
-    char buffer[4096];
-    while (gzgets(mGzFile, buffer, sizeof(buffer))) {
-        line.append(buffer);
-        if (line.back() == '\n') {
-            break;
-        }
-    }
-    return !line.empty();
-}
-
 int GzipFile::write(const char *buf, unsigned int len)
 {
     return gzwrite(mGzFile, buf, len);
