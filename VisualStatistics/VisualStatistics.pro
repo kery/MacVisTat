@@ -280,7 +280,15 @@ win32 {
     LIBS += -lexception_handler -lcrash_generation_client -lcommon
 }
 
-unix:!macx {
+unix:CONFIG(debug, debug|release) {
+    LIBS += -L$$PWD/../build-quazip-Debug
+}
+
+unix:CONFIG(release, debug|release) {
+    LIBS += -L$$PWD/../build-quazip-Release
+}
+
+unix {
     TARGET = VisualStatistics
 
     INCLUDEPATH += pcre2/src/
@@ -289,7 +297,7 @@ unix:!macx {
     LIBS += -L$$PWD/pcre2/.libs/
     LIBS += -L$$PWD/libexpat/expat/lib/.libs/ -lexpat
     LIBS += -L$$PWD/breakpad/src/client/linux/ -lbreakpad_client
-    LIBS += -lz
+    LIBS += -lz -lquazip
 }
 
 LIBS += -lpcre2-8

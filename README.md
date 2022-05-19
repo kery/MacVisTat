@@ -127,3 +127,17 @@ cd VisualStatistics/pcre2
 ./configure
 make
 ```
+
+### Build QuaZIP
+```bash
+# Build Release version
+mkdir build-quazip-Release
+cd build-quazip-Release
+qmake ../VisualStatistics/quazip/quazip/quazip.pro
+make
+# Build Debug version
+mkdir build-quazip-Debug
+cd build-quazip-Debug
+qmake CONFIG+=debug ../VisualStatistics/quazip/quazip/quazip.pro
+make
+```
