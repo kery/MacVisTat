@@ -70,7 +70,7 @@ void CounterDescription::libcsvCbEndOfField(void *field, size_t len, void *ud)
 void CounterDescription::libcsvCbEndOfRow(int, void *ud)
 {
     auto ccud = static_cast<CallbackUserData *>(ud);
-    if (ccud->columns.size() == 4) {
+    if (ccud->columns.size() == 4 && !ccud->columns[2].isEmpty()) {
         CounterId cid(ccud->columns[0], ccud->columns[1], ccud->columns[2]);
         ccud->descHash->insert(cid, ccud->columns[3]);
     }
