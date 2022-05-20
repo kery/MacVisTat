@@ -15,5 +15,6 @@
         <file>images/export.png</file>
         <file>images/utc.png</file>
         <file>qss/default.qss</file>
+        <file>qss/win.qss</file>
     </qresource>
 </RCC>

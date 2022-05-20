@@ -81,7 +81,11 @@ static bool minidumpCallback(const google_breakpad::MinidumpDescriptor &descript
 
 static void loadStyleSheet(QApplication &app)
 {
+#ifdef Q_OS_WIN
+    QFile file(QStringLiteral(":/qss/win.qss"));
+#else
     QFile file(QStringLiteral(":/qss/default.qss"));
+#endif
     if (file.open(QFile::ReadOnly)) {
         app.setStyleSheet(file.readAll());
     }
