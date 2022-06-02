@@ -790,7 +790,11 @@ void PlotWindow::updateWindowTitle()
         }
     }
 
-    QString title = strList.join(QLatin1String(WND_TITLE_SEP));
+    QString title = mPlotData.nodeName();
+    if (!title.isEmpty()) {
+        title += " - ";
+    }
+    title += strList.join(QLatin1String(WND_TITLE_SEP));
     if (appendEllipsis) {
         title += "...";
     }

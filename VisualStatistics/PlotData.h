@@ -9,13 +9,14 @@ typedef QMap<QString, CounterData> CounterDataMap;
 class PlotData
 {
 public:
-    PlotData(int offsetFromUtc);
+    PlotData(int offsetFromUtc, const QString &nodeName);
     PlotData(const PlotData &) = delete;
     PlotData(PlotData &&) = default;
     PlotData &operator=(const PlotData &) = delete;
     PlotData &operator=(PlotData &&) = default;
 
     int offsetFromUtc() const;
+    QString nodeName() const;
     int counterCount() const;
     int counterDataCount() const;
     QDateTime getDateTime(double key) const;
@@ -38,6 +39,7 @@ private:
     PlotData();
 
     int mOffsetFromUtc;
+    QString mNodeName;
     CounterDataMap mDataMap;
     QVector<double> mDateTimeVector;
 };

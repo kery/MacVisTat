@@ -1,14 +1,20 @@
 #include "PlotData.h"
 #include "GlobalDefines.h"
 
-PlotData::PlotData(int offsetFromUtc) :
-    mOffsetFromUtc(offsetFromUtc)
+PlotData::PlotData(int offsetFromUtc, const QString &nodeName) :
+    mOffsetFromUtc(offsetFromUtc),
+    mNodeName(nodeName)
 {
 }
 
 int PlotData::offsetFromUtc() const
 {
     return mOffsetFromUtc;
+}
+
+QString PlotData::nodeName() const
+{
+    return mNodeName;
 }
 
 int PlotData::counterCount() const
@@ -142,6 +148,7 @@ std::unique_ptr<PlotData[]> PlotData::split()
     std::unique_ptr<PlotData[]> result(new PlotData[mDataMap.size()]);
     for (auto iter = mDataMap.begin(); iter != mDataMap.end(); ++iter, ++i) {
         result[i].mOffsetFromUtc = mOffsetFromUtc;
+        result[i].mNodeName = mNodeName;
         result[i].mDateTimeVector = mDateTimeVector;
         result[i].mDataMap[iter.key()] = std::move(iter.value());
     }

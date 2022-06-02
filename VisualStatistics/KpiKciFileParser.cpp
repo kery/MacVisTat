@@ -1,4 +1,5 @@
 #include "KpiKciFileParser.h"
+#include "CounterFileParser.h"
 #include "ProgressDialog.h"
 #include "CounterName.h"
 #include "GzipFile.h"
@@ -356,9 +357,7 @@ QString KpiKciFileParser::getOutputPath(const QVector<QString> &paths)
     QDateTime dtFirstEndTime = QDateTime::fromString(firstEndTime, Qt::ISODate);
     QDateTime dtEndTime = QDateTime::fromString(endTime, Qt::ISODate);
 
-    QString fileName = QStringLiteral("%1_%2-%3.csv.gz").arg(nodeName,
-                                                             dtFirstEndTime.toString(DTFMT_IN_FILENAME),
-                                                             dtEndTime.toString(DTFMT_IN_FILENAME));
+    QString fileName = CounterFileParser::genFileName(nodeName, dtFirstEndTime, dtEndTime);
     QFileInfo fileInfo(paths.first());
     return fileInfo.absoluteDir().absoluteFilePath(fileName);
 }

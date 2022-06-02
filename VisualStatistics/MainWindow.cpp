@@ -803,7 +803,7 @@ void MainWindow::parseCounterFileData(bool multiWnd)
 #endif
         appendErrorLog(error);
     } else if (!canceled) {
-        PlotData plotData(mOffsetFromUtc);
+        PlotData plotData(mOffsetFromUtc, CounterFileParser::getNodeName(mCounterFilePath));
         plotData.setCounterDataMap(dataMap);
         processPlotData(plotData, multiWnd);
     }
