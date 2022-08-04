@@ -885,29 +885,12 @@ void PlotWindow::removeGraphs(const QVector<CounterGraph *> &graphs)
         ui->plot->replot(QCustomPlot::rpQueuedReplot);
     }
 
-    QPoint balPos = QCursor::pos();
     QString balText = QString::number(graphs.size());
     balText.prepend('-');
-    BalloonTip *balloon = new BalloonTip();
+
+    BalloonTip *balloon = BalloonTip::create();
     balloon->setText(balText);
-    balloon->move(balPos);
-    balloon->show();
-
-    QVariantAnimation *anim = new QVariantAnimation();
-    anim->setDuration(1000);
-    anim->setStartValue(QVariant(1.0));
-    anim->setEndValue(QVariant(0.0));
-
-    connect(anim, &QVariantAnimation::valueChanged, [balloon, balPos](const QVariant &value) {
-        double v = value.toDouble();
-        QPoint newPos(balPos.x(), balPos.y() - (1 - v) * 50);
-        balloon->move(newPos);
-        balloon->setWindowOpacity(v);
-    });
-    connect(anim, &QVariantAnimation::finished, [balloon]() {
-        balloon->deleteLater();
-    });
-    anim->start(QAbstractAnimation::DeleteWhenStopped);
+    balloon->riseUp();
 }
 
 int PlotWindow::legendItemIndex(QCPAbstractLegendItem *item) const

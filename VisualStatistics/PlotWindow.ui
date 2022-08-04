@@ -71,7 +71,7 @@
     <string>Save</string>
    </property>
    <property name="toolTip">
-    <string>Save as Image</string>
+    <string>Save as Image (Ctrl+S)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -86,7 +86,10 @@
     <string>Restore</string>
    </property>
    <property name="toolTip">
-    <string>Restore</string>
+    <string>Restore (Esc)</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
    </property>
   </action>
   <action name="actionShowDelta">
@@ -113,7 +116,7 @@
     <string>Copy</string>
    </property>
    <property name="toolTip">
-    <string>Copy to Clipboard</string>
+    <string>Copy to Clipboard (Ctrl+C)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
@@ -164,7 +167,10 @@
     <string>Display UTC</string>
    </property>
    <property name="toolTip">
-    <string>Display UTC Time</string>
+    <string>Display UTC Time (Ctrl+U)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+U</string>
    </property>
   </action>
  </widget>
