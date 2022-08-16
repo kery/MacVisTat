@@ -325,6 +325,9 @@ void MainWindow::downloadCounterDescriptionFinished()
                 file.write(netData);
             }
             file.close();
+
+            QSettings settings;
+            settings.setValue(SETTING_KEY_CD_UPDATE_TIME, QDateTime::currentDateTime());
         }
     } else {
         appendWarnLog("failed to download counter description file: " + reply->errorString());
@@ -669,6 +672,14 @@ void MainWindow::checkUpdate()
 
 void MainWindow::downloadCounterDescription()
 {
+    QSettings settings;
+    QDateTime lastUpdate = settings.value(SETTING_KEY_CD_UPDATE_TIME).toDateTime();
+    QDateTime now = QDateTime::currentDateTime();
+    if (lastUpdate.isValid() && lastUpdate.daysTo(now) < 30) {
+        mCounterDesc.load(filePath(fpCounterDescription));
+        return;
+    }
+
     Application *app = Application::instance();
     QUrl url = app->getUrl(Application::upCounterDescription);
     QNetworkRequest request(url);

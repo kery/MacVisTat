@@ -17,5 +17,6 @@
 #define SETTING_KEY_CASE_SENSITIVE  "caseSensitive"
 #define SETTING_KEY_RECENT_FILES    "recentFileList"
 #define SETTING_KEY_OPENDLG_DIR     "openDialogDir"
+#define SETTING_KEY_CD_UPDATE_TIME  "counterDescUpdateTime"
 
 #endif // GLOBALDEFINES_H
