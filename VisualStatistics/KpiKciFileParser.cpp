@@ -23,8 +23,8 @@ KpiKciFileParser::DataResult::DataResult()
     errors.reserve(1);
 }
 
-QRegularExpression KpiKciFileParser::mRegExpTypeA("^A(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{4})[+-]\\d{4}(_-.+?)?(_.+?)?(_-_\\d+?)?(\\.xml(\\.gz)?)?$");
-QRegularExpression KpiKciFileParser::mRegExpTypeC("^C(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{8}\\.\\d{4})[+-]\\d{4}(_-.+?)?(_.+?)?(_-_\\d+?)?(\\.xml(\\.gz)?)?$");
+QRegularExpression KpiKciFileParser::mRegExpTypeA("^A(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{4})[+-]\\d{4}(_-.+?)?(_[a-zA-Z\\d]+?)?(_-_\\d+?)?(\\.xml(\\.gz)?)?$");
+QRegularExpression KpiKciFileParser::mRegExpTypeC("^C(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{8}\\.\\d{4})[+-]\\d{4}(_-.+?)?(_[a-zA-Z\\d]+?)?(_-_\\d+?)?(\\.xml(\\.gz)?)?$");
 
 KpiKciFileParser::KpiKciFileParser(QWidget *parent) :
     mParent(parent)
@@ -290,7 +290,9 @@ void KpiKciFileParser::sortFiles(QVector<QString> &paths, QVector<QString> &erro
 
 void KpiKciFileParser::getManagedElement_handler(void *ud, const char *name, const char **atts)
 {
-    if (strcmp(name, "fileSender")) { return; }
+    if (strcmp(name, "fileSender")) {
+        return;
+    }
 
     const char *localDn = findAttribute("localDn", atts);
     if (localDn != nullptr) {
@@ -298,8 +300,10 @@ void KpiKciFileParser::getManagedElement_handler(void *ud, const char *name, con
         const char *pos = strstr(localDn, me);
         if (pos != nullptr) {
             static_cast<QString *>(ud)->operator=(pos + strlen(me));
-            return;
+        } else {
+            static_cast<QString *>(ud)->operator=(localDn);
         }
+        return;
     }
 
     // stop parsing
