@@ -18,6 +18,7 @@
 
 MainWindow::MainWindow() :
     ui(new Ui::MainWindow),
+    mL(nullptr),
     mOffsetFromUtc(0),
     mStatusBarLabel(new QLabel(this)),
     mLogDateTimeFmt(DTFMT_DISPLAY),
@@ -75,6 +76,7 @@ MainWindow::MainWindow() :
     updateRecentFileActions(QStringList());
     loadFilterMenu();
     loadFilterHistory();
+    initLuaEnv();
 
 #ifdef DEPLOY_VISUALSTAT
     checkUpdate();
@@ -85,7 +87,96 @@ MainWindow::MainWindow() :
 
 MainWindow::~MainWindow()
 {
+    if (mL != nullptr) {
+        lua_close(mL);
+    }
     delete ui;
+}
+
+void MainWindow::appendInfoLog(const QString &text)
+{
+    ui->logTextEdit->appendHtml(formatLog(text, llInfo));
+}
+
+void MainWindow::appendWarnLog(const QString &text)
+{
+    ui->logTextEdit->appendHtml(formatLog(text, llWarn));
+}
+
+void MainWindow::appendErrorLog(const QString &text)
+{
+    ui->logTextEdit->appendHtml(formatLog(text, llError));
+}
+
+QAction *MainWindow::registerMenu(const QString &title, const QString &description)
+{
+    QAction *action = ui->menuPlot->addAction(title, this, &MainWindow::actionRegisteredMenuTriggered);
+    if (!description.isEmpty()) {
+        action->setStatusTip(description);
+    }
+    return action;
+}
+
+int MainWindow::parseCounterFileData(const char *regexp)
+{
+    if (mCounterFilePath.isEmpty()) {
+        luaL_error(mL, "no counter file opened");
+    }
+
+    CounterNameModel *model = qobject_cast<CounterNameModel *>(ui->counterNameView->model());
+    IndexNameMap inm = model->getIndexNameMap(regexp);
+    if (inm.isEmpty()) {
+        luaL_error(mL, "no counter match filter '%s'", regexp);
+    }
+
+    bool canceled;
+    CounterDataMap dataMap;
+    CounterFileParser parser(this);
+    QString error = parser.parseData(mCounterFilePath, inm, dataMap, canceled);
+
+    if (canceled) {
+        luaL_error(mL, "operation canceled");
+    }
+
+    if (!error.isEmpty()) {
+        luaL_error(mL, "%s", error.toStdString().c_str());
+    }
+
+    lua_createtable(mL, 0, 2); // result table
+    lua_pushstring(mL, "timestamps");
+
+    const CounterData &cdata = dataMap.first();
+    lua_createtable(mL, cdata.data.size(), 0); // timestamps table
+    for (int i = 1; i <= cdata.data.size(); ++i) {
+        lua_pushnumber(mL, cdata.data.at(i - 1)->key);
+        lua_rawseti(mL, -2, i);
+    }
+    lua_rawset(mL, -3);
+
+    lua_pushstring(mL, "counters");
+
+    int n = 0;
+    lua_createtable(mL, dataMap.size(), 0); // counters table
+    for (auto iter = dataMap.begin(); iter != dataMap.end(); ++iter) {
+        lua_createtable(mL, 0, 2);
+        lua_pushstring(mL, "name");
+        lua_pushstring(mL, iter.key().toStdString().c_str());
+        lua_rawset(mL, -3);
+
+        lua_pushstring(mL, "values");
+        lua_createtable(mL, cdata.data.size(), 0);
+        for (int i = 1; i <= cdata.data.size(); ++i) {
+            lua_pushnumber(mL, iter.value().data.at(i - 1)->value);
+            lua_rawseti(mL, -2, i);
+        }
+        lua_rawset(mL, -3);
+
+        lua_rawseti(mL, -2, ++n);
+    }
+
+    lua_rawset(mL, -3);
+
+    return 1;
 }
 
 void MainWindow::actionOpenTriggered()
@@ -223,6 +314,106 @@ void MainWindow::actionAboutTriggered()
 {
     AboutDialog dlg(this);
     dlg.exec();
+}
+
+void MainWindow::actionRegisteredMenuTriggered()
+{
+    QObject *source = sender();
+    if (source == nullptr) {
+        return;
+    }
+
+    lua_rawgetp(mL, LUA_REGISTRYINDEX, source);
+    if (lua_pcall(mL, 0, 1, 0) != LUA_OK) {
+        QString err = getLastLuaError(mL);
+        appendWarnLog(err);
+        return;
+    }
+
+    if (!lua_istable(mL, -1)) {
+        lua_pop(mL, 1);
+        appendWarnLog(QStringLiteral("result must be a table"));
+        return;
+    }
+
+    lua_pushstring(mL, "timestamps");
+    lua_rawget(mL, -2);
+    if (!lua_istable(mL, -1)) {
+        lua_pop(mL, 2);
+        appendWarnLog(QStringLiteral("field 'timestamps' must be a table"));
+        return;
+    }
+
+    QVector<double> timestamps;
+    lua_pushnil(mL);
+    while (lua_next(mL, -2) != 0) {
+        int isNum;
+        double ts = lua_tonumberx(mL, -1, &isNum);
+        if (isNum) {
+            timestamps.append(ts);
+            lua_pop(mL, 1);
+        } else {
+            lua_pop(mL, 4);
+            appendWarnLog(QStringLiteral("elements in 'timestamps' must be Unix time"));
+            return;
+        }
+    }
+
+    lua_pop(mL, 1); // pop the timestamps table
+    lua_pushstring(mL, "counters");
+    lua_rawget(mL, -2);
+    if (!lua_istable(mL, -1)) {
+        lua_pop(mL, 2);
+        appendWarnLog(QStringLiteral("field 'counters' must be a table"));
+        return;
+    }
+
+    CounterDataMap dataMap;
+    lua_pushnil(mL);
+    while (lua_next(mL, -2) != 0) {
+        if (!lua_istable(mL, -1)) {
+            lua_pop(mL, 4);
+            appendWarnLog(QStringLiteral("elements in 'counters' must be a table"));
+            return;
+        }
+        lua_pushstring(mL, "name");
+        lua_rawget(mL, -2);
+        if (!lua_isstring(mL, -1)) {
+            lua_pop(mL, 5);
+            appendWarnLog(QStringLiteral("field 'name' must be a string"));
+            return;
+        }
+        QString name(lua_tostring(mL, -1));
+        lua_pop(mL, 1);
+
+        lua_pushstring(mL, "values");
+        lua_rawget(mL, -2);
+        if (!lua_istable(mL, -1)) {
+            lua_pop(mL, 5);
+            appendWarnLog(QStringLiteral("field 'values' must be a table"));
+            return;
+        }
+
+        QCPGraphData gdata;
+        CounterData &cdata = dataMap[name];
+
+        for (int i = 0; i < timestamps.size(); ++i) {
+            int isNum;
+            lua_rawgeti(mL, -1, i + 1);
+            double value = lua_tonumberx(mL, -1, &isNum);
+            lua_pop(mL, 1);
+
+            gdata.key = timestamps.at(i);
+            gdata.value = isNum ? value : NAN;
+            cdata.data.add(gdata);
+        }
+
+        lua_pop(mL, 2);
+    }
+
+    PlotData plotData(mOffsetFromUtc, CounterFileParser::getNodeName(mCounterFilePath));
+    plotData.setCounterDataMap(dataMap);
+    processPlotData(plotData, false);
 }
 
 void MainWindow::caseSensitiveButtonClicked(bool /*checked*/)
@@ -662,6 +853,100 @@ void MainWindow::adjustFilterHistoryOrder()
     }
 }
 
+static char sKeyMainWindow;
+
+static MainWindow * mainWindow(lua_State *L)
+{
+    lua_rawgetp(L, LUA_REGISTRYINDEX, &sKeyMainWindow);
+
+    MainWindow *mw = static_cast<MainWindow *>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
+    return mw;
+}
+
+static int print(lua_State *L)
+{
+    const char *str = luaL_checkstring(L, 1);
+    mainWindow(L)->appendInfoLog(str);
+    return 0;
+}
+
+static int registerMenu(lua_State *L)
+{
+    const char *menuTitle = luaL_checkstring(L, 1);
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+    const char *description = luaL_optstring(L, 3, nullptr);
+
+    QAction *action = mainWindow(L)->registerMenu(menuTitle, description);
+    lua_pushlightuserdata(L, action);
+    lua_pushvalue(L, 2);
+    lua_rawset(L, LUA_REGISTRYINDEX);
+
+    return 0;
+}
+
+static int parse(lua_State *L)
+{
+    const char *regexp = luaL_checkstring(L, 1);
+
+    return mainWindow(L)->parseCounterFileData(regexp);
+}
+
+static int initLuaEnv(lua_State *L)
+{
+    luaL_openlibs(L);
+
+    // replace default print function
+    lua_pushcfunction(L, print);
+    lua_setglobal(L, "print");
+
+    // store MainWindow to registry
+    lua_pushlightuserdata(L, &sKeyMainWindow);
+    lua_pushvalue(L, 1);
+    lua_rawset(L, LUA_REGISTRYINDEX);
+
+    const struct luaL_Reg apis[] = {
+        { "register_menu", registerMenu },
+        { "parse", parse },
+        {NULL, NULL}
+    };
+
+    luaL_newlib(L, apis);
+    lua_setglobal(L, "vs");
+
+    return 0;
+}
+
+void MainWindow::initLuaEnv()
+{
+    mL = luaL_newstate();
+    if (mL == nullptr) {
+        appendWarnLog(QStringLiteral("can't create Lua environment"));
+        return;
+    }
+
+    lua_pushcfunction(mL, ::initLuaEnv);
+    lua_pushlightuserdata(mL, this);
+
+    if (lua_pcall(mL, 1, 0, 0) != LUA_OK) {
+        QString err = getLastLuaError(mL);
+        appendWarnLog(err);
+        return;
+    }
+
+    QDir dir(filePath(fpPluginDir));
+    dir.setNameFilters({ "*.lua" });
+
+    QStringList luaFiles = dir.entryList(QDir::Files, QDir::Name);
+    for (const QString &fn : qAsConst(luaFiles)) {
+        std::string path = QDir::toNativeSeparators(dir.absoluteFilePath(fn)).toStdString();
+        if (luaL_dofile(mL, path.c_str()) != LUA_OK) {
+            QString err = getLastLuaError(mL);
+            appendWarnLog(err);
+        }
+    }
+}
+
 void MainWindow::checkUpdate()
 {
     QProcess *process = new QProcess();
@@ -790,7 +1075,7 @@ void MainWindow::parseCounterFileData(bool multiWnd)
         }
     }
 
-    CounterFileParser::IndexNameMap inm;
+    IndexNameMap inm;
     if (selectedIndexes.isEmpty()) {
         for (int i = 0; i < model->rowCount(); ++i) {
             QModelIndex index = model->index(i);
@@ -868,21 +1153,6 @@ QString MainWindow::formatLog(const QString &text, LogLevel level)
     return result;
 }
 
-void MainWindow::appendInfoLog(const QString &text)
-{
-    ui->logTextEdit->appendHtml(formatLog(text, llInfo));
-}
-
-void MainWindow::appendWarnLog(const QString &text)
-{
-    ui->logTextEdit->appendHtml(formatLog(text, llWarn));
-}
-
-void MainWindow::appendErrorLog(const QString &text)
-{
-    ui->logTextEdit->appendHtml(formatLog(text, llError));
-}
-
 QString MainWindow::filePath(FilePath fp)
 {
     QDir dir = QDir::home();
@@ -901,6 +1171,8 @@ QString MainWindow::filePath(FilePath fp)
 #else
         return dir.absoluteFilePath(QStringLiteral("maintenancetool"));
 #endif
+    case fpPluginDir:
+        return dir.filePath(QStringLiteral("VisualStatisticsPlugin"));
     }
 
     return QString();

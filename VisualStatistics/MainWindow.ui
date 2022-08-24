@@ -140,7 +140,7 @@
      <x>0</x>
      <y>0</y>
      <width>1152</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -169,10 +169,13 @@
     <property name="title">
      <string>Plot</string>
     </property>
+    <property name="separatorsCollapsible">
+     <bool>true</bool>
+    </property>
     <addaction name="actionPlot"/>
     <addaction name="actionPlotSeparately"/>
-    <addaction name="separator"/>
     <addaction name="actionOptions"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuFilter">
     <property name="title">

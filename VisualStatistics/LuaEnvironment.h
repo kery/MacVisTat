@@ -1,11 +1,9 @@
 #ifndef LUAENVIRONMENT_H
 #define LUAENVIRONMENT_H
 
-extern "C" {
 #include "lua/lua.h"
 #include "lua/lauxlib.h"
 #include "lua/lualib.h"
-}
 #include <QString>
 
 class ScriptWindow;
@@ -22,7 +20,6 @@ public:
 
 private:
     QString protectedInit(ScriptWindow *sw);
-    QString getLastError();
 
     static ScriptWindow * scriptWindow(lua_State *L);
     static PlotWindow * plotWindow(lua_State *L);

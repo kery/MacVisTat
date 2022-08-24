@@ -4,6 +4,7 @@
 #include <QAbstractListModel>
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
+#include "IndexNameMap.h"
 
 class CounterDescription;
 
@@ -18,6 +19,8 @@ public:
 
     CounterNameModel(QObject *parent);
     ~CounterNameModel();
+
+    IndexNameMap getIndexNameMap(const char *regexp);
 
     void setCounterDescription(CounterDescription *desc);
     void setCounterNames(QVector<QString> &names);

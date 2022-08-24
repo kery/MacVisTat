@@ -89,38 +89,6 @@ SOURCES += \
     Utils.cpp \
     ValueTipItem.cpp \
     libcsv/libcsv.c \
-    lua/lapi.c \
-    lua/lauxlib.c \
-    lua/lbaselib.c \
-    lua/lbitlib.c \
-    lua/lcode.c \
-    lua/lcorolib.c \
-    lua/lctype.c \
-    lua/ldblib.c \
-    lua/ldebug.c \
-    lua/ldo.c \
-    lua/ldump.c \
-    lua/lfunc.c \
-    lua/lgc.c \
-    lua/linit.c \
-    lua/liolib.c \
-    lua/llex.c \
-    lua/lmathlib.c \
-    lua/lmem.c \
-    lua/loadlib.c \
-    lua/lobject.c \
-    lua/lopcodes.c \
-    lua/loslib.c \
-    lua/lparser.c \
-    lua/lstate.c \
-    lua/lstring.c \
-    lua/lstrlib.c \
-    lua/ltable.c \
-    lua/ltablib.c \
-    lua/ltm.c \
-    lua/lundump.c \
-    lua/lvm.c \
-    lua/lzio.c \
     main.cpp \
     MainWindow.cpp
 
@@ -145,6 +113,7 @@ HEADERS += \
     FilterValidator.h \
     GlobalDefines.h \
     GzipFile.h \
+    IndexNameMap.h \
     KpiKciFileParser.h \
     LogTextEdit.h \
     LuaEnvironment.h \
@@ -266,6 +235,46 @@ win32:CONFIG(release, debug|release) {
 }
 
 win32 {
+    # Compile Lua source files as C++ (the -TP option) so that the luaL_error like functions can use throw instead of longjmp
+    # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/longjmp?view=msvc-170
+    LUA_SOURCES = \
+        lua/lapi.c \
+        lua/lauxlib.c \
+        lua/lbaselib.c \
+        lua/lbitlib.c \
+        lua/lcode.c \
+        lua/lcorolib.c \
+        lua/lctype.c \
+        lua/ldblib.c \
+        lua/ldebug.c \
+        lua/ldo.c \
+        lua/ldump.c \
+        lua/lfunc.c \
+        lua/lgc.c \
+        lua/linit.c \
+        lua/liolib.c \
+        lua/llex.c \
+        lua/lmathlib.c \
+        lua/lmem.c \
+        lua/loadlib.c \
+        lua/lobject.c \
+        lua/lopcodes.c \
+        lua/loslib.c \
+        lua/lparser.c \
+        lua/lstate.c \
+        lua/lstring.c \
+        lua/lstrlib.c \
+        lua/ltable.c \
+        lua/ltablib.c \
+        lua/ltm.c \
+        lua/lundump.c \
+        lua/lvm.c \
+        lua/lzio.c
+    luacpp.input = LUA_SOURCES
+    luacpp.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_IN_BASE}.obj
+    luacpp.commands = $${QMAKE_CXX} -c -TP $(CXXFLAGS) $(INCPATH) -Fo${QMAKE_VAR_OBJECTS_DIR} ${QMAKE_FILE_IN}
+    QMAKE_EXTRA_COMPILERS += luacpp
+
     QT += winextras
     DEFINES += _CRT_SECURE_NO_WARNINGS
     RC_FILE = VisualStatistics.rc

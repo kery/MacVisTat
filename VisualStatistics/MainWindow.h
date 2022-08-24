@@ -1,6 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "lua/lua.h"
+#include "lua/lauxlib.h"
+#include "lua/lualib.h"
 #include <QMainWindow>
 #include <QTimer>
 #include <QFileSystemWatcher>
@@ -23,6 +26,13 @@ public:
     MainWindow();
     ~MainWindow();
 
+    void appendInfoLog(const QString &text);
+    void appendWarnLog(const QString &text);
+    void appendErrorLog(const QString &text);
+
+    QAction * registerMenu(const QString &title, const QString &description);
+    int parseCounterFileData(const char *regexp);
+
 signals:
     void aboutToBeClosed();
 
@@ -40,6 +50,7 @@ private slots:
     void actionHelpTriggered();
     void actionChangeLogTriggered();
     void actionAboutTriggered();
+    void actionRegisteredMenuTriggered();
 
     void caseSensitiveButtonClicked(bool checked);
     void updateCounterNameCountInfo();
@@ -72,6 +83,7 @@ private:
     void loadFilterHistory();
     void saveFilterHistory();
     void adjustFilterHistoryOrder();
+    void initLuaEnv();
     void checkUpdate();
     void downloadCounterDescription();
     void usageReport();
@@ -88,21 +100,20 @@ private:
     };
 
     QString formatLog(const QString &text, LogLevel level);
-    void appendInfoLog(const QString &text);
-    void appendWarnLog(const QString &text);
-    void appendErrorLog(const QString &text);
 
     enum FilePath {
         fpFilterMenu,
         fpFilterHistory,
         fpCounterDescription,
         fpMaintenanceTool,
+        fpPluginDir,
     };
 
     static QString filePath(FilePath fp);
     static int trimLeadingSpace(QString &str);
 
     Ui::MainWindow *ui;
+    lua_State *mL;
     int mOffsetFromUtc;
     QLabel *mStatusBarLabel;
     bool mCaseSensitive;

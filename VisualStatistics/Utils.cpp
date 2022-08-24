@@ -1,3 +1,6 @@
+#include "lua/lua.h"
+#include "lua/lauxlib.h"
+#include "lua/lualib.h"
 #include "Utils.h"
 #include "GlobalDefines.h"
 #include <sstream>
@@ -52,4 +55,14 @@ void showErrorMsgBox(QWidget *parent, const QString &text,
     msgBox.setInformativeText(info);
     msgBox.setDetailedText(detail);
     msgBox.exec();
+}
+
+QString getLastLuaError(lua_State *L)
+{
+    QString err;
+    if (lua_isstring(L, -1)) {
+        err = lua_tostring(L, -1);
+    }
+    lua_pop(L, 1);
+    return err;
 }

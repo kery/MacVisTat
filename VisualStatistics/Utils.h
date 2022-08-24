@@ -18,4 +18,7 @@ void showErrorMsgBox(QWidget *parent, const QString &text,
                      const QString &info=QString(),
                      const QString &detail=QString());
 
+struct lua_State;
+QString getLastLuaError(lua_State *L);
+
 #endif // UTILS_H

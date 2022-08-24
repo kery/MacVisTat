@@ -16,6 +16,41 @@ CounterNameModel::~CounterNameModel()
     pcre2_jit_stack_free(mJitStack);
 }
 
+IndexNameMap CounterNameModel::getIndexNameMap(const char *regexp)
+{
+    IndexNameMap result;
+
+    int errCode;
+    PCRE2_SIZE errOffset;
+    pcre2_code *re = pcre2_compile((PCRE2_SPTR)regexp,
+                                   PCRE2_ZERO_TERMINATED,
+                                   0,
+                                   &errCode,
+                                   &errOffset,
+                                   nullptr);
+    if (re) {
+        pcre2_match_data *matchData = pcre2_match_data_create_from_pattern(re, nullptr);
+        pcre2_match_context *matchCtx = pcre2_match_context_create(nullptr);
+        pcre2_jit_stack_assign(matchCtx, nullptr, mJitStack);
+        pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
+
+        for (int i = 0; i < mCounterNames.size(); ++i) {
+            const QString &counterName = mCounterNames[i];
+            QByteArray baStr = counterName.toLocal8Bit();
+            if (pcre2_match(re, (PCRE2_SPTR)baStr.data(), baStr.size(), 0, 0, matchData, matchCtx) >= 0) {
+                // Skip the first 2 columns (##date;time;) in CSV file.
+                result.insert(i + 2, counterName);
+            }
+        }
+
+        pcre2_match_context_free(matchCtx);
+        pcre2_match_data_free(matchData);
+        pcre2_code_free(re);
+    }
+
+    return result;
+}
+
 void CounterNameModel::setCounterDescription(CounterDescription *desc)
 {
     mCounterDesc = desc;

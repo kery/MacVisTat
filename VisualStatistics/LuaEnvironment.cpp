@@ -6,6 +6,7 @@
 #include "DateTimeTicker.h"
 #include "PlotData.h"
 #include "GlobalDefines.h"
+#include "Utils.h"
 
 char LuaEnvironment::sKeyScriptWnd;
 
@@ -35,7 +36,7 @@ QString LuaEnvironment::doString(const QString &str)
     if ((luaL_loadstring(mL, str.toStdString().c_str()) ||
          lua_pcall(mL, 0, 0, 0)) != LUA_OK)
     {
-        return getLastError();
+        return getLastLuaError(mL);
     }
     return QString();
 }
@@ -46,22 +47,9 @@ QString LuaEnvironment::protectedInit(ScriptWindow *sw)
     lua_pushlightuserdata(mL, sw);
 
     if (lua_pcall(mL, 1, 0, 0) != LUA_OK) {
-        return getLastError();
+        return getLastLuaError(mL);
     }
     return QString();
-}
-
-QString LuaEnvironment::getLastError()
-{
-    QString err;
-    const char *msg = lua_type(mL, -1) == LUA_TSTRING ? lua_tostring(mL, -1) : nullptr;
-    if (msg != nullptr) {
-        err = msg;
-    } else {
-        err = "error is not a string";
-    }
-    lua_pop(mL, 1);
-    return err;
 }
 
 ScriptWindow * LuaEnvironment::scriptWindow(lua_State *L)

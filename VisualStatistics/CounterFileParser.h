@@ -2,6 +2,7 @@
 #define COUNTERFILEPARSER_H
 
 #include "PlotData.h"
+#include "IndexNameMap.h"
 
 class QWidget;
 class ProgressDialog;
@@ -9,8 +10,6 @@ class ProgressDialog;
 class CounterFileParser
 {
 public:
-    typedef QMap<int, QString> IndexNameMap;
-
     CounterFileParser(QWidget *parent);
     int offsetFromUtc() const;
 
