@@ -31,7 +31,7 @@ public:
     void appendErrorLog(const QString &text);
 
     QAction * registerMenu(const QString &title, const QString &description);
-    int parseCounterFileData(const char *regexp);
+    int parseCounterFileData();
 
 signals:
     void aboutToBeClosed();

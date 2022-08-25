@@ -133,8 +133,11 @@ QAction *MainWindow::registerMenu(const QString &title, const QString &descripti
     return action;
 }
 
-int MainWindow::parseCounterFileData(const char *regexp)
+int MainWindow::parseCounterFileData()
 {
+    const char *regexp = luaL_checkstring(mL, 1);
+    double defValue = luaL_optnumber(mL, 2, NAN);
+
     if (mCounterFilePath.isEmpty()) {
         luaL_error(mL, "no counter file opened");
     }
@@ -158,21 +161,15 @@ int MainWindow::parseCounterFileData(const char *regexp)
         luaL_error(mL, "%s", error.toStdString().c_str());
     }
 
-    lua_createtable(mL, 0, 2); // result table
-    lua_pushstring(mL, "timestamps");
-
     const CounterData &cdata = dataMap.first();
-    lua_createtable(mL, cdata.data.size(), 0); // timestamps table
+    lua_createtable(mL, cdata.data.size(), 0); // first result table which contains timestamps
     for (int i = 1; i <= cdata.data.size(); ++i) {
         lua_pushnumber(mL, cdata.data.at(i - 1)->key);
         lua_rawseti(mL, -2, i);
     }
-    lua_rawset(mL, -3);
-
-    lua_pushstring(mL, "counters");
 
     int n = 0;
-    lua_createtable(mL, dataMap.size(), 0); // counters table
+    lua_createtable(mL, dataMap.size(), 0); // second result table which contains counters
     for (auto iter = dataMap.begin(); iter != dataMap.end(); ++iter) {
         lua_createtable(mL, 0, 2);
         lua_pushstring(mL, "name");
@@ -182,7 +179,8 @@ int MainWindow::parseCounterFileData(const char *regexp)
         lua_pushstring(mL, "values");
         lua_createtable(mL, cdata.data.size(), 0);
         for (int i = 1; i <= cdata.data.size(); ++i) {
-            lua_pushnumber(mL, iter.value().data.at(i - 1)->value);
+            double value = iter.value().data.at(i - 1)->value;
+            lua_pushnumber(mL, qIsNaN(value) ? defValue : value);
             lua_rawseti(mL, -2, i);
         }
         lua_rawset(mL, -3);
@@ -190,9 +188,7 @@ int MainWindow::parseCounterFileData(const char *regexp)
         lua_rawseti(mL, -2, ++n);
     }
 
-    lua_rawset(mL, -3);
-
-    return 1;
+    return 2;
 }
 
 void MainWindow::actionOpenTriggered()
@@ -340,29 +336,21 @@ void MainWindow::actionRegisteredMenuTriggered()
     }
 
     lua_rawgetp(mL, LUA_REGISTRYINDEX, source);
-    if (lua_pcall(mL, 0, 1, 0) != LUA_OK) {
+    if (lua_pcall(mL, 0, 2, 0) != LUA_OK) {
         QString err = getLastLuaError(mL);
         appendWarnLog(err);
         return;
     }
 
-    if (!lua_istable(mL, -1)) {
-        lua_pop(mL, 1);
-        appendWarnLog(QStringLiteral("result must be a table"));
-        return;
-    }
-
-    lua_pushstring(mL, "timestamps");
-    lua_rawget(mL, -2);
-    if (!lua_istable(mL, -1)) {
+    if (!lua_istable(mL, 1) || !lua_istable(mL, 2)) {
         lua_pop(mL, 2);
-        appendWarnLog(QStringLiteral("field 'timestamps' must be a table"));
+        appendWarnLog(QStringLiteral("the registered function must return two tables"));
         return;
     }
 
     QVector<double> timestamps;
     lua_pushnil(mL);
-    while (lua_next(mL, -2) != 0) {
+    while (lua_next(mL, 1) != 0) {
         int isNum;
         double ts = lua_tonumberx(mL, -1, &isNum);
         if (isNum) {
@@ -370,33 +358,24 @@ void MainWindow::actionRegisteredMenuTriggered()
             lua_pop(mL, 1);
         } else {
             lua_pop(mL, 4);
-            appendWarnLog(QStringLiteral("elements in 'timestamps' must be Unix time"));
+            appendWarnLog(QStringLiteral("elements in first result table must be Unix time"));
             return;
         }
     }
 
-    lua_pop(mL, 1); // pop the timestamps table
-    lua_pushstring(mL, "counters");
-    lua_rawget(mL, -2);
-    if (!lua_istable(mL, -1)) {
-        lua_pop(mL, 2);
-        appendWarnLog(QStringLiteral("field 'counters' must be a table"));
-        return;
-    }
-
     CounterDataMap dataMap;
     lua_pushnil(mL);
-    while (lua_next(mL, -2) != 0) {
+    while (lua_next(mL, 2) != 0) {
         if (!lua_istable(mL, -1)) {
             lua_pop(mL, 4);
-            appendWarnLog(QStringLiteral("elements in 'counters' must be a table"));
+            appendWarnLog(QStringLiteral("elements in second result table must be a table"));
             return;
         }
         lua_pushstring(mL, "name");
         lua_rawget(mL, -2);
         if (!lua_isstring(mL, -1)) {
             lua_pop(mL, 5);
-            appendWarnLog(QStringLiteral("field 'name' must be a string"));
+            appendWarnLog(QStringLiteral("value of 'name' must be a string"));
             return;
         }
         QString name(lua_tostring(mL, -1));
@@ -406,7 +385,7 @@ void MainWindow::actionRegisteredMenuTriggered()
         lua_rawget(mL, -2);
         if (!lua_istable(mL, -1)) {
             lua_pop(mL, 5);
-            appendWarnLog(QStringLiteral("field 'values' must be a table"));
+            appendWarnLog(QStringLiteral("value of 'values' must be a table"));
             return;
         }
 
@@ -429,7 +408,7 @@ void MainWindow::actionRegisteredMenuTriggered()
 
     lua_pop(mL, 2);
     if (dataMap.isEmpty()) {
-        appendWarnLog(QStringLiteral("field 'counters' has no data"));
+        appendWarnLog(QStringLiteral("the second result table has no counters"));
         return;
     }
 
@@ -909,9 +888,7 @@ static int registerMenu(lua_State *L)
 
 static int parse(lua_State *L)
 {
-    const char *regexp = luaL_checkstring(L, 1);
-
-    return mainWindow(L)->parseCounterFileData(regexp);
+    return mainWindow(L)->parseCounterFileData();
 }
 
 static int initLuaEnv(lua_State *L)
