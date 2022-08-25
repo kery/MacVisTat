@@ -20,6 +20,7 @@ public:
         upChangeLog,
         upUsageReport,
         upUpload,
+        upPlugins,
     };
 
     static QUrl getUrl(UrlPath up);

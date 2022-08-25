@@ -21,9 +21,11 @@ private:
 public:
     static bool sDefIgnoreConstant;
     static bool sDefAbortConvOnFailure;
+    static bool sDefLoadOnlinePlugins;
 
     static QString sKeyIgnoreConstant;
     static QString sKeyAbortConvOnFailure;
+    static QString sKeyLoadOnlinePlugins;
 
 private:
     Ui::OptionsDialog *ui;

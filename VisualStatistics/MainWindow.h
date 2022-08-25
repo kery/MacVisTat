@@ -63,6 +63,8 @@ private slots:
     void downloadCounterDescriptionFinished();
     void checkUpdateFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void checkUpdateFailed(QProcess::ProcessError error);
+    void listOnlinePluginsFinished();
+    void loadOnlinePluginsFinished();
 
 private:
     virtual bool eventFilter(QObject *obj, QEvent *event) override;
@@ -84,6 +86,8 @@ private:
     void saveFilterHistory();
     void adjustFilterHistoryOrder();
     void initLuaEnv();
+    void listOnlinePlugins();
+    void loadOnlinePlugins(const QStringList &hrefs);
     void checkUpdate();
     void downloadCounterDescription();
     void usageReport();

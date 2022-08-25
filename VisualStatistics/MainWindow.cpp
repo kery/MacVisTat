@@ -82,6 +82,7 @@ MainWindow::MainWindow() :
     checkUpdate();
     usageReport();
 #endif
+    listOnlinePlugins();
     downloadCounterDescription();
 }
 
@@ -561,6 +562,62 @@ void MainWindow::checkUpdateFailed(QProcess::ProcessError error)
     appendWarnLog(QStringLiteral("updater failed with error code %1").arg(error));
 }
 
+void MainWindow::listOnlinePluginsFinished()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    reply->deleteLater();
+
+    if (reply->error() != QNetworkReply::NoError) {
+        appendWarnLog(reply->errorString());
+        return;
+    }
+
+    QStringList hrefList;
+    QByteArray netData = reply->readAll();
+    QXmlStreamReader xmlReader(netData);
+
+    while (!xmlReader.atEnd()) {
+        QXmlStreamReader::TokenType tokenType = xmlReader.readNext();
+        if (tokenType != QXmlStreamReader::StartElement) {
+            continue;
+        }
+        if (xmlReader.name() != "a") {
+            continue;
+        }
+        QXmlStreamAttributes attrs = xmlReader.attributes();
+        QStringRef href = attrs.value(QLatin1String("href"));
+        if (href.isEmpty() || !href.endsWith(QLatin1String(".lua"))) {
+            continue;
+        }
+        hrefList.append(href.toString());
+    }
+
+    loadOnlinePlugins(hrefList);
+}
+
+void MainWindow::loadOnlinePluginsFinished()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    QStringList hrefs = reply->property("hrefs").toStringList();
+    reply->deleteLater();
+
+    if (reply->error() != QNetworkReply::NoError) {
+        appendWarnLog(reply->errorString());
+        return;
+    }
+
+    QByteArray baPlugin = reply->readAll();
+    if (luaL_dostring(mL, baPlugin.constData()) != LUA_OK) {
+        QString err = getLastLuaError(mL);
+        err += " in ";
+        err += reply->url().toString();
+        appendWarnLog(err);
+    }
+
+    hrefs.removeFirst();
+    loadOnlinePlugins(hrefs);
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == ui->counterNameViewParent && event->type() == QEvent::StatusTip) {
@@ -944,6 +1001,35 @@ void MainWindow::initLuaEnv()
             appendWarnLog(err);
         }
     }
+}
+
+void MainWindow::listOnlinePlugins()
+{
+    QSettings settings;
+    bool loadPlugins = settings.value(OptionsDialog::sKeyLoadOnlinePlugins, OptionsDialog::sDefLoadOnlinePlugins).toBool();
+    if (!loadPlugins) {
+        return;
+    }
+
+    Application *app = Application::instance();
+    QUrl url = app->getUrl(Application::upPlugins);
+    QNetworkRequest request(url);
+    QNetworkReply *reply = app->networkAccessManager().get(request);
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::listOnlinePluginsFinished);
+}
+
+void MainWindow::loadOnlinePlugins(const QStringList &hrefs)
+{
+    if (hrefs.isEmpty()) {
+        return;
+    }
+
+    Application *app = Application::instance();
+    QUrl url = app->getUrl(Application::upPlugins).resolved(hrefs.first());
+    QNetworkRequest request(url);
+    QNetworkReply *reply = app->networkAccessManager().get(request);
+    reply->setProperty("hrefs", hrefs);
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::loadOnlinePluginsFinished);
 }
 
 void MainWindow::checkUpdate()

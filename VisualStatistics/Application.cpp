@@ -33,6 +33,8 @@ QUrl Application::getUrl(UrlPath up)
         return root.resolved(QStringLiteral("/report"));
     case upUpload:
         return root.resolved(QStringLiteral("/upload"));
+    case upPlugins:
+        return root.resolved(QStringLiteral("/plugins/"));
     }
     return root;
 }

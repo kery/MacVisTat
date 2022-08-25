@@ -25,7 +25,7 @@ func (d dirWithStat) Open(name string) (http.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	if fi.IsDir() {
+	if fi.IsDir() &&  name != "/plugins" {
 		return nil, os.ErrPermission
 	}
 	mutex.Lock()

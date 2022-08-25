@@ -29,6 +29,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="loadOnlinePluginsCheckBox">
+     <property name="text">
+      <string>Load online plugins at startup</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

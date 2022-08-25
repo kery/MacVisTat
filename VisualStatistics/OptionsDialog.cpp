@@ -6,9 +6,11 @@
 
 bool OptionsDialog::sDefIgnoreConstant = true;
 bool OptionsDialog::sDefAbortConvOnFailure = true;
+bool OptionsDialog::sDefLoadOnlinePlugins = true;
 
 QString OptionsDialog::sKeyIgnoreConstant("ignoreConstant");
 QString OptionsDialog::sKeyAbortConvOnFailure("abortConvOnFailure");
+QString OptionsDialog::sKeyLoadOnlinePlugins("loadOnlinePlugins");
 
 OptionsDialog::OptionsDialog(QWidget *parent) :
     QDialog(parent),
@@ -21,6 +23,7 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     QSettings setting;
     ui->ignoreConstCheckBox->setChecked(setting.value(sKeyIgnoreConstant, sDefIgnoreConstant).toBool());
     ui->abortConvOnFailureCheckBox->setChecked(setting.value(sKeyAbortConvOnFailure, sDefAbortConvOnFailure).toBool());
+    ui->loadOnlinePluginsCheckBox->setChecked(setting.value(sKeyLoadOnlinePlugins, sDefLoadOnlinePlugins).toBool());
 }
 
 OptionsDialog::~OptionsDialog()
@@ -41,4 +44,5 @@ void OptionsDialog::accept()
     QSettings setting;
     setting.setValue(sKeyIgnoreConstant, ui->ignoreConstCheckBox->isChecked());
     setting.setValue(sKeyAbortConvOnFailure, ui->abortConvOnFailureCheckBox->isChecked());
+    setting.setValue(sKeyLoadOnlinePlugins, ui->loadOnlinePluginsCheckBox->isChecked());
 }
