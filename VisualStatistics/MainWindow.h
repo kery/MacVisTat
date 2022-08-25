@@ -46,6 +46,7 @@ private slots:
     void actionEditFilterMenuTriggered();
     void actionPlotTriggered();
     void actionPlotSeparatelyTriggered();
+    void actionOpenPluginsFolderTriggered();
     void actionOptionsTriggered();
     void actionHelpTriggered();
     void actionChangeLogTriggered();

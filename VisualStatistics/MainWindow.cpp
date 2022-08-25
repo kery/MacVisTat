@@ -65,6 +65,7 @@ MainWindow::MainWindow() :
     connect(ui->actionCloseFile, &QAction::triggered, this, &MainWindow::actionCloseFileTriggered);
     connect(ui->actionPlot, &QAction::triggered, this, &MainWindow::actionPlotTriggered);
     connect(ui->actionPlotSeparately, &QAction::triggered, this, &MainWindow::actionPlotSeparatelyTriggered);
+    connect(ui->actionOpenPluginsFolder, &QAction::triggered, this, &MainWindow::actionOpenPluginsFolderTriggered);
     connect(ui->actionOptions, &QAction::triggered, this, &MainWindow::actionOptionsTriggered);
     connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::actionHelpTriggered);
     connect(ui->actionChangeLog, &QAction::triggered, this, &MainWindow::actionChangeLogTriggered);
@@ -146,7 +147,7 @@ int MainWindow::parseCounterFileData()
     CounterNameModel *model = qobject_cast<CounterNameModel *>(ui->counterNameView->model());
     IndexNameMap inm = model->getIndexNameMap(regexp);
     if (inm.isEmpty()) {
-        luaL_error(mL, "no counter match filter '%s'", regexp);
+        luaL_error(mL, "no counter matches filter '%s'", regexp);
     }
 
     bool canceled;
@@ -303,6 +304,15 @@ void MainWindow::actionPlotTriggered()
 void MainWindow::actionPlotSeparatelyTriggered()
 {
     parseCounterFileData(true);
+}
+
+void MainWindow::actionOpenPluginsFolderTriggered()
+{
+    QDir dir(filePath(fpPluginDir));
+    if (!dir.exists()) {
+        dir.mkpath(QStringLiteral("."));
+    }
+    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.absolutePath()));
 }
 
 void MainWindow::actionOptionsTriggered()
