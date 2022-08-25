@@ -84,9 +84,9 @@ int LuaEnvironment::graphName(lua_State *L)
 {
     int graphIndex = luaL_checkint(L, 1);
     CounterPlot *plot = plotWindow(L)->ui->plot;
-    luaL_argcheck(L, graphIndex >= 0 && graphIndex < plot->graphCount(), 1, "graph index out of range");
+    luaL_argcheck(L, graphIndex > 0 && graphIndex <= plot->graphCount(), 1, "graph index out of range");
 
-    QString name = plot->graph(graphIndex)->name();
+    QString name = plot->graph(graphIndex - 1)->name();
     lua_pushstring(L, name.toStdString().c_str());
     return 1;
 }
@@ -96,7 +96,7 @@ int LuaEnvironment::getLastKey(lua_State *L)
     PlotWindow *plotWnd = plotWindow(L);
     QSharedPointer<QCPGraphDataContainer> data = plotWnd->mPlotData.firstCounterData();
     if (data && data->size() > 0) {
-        lua_pushinteger(L, data->size() - 1);
+        lua_pushinteger(L, data->size());
     } else {
         lua_pushnil(L);
     }
@@ -107,13 +107,13 @@ int LuaEnvironment::getValue(lua_State *L)
 {
     int graphIndex = luaL_checkint(L, 1);
     CounterPlot *plot = plotWindow(L)->ui->plot;
-    luaL_argcheck(L, graphIndex >= 0 && graphIndex < plot->graphCount(), 1, "graph index out of range");
+    luaL_argcheck(L, graphIndex > 0 && graphIndex <= plot->graphCount(), 1, "graph index out of range");
 
     int valueIndex = luaL_checkint(L, 2);
-    QSharedPointer<QCPGraphDataContainer> data = plot->graph(graphIndex)->data();
-    luaL_argcheck(L, valueIndex >= 0 && valueIndex < data->size(), 2, "key out of range");
+    QSharedPointer<QCPGraphDataContainer> data = plot->graph(graphIndex - 1)->data();
+    luaL_argcheck(L, valueIndex > 0 && valueIndex <= data->size(), 2, "key out of range");
 
-    double value = data->at(valueIndex)->value;
+    double value = data->at(valueIndex - 1)->value;
     if (qIsNaN(value) && lua_isnumber(L, 3)) {
         lua_pushvalue(L, 3);
     } else {

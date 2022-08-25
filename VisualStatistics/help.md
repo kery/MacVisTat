@@ -2,7 +2,7 @@
 
 This tool is used to plot the CMG KPI-KCI counter files. You can download it from [here](http://sdu.int.nokia-sbell.com:4099/VisualStatisticsSetup.exe).
 
-<img src="images/main-window.gif" style="width:50%;padding-right:2px;"/><img src="images/plot-window.gif" style="width:50%;padding-left:2px;"/> 
+<img src="images/main-window.gif" style="width:50%;padding-right:2px;"/><img src="images/plot-window.gif" style="width:50%;padding-left:2px;"/>
 
 ### Tutorials
 
@@ -44,19 +44,19 @@ Returns the total number of graphs in a plot window.
 function plot.graph_name(graph)
 ```
 
-Returns the name of a graph. The first parameter 'graph' is the index of the graph in legend box, the index starts from 0.
+Returns the name of a graph. The first parameter 'graph' is the index of the graph in legend box, the index starts from 1.
 
 ```lua
 function plot.get_lastkey()
 ```
 
-Returns the last key of the plot, i.e. the last coordinate of the *x* axis. The first key of a plot is 0, the second key is 1, and so on.
+Returns the last key of the plot, i.e. the last coordinate of the *x* axis. The first key of a plot is 1, the second key is 2, and so on.
 
 ```lua
 function plot.get_value(graph, key, default)
 ```
 
-Returns the value of a graph at 'key'. The first parameter 'graph' is the index of the graph in legend box, the index starts from 0.  If the value of 'key' does not exist, the third optional parameter 'default' will be returned. If the 'default' is not given, a `NaN` will be returned.
+Returns the value of a graph at 'key'. The first parameter 'graph' is the index of the graph in legend box, the index starts from 1.  If the value of 'key' does not exist, the third optional parameter 'default' will be returned. If the 'default' is not given, a `NaN` will be returned.
 
 ```lua
 function plot.add_graph(name, data, r, g, b)
@@ -84,8 +84,8 @@ Add a new graph whose values are the sum of the first two graphs.
 
 ```lua
 local data = {}
-for key=0, plot.get_lastkey() do
-    data[key] = plot.get_value(0, key, 0) + plot.get_value(1, key, 0)
+for key=1, plot.get_lastkey() do
+    data[key] = plot.get_value(1, key, 0) + plot.get_value(2, key, 0)
 end
 plot.add_graph("graph_sum", data)
 plot.update()
@@ -95,8 +95,8 @@ Add a new graph with blue color and its values are the first graph's value divid
 
 ```lua
 local data = {}
-for key=0, plot.get_lastkey() do
-    data[key] = plot.get_value(0, key, 0)/1000
+for key=1, plot.get_lastkey() do
+    data[key] = plot.get_value(1, key, 0)/1000
 end
 plot.add_graph("divide_1000", data, 0, 0, 255)
 plot.update()
