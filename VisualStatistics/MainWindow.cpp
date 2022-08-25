@@ -110,7 +110,23 @@ void MainWindow::appendErrorLog(const QString &text)
 
 QAction *MainWindow::registerMenu(const QString &title, const QString &description)
 {
-    QAction *action = ui->menuPlot->addAction(title, this, &MainWindow::actionRegisteredMenuTriggered);
+    QStringList menuTitles = title.split('/', QString::SkipEmptyParts);
+    if (menuTitles.isEmpty()) {
+        luaL_error(mL, "menu title is empty");
+    }
+
+    QMenu *curMenu = ui->menuPlot;
+    for (int i = 0; i < menuTitles.size() - 1; ++i) {
+        QString simpleTitle = menuTitles[i].simplified();
+        QMenu *tempMenu = curMenu->findChild<QMenu *>(simpleTitle, Qt::FindDirectChildrenOnly);
+        if (tempMenu == nullptr) {
+            tempMenu = curMenu->addMenu(simpleTitle);
+            tempMenu->setObjectName(simpleTitle);
+        }
+        curMenu = tempMenu;
+    }
+
+    QAction *action = curMenu->addAction(menuTitles.last().simplified(), this, &MainWindow::actionRegisteredMenuTriggered);
     if (!description.isEmpty()) {
         action->setStatusTip(description);
     }
@@ -409,6 +425,12 @@ void MainWindow::actionRegisteredMenuTriggered()
         }
 
         lua_pop(mL, 2);
+    }
+
+    lua_pop(mL, 2);
+    if (dataMap.isEmpty()) {
+        appendWarnLog(QStringLiteral("field 'counters' has no data"));
+        return;
     }
 
     PlotData plotData(mOffsetFromUtc, CounterFileParser::getNodeName(mCounterFilePath));
