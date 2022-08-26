@@ -66,6 +66,7 @@ MainWindow::MainWindow() :
     connect(ui->actionPlot, &QAction::triggered, this, &MainWindow::actionPlotTriggered);
     connect(ui->actionPlotSeparately, &QAction::triggered, this, &MainWindow::actionPlotSeparatelyTriggered);
     connect(ui->actionOpenPluginsFolder, &QAction::triggered, this, &MainWindow::actionOpenPluginsFolderTriggered);
+    connect(ui->actionBrowseOnlinePlugins, &QAction::triggered, this, &MainWindow::actionBrowseOnlinePluginsTriggered);
     connect(ui->actionOptions, &QAction::triggered, this, &MainWindow::actionOptionsTriggered);
     connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::actionHelpTriggered);
     connect(ui->actionChangeLog, &QAction::triggered, this, &MainWindow::actionChangeLogTriggered);
@@ -313,6 +314,13 @@ void MainWindow::actionOpenPluginsFolderTriggered()
         dir.mkpath(QStringLiteral("."));
     }
     QDesktopServices::openUrl(QUrl::fromLocalFile(dir.absolutePath()));
+}
+
+void MainWindow::actionBrowseOnlinePluginsTriggered()
+{
+    Application *app = Application::instance();
+    QUrl url = app->getUrl(Application::upPlugins);
+    QDesktopServices::openUrl(url);
 }
 
 void MainWindow::actionOptionsTriggered()
@@ -620,8 +628,13 @@ void MainWindow::loadOnlinePluginsFinished()
     if (luaL_dostring(mL, baPlugin.constData()) != LUA_OK) {
         QString err = getLastLuaError(mL);
         err += " in ";
-        err += reply->url().toString();
+        err += hrefs.first();
         appendWarnLog(err);
+    } else {
+        QString logText("load online plugin ");
+        logText += hrefs.first();
+        logText += " successfully";
+        appendInfoLog(logText);
     }
 
     hrefs.removeFirst();

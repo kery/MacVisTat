@@ -176,6 +176,7 @@
     <addaction name="actionPlotSeparately"/>
     <addaction name="separator"/>
     <addaction name="actionOpenPluginsFolder"/>
+    <addaction name="actionBrowseOnlinePlugins"/>
     <addaction name="actionOptions"/>
     <addaction name="separator"/>
    </widget>
@@ -352,10 +353,21 @@
     <string>Open Plugins Folder</string>
    </property>
    <property name="toolTip">
-    <string>Open plugins folder</string>
+    <string>Open local plugins folder</string>
    </property>
    <property name="statusTip">
-    <string>Open plugins folder</string>
+    <string>Open local plugins folder</string>
+   </property>
+  </action>
+  <action name="actionBrowseOnlinePlugins">
+   <property name="text">
+    <string>Browse Online Plugins</string>
+   </property>
+   <property name="toolTip">
+    <string>Browse online plugins in default browser</string>
+   </property>
+   <property name="statusTip">
+    <string>Browse online plugins in default browser</string>
    </property>
   </action>
  </widget>

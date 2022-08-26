@@ -47,6 +47,7 @@ private slots:
     void actionPlotTriggered();
     void actionPlotSeparatelyTriggered();
     void actionOpenPluginsFolderTriggered();
+    void actionBrowseOnlinePluginsTriggered();
     void actionOptionsTriggered();
     void actionHelpTriggered();
     void actionChangeLogTriggered();
