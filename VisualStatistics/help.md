@@ -1,6 +1,6 @@
 ### Visual Statistics
 
-This tool is used to plot the CMG KPI-KCI counter files. You can download it from [here](http://sdu.int.nokia-sbell.com:4099/VisualStatisticsSetup.exe).
+This tool is used to plot the CMG KPI-KCI counter files. You can download it for [Windows](http://sdu.int.nokia-sbell.com:4099/VisualStatisticsSetup.exe) or [Linux](http://sdu.int.nokia-sbell.com:4099/VisualStatisticsSetup.run).
 
 <img src="images/main-window.gif" style="width:50%;padding-right:2px;"/><img src="images/plot-window.gif" style="width:50%;padding-left:2px;"/>
 
@@ -30,7 +30,57 @@ Two types of comment can be added in plot window. Right click at blank area and 
 
 The legend box and comment items are draggable and can be dragged at any place in the axis rectangle.
 
-### Lua support
+### Lua support in main window
+
+Lua support in main window is useful to customize the plotting, e.g. plotting complex graphs which are the result of some mathematical operations.
+
+The application will load all the Lua files in plugin folder at startup. The plugin folder can be opened by menu *Plot>Open Plugins Folder*. In addition, if the *Load online plugins at startup* in options dialog is checked, the application will also load all the online plugins which can be browsed by menu *Plot>Browse Online Plugins*.
+
+Two functions are exposed:
+
+```lua
+function vs.parse(filter, default)
+```
+
+Parses the counters which matches the regular expression `filter`. If `default` is given, it is used to replace the nonexistent values. This function returns two tables. The first table is an array which contains the timestamps in Unix time; the second table is also an array which contains the parsed counters.
+
+Example of timestamps table:
+
+```json
+{1661012100, 1661013000, 1661013900, ...}
+```
+
+Example of parsed counters table:
+
+```json
+{
+    {
+    	["name"] = "counter1",
+		["values"] = {23, 45, 64, ...}
+	},
+	{
+        ["name"] = "counter2",
+        ["values"] = {52, 46, 12, ...}
+    },
+	...
+}
+```
+
+```lua
+function vs.register_menu(title, func, description)
+```
+
+Registers the function `func` with a submenu whos title is set to `title`. The slashes in `title` separate the submenu in multiple level. The registered menu is displayed in *Plot* menu. The optional `description` can be used to describe the registered function and it will be displayed in status bar.
+
+The registered function `func` has following signature. It must return two tables which have same format as `vs.parse` returns. The application will use the return tables to plot the counters in a new plot window.
+
+```lua
+function func()
+    return timestamps, counters
+end
+```
+
+### Lua support in plot window
 
 Click the button <img src="images/tool-button-script.png"/> in tool bar of plot window to open the script window. Below is the description of the exposed functions.
 
@@ -44,7 +94,7 @@ Returns the total number of graphs in a plot window.
 function plot.graph_name(graph)
 ```
 
-Returns the name of a graph. The first parameter 'graph' is the index of the graph in legend box, the index starts from 1.
+Returns the name of a graph. The first parameter `graph` is the index of the graph in legend box, the index starts from 1.
 
 ```lua
 function plot.get_lastkey()
@@ -56,13 +106,13 @@ Returns the last key of the plot, i.e. the last coordinate of the *x* axis. The 
 function plot.get_value(graph, key, default)
 ```
 
-Returns the value of a graph at 'key'. The first parameter 'graph' is the index of the graph in legend box, the index starts from 1.  If the value of 'key' does not exist, the third optional parameter 'default' will be returned. If the 'default' is not given, a `NaN` will be returned.
+Returns the value of a graph at `key`. The first parameter `graph` is the index of the graph in legend box, the index starts from 1.  If the value of `key` does not exist, the third optional parameter `default` will be returned. If the `default` is not given, a `NaN` will be returned.
 
 ```lua
 function plot.add_graph(name, data, r, g, b)
 ```
 
-Adds a new graph in plot window with 'name'. The parameter 'data' is an array, the elements' index is represented as the key of the graph. The optional parameters *r*, *g*, *b* will be used as the color of the graph.
+Adds a new graph in plot window with `name`. The parameter `data` is an array, the elements' index is represented as the key of the graph. The optional parameters `r`, `g`, `b` will be used as the color of the graph.
 
 ```lua
 function plot.update()
@@ -74,7 +124,7 @@ Updates the plot. It is necessary to call this function after adding one or more
 function print(text)
 ```
 
-Prints out the 'text' to the log pane of the script window.
+Prints out the `text` to the log pane of the script window.
 
 **Examples**
 
