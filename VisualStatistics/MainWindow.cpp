@@ -586,7 +586,7 @@ void MainWindow::listOnlinePluginsFinished()
     reply->deleteLater();
 
     if (reply->error() != QNetworkReply::NoError) {
-        appendWarnLog(reply->errorString());
+        appendWarnLog("failed to get online plugins: " + reply->errorString());
         return;
     }
 
@@ -1022,6 +1022,11 @@ void MainWindow::initLuaEnv()
         if (luaL_dofile(mL, path.c_str()) != LUA_OK) {
             QString err = getLastLuaError(mL);
             appendWarnLog(err);
+        } else {
+            QString logText("load offline plugin ");
+            logText += fn;
+            logText += " successfully";
+            appendInfoLog(logText);
         }
     }
 }

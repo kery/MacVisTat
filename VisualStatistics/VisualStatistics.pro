@@ -221,6 +221,41 @@ RESOURCES += \
 
 INCLUDEPATH += libexpat/expat/lib/ breakpad/src/ quazip/quazip/
 
+# Compile Lua source files as C++ so that the luaL_error like functions can use throw instead of longjmp
+LUA_SOURCES = \
+    lua/lapi.c \
+    lua/lauxlib.c \
+    lua/lbaselib.c \
+    lua/lbitlib.c \
+    lua/lcode.c \
+    lua/lcorolib.c \
+    lua/lctype.c \
+    lua/ldblib.c \
+    lua/ldebug.c \
+    lua/ldo.c \
+    lua/ldump.c \
+    lua/lfunc.c \
+    lua/lgc.c \
+    lua/linit.c \
+    lua/liolib.c \
+    lua/llex.c \
+    lua/lmathlib.c \
+    lua/lmem.c \
+    lua/loadlib.c \
+    lua/lobject.c \
+    lua/lopcodes.c \
+    lua/loslib.c \
+    lua/lparser.c \
+    lua/lstate.c \
+    lua/lstring.c \
+    lua/lstrlib.c \
+    lua/ltable.c \
+    lua/ltablib.c \
+    lua/ltm.c \
+    lua/lundump.c \
+    lua/lvm.c \
+    lua/lzio.c
+
 win32:CONFIG(debug, debug|release) {
     LIBS += -L../build-breakpad-Debug/lib/
     LIBS += -L../build-quazip-Debug/debug/ -lquazipd
@@ -235,43 +270,10 @@ win32:CONFIG(release, debug|release) {
 }
 
 win32 {
-    # Compile Lua source files as C++ (the -TP option) so that the luaL_error like functions can use throw instead of longjmp
     # https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/longjmp?view=msvc-170
-    LUA_SOURCES = \
-        lua/lapi.c \
-        lua/lauxlib.c \
-        lua/lbaselib.c \
-        lua/lbitlib.c \
-        lua/lcode.c \
-        lua/lcorolib.c \
-        lua/lctype.c \
-        lua/ldblib.c \
-        lua/ldebug.c \
-        lua/ldo.c \
-        lua/ldump.c \
-        lua/lfunc.c \
-        lua/lgc.c \
-        lua/linit.c \
-        lua/liolib.c \
-        lua/llex.c \
-        lua/lmathlib.c \
-        lua/lmem.c \
-        lua/loadlib.c \
-        lua/lobject.c \
-        lua/lopcodes.c \
-        lua/loslib.c \
-        lua/lparser.c \
-        lua/lstate.c \
-        lua/lstring.c \
-        lua/lstrlib.c \
-        lua/ltable.c \
-        lua/ltablib.c \
-        lua/ltm.c \
-        lua/lundump.c \
-        lua/lvm.c \
-        lua/lzio.c
     luacpp.input = LUA_SOURCES
     luacpp.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_IN_BASE}.obj
+    # -TP option: compile all files as .cpp
     luacpp.commands = $${QMAKE_CXX} -c -TP $(CXXFLAGS) $(INCPATH) -Fo${QMAKE_VAR_OBJECTS_DIR} ${QMAKE_FILE_IN}
     QMAKE_EXTRA_COMPILERS += luacpp
 
@@ -298,6 +300,12 @@ unix:CONFIG(release, debug|release) {
 }
 
 unix {
+    luacpp.input = LUA_SOURCES
+    luacpp.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_IN_BASE}.o
+    # g++ compiles both .c and .cpp files as C++
+    luacpp.commands = $${QMAKE_CXX} -c $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN}
+    QMAKE_EXTRA_COMPILERS += luacpp
+
     TARGET = VisualStatistics
 
     INCLUDEPATH += pcre2/src/
