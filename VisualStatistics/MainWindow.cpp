@@ -210,8 +210,13 @@ void MainWindow::actionXmlToCsvTriggered()
 {
     FileDialog dlg(this);
     dlg.setFileMode(QFileDialog::ExistingFiles);
-    dlg.setNameFilters({QStringLiteral("KPI/KCI File (*.xml.gz)"), QStringLiteral("KPI/KCI File (*.xml)"), QStringLiteral("KPI/KCI File (*)")});
-    if (dlg.exec() != QDialog::Accepted) { return; }
+    dlg.setNameFilters({QStringLiteral("Gzip KPI/KCI File (*.xml.gz)"),
+                        QStringLiteral("XML KPI/KCI File (*.xml)"),
+                        QStringLiteral("Any KPI/KCI File (*)")});
+    connect(&dlg, &QFileDialog::directoryEntered, this, &MainWindow::kpikciFileDlgDirEntered);
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
 
     actionCloseFileTriggered();
 
@@ -441,6 +446,28 @@ void MainWindow::caseSensitiveButtonClicked(bool /*checked*/)
     mCaseSensitive = !mCaseSensitive;
     updateCaseSensitiveButtonFont();
     updateFilterPattern();
+}
+
+void MainWindow::kpikciFileDlgDirEntered(const QString &dir)
+{
+    FileDialog *dlg = qobject_cast<FileDialog *>(sender());
+    int cntXmlGz = 0, cntXml = 0;
+    QStringList fileNames = QDir(dir).entryList(QDir::Files);
+    for (const QString &fn : qAsConst(fileNames)) {
+        if (fn.endsWith(QLatin1String(".xml.gz"), Qt::CaseInsensitive)) {
+            ++cntXmlGz;
+        } else if (fn.endsWith(QLatin1String(".xml"), Qt::CaseInsensitive)) {
+            ++cntXml;
+        }
+    }
+
+    if (cntXmlGz == 0 && cntXml == 0) {
+        dlg->selectNameFilter(2);
+    } else if (cntXml > cntXmlGz) {
+        dlg->selectNameFilter(1);
+    } else {
+        dlg->selectNameFilter(0);
+    }
 }
 
 void MainWindow::updateCounterNameCountInfo()

@@ -10,6 +10,8 @@ class FileDialog : public QFileDialog
 public:
     FileDialog(QWidget *parent);
 
+    void selectNameFilter(int index);
+
     Q_SLOT virtual int exec() override;
 
     static QString getOpenFileName(QWidget *parent, const QString &filter);

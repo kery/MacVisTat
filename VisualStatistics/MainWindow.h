@@ -55,6 +55,7 @@ private slots:
     void actionRegisteredMenuTriggered();
 
     void caseSensitiveButtonClicked(bool checked);
+    void kpikciFileDlgDirEntered(const QString &dir);
     void updateCounterNameCountInfo();
     void updateFilterPattern();
     void filterEditReturnPressed();
