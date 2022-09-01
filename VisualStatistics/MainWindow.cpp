@@ -403,6 +403,11 @@ void MainWindow::actionRegisteredMenuTriggered()
             return;
         }
         QString name(lua_tostring(mL, -1));
+        if (dataMap.contains(name)) {
+            lua_pop(mL, 5);
+            appendWarnLog(QStringLiteral("counter name '%1' is duplicate").arg(name));
+            return;
+        }
         lua_pop(mL, 1);
 
         lua_pushstring(mL, "values");
