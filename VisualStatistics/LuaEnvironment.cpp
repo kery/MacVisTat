@@ -153,8 +153,8 @@ int LuaEnvironment::addGraph(lua_State *L)
     while (lua_next(L, 2) != 0) {
         if (lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
             int index = lua_tointeger(L, -2);
-            if (index >= 0 && index < dataVector.size()) {
-                dataVector[index].value = lua_tonumber(L, -1);
+            if (index > 0 && index <= dataVector.size()) {
+                dataVector[index - 1].value = lua_tonumber(L, -1);
             }
         }
         lua_pop(L, 1);
