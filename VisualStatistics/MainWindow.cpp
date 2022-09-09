@@ -581,12 +581,15 @@ void MainWindow::downloadCounterDescriptionFinished()
 
 void MainWindow::checkUpdateFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    sender()->deleteLater();
+    QProcess *process = qobject_cast<QProcess *>(sender());
+    process->deleteLater();
 
     if (exitStatus != QProcess::NormalExit) {
         appendWarnLog(QStringLiteral("updater crashed"));
         return;
     }
+
+    appendInfoLog(QStringLiteral("checking for updates finished"));
 
     // exitCode != 0 indicates that there is no update available
     // or failed to check update
@@ -594,10 +597,43 @@ void MainWindow::checkUpdateFinished(int exitCode, QProcess::ExitStatus exitStat
         return;
     }
 
-    ChangeLogDialog dlg(this, true);
-    if (dlg.exec() == QDialog::Accepted) {
-        QProcess::startDetached(filePath(fpMaintenanceTool), QStringList() << "--updater" << "--proxy");
-        QApplication::exit();
+    bool showUpdateDlg = QGuiApplication::queryKeyboardModifiers() & Qt::ControlModifier;
+
+    if (!showUpdateDlg) {
+        int numOfUpdate = 0;
+        QByteArray baUpdate = process->readAllStandardOutput();
+        QXmlStreamReader xmlReader(baUpdate);
+        while (!xmlReader.atEnd()) {
+            QXmlStreamReader::TokenType tokenType = xmlReader.readNext();
+            if (tokenType != QXmlStreamReader::StartElement) {
+                continue;
+            }
+            if (xmlReader.name() != "update") {
+                continue;
+            }
+            if (++numOfUpdate > 1) {
+                showUpdateDlg = true;
+                break;
+            }
+            QXmlStreamAttributes attrs = xmlReader.attributes();
+            QStringRef name = attrs.value(QLatin1String("name"));
+            if (name != "VisualStatistics") {
+                continue;
+            }
+            QStringRef version = attrs.value(QLatin1String("version"));
+            if (version.endsWith(QLatin1String(".0"))) {
+                showUpdateDlg = true;
+                break;
+            }
+        }
+    }
+
+    if (showUpdateDlg) {
+        ChangeLogDialog dlg(this, true);
+        if (dlg.exec() == QDialog::Accepted) {
+            QProcess::startDetached(filePath(fpMaintenanceTool), QStringList() << "--updater" << "--proxy");
+            QApplication::exit();
+        }
     }
 }
 
