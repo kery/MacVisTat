@@ -597,7 +597,7 @@ void MainWindow::checkUpdateFinished(int exitCode, QProcess::ExitStatus exitStat
         return;
     }
 
-    bool showUpdateDlg = QGuiApplication::queryKeyboardModifiers() & Qt::ControlModifier;
+    bool showUpdateDlg = QGuiApplication::queryKeyboardModifiers() & Qt::ShiftModifier;
 
     if (!showUpdateDlg) {
         int numOfUpdate = 0;
