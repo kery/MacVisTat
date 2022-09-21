@@ -8,15 +8,15 @@ AutoCompletionSrcPlotAPIs::AutoCompletionSrcPlotAPIs(QsciLexer *lexer) :
 
         "graph_name(graph)\n"
         "Returns the name of a graph. The first parameter 'graph' is the index of the\n"
-        "graph in legend box, the index starts from 0.",
+        "graph in legend box, the index starts from 1.",
 
         "get_lastkey()\n"
         "Returns the last key of the plot, i.e. the last coordinate of the x axis.\n"
-        "The first key of a plot is 0, the second key is 1, and so on.",
+        "The first key of a plot is 1, the second key is 2, and so on.",
 
         "get_value(graph, key, default)\n"
         "Returns the value of a graph at 'key'. The first parameter 'graph' is the index\n"
-        "of the graph in legend box, the index starts from 0.  If the value of 'key' does\n"
+        "of the graph in legend box, the index starts from 1.  If the value of 'key' does\n"
         "not exist, the third optional parameter 'default' will be returned. If the 'default'\n"
         "is not given, a nil will be returned.",
 
