@@ -2,6 +2,7 @@
 #include "CounterName.h"
 #include "CounterDescription.h"
 #include <QSet>
+#include <QLinkedList>
 
 CounterNameModel::CounterNameModel(QObject *parent) :
     QAbstractListModel(parent),
@@ -154,7 +155,7 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
             }
         }
     } else {
-        QSet<int> tempIndexes;
+        QLinkedList<int> tempIndexes;
         if (invert) {
             for (int i = 0; i < mCounterNames.size(); ++i) {
                 const QString &counterName = mCounterNames[i];
@@ -163,7 +164,7 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
                 }
                 baStr = counterName.toLocal8Bit();
                 if (pcre2_match(re, (PCRE2_SPTR)baStr.data(), baStr.size(), 0, 0, matchData, matchCtx) < 0) {
-                    tempIndexes.insert(i);
+                    tempIndexes.append(i);
                 }
             }
         } else {
@@ -174,7 +175,7 @@ QString CounterNameModel::setFilterPattern(const QVector<QString> &moduleNames, 
                 }
                 baStr = counterName.toLocal8Bit();
                 if (pcre2_match(re, (PCRE2_SPTR)baStr.data(), baStr.size(), 0, 0, matchData, matchCtx) >= 0) {
-                    tempIndexes.insert(i);
+                    tempIndexes.append(i);
                 }
             }
         }
