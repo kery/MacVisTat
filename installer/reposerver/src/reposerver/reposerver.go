@@ -25,7 +25,7 @@ func (d dirWithStat) Open(name string) (http.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	if fi.IsDir() &&  name != "/plugins" {
+	if fi.IsDir() {
 		return nil, os.ErrPermission
 	}
 	mutex.Lock()
@@ -95,6 +95,7 @@ func main() {
 
 	fs := http.FileServer(dirWithStat("."))
 	http.Handle("/", fs)
+	http.Handle("/plugins/", http.StripPrefix("/plugins/", http.FileServer(http.Dir("./plugins/lua/"))))
 	http.HandleFunc("/report", usageReportHandler)
 	http.HandleFunc("/fstat", fileStatHandler)
 	http.HandleFunc("/upload", uploadHandler)
