@@ -3,6 +3,8 @@
 
 #define APP_NAME "Visual Statistics"
 
+#define DATA_VER_SIGN "$" // #$%^&*()
+
 #define DATE_FMT_EXPORT "yyyy-MM-dd"
 #define TIME_FMT_EXPORT "HH:mm:ss"
 

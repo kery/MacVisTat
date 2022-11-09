@@ -45,7 +45,7 @@ QString CounterFileParser::parseHeader(const QString &path, QVector<QString> &na
     }
 
     splitHeader(ptr + 1, names);
-    names.last().chop(2); // Remove last "##"
+    names.last().chop(2); // Remove last "#x"
     return QString();
 }
 
@@ -100,10 +100,15 @@ std::string CounterFileParser::parseHeaderInternal(const QString &path, int &off
         return std::string();
     }
 
-    if (strncmp(header.c_str(), "##date;time", 11) ||
-        strcmp(header.c_str() + header.length() - 2, "##"))
+    if (strncmp(header.c_str(), "##date;time", 11))
     {
         error = "invalid header format in ";
+        error += QDir::toNativeSeparators(path);
+        return std::string();
+    }
+
+    if (strcmp(header.c_str() + header.length() - 2, "#" DATA_VER_SIGN)) {
+        error = "incompatible header format in ";
         error += QDir::toNativeSeparators(path);
         return std::string();
     }

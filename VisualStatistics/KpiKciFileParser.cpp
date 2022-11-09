@@ -503,7 +503,7 @@ void KpiKciFileParser::writeHeader(const InfoIdMap &iim, const std::string &offs
         }
     }
 
-    writer.write("##\n", 3);
+    writer.write("#" DATA_VER_SIGN "\n", 3);
 }
 
 void KpiKciFileParser::startElement_dataHandler(void *ud, const char *name, const char **atts)
