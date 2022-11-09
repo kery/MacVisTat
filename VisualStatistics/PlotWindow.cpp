@@ -156,9 +156,8 @@ void PlotWindow::actionExportToCsvTriggered()
     for (int i = 0; ; ++i) {
         QDateTime dateTime = mPlotData.getDateTime(i);
         if (dateTime.isNull()) { break; }
-        if (ui->actionDisplayUtc->isChecked()) {
-            dateTime.setOffsetFromUtc(mPlotData.offsetFromUtc());
-            dateTime = dateTime.toUTC();
+        if (!ui->actionDisplayUtc->isChecked()) {
+            dateTime = dateTime.toOffsetFromUtc(mPlotData.offsetFromUtc());
         }
         std::string str = dateTime.date().toString(DATE_FMT_EXPORT).toStdString();
         csv_fwrite(file, str.c_str(), str.length());
@@ -628,9 +627,8 @@ void PlotWindow::plotMouseMove(QMouseEvent *event)
             mValueTip->setTracerGraph(graph);
         }
         QDateTime dateTime = mPlotData.getDateTime(data.key);
-        if (ui->actionDisplayUtc->isChecked()) {
-            dateTime.setOffsetFromUtc(mPlotData.offsetFromUtc());
-            dateTime = dateTime.toUTC();
+        if (!ui->actionDisplayUtc->isChecked()) {
+            dateTime = dateTime.toOffsetFromUtc(mPlotData.offsetFromUtc());
         }
         mValueTip->setValueInfo(graph->name(), dateTime, QString::number(data.value, 'f', 2), graph->isSuspect(data.key));
         mValueTip->showWithAnimation();

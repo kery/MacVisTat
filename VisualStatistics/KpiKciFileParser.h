@@ -90,11 +90,11 @@ private:
     static QString getAttribute(const QString &path, XML_StartElementHandler handler);
     static const char * getMeasInfoId(const char **atts);
     static std::string getOffsetFromUtc(const QString &path);
-    static QString toIsoDateFormat(QString &&dateTime, const QStringRef &offsetFromUtc);
+    static void toIsoDateFormat(QString &dateTime, const QStringRef &offsetFromUtc);
     static void getBeginTime_handler(void *ud, const char *name, const char **atts);
-    static QString getBeginTime(const QString &path);
+    static QDateTime getBeginTime(const QString &path);
     static void getEndTime_handler(void *ud, const char *name, const char **atts);
-    static QString getEndTime(const QString &path);
+    static QDateTime getEndTime(const QString &path);
     static void sortFiles(QVector<QString> &paths, QVector<QString> &errors);
     static void getManagedElement_handler(void *ud, const char *name, const char **atts);
     static QString getManagedElement(const QString &path);

@@ -178,6 +178,7 @@ QString CounterFileParser::parseDataInternal(const QString &path, const IndexNam
             if (dt.isValid()) {
                 index = 2;
                 parsed = 0;
+                dt.setTimeSpec(Qt::UTC); // The date time in CSV file is UTC.
                 data.key = dt.toSecsSinceEpoch();
                 len -= DTFMT_IN_CSV_LEN + 1;
                 ptr = newline + DTFMT_IN_CSV_LEN + 1;

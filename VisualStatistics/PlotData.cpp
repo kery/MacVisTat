@@ -33,7 +33,7 @@ QDateTime PlotData::getDateTime(double key) const
     QDateTime result;
     int index = static_cast<int>(key);
     if (index >= 0 && index < mDateTimeVector.size()) {
-        result = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index]);
+        result = QDateTime::fromSecsSinceEpoch(mDateTimeVector[index], Qt::UTC);
     }
     return result;
 }

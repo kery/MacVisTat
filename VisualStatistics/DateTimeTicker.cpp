@@ -112,25 +112,17 @@ QDateTime DateTimeTicker::dateTimeFromKey(double key) const
     QDateTime dateTime;
     int index = static_cast<int>(key);
     if (index >= 0 && index < mDateTimeVector->size()) {
-        dateTime = QDateTime::fromSecsSinceEpoch(mDateTimeVector->at(index));
         if (mUtcDisplay) {
-            dateTime.setOffsetFromUtc(mOffsetFromUtc);
-            return dateTime.toUTC();
+            return QDateTime::fromSecsSinceEpoch(mDateTimeVector->at(index), Qt::UTC);
         }
+        return QDateTime::fromSecsSinceEpoch(mDateTimeVector->at(index), Qt::OffsetFromUTC, mOffsetFromUtc);
     }
     return dateTime;
 }
 
 double DateTimeTicker::dateTimeToKey(const QDateTime &dateTime) const
 {
-    QDateTime localTime;
-    if (dateTime.timeSpec() == Qt::UTC) {
-        localTime = dateTime.toOffsetFromUtc(mOffsetFromUtc);
-        localTime.setTimeSpec(Qt::LocalTime);
-    } else {
-        localTime = dateTime;
-    }
-    auto iter = std::upper_bound(mDateTimeVector->constBegin(), mDateTimeVector->constEnd(), localTime.toSecsSinceEpoch());
+    auto iter = std::upper_bound(mDateTimeVector->constBegin(), mDateTimeVector->constEnd(), dateTime.toSecsSinceEpoch());
     if (iter != mDateTimeVector->end()) {
         return iter - mDateTimeVector->begin() - 1;
     }

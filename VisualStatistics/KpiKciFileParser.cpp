@@ -23,8 +23,8 @@ KpiKciFileParser::DataResult::DataResult()
     errors.reserve(1);
 }
 
-QRegularExpression KpiKciFileParser::mRegExpTypeA("^A(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{4})[+-]\\d{4}(_-.+?)?(_[a-zA-Z\\d]+?)?(_-_\\d+?)?(\\.xml(\\.gz)?)?$");
-QRegularExpression KpiKciFileParser::mRegExpTypeC("^C(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{8}\\.\\d{4})[+-]\\d{4}(_-.+?)?(_[a-zA-Z\\d]+?)?(_-_\\d+?)?(\\.xml(\\.gz)?)?$");
+QRegularExpression KpiKciFileParser::mRegExpTypeA("^A(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{4})([+-]\\d{4})(_-[^_]+)?(_.+?)?(_-_.+)?(\\.xml(\\.gz)?)?$");
+QRegularExpression KpiKciFileParser::mRegExpTypeC("^C(\\d{8}\\.\\d{4})([+-]\\d{4})-(\\d{8}\\.\\d{4})([+-]\\d{4})(_-[^_]+)?(_.+?)?(_-_.+)?(\\.xml(\\.gz)?)?$");
 
 KpiKciFileParser::KpiKciFileParser(QWidget *parent) :
     mParent(parent)
@@ -184,21 +184,20 @@ const char * KpiKciFileParser::getMeasInfoId(const char **atts)
 
 std::string KpiKciFileParser::getOffsetFromUtc(const QString &path)
 {
-    QDateTime beginTime = QDateTime::fromString(getBeginTime(path), Qt::ISODate);
-    if (beginTime.isValid()) {
-        return std::to_string(beginTime.offsetFromUtc());
-    }
-    return std::string();
+    QDateTime beginTime = getBeginTime(path);
+    return beginTime.isValid() ? std::to_string(beginTime.offsetFromUtc()) : std::string();
 }
 
-QString KpiKciFileParser::toIsoDateFormat(QString &&dateTime, const QStringRef &offsetFromUtc)
+void KpiKciFileParser::toIsoDateFormat(QString &dateTime, const QStringRef &offsetFromUtc)
 {
-    QString result(std::move(dateTime));
-    result.insert(4, '-').insert(7, '-').replace(10, 1, 'T').insert(13, ':');
-    result.append(offsetFromUtc.left(3));
-    result.append(':');
-    result.append(offsetFromUtc.right(2));
-    return result;
+    dateTime.insert(4, '-');
+    dateTime.insert(7, '-');
+    dateTime.replace(10, 1, 'T');
+    dateTime.insert(13, ':');
+    dateTime.append(":00");
+    dateTime.append(offsetFromUtc.left(3));
+    dateTime.append(':');
+    dateTime.append(offsetFromUtc.right(2));
 }
 
 void KpiKciFileParser::getBeginTime_handler(void *ud, const char *name, const char **atts)
@@ -211,7 +210,7 @@ void KpiKciFileParser::getBeginTime_handler(void *ud, const char *name, const ch
     }
 }
 
-QString KpiKciFileParser::getBeginTime(const QString &path)
+QDateTime KpiKciFileParser::getBeginTime(const QString &path)
 {
     QString fileName = QFileInfo(path).fileName();
     if (fileName.startsWith('A')) {
@@ -219,17 +218,19 @@ QString KpiKciFileParser::getBeginTime(const QString &path)
         if (match.hasMatch()) {
             QString beginTime = match.captured(1);
             QStringRef offsetFromUtc = match.capturedRef(2);
-            return toIsoDateFormat(std::move(beginTime), offsetFromUtc);
+            toIsoDateFormat(beginTime, offsetFromUtc);
+            return QDateTime::fromString(beginTime, Qt::ISODate);
         }
     } else if (fileName.startsWith('C')) {
         QRegularExpressionMatch match = mRegExpTypeC.match(fileName);
         if (match.hasMatch()) {
             QString beginTime = match.captured(1);
             QStringRef offsetFromUtc = match.capturedRef(2);
-            return toIsoDateFormat(std::move(beginTime), offsetFromUtc);
+            toIsoDateFormat(beginTime, offsetFromUtc);
+            return QDateTime::fromString(beginTime, Qt::ISODate);
         }
     }
-    return getAttribute(path, getBeginTime_handler);
+    return QDateTime::fromString(getAttribute(path, getBeginTime_handler), Qt::ISODate);
 }
 
 void KpiKciFileParser::getEndTime_handler(void *ud, const char *name, const char **atts)
@@ -242,7 +243,7 @@ void KpiKciFileParser::getEndTime_handler(void *ud, const char *name, const char
     }
 }
 
-QString KpiKciFileParser::getEndTime(const QString &path)
+QDateTime KpiKciFileParser::getEndTime(const QString &path)
 {
     QString fileName = QFileInfo(path).fileName();
     // Date part of end time is not present in file name when type is "A" and
@@ -253,18 +254,19 @@ QString KpiKciFileParser::getEndTime(const QString &path)
         QRegularExpressionMatch match = mRegExpTypeC.match(fileName);
         if (match.hasMatch()) {
             QString endTime = match.captured(3);
-            QStringRef offsetFromUtc = match.capturedRef(2);
-            return toIsoDateFormat(std::move(endTime), offsetFromUtc);
+            QStringRef offsetFromUtc = match.capturedRef(4);
+            toIsoDateFormat(endTime, offsetFromUtc);
+            return QDateTime::fromString(endTime, Qt::ISODate);
         }
     }
-    return getAttribute(path, getEndTime_handler);
+    return QDateTime::fromString(getAttribute(path, getEndTime_handler), Qt::ISODate);
 }
 
 void KpiKciFileParser::sortFiles(QVector<QString> &paths, QVector<QString> &errors)
 {
     QVector<QDateTime> beginTimeVector(paths.size());
     for (int i = 0; i < paths.size(); ++i) {
-        beginTimeVector[i] = QDateTime::fromString(getBeginTime(paths[i]), Qt::ISODate);
+        beginTimeVector[i] = getBeginTime(paths[i]);
         if (!beginTimeVector[i].isValid()) {
             errors.append("failed to get begin time from ");
             errors.last() += QDir::toNativeSeparators(paths[i]);
@@ -324,12 +326,12 @@ QString KpiKciFileParser::getUniqueIdFromFileName(const QString &path)
     if (fileName.startsWith('A')) {
         match = mRegExpTypeA.match(fileName);
         if (match.hasMatch()) {
-            uniqueId = match.capturedRef(5);
+            uniqueId = match.capturedRef(6);
         }
     } else if (fileName.startsWith('C')) {
         match = mRegExpTypeC.match(fileName);
         if (match.hasMatch()) {
-            uniqueId = match.capturedRef(5);
+            uniqueId = match.capturedRef(6);
         }
     }
     return uniqueId.isEmpty() ? QString() : uniqueId.mid(1).toString();
@@ -356,12 +358,10 @@ QString KpiKciFileParser::getOutputPath(const QVector<QString> &paths)
     if (nodeName.isEmpty()) {
         nodeName = getUniqueIdFromFileName(paths.first());
     }
-    QString firstEndTime = getFirstGranPeriodEndTime(paths.first());
-    QString endTime = getEndTime(paths.last());
-    QDateTime dtFirstEndTime = QDateTime::fromString(firstEndTime, Qt::ISODate);
-    QDateTime dtEndTime = QDateTime::fromString(endTime, Qt::ISODate);
+    QDateTime firstEndTime = QDateTime::fromString(getFirstGranPeriodEndTime(paths.first()), Qt::ISODate);
+    QDateTime lastEndTime = getEndTime(paths.last());
 
-    QString fileName = CounterFileParser::genFileName(nodeName, dtFirstEndTime, dtEndTime);
+    QString fileName = CounterFileParser::genFileName(nodeName, firstEndTime, lastEndTime);
     QFileInfo fileInfo(paths.first());
     return fileInfo.absoluteDir().absoluteFilePath(fileName);
 }
@@ -547,7 +547,7 @@ void KpiKciFileParser::startElement_dataHandler(void *ud, const char *name, cons
             if (endTime != userData->endTime) {
                 userData->endTime = endTime;
                 userData->result->datas.push_back(MeasData(userData->indexMap->size()));
-                userData->result->datas.back().endTime = endTime.toString(DTFMT_IN_CSV).toStdString();
+                userData->result->datas.back().endTime = endTime.toUTC().toString(DTFMT_IN_CSV).toStdString();
             }
         } else {
             userData->result->errors.append(QStringLiteral("invalid date time format in %1:%2")
