@@ -56,7 +56,9 @@ QString CounterFileParser::parseData(const QString &path, const IndexNameMap &in
     ProgressDialog dlg(mParent);
     dlg.setDescription(QStringLiteral("Parsing counter file data..."));
     dlg.setRange(0, 100);
-    QObject::connect(&dlg, &ProgressDialog::canceling, [&working]() { working = false; });
+    QObject::connect(&dlg, &ProgressDialog::canceling, [&working]() {
+        working = false;
+    });
 
     QFutureWatcher<QString> watcher;
     QObject::connect(&watcher, &QFutureWatcher<QString>::finished, &dlg, &ProgressDialog::accept);

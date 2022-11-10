@@ -42,7 +42,9 @@ void ScriptWindow::appendLog(const QString &text)
 void ScriptWindow::actionRunTriggered()
 {
     QString scriptStr = ui->scriptTextEdit->text();
-    if (scriptStr.isEmpty()) { return; }
+    if (scriptStr.isEmpty()) {
+        return;
+    }
 
     QString err = mLuaEnv.doString(scriptStr);
     if (!err.isEmpty()) {

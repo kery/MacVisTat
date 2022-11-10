@@ -224,12 +224,16 @@ void MainWindow::actionXmlToCsvTriggered()
     KpiKciFileParser parser(this);
     QString outPath = parser.convertToCsv(paths, errors);
 #if defined(Q_OS_WIN)
-    if (!errors.isEmpty()) { MessageBeep(MB_ICONWARNING); }
+    if (!errors.isEmpty()) {
+        MessageBeep(MB_ICONWARNING);
+    }
 #endif
     for (const QString &err : qAsConst(errors)) {
         appendErrorLog(err);
     }
-    if (outPath.isEmpty()) { return; }
+    if (outPath.isEmpty()) {
+        return;
+    }
 
     openCounterFile(outPath);
 }

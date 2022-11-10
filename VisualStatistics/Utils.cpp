@@ -8,7 +8,9 @@
 
 std::string doubleToStdString(double value)
 {
-    if (qIsNaN(value)) { return std::string(); }
+    if (qIsNaN(value)) {
+        return std::string();
+    }
 
     std::ostringstream oss;
     oss << value;

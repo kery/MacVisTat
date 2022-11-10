@@ -49,7 +49,9 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
     sortWatcher.waitForFinished();
 
     sortErrors.swap(errors);
-    if ((abortConvOnFailure && !errors.isEmpty()) || paths.isEmpty()) { return QString(); }
+    if ((abortConvOnFailure && !errors.isEmpty()) || paths.isEmpty()) {
+        return QString();
+    }
 
     volatile bool working = true;
     dlg.setDescription(QStringLiteral("Parsing counter names from KPI/KCI files..."));
@@ -69,11 +71,15 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
     dlg.exec();
     hdrWatcher.waitForFinished();
 
-    if (hdrWatcher.isCanceled()) { return QString(); }
+    if (hdrWatcher.isCanceled()) {
+        return QString();
+    }
 
     HeaderResult hdrResult = hdrWatcher.result();
     errors.append(hdrResult.errors);
-    if (abortConvOnFailure && !hdrResult.errors.isEmpty()) { return QString(); }
+    if (abortConvOnFailure && !hdrResult.errors.isEmpty()) {
+        return QString();
+    }
     if (hdrResult.infoIdMap.empty()) {
         errors.append(QString("there is no counter in selected KPI/KCI files"));
         return QString();
@@ -81,7 +87,9 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
     for (const QString &failedPath : qAsConst(hdrResult.paths)) {
         paths.removeOne(failedPath);
     }
-    if (paths.isEmpty()) { return QString(); }
+    if (paths.isEmpty()) {
+        return QString();
+    }
 
     GzipFile writer;
     QString outPath = getOutputPath(paths);
@@ -97,7 +105,9 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
 
     IndexMap indexMap;
     QFutureWatcher<void> writeHdrWatcher;
-    QObject::connect(&dlg, &ProgressDialog::canceling, [&working]() { working = false; });
+    QObject::connect(&dlg, &ProgressDialog::canceling, [&working]() {
+        working = false;
+    });
     QObject::connect(&writeHdrWatcher, &QFutureWatcher<void>::finished, &dlg, &ProgressDialog::accept);
 
     writeHdrWatcher.setFuture(QtConcurrent::run(std::bind(writeHeader,
@@ -110,7 +120,9 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
     dlg.exec();
     writeHdrWatcher.waitForFinished();
 
-    if (!working) { return QString(); }
+    if (!working) {
+        return QString();
+    }
 
     QFutureWatcher<DataResult> dataWatcher;
     QObject::connect(&dlg, &ProgressDialog::canceling, [&working, &dataWatcher]() {
@@ -129,7 +141,9 @@ QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString>
     dlg.exec();
     dataWatcher.waitForFinished();
 
-    if (dataWatcher.isCanceled()) { return QString(); }
+    if (dataWatcher.isCanceled()) {
+        return QString();
+    }
 
     DataResult dataResult = dataWatcher.result();
     errors.append(dataResult.errors);
@@ -154,7 +168,9 @@ const char * KpiKciFileParser::findAttribute(const char *name, const char **atts
 QString KpiKciFileParser::getAttribute(const QString &path, XML_StartElementHandler handler)
 {
     GzipFile reader;
-    if (!reader.open(path, GzipFile::ReadOnly)) { return QString(); }
+    if (!reader.open(path, GzipFile::ReadOnly)) {
+        return QString();
+    }
 
     QString result;
     XML_Parser parser = XML_ParserCreate(nullptr);
@@ -202,7 +218,9 @@ void KpiKciFileParser::toIsoDateFormat(QString &dateTime, const QStringRef &offs
 
 void KpiKciFileParser::getBeginTime_handler(void *ud, const char *name, const char **atts)
 {
-    if (strcmp(name, "measCollec")) { return; }
+    if (strcmp(name, "measCollec")) {
+        return;
+    }
 
     const char *beginTime = findAttribute("beginTime", atts);
     if (beginTime != nullptr) {
@@ -235,7 +253,9 @@ QDateTime KpiKciFileParser::getBeginTime(const QString &path)
 
 void KpiKciFileParser::getEndTime_handler(void *ud, const char *name, const char **atts)
 {
-    if (strcmp(name, "measCollec")) { return; }
+    if (strcmp(name, "measCollec")) {
+        return;
+    }
 
     const char *endTime = findAttribute("endTime", atts);
     if (endTime != nullptr) {
@@ -339,7 +359,9 @@ QString KpiKciFileParser::getUniqueIdFromFileName(const QString &path)
 
 void KpiKciFileParser::getFirstGranPeriodEndTime_handler(void *ud, const char *name, const char **atts)
 {
-    if (strcmp(name, "granPeriod")) { return; }
+    if (strcmp(name, "granPeriod")) {
+        return;
+    }
 
     const char *endTime = findAttribute("endTime", atts);
     if (endTime != nullptr) {

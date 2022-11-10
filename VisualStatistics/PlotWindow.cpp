@@ -27,7 +27,9 @@ PlotWindow::PlotWindow(PlotData &plotData) :
     mLastSelLegItemIndex(-1)
 {
     ui->setupUi(this);
-    if (!isValidOffsetFromUtc(mPlotData.offsetFromUtc())) { ui->actionDisplayUtc->setEnabled(false); }
+    if (!isValidOffsetFromUtc(mPlotData.offsetFromUtc())) {
+        ui->actionDisplayUtc->setEnabled(false);
+    }
 
     setupPlot();
     setupDateTimeEdits();
@@ -71,7 +73,9 @@ void PlotWindow::addGraphsFromOtherPlotWindow(QObject *src)
     QVector<QCPGraphData> dataVector(mPlotData.counterDataCount());
     for (int i = 0; i < srcWnd->ui->plot->graphCount(); ++i) {
         CounterGraph *graph = srcWnd->ui->plot->graph(i);
-        if (!graph->visible()) { continue; }
+        if (!graph->visible()) {
+            continue;
+        }
 
         QString graphName = graph->name();
         QSharedPointer<QCPGraphDataContainer> dstData = mPlotData.addCounterData(graphName);
@@ -155,7 +159,9 @@ void PlotWindow::actionExportToCsvTriggered()
 
     for (int i = 0; ; ++i) {
         QDateTime dateTime = mPlotData.getDateTime(i);
-        if (dateTime.isNull()) { break; }
+        if (dateTime.isNull()) {
+            break;
+        }
         if (!ui->actionDisplayUtc->isChecked()) {
             dateTime = dateTime.toOffsetFromUtc(mPlotData.offsetFromUtc());
         }
@@ -826,11 +832,15 @@ QString PlotWindow::defaultSaveFileName() const
     QStringList strList;
     for (int i = 0; i < ui->plot->graphCount(); ++i) {
         CounterGraph *graph = ui->plot->graph(i);
-        if (!graph->visible()) { continue; }
+        if (!graph->visible()) {
+            continue;
+        }
         QString objName = CounterName::getObjectName(graph->name());
         if (!strList.contains(objName)) {
             strList.append(objName);
-            if (strList.size() == 3){ break; }
+            if (strList.size() == 3){
+                break;
+            }
         }
     }
     return strList.join('_');

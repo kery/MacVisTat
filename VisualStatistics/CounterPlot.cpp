@@ -159,7 +159,9 @@ int CounterPlot::selectedGraphCount() const
 {
     int result = 0;
     for (int i = 0; i < graphCount(); ++i) {
-        if (graph(i)->selected()) { ++result; }
+        if (graph(i)->selected()) {
+            ++result;
+        }
     }
     return result;
 }

@@ -24,7 +24,9 @@ int PlotData::counterCount() const
 
 int PlotData::counterDataCount() const
 {
-    if (mDataMap.isEmpty()) { return 0; }
+    if (mDataMap.isEmpty()) {
+        return 0;
+    }
     return mDataMap.first().data.size();
 }
 
@@ -83,7 +85,9 @@ bool PlotData::contains(const QString &name) const
 
 QString PlotData::firstCounterName() const
 {
-    if (mDataMap.isEmpty()) { return QString(); }
+    if (mDataMap.isEmpty()) {
+        return QString();
+    }
     return mDataMap.firstKey();
 }
 
@@ -97,7 +101,9 @@ QSharedPointer<QCPGraphDataContainer> PlotData::firstCounterData()
 
 QSharedPointer<QCPGraphDataContainer> PlotData::counterData(const QString &name, bool delta)
 {
-    if (!mDataMap.contains(name)) { return QSharedPointer<QCPGraphDataContainer>(); }
+    if (!mDataMap.contains(name)) {
+        return QSharedPointer<QCPGraphDataContainer>();
+    }
 
     if (delta) {
         const QCPGraphDataContainer &originalData = mDataMap[name].data;

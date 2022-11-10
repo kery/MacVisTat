@@ -14,7 +14,9 @@ QSize CounterLegendItem::minimumOuterSizeHint() const
     QSize iconSize = mParentLegend->iconSize();
 
     result.rwidth() += iconSize.width() + mParentLegend->iconTextPadding() + mMargins.left() + mMargins.right();
-    if (iconSize.height() > result.height()) { result.setHeight(iconSize.height()); }
+    if (iconSize.height() > result.height()) {
+        result.setHeight(iconSize.height());
+    }
     result.rheight() += mMargins.top() + mMargins.bottom();
     return result;
 }

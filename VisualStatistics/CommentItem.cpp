@@ -59,7 +59,9 @@ CounterGraph * CommentItem::graph() const
 
 void CommentItem::updateLineStartAnchor()
 {
-    if (mLine == nullptr) { return; }
+    if (mLine == nullptr) {
+        return;
+    }
 
     QPointF tracerPos = mTracer->position->pixelPosition();
     QSizeF ciSize = size();
@@ -92,13 +94,17 @@ void CommentItem::updateLineStartAnchor()
 
 void CommentItem::setVisible(bool on)
 {
-    if (mLine) { mLine->setVisible(on); }
+    if (mLine) {
+        mLine->setVisible(on);
+    }
     TextItem::setVisible(on);
 }
 
 double CommentItem::selectTest(const QPointF &pos, bool onlySelectable, QVariant * /*details*/) const
 {
-    if (onlySelectable && !mSelectable) { return -1; }
+    if (onlySelectable && !mSelectable) {
+        return -1;
+    }
 
     // The rect may be rotated, so we transform the actual clicked pos to the rotated
     // coordinate system, so we can use the normal rectSelectTest function for non-rotated rects:

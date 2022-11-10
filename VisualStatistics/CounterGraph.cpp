@@ -123,9 +123,16 @@ void CounterGraph::getScatters(QVector<QPointF> *scatters, QVector<QPointF> *sus
 
 void CounterGraph::draw(QCPPainter *painter)
 {
-    if (!mKeyAxis || !mValueAxis) { qDebug() << Q_FUNC_INFO << "invalid key or value axis"; return; }
-    if (mKeyAxis.data()->range().size() <= 0 || mDataContainer->isEmpty()) { return; }
-    if (mLineStyle == lsNone && mScatterStyle.isNone()) { return; }
+    if (!mKeyAxis || !mValueAxis) {
+        qDebug() << Q_FUNC_INFO << "invalid key or value axis";
+        return;
+    }
+    if (mKeyAxis.data()->range().size() <= 0 || mDataContainer->isEmpty()) {
+        return;
+    }
+    if (mLineStyle == lsNone && mScatterStyle.isNone()) {
+        return;
+    }
 
     // line and (if necessary) scatter pixel coordinates will be stored here while iterating over segments
     QVector<QPointF> lines, scatters, suspectScatters;
