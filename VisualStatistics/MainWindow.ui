@@ -162,6 +162,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionHelp"/>
+    <addaction name="actionContact"/>
     <addaction name="actionChangeLog"/>
     <addaction name="actionAbout"/>
    </widget>
@@ -368,6 +369,14 @@
    </property>
    <property name="statusTip">
     <string>Browse online plugins in default browser</string>
+   </property>
+  </action>
+  <action name="actionContact">
+   <property name="text">
+    <string>Contact...</string>
+   </property>
+   <property name="statusTip">
+    <string>Contact</string>
    </property>
   </action>
  </widget>

@@ -50,6 +50,7 @@ private slots:
     void actionBrowseOnlinePluginsTriggered();
     void actionOptionsTriggered();
     void actionHelpTriggered();
+    void actionContactTriggered();
     void actionChangeLogTriggered();
     void actionAboutTriggered();
     void actionRegisteredMenuTriggered();

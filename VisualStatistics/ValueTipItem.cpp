@@ -102,10 +102,12 @@ void ValueTipItem::setValueInfo(const QString &name, const QDateTime &dateTime, 
     text += '\n';
     text += dateTime.toString(DTFMT_DISPLAY);
     if (dateTime.timeSpec() == Qt::UTC) {
-        text += " UTC";
+        text += " (UTC)";
     } else {
-        text += dateTime.offsetFromUtc() >= 0 ? " +" : " -";
-        text += QString::asprintf("%02d:%02d", std::abs(dateTime.offsetFromUtc() / 3600), std::abs((dateTime.offsetFromUtc() % 3600) / 60));
+        text += QString::asprintf(" (%c%02d:%02d)",
+                                  dateTime.offsetFromUtc() >= 0 ? '+' : '-',
+                                  std::abs(dateTime.offsetFromUtc() / 3600),
+                                  std::abs((dateTime.offsetFromUtc() % 3600) / 60));
     }
     text += '\n';
     text += value;

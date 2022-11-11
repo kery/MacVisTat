@@ -69,6 +69,7 @@ MainWindow::MainWindow() :
     connect(ui->actionBrowseOnlinePlugins, &QAction::triggered, this, &MainWindow::actionBrowseOnlinePluginsTriggered);
     connect(ui->actionOptions, &QAction::triggered, this, &MainWindow::actionOptionsTriggered);
     connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::actionHelpTriggered);
+    connect(ui->actionContact, &QAction::triggered, this, &MainWindow::actionContactTriggered);
     connect(ui->actionChangeLog, &QAction::triggered, this, &MainWindow::actionChangeLogTriggered);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::actionAboutTriggered);
     connect(&mFilterMenuFileWatcher, &QFileSystemWatcher::fileChanged, &mFilterMenuReloadTimer, QOverload<>::of(&QTimer::start));
@@ -342,6 +343,11 @@ void MainWindow::actionHelpTriggered()
 {
     QUrl url = Application::instance()->getUrl(Application::upHelp);
     QDesktopServices::openUrl(url);
+}
+
+void MainWindow::actionContactTriggered()
+{
+    QDesktopServices::openUrl(QUrl("mailto:kery.wu@nokia-sbell.com?subject=Visual Statistics"));
 }
 
 void MainWindow::actionChangeLogTriggered()
