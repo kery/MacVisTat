@@ -1,5 +1,5 @@
 # Counter file format
-The "offset from utc" in header line is optional. Counter values are also optional.
+The "offset from utc" in header line is optional. Counter values are also optional. The date and time in each line represents the UTC time of the corresponding counters (since v2.2.0.1).
 ```
 ##date;time[offset from utc];counter1;...;countern##
 dd.MM.yyyy;HH:mm:ss;value1;...;valuen
