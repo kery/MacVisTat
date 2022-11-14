@@ -23,8 +23,8 @@ KpiKciFileParser::DataResult::DataResult()
     errors.reserve(1);
 }
 
-QRegularExpression KpiKciFileParser::mRegExpTypeA(R"(^A(\d{8}\.\d{4})([+-]\d{4})-(\d{4})([+-]\d{4})(_-[^_]+)?(_.+?)?(_-_.+)?(\.xml(\.gz)?)?$)");
-QRegularExpression KpiKciFileParser::mRegExpTypeC(R"(^C(\d{8}\.\d{4})([+-]\d{4})-(\d{8}\.\d{4})([+-]\d{4})(_-[^_]+)?(_.+?)?(_-_.+)?(\.xml(\.gz)?)?$)");
+QRegularExpression KpiKciFileParser::mRegExpTypeA(R"(^A(\d{8}\.\d{4})([+-]\d{4})-(\d{4})([+-]\d{4})(_-[^_]+)?(_.+?)?(_-_\d+)?(\.xml(\.gz)?)?$)");
+QRegularExpression KpiKciFileParser::mRegExpTypeC(R"(^C(\d{8}\.\d{4})([+-]\d{4})-(\d{8}\.\d{4})([+-]\d{4})(_-[^_]+)?(_.+?)?(_-_\d+)?(\.xml(\.gz)?)?$)");
 
 KpiKciFileParser::KpiKciFileParser(QWidget *parent) :
     mParent(parent)
@@ -346,12 +346,18 @@ QString KpiKciFileParser::getUniqueIdFromFileName(const QString &path)
     if (fileName.startsWith('A')) {
         match = mRegExpTypeA.match(fileName);
         if (match.hasMatch()) {
-            uniqueId = match.capturedRef(6);
+            QStringRef tempRef = match.capturedRef(6);
+            if (!tempRef.startsWith(QLatin1String("_-_"))) {
+                uniqueId = tempRef;
+            }
         }
     } else if (fileName.startsWith('C')) {
         match = mRegExpTypeC.match(fileName);
         if (match.hasMatch()) {
-            uniqueId = match.capturedRef(6);
+            QStringRef tempRef = match.capturedRef(6);
+            if (!tempRef.startsWith(QLatin1String("_-_"))) {
+                uniqueId = tempRef;
+            }
         }
     }
     return uniqueId.isEmpty() ? QString() : uniqueId.mid(1).toString();
