@@ -26,6 +26,7 @@ SOURCES += \
     FileDialog.cpp \
     FilterValidator.cpp \
     GzipFile.cpp \
+    JobIdSelectionDialog.cpp \
     KpiKciFileParser.cpp \
     LogTextEdit.cpp \
     LuaEnvironment.cpp \
@@ -114,6 +115,7 @@ HEADERS += \
     GlobalDefines.h \
     GzipFile.h \
     IndexNameMap.h \
+    JobIdSelectionDialog.h \
     KpiKciFileParser.h \
     LogTextEdit.h \
     LuaEnvironment.h \
@@ -210,6 +212,7 @@ HEADERS += \
 FORMS += \
     AboutDialog.ui \
     ChangeLogDialog.ui \
+    JobIdSelectionDialog.ui \
     MainWindow.ui \
     OptionsDialog.ui \
     PlotWindow.ui \

@@ -4,6 +4,7 @@
 #include "CounterName.h"
 #include "GzipFile.h"
 #include "OptionsDialog.h"
+#include "JobIdSelectionDialog.h"
 #include "GlobalDefines.h"
 #include <QtConcurrent>
 
@@ -29,6 +30,25 @@ QRegularExpression KpiKciFileParser::mRegExpTypeC(R"(^C(\d{8}\.\d{4})([+-]\d{4})
 KpiKciFileParser::KpiKciFileParser(QWidget *parent) :
     mParent(parent)
 {
+}
+
+void KpiKciFileParser::filterByFileNameJobId(QVector<QString> &paths)
+{
+    QSet<QString> jobIds;
+    for (const QString &path : paths) {
+        jobIds.insert(getJobIdFromFileName(path));
+    }
+    if (jobIds.size() < 2) {
+        return;
+    }
+
+    JobIdSelectionDialog dlg(mParent, jobIds);
+    dlg.exec();
+
+    const QString jobId = dlg.selectedJobId();
+    paths.erase(std::remove_if(paths.begin(), paths.end(), [&jobId](const QString &path) {
+        return getJobIdFromFileName(path) != jobId;
+    }), paths.end());
 }
 
 QString KpiKciFileParser::convertToCsv(QVector<QString> &paths, QVector<QString> &errors)
@@ -361,6 +381,25 @@ QString KpiKciFileParser::getUniqueIdFromFileName(const QString &path)
         }
     }
     return uniqueId.isEmpty() ? QString() : uniqueId.mid(1).toString();
+}
+
+QString KpiKciFileParser::getJobIdFromFileName(const QString &path)
+{
+    QStringRef jobId;
+    QRegularExpressionMatch match;
+    QString fileName = QFileInfo(path).fileName();
+    if (fileName.startsWith('A')) {
+        match = mRegExpTypeA.match(fileName);
+        if (match.hasMatch()) {
+            jobId = match.capturedRef(5);
+        }
+    } else if (fileName.startsWith('C')) {
+        match = mRegExpTypeC.match(fileName);
+        if (match.hasMatch()) {
+            jobId = match.capturedRef(5);
+        }
+    }
+    return jobId.isEmpty() ? QString() : jobId.mid(2).toString();
 }
 
 void KpiKciFileParser::getFirstGranPeriodEndTime_handler(void *ud, const char *name, const char **atts)

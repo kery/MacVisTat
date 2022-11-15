@@ -17,6 +17,7 @@ class KpiKciFileParser
 public:
     KpiKciFileParser(QWidget *parent);
 
+    void filterByFileNameJobId(QVector<QString> &paths);
     QString convertToCsv(QVector<QString> &paths, QVector<QString> &errors);
 
 private:
@@ -99,6 +100,7 @@ private:
     static void getManagedElement_handler(void *ud, const char *name, const char **atts);
     static QString getManagedElement(const QString &path);
     static QString getUniqueIdFromFileName(const QString &path);
+    static QString getJobIdFromFileName(const QString &path);
     static void getFirstGranPeriodEndTime_handler(void *ud, const char *name, const char **atts);
     static QString getFirstGranPeriodEndTime(const QString &path);
     static QString getOutputPath(const QVector<QString> &paths);

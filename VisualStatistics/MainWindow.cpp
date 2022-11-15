@@ -223,6 +223,7 @@ void MainWindow::actionXmlToCsvTriggered()
 
     QVector<QString> errors, paths = dlg.selectedFiles().toVector();
     KpiKciFileParser parser(this);
+    parser.filterByFileNameJobId(paths);
     QString outPath = parser.convertToCsv(paths, errors);
 #if defined(Q_OS_WIN)
     if (!errors.isEmpty()) {
