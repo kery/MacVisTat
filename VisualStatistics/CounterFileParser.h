@@ -16,7 +16,8 @@ public:
     QString parseHeader(const QString &path, QVector<QString> &names);
     QString parseData(const QString &path, const IndexNameMap &inm, CounterDataMap &cdm, bool &canceled);
 
-    static QString genFileName(const QString &nodeName, const QDateTime &endTime1, const QDateTime &endTime2);
+    static QString genFileName(const QString &nodeName, const QString &jobId,
+                               const QDateTime &endTime1, const QDateTime &endTime2);
     static QString getNodeName(const QString &path);
 
 private:

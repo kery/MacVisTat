@@ -425,10 +425,11 @@ QString KpiKciFileParser::getOutputPath(const QVector<QString> &paths)
     if (nodeName.isEmpty()) {
         nodeName = getUniqueIdFromFileName(paths.first());
     }
+    QString jobId = getJobIdFromFileName(paths.first());
     QDateTime firstEndTime = QDateTime::fromString(getFirstGranPeriodEndTime(paths.first()), Qt::ISODate);
     QDateTime lastEndTime = getEndTime(paths.last());
 
-    QString fileName = CounterFileParser::genFileName(nodeName, firstEndTime, lastEndTime);
+    QString fileName = CounterFileParser::genFileName(nodeName, jobId, firstEndTime, lastEndTime);
     QFileInfo fileInfo(paths.first());
     return fileInfo.absoluteDir().absoluteFilePath(fileName);
 }

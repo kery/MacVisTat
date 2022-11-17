@@ -71,11 +71,21 @@ QString CounterFileParser::parseData(const QString &path, const IndexNameMap &in
     return watcher.result();
 }
 
-QString CounterFileParser::genFileName(const QString &nodeName, const QDateTime &endTime1, const QDateTime &endTime2)
+QString CounterFileParser::genFileName(const QString &nodeName, const QString &jobId, const QDateTime &endTime1, const QDateTime &endTime2)
 {
-    return QStringLiteral("%1_%2-%3.csv.gz").arg(nodeName,
-                                                 endTime1.toString(DTFMT_IN_FILENAME),
-                                                 endTime2.toString(DTFMT_IN_FILENAME));
+    QString result(nodeName);
+    result += '_';
+    result += endTime1.toString(DTFMT_IN_FILENAME);
+    result += '-';
+    result += endTime2.toString(DTFMT_IN_FILENAME);
+
+    if (!jobId.isEmpty()) {
+        result += "_";
+        result += jobId;
+    }
+
+    result += ".csv.gz";
+    return result;
 }
 
 QString CounterFileParser::getNodeName(const QString &path)
