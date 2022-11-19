@@ -2,11 +2,13 @@
 #include "CounterName.h"
 #include "Application.h"
 #include "Utils.h"
+#ifndef Q_OS_MACOS
 #include <exception_handler.h>
+#endif
 #include <QFile>
 #include <QDir>
 #include <QStyleFactory>
-#if defined(Q_OS_WIN)
+#if defined Q_OS_WIN
 #include <Shlwapi.h>
 
 static wchar_t crashReporterPath[MAX_PATH];
@@ -44,7 +46,7 @@ static bool minidumpCallback(const wchar_t* dump_path,
     }
     return succeeded;
 }
-#else
+#elif !defined Q_OS_MACOS
 #include "Version.h"
 
 static char crashReporterPath[PATH_MAX];
@@ -107,9 +109,11 @@ int main(int argc, char *argv[])
     // script window will not hang UI thread.
     fclose(stdin);
 
+#ifndef Q_OS_MACOS
     initCrashReporterPathAndUploadUrl(app);
+#endif
 
-#if defined(Q_OS_WIN)
+#if defined Q_OS_WIN
     google_breakpad::ExceptionHandler eh(QDir::tempPath().toStdWString(),
                                          nullptr,
                                          minidumpCallback,
@@ -118,7 +122,7 @@ int main(int argc, char *argv[])
                                          MiniDumpNormal,
                                          static_cast<wchar_t *>(nullptr),
                                          nullptr);
-#else
+#elif !defined Q_OS_MACOS
     google_breakpad::ExceptionHandler(google_breakpad::MinidumpDescriptor(QDir::tempPath().toStdString()),
                                       nullptr,
                                       minidumpCallback,

@@ -44,7 +44,20 @@ jobs:
           qmake LIBS+=-lz ../VisualStatistics/quazip/quazip/quazip.pro
           make
 
+      - name: Cache QScintilla
+        id: cache-qsci
+        uses: actions/cache@v3
+        with:
+          path: |
+            $Qt5_DIR/lib/libqscintilla2_qt5.a
+            $Qt5_DIR/include/Qsci
+            $Qt5_DIR/translations
+            $Qt5_DIR/qsci
+            $Qt5_DIR/mkspecs/features/qscintilla2.prf
+          key: QScintillaCache
+
       - name: Build QScintilla
+        if: steps.cache-qsci.outputs.cache-hit != 'true'
         run: |
           wget https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.6/QScintilla-2.11.6.zip
           unzip QScintilla-2.11.6.zip
