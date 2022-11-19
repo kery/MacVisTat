@@ -41,7 +41,7 @@ jobs:
         run: |
           mkdir build-quazip-Release
           cd build-quazip-Release
-          qmake VisualStatistics/quazip/quazip/quazip.pro
+          qmake ../VisualStatistics/quazip/quazip/quazip.pro
           make
 
       # - name: Build QScintilla
