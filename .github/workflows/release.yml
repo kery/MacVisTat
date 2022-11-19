@@ -7,6 +7,15 @@ jobs:
   release:
     runs-on: macos-12
     steps:
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '5.9.4'
+          target: 'desktop'
+          arch: 'clang_64'
+          tools: 'tools_ifw'
+          cache: true
+
       - name: Build QScintilla
         run: |
           wget https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.6/QScintilla-2.11.6.zip
