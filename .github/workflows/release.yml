@@ -38,3 +38,10 @@ jobs:
           ./buildconf.sh
           ./configure
           make
+
+      - name: Build pcre2
+        run: |
+          cd VisualStatistics/pcre2
+          ./autogen.sh
+          ./configure
+          make
