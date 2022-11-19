@@ -37,6 +37,8 @@ jobs:
           ./configure
           make
 
+      run: find / -name "libz.*"
+
       - name: Build QuaZIP
         run: |
           mkdir build-quazip-Release
