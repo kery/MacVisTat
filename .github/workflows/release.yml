@@ -13,7 +13,6 @@ jobs:
           version: '5.9.4'
           target: 'desktop'
           arch: 'clang_64'
-          tools: 'tools_ifw'
           cache: true
 
       - name: Build QScintilla
@@ -24,3 +23,13 @@ jobs:
           qmake CONFIG+=staticlib
           make
           make install
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build libexpat
+        run: |
+          cd VisualStatistics/libexpat/expat
+          ./buildconf.sh
+          ./configure
+          make
