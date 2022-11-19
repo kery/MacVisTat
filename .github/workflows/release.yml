@@ -37,7 +37,8 @@ jobs:
           ./configure
           make
 
-      run: find / -name "libz.*"
+      - name: find libz
+        run: find / -name "libz.*"
 
       - name: Build QuaZIP
         run: |
