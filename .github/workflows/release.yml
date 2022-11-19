@@ -37,14 +37,11 @@ jobs:
           ./configure
           make
 
-      - name: find libz
-        run: find / -name "libz.*"
-
       - name: Build QuaZIP
         run: |
           mkdir build-quazip-Release
           cd build-quazip-Release
-          qmake ../VisualStatistics/quazip/quazip/quazip.pro
+          qmake LIBS+=-lz ../VisualStatistics/quazip/quazip/quazip.pro
           make
 
       # - name: Build QScintilla
