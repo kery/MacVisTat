@@ -44,14 +44,14 @@ jobs:
           qmake LIBS+=-lz ../VisualStatistics/quazip/quazip/quazip.pro
           make
 
-      # - name: Build QScintilla
-      #   run: |
-      #     wget https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.6/QScintilla-2.11.6.zip
-      #     unzip QScintilla-2.11.6.zip
-      #     cd QScintilla-2.11.6/Qt4Qt5
-      #     qmake CONFIG+=staticlib
-      #     make
-      #     make install
+      - name: Build QScintilla
+        run: |
+          wget https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.6/QScintilla-2.11.6.zip
+          unzip QScintilla-2.11.6.zip
+          cd QScintilla-2.11.6/Qt4Qt5
+          qmake CONFIG+=staticlib
+          make
+          make install
 
       - name: Build Visual Statistics
         run: |
