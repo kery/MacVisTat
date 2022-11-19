@@ -15,15 +15,6 @@ jobs:
           arch: 'clang_64'
           cache: true
 
-      # - name: Build QScintilla
-      #   run: |
-      #     wget https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.6/QScintilla-2.11.6.zip
-      #     unzip QScintilla-2.11.6.zip
-      #     cd QScintilla-2.11.6/Qt4Qt5
-      #     qmake CONFIG+=staticlib
-      #     make
-      #     make install
-
       - name: Install automake
         run: brew install automake
 
@@ -45,3 +36,19 @@ jobs:
           ./autogen.sh
           ./configure
           make
+
+      - name: Build QuaZIP
+        run: |
+          mkdir build-quazip-Release
+          cd build-quazip-Release
+          qmake VisualStatistics/quazip/quazip/quazip.pro
+          make
+
+      # - name: Build QScintilla
+      #   run: |
+      #     wget https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.6/QScintilla-2.11.6.zip
+      #     unzip QScintilla-2.11.6.zip
+      #     cd QScintilla-2.11.6/Qt4Qt5
+      #     qmake CONFIG+=staticlib
+      #     make
+      #     make install
