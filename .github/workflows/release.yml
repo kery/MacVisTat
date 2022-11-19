@@ -24,6 +24,9 @@ jobs:
       #     make
       #     make install
 
+      - name: Install automake
+        run: brew install automake
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
