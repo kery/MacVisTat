@@ -312,12 +312,15 @@ unix {
     TARGET = VisualStatistics
 
     INCLUDEPATH += pcre2/src/
-    INCLUDEPATH += breakpad/ breakpad/src/client/linux/handler/
 
     LIBS += -L$$PWD/pcre2/.libs/
     LIBS += -L$$PWD/libexpat/expat/lib/.libs/ -lexpat
-    LIBS += -L$$PWD/breakpad/src/client/linux/ -lbreakpad_client
     LIBS += -lz -lquazip
+}
+
+linux {
+    INCLUDEPATH += breakpad/ breakpad/src/client/linux/handler/
+    LIBS += -L$$PWD/breakpad/src/client/linux/ -lbreakpad_client
 }
 
 LIBS += -lpcre2-8
