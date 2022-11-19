@@ -71,3 +71,8 @@ jobs:
           qmake DEFINES+=DEPLOY_VISUALSTAT VisualStatistics/VisualStatistics.pro
           make qmake_all
           make
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: VisualStatistics
+          path: VisualStatistics.app
