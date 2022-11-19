@@ -1,0 +1,17 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: macos-12
+    steps:
+      - name: Build QScintilla
+        run: |
+          wget https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.6/QScintilla-2.11.6.zip
+          unzip QScintilla-2.11.6.zip
+          cd Qt4Qt5
+          qmake CONFIG+=staticlib
+          make
+          make install
