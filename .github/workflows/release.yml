@@ -84,10 +84,18 @@ jobs:
       - name: Mac deploy Qt
         run: macdeployqt VisualStatistics.app -always-overwrite -verbose=2
 
-      - name: Copy libraries
-        run: |
-          cp VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib VisualStatistics.app/Contents/Frameworks/
-          cp build-quazip-Release/libquazip.dylib VisualStatistics.app/Contents/Frameworks/
+      - name: Checkout macdeployqtfix
+        uses: actions/checkout@v3
+        with:
+          repository: arl/macdeployqtfix
+
+      - name: Mac deploy Qt fix
+        run: python2 macdeployqtfix/macdeployqtfix.py VisualStatistics.app/Contents/MacOS/VisualStatistics $Qt5_DIR
+
+      # - name: Copy libraries
+      #   run: |
+      #     cp VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib VisualStatistics.app/Contents/Frameworks/
+      #     cp build-quazip-Release/libquazip.dylib VisualStatistics.app/Contents/Frameworks/
 
       - uses: actions/upload-artifact@v3
         with:
