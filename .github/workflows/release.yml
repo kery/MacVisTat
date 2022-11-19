@@ -49,11 +49,11 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            $Qt5_DIR/lib/libqscintilla2_qt5.a
-            $Qt5_DIR/include/Qsci
-            $Qt5_DIR/translations
-            $Qt5_DIR/qsci
-            $Qt5_DIR/mkspecs/features/qscintilla2.prf
+            ${{env.Qt5_DIR}}/lib/libqscintilla2_qt5.a
+            ${{env.Qt5_DIR}}/include/Qsci
+            ${{env.Qt5_DIR}}/translations
+            ${{env.Qt5_DIR}}/qsci
+            ${{env.Qt5_DIR}}/mkspecs/features/qscintilla2.prf
           key: QScintillaCache
 
       - name: Build QScintilla
