@@ -66,14 +66,28 @@ jobs:
           make
           make install
 
+      - name: Cache Visual Statistics
+        id: cache-vstat
+        uses: actions/cache@v3
+        with:
+          path: |
+            VisualStatistics.app/Contents/MacOS/VisualStatistics
+          key: VisualStatistics123
+
       - name: Build Visual Statistics
+        if: steps.cache-vstat.outputs.cache-hit != 'true'
         run: |
           qmake DEFINES+=DEPLOY_VISUALSTAT VisualStatistics/VisualStatistics.pro
           make qmake_all
           make
-          macdeployqt VisualStatistics.app -always-overwrite -verbose=2
-          cp VisualStatistics/libexpat/lib/.libs/libexpat.dylib VisualStatistics.app/Contents/Frameworks/
-          cp build-quazip-Release/libquazip.1.0.0.dylib VisualStatistics.app/Contents/Frameworks/
+
+      - name: Mac deploy Qt
+        run: macdeployqt VisualStatistics.app -always-overwrite -verbose=2
+
+      - name: Copy libraries
+        run: |
+          cp VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib VisualStatistics.app/Contents/Frameworks/
+          cp build-quazip-Release/libquazip.dylib VisualStatistics.app/Contents/Frameworks/
 
       - uses: actions/upload-artifact@v3
         with:
