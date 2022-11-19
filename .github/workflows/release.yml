@@ -52,3 +52,9 @@ jobs:
       #     qmake CONFIG+=staticlib
       #     make
       #     make install
+
+      - name: Build Visual Statistics
+        run: |
+          qmake DEFINES+=DEPLOY_VISUALSTAT VisualStatistics/VisualStatistics.pro
+          make qmake_all
+          make
