@@ -33,7 +33,7 @@ jobs:
       - name: Change libexpat install name id
         run: |
           otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib
-          install -id @rpath/libexpat.dylib VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib
+          install_name_tool -id @rpath/libexpat.dylib VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib
           otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib
 
       - name: Build pcre2
@@ -46,7 +46,7 @@ jobs:
       - name: Change pcre2 install name id
         run: |
           otool -L VisualStatistics/pcre2/.libs/libpcre2-8.dylib
-          install -id @rpath/libpcre2-8.dylib VisualStatistics/pcre2/.libs/libpcre2-8.dylib
+          install_name_tool -id @rpath/libpcre2-8.dylib VisualStatistics/pcre2/.libs/libpcre2-8.dylib
           otool -L VisualStatistics/pcre2/.libs/libpcre2-8.dylib
 
       - name: Build QuaZIP
