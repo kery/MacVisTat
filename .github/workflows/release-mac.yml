@@ -22,7 +22,7 @@ jobs:
           cache: true
 
       - name: Add QtInstallerFramework to PATH
-        run: echo $IQTA_TOOLS/QtInstallerFramework/4.5/bin" >> $GITHUB_PATH
+        run: echo "$IQTA_TOOLS/QtInstallerFramework/4.5/bin" >> $GITHUB_PATH
 
       - name: Install automake
         run: brew install automake
