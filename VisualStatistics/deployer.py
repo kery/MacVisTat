@@ -6,6 +6,9 @@ import re
 def is_windows():
     return sys.platform.find("win") >= 0
 
+def is_darwin():
+    return sys.platform.find("darwin") >= 0
+
 def proj_root_dir():
     path = os.path.dirname(os.path.realpath(__file__))
     return os.path.dirname(path)
@@ -154,7 +157,8 @@ if __name__ == "__main__":
         import time
 
         ver_info = get_version()
-        check_version_existance(ver_info)
+        if not is_darwin():
+            check_version_existance(ver_info)
         update_version_file(ver_info)
         update_package_xml_file(ver_info)
 

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>Visual Statistics</Name>
+    <Version>1.0.0</Version>
+    <Title>Visual Statistics</Title>
+    <Publisher>Nokia</Publisher>
+    <TargetDir>@ApplicationsDir@/VisualStatistics</TargetDir>
+    <RemoteRepositories>
+        <Repository>
+            <Url>http://sdu.int.nokia-sbell.com:4099/mac</Url>
+        </Repository>
+    </RemoteRepositories>
+    <RepositorySettingsPageVisible>false</RepositorySettingsPageVisible>
+</Installer>

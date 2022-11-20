@@ -1,4 +1,4 @@
-name: Release
+name: Release for macOS
 
 on:
   workflow_dispatch:
@@ -7,12 +7,16 @@ jobs:
   release:
     runs-on: macos-12
     steps:
+      - name: Store version to environment variable
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
           version: '5.9.4'
           target: 'desktop'
           arch: 'clang_64'
+          tools: 'tools_ifw,qt.tools.ifw.45'
           cache: true
 
       - name: Install automake
@@ -30,11 +34,14 @@ jobs:
           ./configure
           make
 
-      - name: Change libexpat install name id
-        run: |
-          otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib
-          install_name_tool -id @rpath/libexpat.dylib VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib
-          otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib
+      - name: Show libexpat's identification name
+        run: otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.1.dylib
+
+      - name: Change libexpat's identification name
+        run: install_name_tool -id @rpath/libexpat.1.dylib VisualStatistics/libexpat/expat/lib/.libs/libexpat.1.dylib
+
+      - name: Show libexpat's identification name after the change
+        run: otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.1.dylib
 
       - name: Build pcre2
         run: |
@@ -43,13 +50,12 @@ jobs:
           ./configure
           make
 
-      - name: Change pcre2 install name id
-        run: |
-          otool -L VisualStatistics/pcre2/.libs/libpcre2-8.dylib
-          install_name_tool -id @rpath/libpcre2-8.dylib VisualStatistics/pcre2/.libs/libpcre2-8.dylib
-          otool -L VisualStatistics/pcre2/.libs/libpcre2-8.dylib
+      - name: Change pcre2's identification name
+        run: install_name_tool -id @rpath/libpcre2-8.0.dylib VisualStatistics/pcre2/.libs/libpcre2-8.0.dylib
 
       - name: Build QuaZIP
+      # Using QMAKE_SONAME_PREFIX to change quazip's identification name at link time
+      # This makes the clang++ to use option -install_name @rpath/libquazip.1.dylib
         run: |
           mkdir build-quazip-Release
           cd build-quazip-Release
@@ -66,7 +72,7 @@ jobs:
             ${{env.Qt5_DIR}}/translations
             ${{env.Qt5_DIR}}/qsci
             ${{env.Qt5_DIR}}/mkspecs/features/qscintilla2.prf
-          key: QScintillaCache
+          key: QScintilla-2.11.6
 
       - name: Build QScintilla
         if: steps.cache-qsci.outputs.cache-hit != 'true'
@@ -78,21 +84,23 @@ jobs:
           make
           make install
 
+      - name: Update version strings
+        run: python2 VisualStatistics/deployer.py prebuild
+
       - name: Build Visual Statistics
         run: |
           qmake DEFINES+=DEPLOY_VISUALSTAT VisualStatistics/VisualStatistics.pro
           make qmake_all
           make
 
-      - name: Mac deploy Qt
-        run: macdeployqt VisualStatistics.app -always-overwrite -verbose=2
+      # - name: Mac deploy Qt
+      #   run: macdeployqt VisualStatistics.app -always-overwrite -verbose=2
 
-      # - name: Copy libraries
-      #   run: |
-      #     cp VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib VisualStatistics.app/Contents/Frameworks/
-      #     cp build-quazip-Release/libquazip.dylib VisualStatistics.app/Contents/Frameworks/
+      - name: Generate installer repository
+        run: |
+          mkdir installer/installer/packages/visualstatistics/data
+          cp VisualStatistics.app/Contents/MacOS/visualstatistics installer/installer/packages/visualstatistics/data/
+          repogen -p installer/installer/packages -i visualstatistics repository
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: VisualStatistics
-          path: VisualStatistics.app/Contents/MacOS/VisualStatistics
+      - name: Zip the generated repository
+        run: zip -9vr VisualStatistics_${{env.RELEASE_VERSION}}.zip repository
