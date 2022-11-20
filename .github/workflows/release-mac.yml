@@ -19,12 +19,13 @@ jobs:
           tools: 'tools_ifw,qt.tools.ifw.45'
           cache: true
 
-      - name: Install automake
-        run: brew install automake
+      # - name: Install automake
+      #   run: brew install automake
 
       - name: Checkout code
         uses: actions/checkout@v3
         with:
+          ref: ${{env.RELEASE_VERSION}}
           submodules: true
 
       - name: Test
