@@ -41,7 +41,7 @@ jobs:
         run: |
           mkdir build-quazip-Release
           cd build-quazip-Release
-          qmake LIBS+=-lz QMAKE_SONAME_PREFIX=@rpath ../VisualStatistics/quazip/quazip/quazip.pro
+          qmake LIBS+=-lz QMAKE_SONAME_PREFIX=/a/b/c ../VisualStatistics/quazip/quazip/quazip.pro
           make
 
       - name: Cache QScintilla
