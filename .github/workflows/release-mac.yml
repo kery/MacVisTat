@@ -101,6 +101,15 @@ jobs:
       # - name: Mac deploy Qt
       #   run: macdeployqt VisualStatistics.app -always-overwrite -verbose=2
 
+      - name: Upload dynamic libraries
+        uses: actions/upload-artifact@v3
+        with:
+          name: Libraries
+          path: |
+            VisualStatistics/libexpat/expat/lib/.libs/libexpat.1.dylib
+            VisualStatistics/pcre2/.libs/libpcre2-8.0.dylib
+            build-quazip-Release/libquazip.1.dylib
+
       - name: Generate installer repository
         run: |
           mkdir installer/installer/packages/visualstatistics/data
@@ -109,3 +118,10 @@ jobs:
 
       - name: Zip the generated repository
         run: zip -9vr VisualStatistics_${{env.RELEASE_VERSION}}.zip repository
+
+      - name: Upload repository to GitHub release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{secrets.GITHUB_TOKEN}}
+          file: VisualStatistics_${{env.RELEASE_VERSION}}.zip
+          tag: ${{github.ref}}
