@@ -30,6 +30,12 @@ jobs:
           ./configure
           make
 
+      - name: Change libexpat install name id
+        run: |
+          otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib
+          install -id @rpath/libexpat.dylib VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib
+          otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.dylib
+
       - name: Build pcre2
         run: |
           cd VisualStatistics/pcre2
@@ -37,11 +43,17 @@ jobs:
           ./configure
           make
 
+      - name: Change pcre2 install name id
+        run: |
+          otool -L VisualStatistics/pcre2/.libs/libpcre2-8.dylib
+          install -id @rpath/libpcre2-8.dylib VisualStatistics/pcre2/.libs/libpcre2-8.dylib
+          otool -L VisualStatistics/pcre2/.libs/libpcre2-8.dylib
+
       - name: Build QuaZIP
         run: |
           mkdir build-quazip-Release
           cd build-quazip-Release
-          qmake LIBS+=-lz QMAKE_SONAME_PREFIX=/a/b/c ../VisualStatistics/quazip/quazip/quazip.pro
+          qmake LIBS+=-lz QMAKE_SONAME_PREFIX=@rpath ../VisualStatistics/quazip/quazip/quazip.pro
           make
 
       - name: Cache QScintilla
@@ -66,16 +78,7 @@ jobs:
           make
           make install
 
-      - name: Cache Visual Statistics
-        id: cache-vstat
-        uses: actions/cache@v3
-        with:
-          path: |
-            VisualStatistics.app/Contents/MacOS/VisualStatistics
-          key: VisualStatistics123
-
       - name: Build Visual Statistics
-        if: steps.cache-vstat.outputs.cache-hit != 'true'
         run: |
           qmake DEFINES+=DEPLOY_VISUALSTAT VisualStatistics/VisualStatistics.pro
           make qmake_all
@@ -83,15 +86,6 @@ jobs:
 
       - name: Mac deploy Qt
         run: macdeployqt VisualStatistics.app -always-overwrite -verbose=2
-
-      - name: Checkout macdeployqtfix
-        uses: actions/checkout@v3
-        with:
-          repository: arl/macdeployqtfix
-          path: macdeployqtfix
-
-      - name: Mac deploy Qt fix
-        run: python2 macdeployqtfix/macdeployqtfix.py VisualStatistics.app/Contents/MacOS/VisualStatistics $Qt5_DIR
 
       # - name: Copy libraries
       #   run: |
