@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - v[0-9]+.[0-9]+.[0-9]+.[0-9]+
-  workflow_dispatch:
-
 
 jobs:
   release:
@@ -23,93 +21,88 @@ jobs:
           tools: 'tools_ifw,qt.tools.ifw.45'
           cache: true
 
-      # - name: Install automake
-      #   run: brew install automake
+      - name: Install automake
+        run: brew install automake
 
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           submodules: true
 
-      - name: Test
+      - name: Build libexpat
         run: |
-          echo $RELEASE_VERSION
-          git describe --tags --exact-match
+          cd VisualStatistics/libexpat/expat
+          ./buildconf.sh
+          ./configure
+          make
 
-      # - name: Build libexpat
-      #   run: |
-      #     cd VisualStatistics/libexpat/expat
-      #     ./buildconf.sh
-      #     ./configure
-      #     make
+      - name: Show libexpat's identification name
+        run: otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.1.dylib
 
-      # - name: Show libexpat's identification name
-      #   run: otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.1.dylib
+      - name: Change libexpat's identification name
+        run: install_name_tool -id @rpath/libexpat.1.dylib VisualStatistics/libexpat/expat/lib/.libs/libexpat.1.dylib
 
-      # - name: Change libexpat's identification name
-      #   run: install_name_tool -id @rpath/libexpat.1.dylib VisualStatistics/libexpat/expat/lib/.libs/libexpat.1.dylib
+      - name: Show libexpat's identification name after the change
+        run: otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.1.dylib
 
-      # - name: Show libexpat's identification name after the change
-      #   run: otool -L VisualStatistics/libexpat/expat/lib/.libs/libexpat.1.dylib
+      - name: Build pcre2
+        run: |
+          cd VisualStatistics/pcre2
+          ./autogen.sh
+          ./configure
+          make
 
-      # - name: Build pcre2
-      #   run: |
-      #     cd VisualStatistics/pcre2
-      #     ./autogen.sh
-      #     ./configure
-      #     make
+      - name: Change pcre2's identification name
+        run: install_name_tool -id @rpath/libpcre2-8.0.dylib VisualStatistics/pcre2/.libs/libpcre2-8.0.dylib
 
-      # - name: Change pcre2's identification name
-      #   run: install_name_tool -id @rpath/libpcre2-8.0.dylib VisualStatistics/pcre2/.libs/libpcre2-8.0.dylib
+      - name: Build QuaZIP
+      # Using QMAKE_SONAME_PREFIX to change quazip's identification name at link time
+      # This makes the clang++ to use option -install_name @rpath/libquazip.1.dylib
+        run: |
+          mkdir build-quazip-Release
+          cd build-quazip-Release
+          qmake LIBS+=-lz QMAKE_SONAME_PREFIX=@rpath ../VisualStatistics/quazip/quazip/quazip.pro
+          make
 
-      # - name: Build QuaZIP
-      # # Using QMAKE_SONAME_PREFIX to change quazip's identification name at link time
-      # # This makes the clang++ to use option -install_name @rpath/libquazip.1.dylib
-      #   run: |
-      #     mkdir build-quazip-Release
-      #     cd build-quazip-Release
-      #     qmake LIBS+=-lz QMAKE_SONAME_PREFIX=@rpath ../VisualStatistics/quazip/quazip/quazip.pro
-      #     make
+      - name: Cache QScintilla
+        id: cache-qsci
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{env.Qt5_DIR}}/lib/libqscintilla2_qt5.a
+            ${{env.Qt5_DIR}}/include/Qsci
+            ${{env.Qt5_DIR}}/translations
+            ${{env.Qt5_DIR}}/qsci
+            ${{env.Qt5_DIR}}/mkspecs/features/qscintilla2.prf
+          key: QScintilla-2.11.6
 
-      # - name: Cache QScintilla
-      #   id: cache-qsci
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: |
-      #       ${{env.Qt5_DIR}}/lib/libqscintilla2_qt5.a
-      #       ${{env.Qt5_DIR}}/include/Qsci
-      #       ${{env.Qt5_DIR}}/translations
-      #       ${{env.Qt5_DIR}}/qsci
-      #       ${{env.Qt5_DIR}}/mkspecs/features/qscintilla2.prf
-      #     key: QScintilla-2.11.6
+      - name: Build QScintilla
+        if: steps.cache-qsci.outputs.cache-hit != 'true'
+        run: |
+          wget https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.6/QScintilla-2.11.6.zip
+          unzip QScintilla-2.11.6.zip
+          cd QScintilla-2.11.6/Qt4Qt5
+          qmake CONFIG+=staticlib
+          make
+          make install
 
-      # - name: Build QScintilla
-      #   if: steps.cache-qsci.outputs.cache-hit != 'true'
-      #   run: |
-      #     wget https://www.riverbankcomputing.com/static/Downloads/QScintilla/2.11.6/QScintilla-2.11.6.zip
-      #     unzip QScintilla-2.11.6.zip
-      #     cd QScintilla-2.11.6/Qt4Qt5
-      #     qmake CONFIG+=staticlib
-      #     make
-      #     make install
+      - name: Update version strings
+        run: python2 VisualStatistics/deployer.py prebuild
 
-      # - name: Update version strings
-      #   run: python2 VisualStatistics/deployer.py prebuild
+      - name: Build Visual Statistics
+        run: |
+          qmake DEFINES+=DEPLOY_VISUALSTAT VisualStatistics/VisualStatistics.pro
+          make qmake_all
+          make
 
-      # - name: Build Visual Statistics
-      #   run: |
-      #     qmake DEFINES+=DEPLOY_VISUALSTAT VisualStatistics/VisualStatistics.pro
-      #     make qmake_all
-      #     make
+      # - name: Mac deploy Qt
+      #   run: macdeployqt VisualStatistics.app -always-overwrite -verbose=2
 
-      # # - name: Mac deploy Qt
-      # #   run: macdeployqt VisualStatistics.app -always-overwrite -verbose=2
+      - name: Generate installer repository
+        run: |
+          mkdir installer/installer/packages/visualstatistics/data
+          cp VisualStatistics.app/Contents/MacOS/visualstatistics installer/installer/packages/visualstatistics/data/
+          repogen -p installer/installer/packages -i visualstatistics repository
 
-      # - name: Generate installer repository
-      #   run: |
-      #     mkdir installer/installer/packages/visualstatistics/data
-      #     cp VisualStatistics.app/Contents/MacOS/visualstatistics installer/installer/packages/visualstatistics/data/
-      #     repogen -p installer/installer/packages -i visualstatistics repository
-
-      # - name: Zip the generated repository
-      #   run: zip -9vr VisualStatistics_${{env.RELEASE_VERSION}}.zip repository
+      - name: Zip the generated repository
+        run: zip -9vr VisualStatistics_${{env.RELEASE_VERSION}}.zip repository
