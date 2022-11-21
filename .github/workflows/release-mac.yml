@@ -94,7 +94,7 @@ jobs:
 
       - name: Build Visual Statistics
         run: |
-          qmake DEFINES+=DEPLOY_VISUALSTAT VisualStatistics/VisualStatistics.pro
+          qmake DEFINES+=DEPLOY_VISUALSTAT QMAKE_RPATHDIR+=@executable_path/../Frameworks VisualStatistics/VisualStatistics.pro
           make qmake_all
           make
 
@@ -113,7 +113,7 @@ jobs:
       - name: Generate installer repository
         run: |
           mkdir installer/installer/packages/visualstatistics/data
-          cp VisualStatistics.app/Contents/MacOS/visualstatistics installer/installer/packages/visualstatistics/data/
+          cp VisualStatistics.app/Contents/MacOS/VisualStatistics installer/installer/packages/visualstatistics/data/
           repogen -p installer/installer/packages -i visualstatistics repository
 
       - name: Zip the generated repository
