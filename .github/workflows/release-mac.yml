@@ -18,7 +18,7 @@ jobs:
           version: '5.9.4'
           target: 'desktop'
           arch: 'clang_64'
-          tools: 'tools_ifw,qt.tools.ifw.45'
+          tools: 'tools_ifw,qt.tools.ifw.31'
           cache: true
 
       - name: Add QtInstallerFramework to PATH

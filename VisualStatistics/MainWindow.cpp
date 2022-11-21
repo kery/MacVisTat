@@ -1358,9 +1358,16 @@ QString MainWindow::filePath(FilePath fp)
         return dir.filePath(QStringLiteral(".vstat_counter_desc"));
     case fpMaintenanceTool:
         dir.setPath(QApplication::applicationDirPath());
-#if defined(Q_OS_WIN)
+#if defined Q_OS_WIN
         return dir.absoluteFilePath(QStringLiteral("maintenancetool.exe"));
+#elif !defined Q_OS_MACOS
+        return dir.absoluteFilePath(QStringLiteral("maintenancetool"));
 #else
+        dir.cdUp(); // MacOS=>Contents
+        dir.cdUp(); // Contents=>VisualStatistics.app
+        dir.cd(QStringLiteral("maintenancetool.app"));
+        dir.cd(QStringLiteral("Contents"));
+        dir.cd(QStringLiteral("MacOS"));
         return dir.absoluteFilePath(QStringLiteral("maintenancetool"));
 #endif
     case fpPluginDir:
