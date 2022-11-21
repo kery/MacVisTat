@@ -18,11 +18,11 @@ jobs:
           version: '5.9.4'
           target: 'desktop'
           arch: 'clang_64'
-          tools: 'tools_ifw,qt.tools.ifw.41'
+          tools: 'tools_ifw,qt.tools.ifw.45'
           cache: true
 
       - name: Add QtInstallerFramework to PATH
-        run: echo "$IQTA_TOOLS/QtInstallerFramework/4.1/bin" >> $GITHUB_PATH
+        run: echo "$IQTA_TOOLS/QtInstallerFramework/4.5/bin" >> $GITHUB_PATH
 
       - name: Install automake
         run: brew install automake
